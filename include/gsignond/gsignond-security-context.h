@@ -23,8 +23,8 @@
  * 02110-1301 USA
  */
 
-#ifndef _SIGNON_SECURITY_CONTEXT_H_
-#define _SIGNON_SECURITY_CONTEXT_H_
+#ifndef _GSIGNOND_SECURITY_CONTEXT_H_
+#define _GSIGNOND_SECURITY_CONTEXT_H_
 
 #include <glib.h>
 
@@ -39,44 +39,44 @@ G_BEGIN_DECLS
  *           binary path.
  * @app_ctx: application context, such as a script or a web page.
  */
-typedef struct _SignonSecurityContext
+typedef struct _GSignonDSecurityContext
 {
     gchar *sys_ctx;
     gchar *app_ctx;
-} SignonSecurityContext;
+} GSignonDSecurityContext;
 
 /**
- * GList of #SignonSecurityContext items.
+ * GList of #GSignonDSecurityContext items.
  */
-typedef GList SignonSecurityContextList;
+typedef GList GSignonDSecurityContextList;
 
-SignonSecurityContext * signon_security_context_new ();
-SignonSecurityContext * signon_security_context_new_from_values (
+GSignonDSecurityContext * gsignond_security_context_new ();
+GSignonDSecurityContext * gsignond_security_context_new_from_values (
                                             const gchar *system_context,
                                             const gchar *application_context);
-void signon_security_context_free (SignonSecurityContext *ctx);
-SignonSecurityContext * signon_security_context_copy (
-                                        const SignonSecurityContext *src_ctx);
-void signon_security_context_set_system_context (SignonSecurityContext *ctx,
+void gsignond_security_context_free (GSignonDSecurityContext *ctx);
+GSignonDSecurityContext * gsignond_security_context_copy (
+                                        const GSignonDSecurityContext *src_ctx);
+void gsignond_security_context_set_system_context (GSignonDSecurityContext *ctx,
                                                  const gchar *system_context);
-const gchar * signon_security_context_get_system_context (
-                                                SignonSecurityContext *ctx);
-void signon_security_context_set_application_context (
-                                            SignonSecurityContext *ctx,
+const gchar * gsignond_security_context_get_system_context (
+                                                GSignonDSecurityContext *ctx);
+void gsignond_security_context_set_application_context (
+                                            GSignonDSecurityContext *ctx,
                                             const gchar *application_context);
-const gchar * signon_security_context_get_application_context (
-                                                SignonSecurityContext *ctx);
+const gchar * gsignond_security_context_get_application_context (
+                                                GSignonDSecurityContext *ctx);
 
-GVariant * signon_security_context_build_variant (
-                                        const SignonSecurityContextList *list);
-SignonSecurityContextList * signon_security_context_deconstruct_variant (
+GVariant * gsignond_security_context_build_variant (
+                                    const GSignonDSecurityContextList *list);
+GSignonDSecurityContextList * gsignond_security_context_deconstruct_variant (
                                                             GVariant *variant);
 
-SignonSecurityContextList * signon_security_context_list_copy (
-                                    const SignonSecurityContextList *src_list);
-void signon_security_context_list_free (SignonSecurityContextList *seclist);
+GSignonDSecurityContextList * gsignond_security_context_list_copy (
+                                const GSignonDSecurityContextList *src_list);
+void gsignond_security_context_list_free (GSignonDSecurityContextList *seclist);
 
 G_END_DECLS
 
-#endif  /* _SIGNON_SECURITY_CONTEXT_H_ */
+#endif  /* _GSIGNOND_SECURITY_CONTEXT_H_ */
 

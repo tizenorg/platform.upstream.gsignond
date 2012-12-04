@@ -23,29 +23,29 @@
  * 02110-1301 USA
  */
 
-#include "gsignond/signon-security-context.h"
+#include "gsignond/gsignond-security-context.h"
 
 static void
 _security_context_free (gpointer ptr)
 {
-    SignonSecurityContext *ctx = (SignonSecurityContext *) ptr;
+    GSignonDSecurityContext *ctx = (GSignonDSecurityContext *) ptr;
 
-    signon_security_context_free (ctx);
+    gsignond_security_context_free (ctx);
 }
 
 /**
- * signon_security_context_new:
+ * gsignond_security_context_new:
  *
  * Allocates a new security context item.
  *
- * Returns: (transfer full) allocated #SignonSecurityContext.
+ * Returns: (transfer full) allocated #GSignonDSecurityContext.
  */
-SignonSecurityContext *
-signon_security_context_new ()
+GSignonDSecurityContext *
+gsignond_security_context_new ()
 {
-    SignonSecurityContext *ctx;
+    GSignonDSecurityContext *ctx;
 
-    ctx = g_new0 (SignonSecurityContext, 1);
+    ctx = g_new0 (GSignonDSecurityContext, 1);
     ctx->sys_ctx = g_strdup ("");
     ctx->app_ctx = g_strdup ("*");
 
@@ -53,23 +53,23 @@ signon_security_context_new ()
 }
 
 /**
- * signon_security_context_new_from_vaues:
+ * gsignond_security_context_new_from_vaues:
  * @system_context: system security context (such as SMACK/MSSF label/token).
  * @application_context: application security context (such as a script name).
  *
  * Allocates and initializes a new security context item.
  *
- * Returns: (transfer full) allocated #SignonSecurityContext.
+ * Returns: (transfer full) allocated #GSignonDSecurityContext.
  */
-SignonSecurityContext *
-signon_security_context_new_from_values (const gchar *system_context,
-                                         const gchar *application_context)
+GSignonDSecurityContext *
+gsignond_security_context_new_from_values (const gchar *system_context,
+                                           const gchar *application_context)
 {
-    SignonSecurityContext *ctx;
+    GSignonDSecurityContext *ctx;
 
     g_return_val_if_fail (system_context != NULL, NULL);
 
-    ctx = g_new0 (SignonSecurityContext, 1);
+    ctx = g_new0 (GSignonDSecurityContext, 1);
     ctx->sys_ctx = g_strdup (system_context);
     if (application_context)
         ctx->app_ctx = g_strdup (application_context);
@@ -80,30 +80,30 @@ signon_security_context_new_from_values (const gchar *system_context,
 }
 
 /**
- * signon_security_context_copy:
+ * gsignond_security_context_copy:
  * @src_ctx: source security context to copy.
  *
  * Copy a security context item.
  *
  * Returns: (transfer full) a copy of the #SignonSecurityContex item.
  */
-SignonSecurityContext *
-signon_security_context_copy (const SignonSecurityContext *src_ctx)
+GSignonDSecurityContext *
+gsignond_security_context_copy (const GSignonDSecurityContext *src_ctx)
 {
     g_return_val_if_fail (src_ctx != NULL, NULL);
 
-    return signon_security_context_new_from_values (src_ctx->sys_ctx,
+    return gsignond_security_context_new_from_values (src_ctx->sys_ctx,
                                                     src_ctx->app_ctx);
 }
 
 /**
- * signon_security_context_free:
- * @ctx: #SignonSecurityContext to be freed.
+ * gsignond_security_context_free:
+ * @ctx: #GSignonDSecurityContext to be freed.
  *
  * Frees a security context item.
  */
 void
-signon_security_context_free (SignonSecurityContext *ctx)
+gsignond_security_context_free (GSignonDSecurityContext *ctx)
 {
     g_return_if_fail (ctx != NULL);
 
@@ -113,16 +113,16 @@ signon_security_context_free (SignonSecurityContext *ctx)
 }
 
 /**
- * signon_security_context_set_system_context:
- * @ctx: #SignonSecurityContext item.
+ * gsignond_security_context_set_system_context:
+ * @ctx: #GSignonDSecurityContext item.
  * @system_context: system security context.
  *
  * Sets the system context part (such as SMACK label or MSSF token) of the
- * #SignonSecurityContext.
+ * #GSignonDSecurityContext.
  */
 void
-signon_security_context_set_system_context (SignonSecurityContext *ctx,
-                                            const gchar *system_context)
+gsignond_security_context_set_system_context (GSignonDSecurityContext *ctx,
+                                              const gchar *system_context)
 {
     g_return_if_fail (ctx != NULL);
 
@@ -131,16 +131,16 @@ signon_security_context_set_system_context (SignonSecurityContext *ctx,
 }
 
 /**
- * signon_security_context_get_system_context:
- * @ctx: #SignonSecurityContext item.
+ * gsignond_security_context_get_system_context:
+ * @ctx: #GSignonDSecurityContext item.
  * 
  * Get the system context part (such as SMACK label or MSSF token) of the
- * #SignonSecurityContext.
+ * #GSignonDSecurityContext.
  *
  * Returns: (transfer none) system context.
  */
 const gchar *
-signon_security_context_get_system_context (SignonSecurityContext *ctx)
+gsignond_security_context_get_system_context (GSignonDSecurityContext *ctx)
 {
     g_return_val_if_fail (ctx != NULL, NULL);
 
@@ -148,16 +148,16 @@ signon_security_context_get_system_context (SignonSecurityContext *ctx)
 }
 
 /**
- * signon_security_context_set_application_context:
- * @ctx: #SignonSecurityContext item.
+ * gsignond_security_context_set_application_context:
+ * @ctx: #GSignonDSecurityContext item.
  * @application_context: application security context.
  *
  * Sets the application context part (such as a script name or a web page) of
- * the #SignonSecurityContext.
+ * the #GSignonDSecurityContext.
  */
 void
-signon_security_context_set_application_context (SignonSecurityContext *ctx,
-                                              const gchar *application_context)
+gsignond_security_context_set_application_context (GSignonDSecurityContext *ctx,
+                                               const gchar *application_context)
 {
     g_return_if_fail (ctx != NULL);
 
@@ -166,16 +166,16 @@ signon_security_context_set_application_context (SignonSecurityContext *ctx,
 }
 
 /**
- * signon_security_context_get_application_context:
- * @ctx: #SignonSecurityContext item.
+ * gsignond_security_context_get_application_context:
+ * @ctx: #GSignonDSecurityContext item.
  *
  * Get the application context part (such as script name or a web page) of
- * the #SignonSecurityContext.
+ * the #GSignonDSecurityContext.
  *
  * Returns: (transfer none) application context.
  */
 const gchar *
-signon_security_context_get_application_context (SignonSecurityContext *ctx)
+gsignond_security_context_get_application_context (GSignonDSecurityContext *ctx)
 {
     g_return_val_if_fail (ctx != NULL, NULL);
 
@@ -183,25 +183,25 @@ signon_security_context_get_application_context (SignonSecurityContext *ctx)
 }
 
 /**
- * signon_security_context_build_variant:
- * @list: #SignonSecurityContextList item.
+ * gsignond_security_context_build_variant:
+ * @list: #GSignonDSecurityContextList item.
  *
- * Builds a GVariant of type "a(ss)" from a GList of #SignonSecurityContext
+ * Builds a GVariant of type "a(ss)" from a GList of #GSignonDSecurityContext
  * items.
  *
- * Returns: (transfer full) GVariant construct of a #SignonSecurityContextList.
+ * Returns: (transfer full) GVariant construct of a #GSignonDSecurityContextList.
  */
 GVariant *
-signon_security_context_build_variant (const SignonSecurityContextList *list)
+gsignond_security_context_build_variant (
+                                        const GSignonDSecurityContextList *list)
 {
     GVariantBuilder *builder;
     GVariant *variant;
-    SignonSecurityContext *ctx;
+    GSignonDSecurityContext *ctx;
 
     builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
-    for ( ; list != NULL; list = g_list_next (list))
-    {
-        ctx = (SignonSecurityContext *) list->data;
+    for ( ; list != NULL; list = g_list_next (list)) {
+        ctx = (GSignonDSecurityContext *) list->data;
         g_variant_builder_add (builder, "(ss)", ctx->sys_ctx, ctx->app_ctx);
     }
     variant = g_variant_builder_end(builder);
@@ -209,18 +209,18 @@ signon_security_context_build_variant (const SignonSecurityContextList *list)
 }
 
 /**
- * signon_security_context_deconstruct_variant:
+ * gsignond_security_context_deconstruct_variant:
  * @variant: GVariant item with a list of security context tuples
  *
- * Builds a GList of #SignonSecurityContext items from a GVariant of type
+ * Builds a GList of #GSignonDSecurityContext items from a GVariant of type
  * "a(ss)".
  *
- * Returns: (transfer full) #SignonSecurityContextList item.
+ * Returns: (transfer full) #GSignonDSecurityContextList item.
  */
-SignonSecurityContextList *
-signon_security_context_deconstruct_variant (GVariant *variant)
+GSignonDSecurityContextList *
+gsignond_security_context_deconstruct_variant (GVariant *variant)
 {
-    SignonSecurityContextList *list = NULL;
+    GSignonDSecurityContextList *list = NULL;
     GVariantIter iter;
     gchar *sys_ctx;
     gchar *app_ctx;
@@ -228,47 +228,46 @@ signon_security_context_deconstruct_variant (GVariant *variant)
     g_return_val_if_fail (variant != NULL, NULL);
 
     g_variant_iter_init (&iter, variant);
-    while (g_variant_iter_next (&iter, "(ss)", &sys_ctx, &app_ctx))
-    {
+    while (g_variant_iter_next (&iter, "(ss)", &sys_ctx, &app_ctx)) {
         list = g_list_append (
-            list, signon_security_context_new_from_values (sys_ctx, app_ctx));
+            list, gsignond_security_context_new_from_values (sys_ctx, app_ctx));
     }
 
     return list;
 }
 
 /**
- * signon_security_context_list_copy:
- * @src_list: source #SignonSecurityContextList.
+ * gsignond_security_context_list_copy:
+ * @src_list: source #GSignonDSecurityContextList.
  *
- * Copies a GList of #SignonSecurityContext items.
+ * Copies a GList of #GSignonDSecurityContext items.
  *
- * Returns: (transfer full) #SignonSecurityContextList item.
+ * Returns: (transfer full) #GSignonDSecurityContextList item.
  */
-SignonSecurityContextList *
-signon_security_context_list_copy (const SignonSecurityContextList *src_list)
+GSignonDSecurityContextList *
+gsignond_security_context_list_copy (
+                                    const GSignonDSecurityContextList *src_list)
 {
-    SignonSecurityContext *ctx;
-    SignonSecurityContextList *dst_list = NULL;
+    GSignonDSecurityContext *ctx;
+    GSignonDSecurityContextList *dst_list = NULL;
 
-    for ( ; src_list != NULL; src_list = g_list_next (src_list))
-    {
-        ctx = (SignonSecurityContext *) src_list->data;
+    for ( ; src_list != NULL; src_list = g_list_next (src_list)) {
+        ctx = (GSignonDSecurityContext *) src_list->data;
         dst_list = g_list_append (
-            dst_list, signon_security_context_copy (ctx));
+            dst_list, gsignond_security_context_copy (ctx));
     }
 
     return dst_list;
 }
 
 /**
- * signon_security_context_list_free:
- * @seclist: (transfer full) #SignonSecurityContextList item.
+ * gsignond_security_context_list_free:
+ * @seclist: (transfer full) #GSignonDSecurityContextList item.
  *
- * Frees all items and the GList of #SignonSecurityContext.
+ * Frees all items and the GList of #GSignonDSecurityContext.
  */
 void
-signon_security_context_list_free (SignonSecurityContextList *seclist)
+gsignond_security_context_list_free (GSignonDSecurityContextList *seclist)
 {
     g_list_free_full (seclist, _security_context_free);
 }
