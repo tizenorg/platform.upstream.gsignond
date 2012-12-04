@@ -1,9 +1,9 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
 /* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * This file is part of signon
+ * This file is part of gsignond
  *
- * Copyright (C) 2011 Intel Corporation.
+ * Copyright (C) 2012 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@linux.intel.com>
  *
@@ -23,23 +23,37 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-db-error.h"
+/* inclusion guard */
+#ifndef __GSIGNOND_DB_ERROR_H__
+#define __GSIGNOND_DB_ERROR_H__
 
-#define GSIGNOND_DB_ERROR_DOMAIN_STR   "gsignond_db"
+#include <glib.h>
+
+G_BEGIN_DECLS
+
+/**
+ * GSIGNOND_DB_ERROR:
+ *
+ */
+#define GSIGNOND_DB_ERROR   (gsignond_db_error_quark())
+
+typedef enum {
+    GSIGNOND_DB_ERROR_NONE,
+    GSIGNOND_DB_ERROR_NOT_OPEN,             /*!< The DB is not open */
+    GSIGNOND_DB_ERROR_CONNECTION_FAILURE,   /*!< The DB is disconnected */
+    GSIGNOND_DB_ERROR_STATEMENT_FAILURE,    /*!< The last statement failed */
+    GSIGNOND_DB_ERROR_LOCKED,               /*!< The DB is busy */
+    GSIGNOND_DB_ERROR_UNKNOWN
+} GSignondDbError;
 
 GQuark
-gsignond_db_error_quark (void)
-{
-    static gsize quark = 0;
+gsignond_db_error_quark (void);
 
-    if (g_once_init_enter (&quark)) {
-        GQuark domain = g_quark_from_static_string (
-                                                  GSIGNOND_DB_ERROR_DOMAIN_STR);
-        g_assert (sizeof (GQuark) <= sizeof (gsize));
+GError *
+gsignond_db_create_error (
+        GSignondDbError code,
+        const gchar* msg);
 
-        g_once_init_leave (&quark, domain);
-    }
+G_END_DECLS
 
-    return (GQuark) quark;
-}
-
+#endif /* __GSIGNOND_DB_ERROR_H__ */

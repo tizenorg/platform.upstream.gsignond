@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2012 Intel Corporation.
  *
+ * Contact: Imran Zaman <imran.zaman@linux.intel.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,16 +23,36 @@
  * 02110-1301 USA
  */
 
-#ifndef __GSIGNOND_CONFIG_DBUS_H_
-#define __GSIGNOND_CONFIG_DBUS_H_
+#include "gsignond-db-error.h"
 
-#define GSINGOND_CONFIG_DBUS_TIMEOUTS  "ObjectTimeouts"
+#define GSIGNOND_DB_ERROR_DOMAIN_STR   "gsignond_db"
 
-#define GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT     GSINGOND_CONFIG_DBUS_TIMEOUTS \
-                                                "/DaemonTimeout"
-#define GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT   GSINGOND_CONFIG_DBUS_TIMEOUTS \
-                                                "/IdentityTimeout"
-#define GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT GSINGOND_CONFIG_DBUS_TIMEOUTS \
-                                                  "/AuthSessionTimeout"
+GQuark
+gsignond_db_error_quark (void)
+{
+    static gsize quark = 0;
 
-#endif /* __GSIGNOND_CONFIG_DBUS_H_ */
+    if (g_once_init_enter (&quark)) {
+        GQuark domain =
+                g_quark_from_static_string (GSIGNOND_DB_ERROR_DOMAIN_STR);
+        g_assert (sizeof (GQuark) <= sizeof (gsize));
+
+        g_once_init_leave (&quark, domain);
+    }
+
+    return (GQuark) quark;
+}
+
+GError *
+gsignond_db_create_error (
+        GSignondDbError code,
+        const gchar* msg)
+{
+    GError *error = NULL;
+
+    error = g_error_new (GSIGNOND_DB_ERROR,
+                         code,
+                         msg);
+    return error;
+}
+

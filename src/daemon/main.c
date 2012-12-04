@@ -26,8 +26,8 @@
 #include <glib.h>
 #include <gio/gio.h>
 
-#include <common/gsignond-log.h>
-#include <daemon/gsignond-daemon.h>
+#include "gsignond/gsignond-log.h"
+#include "daemon/gsignond-daemon.h"
 
 GSignondDaemon *_daemon;
 

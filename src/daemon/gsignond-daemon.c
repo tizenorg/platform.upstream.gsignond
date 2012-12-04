@@ -22,13 +22,16 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-daemon.h"
-#include <common/gsignond-config.h>
-#include "gsignond-auth-service-iface.h"
-#include <common/gsignond-log.h>
-#include <daemon/dbus/gsignond-dbus-auth-service-adapter.h>
 #include <sys/socket.h>
 #include <gio/gio.h>
+
+#include "gsignond/gsignond-config.h"
+#include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-extension-interface.h"
+#include "daemon/dbus/gsignond-dbus-auth-service-adapter.h"
+
+#include "gsignond-auth-service-iface.h"
+#include "gsignond-daemon.h"
 
 enum 
 {
@@ -42,6 +45,11 @@ struct _GSignondDaemonPrivate
 {
     GIOChannel          *sig_channel;
     GSignondConfig      *config;
+    GModule             *extension_module;
+    GSignondExtension   *extension;
+    GSignondStorageManager *storage_manager;
+    GSignondSecretStorage *secret_storage;
+    GSignondAccessControlManager *acm;
     GSignondDbusAuthServiceAdapter *auth_service;
 };
 
@@ -53,7 +61,7 @@ G_DEFINE_TYPE_EXTENDED (GSignondDaemon, gsignond_daemon, G_TYPE_OBJECT, 0,
                                                gsignond_daemon_auth_service_iface_init));
 
 
-#define GSINGON_DAEMON_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DAEMON, GSignondDaemonPrivate)
+#define GSIGNOND_DAEMON_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DAEMON, GSignondDaemonPrivate)
 
 static const gchar* gsignond_daemon_register_new_identity(
                                                  GSignondAuthServiceIface *self,
@@ -79,8 +87,7 @@ static GVariant * gsignond_daemon_query_identities (
 static gboolean gsignond_daemon_clear (GSignondAuthServiceIface *self);
 
 
-static gboolean gsignond_daemon_init_extension (GSignondDaemon *daemon,
-                                                const gchar *path);
+static gboolean gsignond_daemon_init_extension (GSignondDaemon *daemon);
 static gboolean gsignond_daemon_init_extensions (GSignondDaemon *daemon);
 static gboolean gsignond_daemon_init_storage (GSignondDaemon *daemon);
 
@@ -200,14 +207,42 @@ gsignond_daemon_dispose (GObject *object)
         g_object_unref (self->priv->auth_service);
         self->priv->auth_service = NULL;
     }
+
+    if (self->priv->extension) {
+        self->priv->storage_manager = NULL;
+        self->priv->secret_storage = NULL;
+        self->priv->acm = NULL;
+        g_object_unref (self->priv->extension);
+        self->priv->extension = NULL;
+    }
+
+    if (self->priv->extension_module) {
+        g_module_close (self->priv->extension_module);
+        self->priv->extension_module = NULL;
+    }
+
     G_OBJECT_CLASS (gsignond_daemon_parent_class)->dispose (object);
 }
 
 static void
 gsignond_daemon_finalize (GObject *object)
 {
+    GSignondDaemon *self = GSIGNOND_DAEMON(object);
+
     close(sig_fd[0]);
     close(sig_fd[1]);
+
+    if (!gsignond_secret_storage_close_db (self->priv->secret_storage)) {
+        WARN("gsignond_secret_storage_close_db() failed");
+    }
+
+    if (gsignond_storage_manager_filesystem_is_mounted (
+                                                 self->priv->storage_manager)) {
+        if (!gsignond_storage_manager_unmount_filesystem (
+                                                 self->priv->storage_manager)) {
+            WARN("gsignond_storage_manager_unmount_filesystem() failed");
+        }
+    }
 
     G_OBJECT_CLASS (gsignond_daemon_parent_class)->finalize (object);
 }
@@ -216,7 +251,7 @@ static void
 gsignond_daemon_init (GSignondDaemon *self)
 {
     GError *err = NULL;
-    self->priv = GSINGON_DAEMON_PRIV(self);
+    self->priv = GSIGNOND_DAEMON_PRIV(self);
 
     _setup_signal_handlers (self);
 
@@ -268,13 +303,31 @@ gsignond_daemon_auth_service_iface_init (gpointer g_iface, gpointer iface_data)
 }
 
 static gboolean
-gsignond_daemon_init_extension (GSignondDaemon *self, const gchar *file_path)
+gsignond_daemon_init_extension (GSignondDaemon *self)
 {
-    DBG ("Loading plugin '%s'", file_path);
+    guint32 ext_ver = gsignond_extension_get_version (self->priv->extension);
 
-    /* TODO: load plugin */
+    DBG ("Initializing extension '%s' %d.%d.%d.%d",
+         gsignond_extension_get_name (self->priv->extension),
+         (ext_ver >> 24),
+         (ext_ver >> 16) & 0xff,
+         (ext_ver >> 8) & 0xff,
+         ext_ver & 0xff);
 
-    /* TODO: init extension */
+    self->priv->storage_manager =
+        gsignond_extension_get_storage_manager (self->priv->extension,
+                                                self->priv->config);
+    self->priv->secret_storage =
+        gsignond_extension_get_secret_storage (self->priv->extension,
+                                               self->priv->config);
+    self->priv->acm =
+        gsignond_extension_get_access_control_manager (self->priv->extension,
+                                                       self->priv->config);
+
+    g_return_val_if_fail (self->priv->storage_manager &&
+                          self->priv->secret_storage &&
+                          self->priv->acm,
+                          FALSE);
 
     return TRUE;
 }
@@ -282,37 +335,46 @@ gsignond_daemon_init_extension (GSignondDaemon *self, const gchar *file_path)
 static gboolean
 gsignond_daemon_init_extensions (GSignondDaemon *self)
 {
-    GError *err = 0;
-    const gchar *ext_path = 0;
-    const gchar *file_name = 0;
-    GDir *dir = 0;
     gboolean res = TRUE;
+    gboolean symfound;
+    GError *err = 0;
+    const gchar *ext_path;
+    const gchar *ext_name;
+    gchar *mod_filename;
+    gchar *initf_name;
+    GSignondExtensionInit ext_init;
 
     ext_path = gsignond_config_get_extensions_dir (self->priv->config);
-    if (!ext_path) return FALSE;
+    ext_name = gsignond_config_get_extension (self->priv->config);
+    if (ext_name && !ext_path) return FALSE;
 
-    dir = g_dir_open (ext_path, 0, &err);
-    if (!dir) {
-        WARN ("fail to load extensions at : %s", err->message);
-        g_error_free (err);
-        return FALSE;
+    if (ext_name && g_strcmp0 (ext_name, "default") != 0) {
+        mod_filename = g_module_build_path (ext_path, ext_name);
+        if (!mod_filename) return FALSE;
+        DBG ("Loading extension '%s'", mod_filename);
+        self->priv->extension_module =
+            g_module_open (mod_filename, G_MODULE_BIND_LOCAL);
+        g_free (mod_filename);
+        if (!self->priv->extension_module) return FALSE;
+        initf_name = g_strdup_printf ("%s_extension_init", ext_name);
+        symfound = g_module_symbol (self->priv->extension_module,
+                                    initf_name,
+                                    (gpointer *) &ext_init);
+        g_free(initf_name);
+        if (!symfound) {
+            g_module_close (self->priv->extension_module);
+            self->priv->extension_module = NULL;
+            return FALSE;
+        }
+    } else {
+        ext_init = default_extension_init;
     }
+    self->priv->extension = ext_init ();
+    g_return_val_if_fail (self->priv->extension &&
+                          GSIGNOND_IS_EXTENSION (self->priv->extension),
+                          FALSE);
 
-    while ((file_name = g_dir_read_name (dir)) != NULL) {
-        if (!g_str_has_prefix (file_name, "lib"))
-            continue;
-        
-        if (!g_str_has_suffix (file_name, ".so"))
-            continue;
-
-        if (!g_file_test (file_name, G_FILE_TEST_IS_REGULAR))
-            continue;
-
-        if (!gsignond_daemon_init_extension (self, file_name))
-            res = FALSE;
-    }
-
-    g_dir_close (dir);
+    res = gsignond_daemon_init_extension (self);
 
     return res;
 }
@@ -320,11 +382,26 @@ gsignond_daemon_init_extensions (GSignondDaemon *self)
 static gboolean
 gsignond_daemon_init_storage (GSignondDaemon *self)
 {
+    const gchar *storage_location;
+    GHashTable *config_table;
+
     DBG("Initializing storage");
 
-    /* TODO: Initialize storage */
+    if (!gsignond_storage_manager_storage_is_initialized (
+                                                 self->priv->storage_manager)) {
+        if (!gsignond_storage_manager_initialize_storage (
+                                                   self->priv->storage_manager))
+            return FALSE;
+    }
 
-    return FALSE;
+    storage_location = gsignond_storage_manager_mount_filesystem (
+                                                   self->priv->storage_manager);
+    config_table = gsignond_config_get_config_table (self->priv->config);
+    g_assert (config_table != NULL);
+    g_hash_table_replace (config_table, GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
+                          g_strdup (storage_location));
+
+    return (storage_location != NULL);
 }
 
 guint gsignond_daemon_identity_timeout (GSignondDaemon *self)

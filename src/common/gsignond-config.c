@@ -22,12 +22,13 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-config.h"
-#include "gsignond-config-general.h"
-#include "gsignond-config-db.h"
-#include "gsignond-config-dbus.h"
-#include <common/gsignond-log.h>
 #include <stdlib.h>
+
+#include "gsignond/gsignond-config.h"
+#include "gsignond/gsignond-config-general.h"
+#include "gsignond/gsignond-config-db.h"
+#include "gsignond/gsignond-config-dbus.h"
+#include "gsignond/gsignond-log.h"
 
 enum
 {
@@ -36,6 +37,7 @@ enum
     PROP_CONFIG_FILE_PATH,     /* configuration file path */
     PROP_PLUGINS_DIR,          /* plugins direcotry location */
     PROP_EXTENSIONS_DIR,       /* extensions directory location */
+    PROP_EXTENSION,            /* active extension */
     PROP_DAEMON_TIMEOUT,       /* daemon dbus timeout */
     PROP_IDENTITY_TIMEOUT,     /* identities dbus timeout */
     PROP_AUTH_SESSION_TIMEOUT, /* session dbus timeout */
@@ -54,7 +56,7 @@ struct _GSignondConfigPrivate
 G_DEFINE_TYPE (GSignondConfig, gsignond_config, G_TYPE_OBJECT);
 
 
-#define GSIGNOND_CONFIG_PATH "/etc/signond.conf"
+#define GSIGNOND_CONFIG_PATH "/home/imran/.config/gsignond.conf"
 
 static gboolean gsignond_config_load (GSignondConfig *config);
 static gboolean gsignond_config_load_environment (GSignondConfig *config);
@@ -98,38 +100,35 @@ gsignond_config_get_property (GObject    *object,
 
     switch (property_id)
     {
-        case PROP_CONFIG_TABLE: {
+        case PROP_CONFIG_TABLE:
             g_value_set_pointer (value, self->priv->config_table);
             break;
-        }
-        case PROP_CONFIG_FILE_PATH: {
+        case PROP_CONFIG_FILE_PATH:
             g_value_set_string (value, self->priv->config_file_path);
             break;
-        }
-        case PROP_PLUGINS_DIR: {
+        case PROP_PLUGINS_DIR:
             g_value_set_string (value, gsignond_config_get_plugins_dir (self));
             break;
-        }
-        case PROP_EXTENSIONS_DIR: {
+        case PROP_EXTENSIONS_DIR:
             g_value_set_string (value,
                                 gsignond_config_get_extensions_dir (self));
             break;
-        }
-        case PROP_DAEMON_TIMEOUT: {
+        case PROP_EXTENSION:
+            g_value_set_string (value,
+                                gsignond_config_get_extension (self));
+            break;
+        case PROP_DAEMON_TIMEOUT:
             g_value_set_uint (value,
                               gsignond_config_get_daemon_timeout (self));
             break;
-        }
-        case PROP_IDENTITY_TIMEOUT: {
+        case PROP_IDENTITY_TIMEOUT:
             g_value_set_uint (value,
                               gsignond_config_get_identity_timeout (self));
             break;
-        }
-        case PROP_AUTH_SESSION_TIMEOUT: {
+        case PROP_AUTH_SESSION_TIMEOUT:
             g_value_set_uint (value,
                               gsignond_config_get_auth_session_timeout (self));
             break;
-        }
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -145,35 +144,33 @@ gsignond_config_set_property (GObject      *object,
 
     switch (property_id)
     {
-        case PROP_CONFIG_FILE_PATH:{
+        case PROP_CONFIG_FILE_PATH:
             self->priv->config_file_path =
                 g_strdup (g_value_get_string (value));
             gsignond_config_load (self);
             break;
-        }
-        case PROP_PLUGINS_DIR: {
+        case PROP_PLUGINS_DIR:
             gsignond_config_set_plugins_dir (self, g_value_get_string (value));
             break;
-        }
-        case PROP_EXTENSIONS_DIR: {
+        case PROP_EXTENSIONS_DIR:
             gsignond_config_set_extensions_dir (self,
                                                 g_value_get_string (value));
             break;
-        }
-        case PROP_DAEMON_TIMEOUT: {
+        case PROP_EXTENSION:
+            gsignond_config_set_extension (self,
+                                           g_value_get_string (value));
+            break;
+        case PROP_DAEMON_TIMEOUT:
             gsignond_config_set_daemon_timeout (self, g_value_get_uint (value));
             break;
-        }
-        case PROP_IDENTITY_TIMEOUT: {
+        case PROP_IDENTITY_TIMEOUT:
             gsignond_config_set_identity_timeout (self,
                                                   g_value_get_uint (value));
             break;
-        }
-        case PROP_AUTH_SESSION_TIMEOUT: {
+        case PROP_AUTH_SESSION_TIMEOUT:
             gsignond_config_set_auth_session_timeout (self,
                                                       g_value_get_uint (value));
             break;
-        }
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -258,6 +255,13 @@ gsignond_config_class_init (GSignondConfigClass *klass)
                              "Extensions Directroy",
                              "Extensions directory",
                              GSIGNOND_EXTENSIONS_DIR, 
+                             G_PARAM_READWRITE);
+
+    properties[PROP_EXTENSION] =
+        g_param_spec_string ("extension",
+                             "Active extension",
+                             "Active extension",
+                             "",
                              G_PARAM_READWRITE);
 
     properties[PROP_DAEMON_TIMEOUT] =
@@ -401,6 +405,12 @@ gsignond_config_load_environment (GSignondConfig *config)
                              GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
                              (gpointer) e_val);
 
+    e_val = g_getenv ("SSO_EXTENSION");
+    if (e_val)
+        g_hash_table_insert (config->priv->config_table,
+                             GSIGNOND_CONFIG_GENERAL_EXTENSION,
+                             (gpointer) e_val);
+
     e_val = g_getenv ("SSO_STORAGE_PATH");
     if (e_val) {
         g_hash_table_insert (config->priv->config_table,
@@ -466,11 +476,40 @@ gsignond_config_set_extensions_dir (GSignondConfig *config, const gchar *dir)
 const gchar *
 gsignond_config_get_extensions_dir (GSignondConfig *config)
 {
-    g_return_val_if_fail (config && GSIGNOND_IS_CONFIG(config), 0);
+    g_return_val_if_fail (config && GSIGNOND_IS_CONFIG (config), 0);
 
     return (const gchar *) g_hash_table_lookup (config->priv->config_table,
                                         GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR);
 }
+
+gboolean
+gsignond_config_set_extension (GSignondConfig *config, const gchar *extension)
+{
+    g_return_val_if_fail (config && GSIGNOND_IS_CONFIG (config), FALSE);
+    g_return_val_if_fail (extension, FALSE);
+
+    const gchar *cur_ext =
+        g_hash_table_lookup (config->priv->config_table,
+                             GSIGNOND_CONFIG_GENERAL_EXTENSION);
+
+    if (cur_ext && !g_strcmp0 (cur_ext, extension)) {
+        return FALSE;
+    }
+
+    g_hash_table_replace (config->priv->config_table,
+                          GSIGNOND_CONFIG_GENERAL_EXTENSION,
+                          (gpointer) extension);
+
+    return TRUE;
+}
+
+const gchar *
+gsignond_config_get_extension (GSignondConfig *config)
+{
+    g_return_val_if_fail (config && GSIGNOND_IS_CONFIG (config), 0);
+
+    return (const gchar *) g_hash_table_lookup (config->priv->config_table,
+                                             GSIGNOND_CONFIG_GENERAL_EXTENSION);}
 
 gboolean
 gsignond_config_set_daemon_timeout (GSignondConfig *config, guint timeout)

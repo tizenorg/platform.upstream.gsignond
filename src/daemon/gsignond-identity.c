@@ -22,11 +22,12 @@
  * 02110-1301 USA
  */
 
+#include "gsignond/gsignond-log.h"
+
+#include "daemon/gsignond-identity-iface.h"
+#include "daemon/dbus/gsignond-dbus.h"
+#include "daemon/dbus/gsignond-dbus-identity-adapter.h"
 #include "gsignond-identity.h"
-#include <daemon/gsignond-identity-iface.h>
-#include <daemon/dbus/gsignond-dbus.h>
-#include <daemon/dbus/gsignond-dbus-identity-adapter.h>
-#include <common/gsignond-log.h>
 
 enum 
 {
@@ -51,7 +52,7 @@ G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT, 0,
                                                gsignond_identity_iface_init));
 
 
-#define GSINGON_IDENTITY_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_IDENTITY, GSignondIdentityPrivate)
+#define GSIGNON_IDENTITY_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_IDENTITY, GSignondIdentityPrivate)
 
 static guint32 gsignond_identity_request_credentials_update (
                                                     GSignondIdentityIface *self,
@@ -147,7 +148,7 @@ static void
 gsignond_identity_init (GSignondIdentity *self)
 {
     GError *err = NULL;
-    self->priv = GSINGON_IDENTITY_PRIV(self);
+    self->priv = GSIGNON_IDENTITY_PRIV(self);
 
     self->priv->identity_adapter =
         gsignond_dbus_identity_adapter_new (GSIGNOND_IDENTITY_IFACE (self));

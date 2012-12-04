@@ -22,19 +22,16 @@
  * 02110-1301 USA
  */
 
-#ifndef __GSIGNOND_CONFIG_GENERAL_H_
-#define __GSIGNOND_CONFIG_GENERAL_H_
+#ifndef __GSIGNOND_CONFIG_DBUS_H_
+#define __GSIGNOND_CONFIG_DBUS_H_
 
-#define GSIGNOND_CONFIG_GENERAL                 "General"
-#define GSIGNOND_CONFIG_GENERAL_STORAGE_PATH    GSIGNOND_CONFIG_GENERAL \
-                                                "/StoragePath"
-#define GSIGNOND_CONFIG_GENERAL_LOG_LEVEL       GSIGNOND_CONFIG_GENERAL \
-                                                "/LoggingLevel"
-#define GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR  GSIGNOND_CONFIG_GENERAL \
-                                                "/ExtensionsDir"
-#define GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR     GSIGNOND_CONFIG_GENERAL \
-                                                "/PluginsDir"
-#define GSIGNOND_CONFIG_GENERAL_ACM             GSIGNOND_CONFIG_GENERAL \
-                                                "/AccessControlManager"
+#define GSIGNOND_CONFIG_DBUS_TIMEOUTS  "ObjectTimeouts"
 
-#endif /* __GSIGNOND_GENERAL_CONFIG_H_ */
+#define GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT     GSIGNOND_CONFIG_DBUS_TIMEOUTS \
+                                                "/DaemonTimeout"
+#define GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT   GSIGNOND_CONFIG_DBUS_TIMEOUTS \
+                                                "/IdentityTimeout"
+#define GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT GSIGNOND_CONFIG_DBUS_TIMEOUTS \
+                                                  "/AuthSessionTimeout"
+
+#endif /* __GSIGNOND_CONFIG_DBUS_H_ */

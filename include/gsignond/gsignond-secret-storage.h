@@ -29,8 +29,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include "gsignond-config.h"
-#include "gsignond-credentials.h"
+#include <gsignond/gsignond-config.h>
+#include <gsignond/gsignond-credentials.h>
 
 G_BEGIN_DECLS
 
@@ -72,16 +72,12 @@ typedef struct {
      * open_db:
      * @self: instance of #GSignondSecretStorage
      *
-     * @configuration: A dictionary of configuration options, dependent on
-     * the specific storage implementation.
-     *
      * Opens (and initializes) DB. The implementation should take
      * care of creating the DB, if it doesn't exist.
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
-    gboolean (*open_db) (GSignondSecretStorage *self,
-                         GSignondConfig* configuration);
+    gboolean (*open_db) (GSignondSecretStorage *self);
 
     /**
      * close_db:
@@ -123,20 +119,22 @@ typedef struct {
      * Returns: (transfer full) #GSignondCredentials if successful,
      * NULL otherwise.
      */
-    GSignondCredentials* (*load_credentials) (GSignondSecretStorage *self,
-                                              const guint32 id);
+    GSignondCredentials* (*load_credentials) (
+            GSignondSecretStorage *self,
+            const guint32 id);
 
     /**
      * update_credentials:
      * @self: instance of #GSignondSecretStorage
-     * @creds: the credentials that are being updated.
+     * @creds: (transfer none) the credentials that are being updated.
      *
      * Stores/updates the credentials for the given identity.
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
-    gboolean (*update_credentials) (GSignondSecretStorage *self,
-                                    GSignondCredentials* creds);
+    gboolean (*update_credentials) (
+            GSignondSecretStorage *self,
+            GSignondCredentials* creds);
 
     /**
      * remove_credentials:
@@ -147,21 +145,23 @@ typedef struct {
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
-    gboolean (*remove_credentials) (GSignondSecretStorage *self,
-                                    const guint32 id);
+    gboolean (*remove_credentials) (
+            GSignondSecretStorage *self,
+            const guint32 id);
 
     /**
      * check_credentials:
      * @self: instance of #GSignondSecretStorage
-     * @creds: the credentials that are being checked.
+     * @creds: (transfer none) the credentials that are being checked.
      *
      * Checks whether the given credentials are correct for the
      * given identity.
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
-    gboolean (*check_credentials) (GSignondSecretStorage *self,
-                                   GSignondCredentials* creds);
+    gboolean (*check_credentials) (
+            GSignondSecretStorage *self,
+            GSignondCredentials* creds);
 
     /**
      * load_data:
@@ -173,9 +173,10 @@ typedef struct {
      *
      * Returns: (transfer full) #GHashTable dictionary with the data.
      */
-    GHashTable* (*load_data) (GSignondSecretStorage *self,
-                              const guint32 id,
-                              const guint32 method);
+    GHashTable* (*load_data) (
+            GSignondSecretStorage *self,
+            const guint32 id,
+            const guint32 method);
 
     /**
      * update_data:
@@ -189,10 +190,11 @@ typedef struct {
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
-    gboolean (*update_data) (GSignondSecretStorage *self,
-                             const guint32 id,
-                             const guint32 method,
-                             GHashTable *data);
+    gboolean (*update_data) (
+            GSignondSecretStorage *self,
+            const guint32 id,
+            const guint32 method,
+            GHashTable *data);
     /**
      * remove_data:
      * @self: instance of #GSignondSecretStorage
@@ -203,53 +205,74 @@ typedef struct {
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
-    gboolean (*remove_data) (GSignondSecretStorage *self,
-                             const guint32 id,
-                             const guint32 method);
+    gboolean (*remove_data) (
+            GSignondSecretStorage *self,
+            const guint32 id,
+            const guint32 method);
 
 } GSignondSecretStorageClass;
 
 /* used by GSIGNOND_TYPE_SECRET_STORAGE */
-GType           gsignond_secret_storage_get_type (
-                    void);
+GType
+gsignond_secret_storage_get_type (void);
 
-gboolean        gsignond_secret_storage_open_db (
-                    GSignondSecretStorage *self,
-                    GSignondConfig* configuration);
+gboolean
+gsignond_secret_storage_open_db (GSignondSecretStorage *self);
 
-gboolean        gsignond_secret_storage_close_db (
-                    GSignondSecretStorage *self);
+gboolean
+gsignond_secret_storage_close_db (GSignondSecretStorage *self);
 
-gboolean        gsignond_secret_storage_clear_db (
-                    GSignondSecretStorage *self);
+gboolean
+gsignond_secret_storage_clear_db (GSignondSecretStorage *self);
 
-gboolean        gsignond_secret_storage_is_open_db (
-                    GSignondSecretStorage *self);
+gboolean
+gsignond_secret_storage_is_open_db (GSignondSecretStorage *self);
 
 GSignondCredentials*
-                gsignond_secret_storage_load_credentials (
-                    GSignondSecretStorage *self, const guint32 id);
+gsignond_secret_storage_load_credentials (
+        GSignondSecretStorage *self,
+        const guint32 id);
 
-gboolean        gsignond_secret_storage_update_credentials (
-                    GSignondSecretStorage *self, GSignondCredentials* creds);
+gboolean
+gsignond_secret_storage_update_credentials (
+        GSignondSecretStorage *self,
+        GSignondCredentials* creds);
 
-gboolean        gsignond_secret_storage_remove_credentials (
-                    GSignondSecretStorage *self, const guint32 id);
+gboolean
+gsignond_secret_storage_remove_credentials (
+        GSignondSecretStorage *self,
+        const guint32 id);
 
-gboolean        gsignond_secret_storage_check_credentials (
-                    GSignondSecretStorage *self, GSignondCredentials* creds);
+gboolean
+gsignond_secret_storage_check_credentials (
+        GSignondSecretStorage *self,
+        GSignondCredentials* creds);
 
-GHashTable*     gsignond_secret_storage_load_data (
-                    GSignondSecretStorage *self, const guint32 id,
-                    const guint32 method);
+GHashTable*
+gsignond_secret_storage_load_data (
+        GSignondSecretStorage *self,
+        const guint32 id,
+        const guint32 method);
 
-gboolean        gsignond_secret_storage_update_data (
-                    GSignondSecretStorage *self, const guint32 id,
-                    const guint32 method, GHashTable *data);
+gboolean
+gsignond_secret_storage_update_data (
+        GSignondSecretStorage *self,
+        const guint32 id,
+        const guint32 method,
+        GHashTable *data);
 
-gboolean        gsignond_secret_storage_remove_data (
-                    GSignondSecretStorage *self, const guint32 id,
-                    const guint32 method);
+gboolean
+gsignond_secret_storage_remove_data (
+        GSignondSecretStorage *self,
+        const guint32 id,
+        const guint32 method);
+
+const GError*
+gsignond_secret_storage_get_last_error (GSignondSecretStorage *self);
+
+void
+gsignond_secret_storage_clear_last_error (GSignondSecretStorage *self);
+
 
 G_END_DECLS
 

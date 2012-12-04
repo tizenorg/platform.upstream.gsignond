@@ -61,12 +61,16 @@ typedef enum {
 
 #define gsignond_debug_gerr(err)       gsignond_gerr(err, g_debug)
 
-GQuark      gsignond_error_quark (void);
+GQuark
+gsignond_error_quark (void);
 
-GString*    gsignond_concat_domain_and_error (const gchar *str1,
-                                              const gchar *str2);
+GString*
+gsignond_concat_domain_and_error (
+        const gchar *str1,
+        const gchar *str2);
 
-GString*    gsignond_prepend_domain_to_error_msg (const GError *err);
+GString*
+gsignond_prepend_domain_to_error_msg (const GError *err);
 
 G_END_DECLS
 

@@ -65,40 +65,47 @@ typedef struct {
 } GSignondCredentialsClass;
 
 /* used by GSIGNOND_TYPE_CREDENTIALS */
-GType                   gsignond_credentials_get_type (void);
+GType
+gsignond_credentials_get_type (void);
 
-GSignondCredentials*    gisgnond_credentials_new(void);
+GSignondCredentials*
+gisgnond_credentials_new(void);
 
-gboolean                gsignond_credentials_set_data(
-                            GSignondCredentials *self,
-                            const guint32 id,
-                            const gchar* username,
-                            const gchar* password);
+gboolean
+gsignond_credentials_set_data(
+        GSignondCredentials *self,
+        const guint32 id,
+        const gchar* username,
+        const gchar* password);
 
-gboolean                gsignond_credentials_set_id(
-                            GSignondCredentials *self,
-                            const guint32 id);
+gboolean
+gsignond_credentials_set_id(
+        GSignondCredentials *self,
+        const guint32 id);
 
-guint32                 gsignond_credentials_get_id(
-                            GSignondCredentials *self);
+guint32
+gsignond_credentials_get_id(GSignondCredentials *self);
 
-gboolean                gsignond_credentials_set_username(
-                            GSignondCredentials *self,
-                            const gchar* username);
+gboolean
+gsignond_credentials_set_username(
+        GSignondCredentials *self,
+        const gchar* username);
 
-const gchar*            gsignond_credentials_get_username(
-                            GSignondCredentials *self);
+const gchar*
+gsignond_credentials_get_username(GSignondCredentials *self);
 
-gboolean                gsignond_credentials_set_password(
-                            GSignondCredentials *self,
-                            const gchar* password);
+gboolean
+gsignond_credentials_set_password(
+        GSignondCredentials *self,
+        const gchar* password);
 
-const gchar*            gsignond_credentials_get_password(
-                            GSignondCredentials *self);
+const gchar*
+gsignond_credentials_get_password(GSignondCredentials *self);
 
-gboolean                gsignond_credentials_equal (
-                            GSignondCredentials *one,
-                            GSignondCredentials *two);
+gboolean
+gsignond_credentials_equal (
+        GSignondCredentials *one,
+        GSignondCredentials *two);
 
 G_END_DECLS
 

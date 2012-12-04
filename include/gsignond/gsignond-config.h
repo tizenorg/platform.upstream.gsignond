@@ -87,6 +87,10 @@ gboolean gsignond_config_set_extensions_dir (GSignondConfig *config,
                                              const gchar *dir);
 const gchar * gsignond_config_get_extensions_dir (GSignondConfig *config) G_GNUC_CONST;
 
+gboolean gsignond_config_set_extension (GSignondConfig *config,
+                                        const gchar *extension);
+const gchar * gsignond_config_get_extension (GSignondConfig *config) G_GNUC_CONST;
+
 gboolean gsignond_config_set_daemon_timeout (GSignondConfig *config,
                                              guint timeout);
 guint gsignond_config_get_daemon_timeout (GSignondConfig *config) G_GNUC_CONST;

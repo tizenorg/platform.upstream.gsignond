@@ -23,6 +23,7 @@ PKG_CHECK_MODULES([GSIGNOND],
                   [glib-2.0 >= 2.30
                    gio-2.0
                    gio-unix-2.0
+                   gmodule-2.0
                    sqlite3])
 AC_SUBST(GSIGNOND_CFLAGS)
 AC_SUBST(GSIGNOND_LIBS)
@@ -47,4 +48,5 @@ src/daemon/Makefile
 src/daemon/db/Makefile
 src/daemon/dbus/Makefile
 src/daemon/dbus/services/com.google.code.AccountsSSO.SingleSignOn.service
+test/Makefile
 ])

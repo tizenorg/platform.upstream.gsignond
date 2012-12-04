@@ -23,10 +23,8 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-log.h"
-
-#include "gsignond-credentials.h"
-
+#include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-credentials.h"
 
 #define GSIGNOND_CREDENTIALS_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
@@ -42,6 +40,44 @@ struct _GSignondCredentialsPrivate {
 
     GString *password; /*password attached to the id*/
 };
+
+
+static void
+_gsignond_credentials_finalize (GObject *gobject)
+{
+    GSignondCredentials *self = GSIGNOND_CREDENTIALS (gobject);
+
+    if (self->priv->username) {
+        g_string_free (self->priv->username, TRUE);
+        self->priv->username = NULL;
+    }
+    if (self->priv->password) {
+        g_string_free (self->priv->password, TRUE);
+        self->priv->password = NULL;
+    }
+
+    /* Chain up to the parent class */
+    G_OBJECT_CLASS (gsignond_credentials_parent_class)->finalize (gobject);
+}
+
+static void
+gsignond_credentials_class_init (GSignondCredentialsClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+    gobject_class->finalize = _gsignond_credentials_finalize;
+
+    g_type_class_add_private (klass, sizeof (GSignondCredentialsPrivate));
+}
+
+static void
+gsignond_credentials_init (GSignondCredentials *self)
+{
+    self->priv = GSIGNOND_CREDENTIALS_GET_PRIVATE (self);
+    self->priv->id = 0;
+    self->priv->username = NULL;
+    self->priv->password = NULL;
+}
 
 /**
  * gsignond_credentials_new:
@@ -114,10 +150,10 @@ gsignond_credentials_set_id(
  * Returns: the id if the object is valid, NULL otherwise.
  */
 guint32
-gsignond_credentials_get_id(
-        GSignondCredentials *self)
+gsignond_credentials_get_id(GSignondCredentials *self)
 {
-    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
+    /* TODO: define proper invalid id */
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), 0);
     return self->priv->id;
 }
 
@@ -158,8 +194,7 @@ gsignond_credentials_set_username(
  * Returns: the username if the object is valid, NULL otherwise.
  */
 const gchar*
-gsignond_credentials_get_username(
-        GSignondCredentials *self)
+gsignond_credentials_get_username(GSignondCredentials *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
     return self->priv->username->str;
@@ -202,8 +237,7 @@ gsignond_credentials_set_password(
  * Returns: the password if the object is valid, NULL otherwise.
  */
 const gchar*
-gsignond_credentials_get_password(
-        GSignondCredentials *self)
+gsignond_credentials_get_password(GSignondCredentials *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
     return self->priv->password->str;
@@ -240,45 +274,5 @@ gsignond_credentials_equal (
     }
 
     return FALSE;
-}
-
-static void
-_gsignond_credentials_finalize (
-        GObject *gobject)
-{
-    GSignondCredentials *self = GSIGNOND_CREDENTIALS (gobject);
-
-    if (self->priv->username) {
-        g_string_free (self->priv->username, TRUE);
-        self->priv->username = NULL;
-    }
-    if (self->priv->password) {
-        g_string_free (self->priv->password, TRUE);
-        self->priv->password = NULL;
-    }
-
-    /* Chain up to the parent class */
-    G_OBJECT_CLASS (gsignond_credentials_parent_class)->finalize (gobject);
-}
-
-static void
-gsignond_credentials_class_init (
-        GSignondCredentialsClass *klass)
-{
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-    gobject_class->finalize = _gsignond_credentials_finalize;
-
-    g_type_class_add_private (klass, sizeof (GSignondCredentialsPrivate));
-}
-
-static void
-gsignond_credentials_init (
-        GSignondCredentials *self)
-{
-    self->priv = GSIGNOND_CREDENTIALS_GET_PRIVATE (self);
-    self->priv->id = 0;
-    self->priv->username = NULL;
-    self->priv->password = NULL;
 }
 

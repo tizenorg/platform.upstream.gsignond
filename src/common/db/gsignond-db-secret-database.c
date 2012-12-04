@@ -1,0 +1,408 @@
+/* vi: set et sw=4 ts=4 cino=t0,(0: */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+/*
+ * This file is part of gsignond
+ *
+ * Copyright (C) 2012 Intel Corporation.
+ *
+ * Contact: Imran Zaman <imran.zaman@linux.intel.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA
+ */
+#include <sqlite3.h>
+#include <common/gsignond-log.h>
+#include <common/gsignond-credentials.h>
+
+#include "gsignond-secret-storage.h"
+#include "gsignond-db-sql-database-private.h"
+#include "gsignond-db-error.h"
+#include "gsignond-db-defines.h"
+
+#include "gsignond-db-secret-database.h"
+
+#define GSIGNOND_DB_SECRET_DATABASE_GET_PRIVATE(obj) \
+                                          (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
+                                           GSIGNOND_DB_TYPE_SECRET_DATABASE, \
+                                           GSignondDbSecretDatabasePrivate))
+
+G_DEFINE_TYPE (GSignondDbSecretDatabase, gsignond_db_secret_database,
+        GSIGNOND_DB_TYPE_SQL_DATABASE);
+
+typedef struct {
+    guint32 identity_id;
+    guint32 method_id;
+    GString * key;
+    GByteArray * value;
+} StoreTable;
+
+struct _GSignondDbSecretDatabasePrivate
+{
+};
+
+static gboolean
+_gsignond_db_secret_database_create (GSignondDbSqlDatabase *obj)
+{
+    const gchar *queries = NULL;
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (obj), FALSE);
+
+    if (gsignond_db_sql_database_get_db_version(obj,
+            "PRAGMA user_version;") > 0) {
+        /*DB is already created*/
+        return TRUE;
+    }
+
+    queries = ""
+            "CREATE TABLE IF NOT EXISTS CREDENTIALS"
+            "(id INTEGER NOT NULL UNIQUE,"
+            "username TEXT,"
+            "password TEXT,"
+            "PRIMARY KEY (id));"
+
+            "CREATE TABLE IF NOT EXISTS STORE"
+            "(identity_id INTEGER,"
+            "method_id INTEGER,"
+            "key TEXT,"
+            "value BLOB,"
+            "PRIMARY KEY (identity_id, method_id, key));"
+
+            "CREATE TRIGGER IF NOT EXISTS tg_delete_credentials "
+            "BEFORE DELETE ON CREDENTIALS "
+            "FOR EACH ROW BEGIN "
+            "    DELETE FROM STORE WHERE STORE.identity_id = OLD.id; "
+            "END; "
+
+            "PRAGMA user_version = 1;";
+
+    return gsignond_db_sql_database_transaction_exec (obj, queries);
+}
+
+static gboolean
+_gsignond_db_secret_database_clear (GSignondDbSqlDatabase *obj)
+{
+    const gchar *queries = NULL;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (obj), FALSE);
+
+    queries = ""
+            "DELETE FROM CREDENTIALS;"
+            "DELETE FROM STORE;";
+
+    return gsignond_db_sql_database_transaction_exec (obj, queries);
+}
+
+static gboolean
+_gsignond_db_read_username_password (
+        sqlite3_stmt *stmt,
+        GSignondCredentials *creds)
+{
+    gsignond_credentials_set_username (creds,
+            (const gchar *)sqlite3_column_text (stmt, 0));
+
+    gsignond_credentials_set_password (creds,
+            (const gchar *)sqlite3_column_text (stmt, 1));
+
+    return TRUE;
+}
+
+
+static void
+_gsignond_db_key_free (GString *data)
+{
+    g_string_free (data, TRUE);
+}
+
+static void
+_gsignond_db_value_free (GByteArray *data)
+{
+    g_byte_array_free (data, TRUE);
+}
+
+static gboolean
+_gsignond_db_read_key_value (
+        sqlite3_stmt *stmt,
+        GHashTable* data)
+{
+    GString *key = NULL;
+    GByteArray *value = NULL;
+    key = g_string_new ((const gchar *)sqlite3_column_text (stmt, 0));
+    value = g_byte_array_new ();
+    value = g_byte_array_append (value,
+                (const guint8*) sqlite3_column_blob(stmt, 1),
+                (guint) sqlite3_column_bytes(stmt, 1));
+
+    g_hash_table_insert(data, key, value);
+    return TRUE;
+}
+
+
+static void
+_gsignond_db_secret_database_finalize (GObject *gobject)
+{
+    GSignondDbSecretDatabase *self = GSIGNOND_DB_SECRET_DATABASE (gobject);
+
+    /* Chain up to the parent class */
+    G_OBJECT_CLASS (gsignond_db_secret_database_parent_class)->finalize (
+            gobject);
+}
+
+static void
+gsignond_db_secret_database_class_init (GSignondDbSecretDatabaseClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+    gobject_class->finalize = _gsignond_db_secret_database_finalize;
+
+    GSignondDbSqlDatabaseClass *sql_class =
+            GSIGNOND_DB_SQL_DATABASE_CLASS (klass);
+
+    sql_class->create = _gsignond_db_secret_database_create;
+    sql_class->clear = _gsignond_db_secret_database_clear;
+
+}
+
+static void
+gsignond_db_secret_database_init (GSignondDbSecretDatabase *self)
+{
+    /*self->priv = GSIGNOND_DB_SECRET_DATABASE_GET_PRIVATE (self);*/
+}
+
+/**
+ * gsignond_db_secret_database_new:
+ *
+ * Creates new #GSignondDbSecretDatabase object
+ * Returns : (transfer full) the #GSignondDbSecretDatabase object
+ *
+ */
+GSignondDbSecretDatabase *
+gsignond_db_secret_database_new ()
+{
+    return GSIGNOND_DB_SECRET_DATABASE (
+            g_object_new (GSIGNOND_DB_TYPE_SECRET_DATABASE,
+                         NULL));
+}
+
+GSignondCredentials*
+gsignond_db_secret_database_load_credentials (
+        GSignondDbSecretDatabase *self,
+        const guint32 id)
+{
+    gchar *query = NULL;
+    gint rows = 0;
+    GSignondCredentials *creds = NULL;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), NULL);
+
+    creds = gsignond_credentials_new ();
+    query = sqlite3_mprintf ("SELECT username, password FROM credentials "
+                             "WHERE id = %u limit 1",
+                             id);
+    rows = gsignond_db_sql_database_query_exec (GSIGNOND_DB_SQL_DATABASE (self),
+            query,
+            (GSignondDbSqlDatabaseQueryCallback)
+            _gsignond_db_read_username_password,
+            creds);
+    sqlite3_free (query);
+
+    if (G_UNLIKELY (rows <= 0)) {
+        g_object_unref (creds);
+        creds = NULL;
+    }
+    gsignond_credentials_set_id (creds, id);
+    return creds;
+}
+
+gboolean
+gsignond_db_secret_database_update_credentials (
+        GSignondDbSecretDatabase *self,
+        GSignondCredentials *creds)
+{
+    gchar *query = NULL;
+    gboolean ret = FALSE;
+    guint32 id = 0;
+    const gchar *username = NULL;
+    const gchar *password = NULL;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), FALSE);
+
+    id = gsignond_credentials_get_id (creds);
+    username = gsignond_credentials_get_username (creds);
+    password = gsignond_credentials_get_password (creds);
+    query = sqlite3_mprintf ("INSERT OR REPLACE INTO CREDENTIALS "
+                             "(id, username, password) "
+                             "VALUES (%u, %Q, %Q);",
+                             id, username, password);
+    ret = gsignond_db_sql_database_transaction_exec (
+            GSIGNOND_DB_SQL_DATABASE (self), query);
+    sqlite3_free (query);
+
+    return ret;
+}
+
+gboolean
+gsignond_db_secret_database_remove_credentials (
+        GSignondDbSecretDatabase *self,
+        const guint32 id)
+{
+    gchar *query = NULL;
+    gboolean ret = FALSE;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), FALSE);
+
+    query = sqlite3_mprintf ("DELETE FROM CREDENTIALS WHERE id = %u;"
+                             "DELETE FROM STORE WHERE identity_id = %u;",
+                             id, id);
+    ret = gsignond_db_sql_database_transaction_exec (
+            GSIGNOND_DB_SQL_DATABASE (self), query);
+    sqlite3_free (query);
+    return TRUE;
+}
+
+GHashTable *
+gsignond_db_secret_database_load_data (
+        GSignondDbSecretDatabase *self,
+        const guint32 id,
+        const guint32 method)
+{
+    gchar *query = NULL;
+    gint rows = 0;
+    GHashTable *data = NULL;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), FALSE);
+
+    data = g_hash_table_new_full ((GHashFunc)g_string_hash,
+                                  (GEqualFunc)g_string_equal,
+                                  (GDestroyNotify)_gsignond_db_key_free,
+                                  (GDestroyNotify)_gsignond_db_value_free);
+
+    query = sqlite3_mprintf (
+            "SELECT key, value "
+            "FROM STORE WHERE identity_id = %u AND method_id = %u",
+            id, method);
+
+    rows = gsignond_db_sql_database_query_exec (GSIGNOND_DB_SQL_DATABASE (self),
+            query,
+            (GSignondDbSqlDatabaseQueryCallback)_gsignond_db_read_key_value,
+            data);
+
+    sqlite3_free (query);
+
+    if (G_UNLIKELY (rows <= 0)) {
+        g_hash_table_destroy(data);
+        data = NULL;
+    }
+
+    return data;
+}
+
+gboolean
+gsignond_db_secret_database_update_data (
+        GSignondDbSecretDatabase *self,
+        const guint32 id,
+        const guint32 method,
+        GHashTable *data)
+{
+    gchar *query = NULL;
+    gint ret = 0;
+    GHashTableIter iter;
+    GString *key = NULL;
+    GByteArray *value = NULL;
+    guint32 data_counter = 0;
+    GSignondDbSqlDatabase *parent = NULL;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), FALSE);
+
+    parent = GSIGNOND_DB_SQL_DATABASE (self);
+    if (!gsignond_db_sql_database_start_transaction (parent)) {
+        return FALSE;
+    }
+
+    /* First, remove existing data */
+    query = sqlite3_mprintf (
+                "DELETE FROM STORE WHERE identity_id = %u ",
+                "AND method_id = %u;",
+                id, method);
+    ret = sqlite3_exec (parent->priv->db, query, NULL, NULL, NULL);
+    sqlite3_free (query);
+    if (G_UNLIKELY (ret != SQLITE_OK)) {
+        gsignond_db_sql_database_update_error_from_db (parent);
+        gsignond_db_sql_database_rollback_transaction (parent);
+        return FALSE;
+    }
+
+    /* Check if the size requirement is met before running any queries */
+    g_hash_table_iter_init (&iter, data);
+    while (g_hash_table_iter_next (&iter,(gpointer *) &key,
+            (gpointer *) &value)) {
+        data_counter = data_counter + key->len + value->len;
+        if (data_counter >= GSIGNOND_DB_MAX_TOKEN_STORAGE) {
+            gsignond_db_sql_database_rollback_transaction (parent);
+            WARN ("%s: size limit is exceeded", G_STRFUNC);
+            return FALSE;
+        }
+    }
+
+    /* Insert data to db */
+    g_hash_table_iter_init (&iter, data);
+    while (g_hash_table_iter_next (&iter, (gpointer *)&key,
+            (gpointer *) &value )) {
+        query = sqlite3_mprintf ("INSERT OR REPLACE INTO STORE "
+                                 "(identity_id, method_id, key, value) "
+                                  "VALUES(%u, %u, %Q, %Q);",
+                                 id, method,
+                                 key->str,
+                                 value->data);
+        ret = sqlite3_exec (parent->priv->db, query, NULL, NULL, NULL);
+        sqlite3_free (query);
+        if (G_UNLIKELY (ret != SQLITE_OK)) {
+            gsignond_db_sql_database_update_error_from_db (parent);
+            gsignond_db_sql_database_rollback_transaction (parent);
+            return FALSE;
+        }
+    }
+
+    return gsignond_db_sql_database_commit_transaction (parent);
+}
+
+gboolean
+gsignond_db_secret_database_remove_data (
+        GSignondDbSecretDatabase *self,
+        const guint32 id,
+        const guint32 method)
+{
+    gchar *statement = NULL;
+    gboolean ret = FALSE;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), FALSE);
+    if (method == 0) {
+        statement = sqlite3_mprintf (
+                "DELETE FROM STORE WHERE identity_id = %u;",
+                id);
+    } else {
+        statement = sqlite3_mprintf (
+                "DELETE FROM STORE WHERE identity_id = %u ",
+                "AND method_id = %u;",
+                id, method);
+    }
+    ret = gsignond_db_sql_database_transaction_exec (
+            GSIGNOND_DB_SQL_DATABASE (self), statement);
+    sqlite3_free (statement);
+
+    return ret;
+}
+
+
+
+

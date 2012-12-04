@@ -28,7 +28,7 @@
 static void
 _security_context_free (gpointer ptr)
 {
-    GSignonDSecurityContext *ctx = (GSignonDSecurityContext *) ptr;
+    GSignondSecurityContext *ctx = (GSignondSecurityContext *) ptr;
 
     gsignond_security_context_free (ctx);
 }
@@ -38,14 +38,14 @@ _security_context_free (gpointer ptr)
  *
  * Allocates a new security context item.
  *
- * Returns: (transfer full) allocated #GSignonDSecurityContext.
+ * Returns: (transfer full) allocated #GSignondSecurityContext.
  */
-GSignonDSecurityContext *
+GSignondSecurityContext *
 gsignond_security_context_new ()
 {
-    GSignonDSecurityContext *ctx;
+    GSignondSecurityContext *ctx;
 
-    ctx = g_new0 (GSignonDSecurityContext, 1);
+    ctx = g_new0 (GSignondSecurityContext, 1);
     ctx->sys_ctx = g_strdup ("");
     ctx->app_ctx = g_strdup ("");
 
@@ -59,17 +59,17 @@ gsignond_security_context_new ()
  *
  * Allocates and initializes a new security context item.
  *
- * Returns: (transfer full) allocated #GSignonDSecurityContext.
+ * Returns: (transfer full) allocated #GSignondSecurityContext.
  */
-GSignonDSecurityContext *
+GSignondSecurityContext *
 gsignond_security_context_new_from_values (const gchar *system_context,
                                            const gchar *application_context)
 {
-    GSignonDSecurityContext *ctx;
+    GSignondSecurityContext *ctx;
 
     g_return_val_if_fail (system_context != NULL, NULL);
 
-    ctx = g_new0 (GSignonDSecurityContext, 1);
+    ctx = g_new0 (GSignondSecurityContext, 1);
     ctx->sys_ctx = g_strdup (system_context);
     if (application_context)
         ctx->app_ctx = g_strdup (application_context);
@@ -85,10 +85,10 @@ gsignond_security_context_new_from_values (const gchar *system_context,
  *
  * Copy a security context item.
  *
- * Returns: (transfer full) a copy of the #GSignonDSecurityContext item.
+ * Returns: (transfer full) a copy of the #GSignondSecurityContext item.
  */
-GSignonDSecurityContext *
-gsignond_security_context_copy (const GSignonDSecurityContext *src_ctx)
+GSignondSecurityContext *
+gsignond_security_context_copy (const GSignondSecurityContext *src_ctx)
 {
     g_return_val_if_fail (src_ctx != NULL, NULL);
 
@@ -98,12 +98,12 @@ gsignond_security_context_copy (const GSignonDSecurityContext *src_ctx)
 
 /**
  * gsignond_security_context_free:
- * @ctx: #GSignonDSecurityContext to be freed.
+ * @ctx: #GSignondSecurityContext to be freed.
  *
  * Frees a security context item.
  */
 void
-gsignond_security_context_free (GSignonDSecurityContext *ctx)
+gsignond_security_context_free (GSignondSecurityContext *ctx)
 {
     g_return_if_fail (ctx != NULL);
 
@@ -114,34 +114,35 @@ gsignond_security_context_free (GSignonDSecurityContext *ctx)
 
 /**
  * gsignond_security_context_set_system_context:
- * @ctx: #GSignonDSecurityContext item.
+ * @ctx: #GSignondSecurityContext item.
  * @system_context: system security context.
  *
  * Sets the system context part (such as SMACK label or MSSF token) of the
- * #GSignonDSecurityContext.
+ * #GSignondSecurityContext.
  */
 void
-gsignond_security_context_set_system_context (GSignonDSecurityContext *ctx,
+gsignond_security_context_set_system_context (GSignondSecurityContext *ctx,
                                               const gchar *system_context)
 {
     g_return_if_fail (ctx != NULL);
 
     g_free (ctx->sys_ctx);
-    ctx->sys_ctx = g_strdup (system_context);
+    ctx->sys_ctx = (system_context) ?
+        g_strdup (system_context) : g_strdup ("");
 }
 
 /**
  * gsignond_security_context_get_system_context:
- * @ctx: #GSignonDSecurityContext item.
+ * @ctx: #GSignondSecurityContext item.
  * 
  * Get the system context part (such as SMACK label or MSSF token) of the
- * #GSignonDSecurityContext.
+ * #GSignondSecurityContext.
  *
  * Returns: (transfer none) system context.
  */
 const gchar *
 gsignond_security_context_get_system_context (
-                                             const GSignonDSecurityContext *ctx)
+                                             const GSignondSecurityContext *ctx)
 {
     g_return_val_if_fail (ctx != NULL, NULL);
 
@@ -150,35 +151,36 @@ gsignond_security_context_get_system_context (
 
 /**
  * gsignond_security_context_set_application_context:
- * @ctx: #GSignonDSecurityContext item.
+ * @ctx: #GSignondSecurityContext item.
  * @application_context: application security context.
  *
  * Sets the application context part (such as a script name or a web page) of
- * the #GSignonDSecurityContext.
+ * the #GSignondSecurityContext.
  */
 void
 gsignond_security_context_set_application_context (
-                                               GSignonDSecurityContext *ctx,
+                                               GSignondSecurityContext *ctx,
                                                const gchar *application_context)
 {
     g_return_if_fail (ctx != NULL);
 
     g_free (ctx->app_ctx);
-    ctx->app_ctx = g_strdup (application_context);
+    ctx->app_ctx = (application_context) ?
+        g_strdup (application_context) : g_strdup ("");
 }
 
 /**
  * gsignond_security_context_get_application_context:
- * @ctx: #GSignonDSecurityContext item.
+ * @ctx: #GSignondSecurityContext item.
  *
  * Get the application context part (such as script name or a web page) of
- * the #GSignonDSecurityContext.
+ * the #GSignondSecurityContext.
  *
  * Returns: (transfer none) application context.
  */
 const gchar *
 gsignond_security_context_get_application_context (
-                                             const GSignonDSecurityContext *ctx)
+                                             const GSignondSecurityContext *ctx)
 {
     g_return_val_if_fail (ctx != NULL, NULL);
 
@@ -187,14 +189,14 @@ gsignond_security_context_get_application_context (
 
 /**
  * signon_security_conetxt_to_variant:
- * @ctx: #GSignonDSecurityContext item.
+ * @ctx: #GSignondSecurityContext item.
  *
- * Build a GVariant of type "as" from a #GSignonDSecurityContext item.
+ * Build a GVariant of type "as" from a #GSignondSecurityContext item.
  *
- * Returns: (transfer full) GVariant construct of a #GSignonDSecurityContext.
+ * Returns: (transfer full) GVariant construct of a #GSignondSecurityContext.
  */
 GVariant *
-gsignond_security_context_to_variant (const GSignonDSecurityContext *ctx)
+gsignond_security_context_to_variant (const GSignondSecurityContext *ctx)
 {
     GVariantBuilder builder;
     GVariant *variant;
@@ -218,32 +220,37 @@ gsignond_security_context_to_variant (const GSignonDSecurityContext *ctx)
 
 /**
  * gsignond_security_context_from_variant:
- * @variant: GVariant item with a #GSignonDSecurityContext construct.
+ * @variant: GVariant item with a #GSignondSecurityContext construct.
  *
- * Builds a #GSignonDSecurityContext item from a GVariant of type "as".
+ * Builds a #GSignondSecurityContext item from a GVariant of type "as".
  *
- * Returns: (transfer full) #GSignonDSecurityContext item.
+ * Returns: (transfer full) #GSignondSecurityContext item.
  */
-GSignonDSecurityContext *
+GSignondSecurityContext *
 gsignond_security_context_from_variant (GVariant *variant)
 {
-    const gchar *sys_ctx = NULL;
-    const gchar *app_ctx = NULL;
     GVariantIter iter;
     GVariant *value;
+    GSignondSecurityContext *ctx;
 
     g_return_val_if_fail (variant != NULL, NULL);
 
+    ctx = gsignond_security_context_new ();
     g_variant_iter_init (&iter, variant);
     value = g_variant_iter_next_value (&iter);
     if (value) {
-        sys_ctx = g_variant_get_string (value, NULL);
+        gsignond_security_context_set_system_context (ctx,
+                                            g_variant_get_string (value, NULL));
+        g_variant_unref (value);
         value = g_variant_iter_next_value (&iter);
-        if (value)
-            app_ctx = g_variant_get_string (value, NULL);
+        if (value) {
+            gsignond_security_context_set_application_context (ctx,
+                                            g_variant_get_string (value, NULL));
+            g_variant_unref (value);
+        }
     }
 
-    return gsignond_security_context_new_from_values (sys_ctx, app_ctx);
+    return ctx;
 }
 
 /**
@@ -251,13 +258,13 @@ gsignond_security_context_from_variant (GVariant *variant)
  * @ctx1: first item to compare.
  * @ctx2: second item to compare.
  *
- * Compare two #GSignonDSecurityContext items similar in a way to strcmp().
+ * Compare two #GSignondSecurityContext items similar in a way to strcmp().
  *
  * Returns: negative if ctx1 < ctx2, 0 if ctx1 == ctx2 and positive if ctx1 > ctx2.
  */
 int
-gsignond_security_context_compare (const GSignonDSecurityContext *ctx1,
-                                   const GSignonDSecurityContext *ctx2)
+gsignond_security_context_compare (const GSignondSecurityContext *ctx1,
+                                   const GSignondSecurityContext *ctx2)
 {
     int res;
 
@@ -278,13 +285,13 @@ gsignond_security_context_compare (const GSignonDSecurityContext *ctx1,
  * @ctx1: first item to compare.
  * @ctx2: second item to compare.
  *
- * Compare two #GSignonDSecurityContext items match.
+ * Compare two #GSignondSecurityContext items match.
  *
  * Returns: TRUE if contexts are equal or either side has wildcard match, otherwise FALSE. Two NULL contexts match.
  */
 gboolean
-gsignond_security_context_match (const GSignonDSecurityContext *ctx1,
-                                 const GSignonDSecurityContext *ctx2)
+gsignond_security_context_match (const GSignondSecurityContext *ctx1,
+                                 const GSignondSecurityContext *ctx2)
 {
     if (ctx1 == ctx2) return TRUE;
 
@@ -312,8 +319,8 @@ gsignond_security_context_match (const GSignonDSecurityContext *ctx1,
  * Returns: TRUE if contexts are equal or wildcards of the @reference arguments match, otherwise FALSE. If either or both contexts are NULL, FALSE is returned.
  */
 gboolean
-gsignond_security_context_check (const GSignonDSecurityContext *reference,
-                                 const GSignonDSecurityContext *test)
+gsignond_security_context_check (const GSignondSecurityContext *reference,
+                                 const GSignondSecurityContext *test)
 {
     g_return_val_if_fail (reference != NULL && test != NULL, FALSE);
 
@@ -328,24 +335,24 @@ gsignond_security_context_check (const GSignonDSecurityContext *reference,
 
 /**
  * gsignond_security_context_list_to_variant:
- * @list: #GSignonDSecurityContextList item.
+ * @list: #GSignondSecurityContextList item.
  *
- * Builds a GVariant of type "aas" from a GList of #GSignonDSecurityContext
+ * Builds a GVariant of type "aas" from a GList of #GSignondSecurityContext
  * items.
  *
- * Returns: (transfer full) GVariant construct of a #GSignonDSecurityContextList.
+ * Returns: (transfer full) GVariant construct of a #GSignondSecurityContextList.
  */
 GVariant *
 gsignond_security_context_list_to_variant (
-                                        const GSignonDSecurityContextList *list)
+                                        const GSignondSecurityContextList *list)
 {
     GVariantBuilder builder;
     GVariant *variant;
-    GSignonDSecurityContext *ctx;
+    GSignondSecurityContext *ctx;
 
     g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
     for ( ; list != NULL; list = g_list_next (list)) {
-        ctx = (GSignonDSecurityContext *) list->data;
+        ctx = (GSignondSecurityContext *) list->data;
         g_variant_builder_add_value (
                                     &builder,
                                     gsignond_security_context_to_variant (ctx));
@@ -359,15 +366,15 @@ gsignond_security_context_list_to_variant (
  * gsignond_security_context_list_from_variant:
  * @variant: GVariant item with a list of security context tuples.
  *
- * Builds a GList of #GSignonDSecurityContext items from a GVariant of type
+ * Builds a GList of #GSignondSecurityContext items from a GVariant of type
  * "aas".
  *
- * Returns: (transfer full) #GSignonDSecurityContextList item.
+ * Returns: (transfer full) #GSignondSecurityContextList item.
  */
-GSignonDSecurityContextList *
+GSignondSecurityContextList *
 gsignond_security_context_list_from_variant (GVariant *variant)
 {
-    GSignonDSecurityContextList *list = NULL;
+    GSignondSecurityContextList *list = NULL;
     GVariantIter iter;
     GVariant *value;
 
@@ -377,6 +384,7 @@ gsignond_security_context_list_from_variant (GVariant *variant)
     while ((value = g_variant_iter_next_value (&iter))) {
         list = g_list_append (list,
                               gsignond_security_context_from_variant (value));
+        g_variant_unref (value);
     }
 
     return list;
@@ -384,21 +392,21 @@ gsignond_security_context_list_from_variant (GVariant *variant)
 
 /**
  * gsignond_security_context_list_copy:
- * @src_list: source #GSignonDSecurityContextList.
+ * @src_list: source #GSignondSecurityContextList.
  *
- * Copies a GList of #GSignonDSecurityContext items.
+ * Copies a GList of #GSignondSecurityContext items.
  *
- * Returns: (transfer full) #GSignonDSecurityContextList item.
+ * Returns: (transfer full) #GSignondSecurityContextList item.
  */
-GSignonDSecurityContextList *
+GSignondSecurityContextList *
 gsignond_security_context_list_copy (
-                                    const GSignonDSecurityContextList *src_list)
+                                    const GSignondSecurityContextList *src_list)
 {
-    GSignonDSecurityContext *ctx;
-    GSignonDSecurityContextList *dst_list = NULL;
+    GSignondSecurityContext *ctx;
+    GSignondSecurityContextList *dst_list = NULL;
 
     for ( ; src_list != NULL; src_list = g_list_next (src_list)) {
-        ctx = (GSignonDSecurityContext *) src_list->data;
+        ctx = (GSignondSecurityContext *) src_list->data;
         dst_list = g_list_append (dst_list,
                                   gsignond_security_context_copy (ctx));
     }
@@ -408,12 +416,12 @@ gsignond_security_context_list_copy (
 
 /**
  * gsignond_security_context_list_free:
- * @seclist: (transfer full) #GSignonDSecurityContextList item.
+ * @seclist: (transfer full) #GSignondSecurityContextList item.
  *
- * Frees all items and the GList of #GSignonDSecurityContext.
+ * Frees all items and the GList of #GSignondSecurityContext.
  */
 void
-gsignond_security_context_list_free (GSignonDSecurityContextList *seclist)
+gsignond_security_context_list_free (GSignondSecurityContextList *seclist)
 {
     g_list_free_full (seclist, _security_context_free);
 }

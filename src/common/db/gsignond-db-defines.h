@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2012 Intel Corporation.
  *
+ * Contact: Imran Zaman <imran.zaman@linux.intel.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,17 +23,16 @@
  * 02110-1301 USA
  */
 
-#ifndef __GSIGNOND_CONFIG_DB_H_
-#define __GSIGNOND_CONFIG_DB_H_
+/* inclusion guard */
+#ifndef __GSIGNOND_DB_DEFINES_H__
+#define __GSIGNOND_DB_DEFINES_H__
 
-#define GSIGNOND_CONFIG_DB_SSO                  "SecureStorage"
-#define GSIGNOND_CONFIG_DB_FILE_SYSTEM_NAME     GSIGNOND_CONFIG_DB_SSO \
-                                                "/FileSystemName"
-#define GSIGNOND_CONFIG_DB_SIZE                 GSIGNOND_CONFIG_DB_SSO \
-                                                "/Size"
-#define GSIGNOND_CONFIG_DB_FILE_SYSTEM_TYPE     GSIGNOND_CONFIG_DB_SSO \
-                                                "/FileSystemType"
-#define GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME   GSIGNOND_CONFIG_DB_SSO \
-                                                "/SecretsStorage"
+#include <glib.h>
 
-#endif /* __GSIGNOND_DB_CONFIG_H_ */
+G_BEGIN_DECLS
+
+#define GSIGNOND_DB_MAX_TOKEN_STORAGE    (4*1024)
+
+G_END_DECLS
+
+#endif /* __GSIGNOND_DB_DEFINES_H__ */

@@ -39,80 +39,80 @@ G_BEGIN_DECLS
  *           binary path.
  * @app_ctx: application context, such as a script or a web page.
  */
-typedef struct _GSignonDSecurityContext
+typedef struct _GSignondSecurityContext
 {
     gchar *sys_ctx;
     gchar *app_ctx;
-} GSignonDSecurityContext;
+} GSignondSecurityContext;
 
 /**
- * GList of #GSignonDSecurityContext items.
+ * GList of #GSignondSecurityContext items.
  */
-typedef GList GSignonDSecurityContextList;
+typedef GList GSignondSecurityContextList;
 
-GSignonDSecurityContext *
+GSignondSecurityContext *
 gsignond_security_context_new ();
 
-GSignonDSecurityContext *
+GSignondSecurityContext *
 gsignond_security_context_new_from_values (const gchar *system_context,
                                            const gchar *application_context);
 
 void
-gsignond_security_context_free (GSignonDSecurityContext *ctx);
+gsignond_security_context_free (GSignondSecurityContext *ctx);
 
-GSignonDSecurityContext *
-gsignond_security_context_copy (const GSignonDSecurityContext *src_ctx);
+GSignondSecurityContext *
+gsignond_security_context_copy (const GSignondSecurityContext *src_ctx);
 
 void
-gsignond_security_context_set_system_context (GSignonDSecurityContext *ctx,
+gsignond_security_context_set_system_context (GSignondSecurityContext *ctx,
                                               const gchar *system_context);
 
 const gchar *
 gsignond_security_context_get_system_context (
-                                            const GSignonDSecurityContext *ctx);
+                                            const GSignondSecurityContext *ctx);
 
 void
 gsignond_security_context_set_application_context (
-                                            GSignonDSecurityContext *ctx,
+                                            GSignondSecurityContext *ctx,
                                             const gchar *application_context);
 
 const gchar *
 gsignond_security_context_get_application_context (
-                                            const GSignonDSecurityContext *ctx);
+                                            const GSignondSecurityContext *ctx);
 
 GVariant *
-gsignond_security_context_to_variant (const GSignonDSecurityContext *ctx);
+gsignond_security_context_to_variant (const GSignondSecurityContext *ctx);
 
-GSignonDSecurityContext *
+GSignondSecurityContext *
 gsignond_security_context_from_variant (GVariant *variant);
 
 int
-gsignond_security_context_compare (const GSignonDSecurityContext *ctx1,
-                                   const GSignonDSecurityContext *ctx2);
+gsignond_security_context_compare (const GSignondSecurityContext *ctx1,
+                                   const GSignondSecurityContext *ctx2);
 
 gboolean
-gsignond_security_context_match (const GSignonDSecurityContext *ctx1,
-                                 const GSignonDSecurityContext *ctx2);
+gsignond_security_context_match (const GSignondSecurityContext *ctx1,
+                                 const GSignondSecurityContext *ctx2);
 
 gboolean
-gsignond_security_context_check (const GSignonDSecurityContext *reference,
-                                 const GSignonDSecurityContext *test);
+gsignond_security_context_check (const GSignondSecurityContext *reference,
+                                 const GSignondSecurityContext *test);
 
 /* security context list related functions */
 
 GVariant *
 gsignond_security_context_list_to_variant (
-                                    const GSignonDSecurityContextList *list);
+                                    const GSignondSecurityContextList *list);
 
-GSignonDSecurityContextList *
+GSignondSecurityContextList *
 gsignond_security_context_list_from_variant (GVariant *variant);
 
-GSignonDSecurityContextList *
+GSignondSecurityContextList *
 gsignond_security_context_list_copy (
-                                const GSignonDSecurityContextList *src_list);
+                                const GSignondSecurityContextList *src_list);
 
 void
-gsignond_security_context_list_free (GSignonDSecurityContextList *seclist);
+gsignond_security_context_list_free (GSignondSecurityContextList *seclist);
 
 G_END_DECLS
 

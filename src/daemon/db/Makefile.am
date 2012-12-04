@@ -6,12 +6,13 @@ libgsignond_db_la_CPPFLAGS = \
     -I$(top_srcdir)/include \
     $(GSIGNOND_CFLAGS)
 
-libgsignond_db_la_LIBS = \
-    $(top_srcdir)/src/common/libgsignond-common.la \
-    $(GSIGNOND_LIBS)
+libgsignond_db_la_LIBADD =    \
+        $(top_srcdir)/src/common/libgsignond-common.la \
+        $(GSIGNOND_LIBS)
 
 libgsignond_db_la_SOURCES = \
-   gsignond-db-error.c \
-   gsignond-db-error.h 
+   gsignond-db-secret-cache.c \
+   gsignond-db-credentials-database.c \
+   gsignond-db-metadata-database.c \
 
 CLEANFILES = 

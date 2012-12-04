@@ -22,9 +22,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
+
 #include <string.h>
 
-#include "gsignond-error.h"
+#include "gsignond/gsignond-error.h"
 
 GQuark
 gsignond_error_quark (void)
@@ -37,10 +38,11 @@ gsignond_error_quark (void)
 }
 
 GString*
-gsignond_concat_domain_and_error (const gchar *str1,
-                                  const gchar *str2)
+gsignond_concat_domain_and_error (
+        const gchar *str1,
+        const gchar *str2)
 {
-    GString *str;
+    GString *str = NULL;
     g_return_val_if_fail (str1 != NULL && str2 != NULL, NULL);
     str = g_string_sized_new (strlen(str1)+strlen(str2)-1);
     g_string_printf (str,"[%s].%s\n",str1,str2);

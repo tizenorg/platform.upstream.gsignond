@@ -45,6 +45,7 @@ lib_LTLIBRARIES = libgsignond-dbus.la
 
 libgsignond_dbus_la_CPPFLAGS = \
     -I$(top_srcdir) \
+    -I$(top_srcdir)/include \
     -I$(top_srcdir)/src \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
