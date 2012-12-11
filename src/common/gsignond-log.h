@@ -1,9 +1,9 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
 /* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
- * This file is part of signon
+ * This file is part of gsignond
  *
- * Copyright (C) 2011 Intel Corporation.
+ * Copyright (C) 2012 Intel Corporation.
  *
  *
  * This library is free software; you can redistribute it and/or
