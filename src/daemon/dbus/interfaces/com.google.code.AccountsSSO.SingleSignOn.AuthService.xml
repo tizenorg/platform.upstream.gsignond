@@ -18,14 +18,14 @@
       <arg name="applicationContext" type="s" direction="in"/>
     </method>
     <method name="queryMethods">
-      <arg type="as" direction="out"/>
+      <arg name="authMethods" type="as" direction="out"/>
     </method>
     <method name="queryMechanisms">
-      <arg type="as" direction="out"/>
+      <arg name="mechanisms" type="as" direction="out"/>
       <arg name="method" type="s" direction="in"/>
     </method>
     <method name="queryIdentities">
-      <arg type="aa{sv}" direction="out"/>
+      <arg name="identities" type="aa{sv}" direction="out"/>
       <arg name="filter" type="a{sv}" direction="in"/>
       <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
     </method>
