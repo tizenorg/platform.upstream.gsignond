@@ -50,31 +50,69 @@ typedef struct _GSignonDSecurityContext
  */
 typedef GList GSignonDSecurityContextList;
 
-GSignonDSecurityContext * gsignond_security_context_new ();
-GSignonDSecurityContext * gsignond_security_context_new_from_values (
-                                            const gchar *system_context,
-                                            const gchar *application_context);
-void gsignond_security_context_free (GSignonDSecurityContext *ctx);
-GSignonDSecurityContext * gsignond_security_context_copy (
-                                        const GSignonDSecurityContext *src_ctx);
-void gsignond_security_context_set_system_context (GSignonDSecurityContext *ctx,
-                                                 const gchar *system_context);
-const gchar * gsignond_security_context_get_system_context (
-                                                GSignonDSecurityContext *ctx);
-void gsignond_security_context_set_application_context (
+GSignonDSecurityContext *
+gsignond_security_context_new ();
+
+GSignonDSecurityContext *
+gsignond_security_context_new_from_values (const gchar *system_context,
+                                           const gchar *application_context);
+
+void
+gsignond_security_context_free (GSignonDSecurityContext *ctx);
+
+GSignonDSecurityContext *
+gsignond_security_context_copy (const GSignonDSecurityContext *src_ctx);
+
+void
+gsignond_security_context_set_system_context (GSignonDSecurityContext *ctx,
+                                              const gchar *system_context);
+
+const gchar *
+gsignond_security_context_get_system_context (
+                                            const GSignonDSecurityContext *ctx);
+
+void
+gsignond_security_context_set_application_context (
                                             GSignonDSecurityContext *ctx,
                                             const gchar *application_context);
-const gchar * gsignond_security_context_get_application_context (
-                                                GSignonDSecurityContext *ctx);
 
-GVariant * gsignond_security_context_build_variant (
+const gchar *
+gsignond_security_context_get_application_context (
+                                            const GSignonDSecurityContext *ctx);
+
+GVariant *
+gsignond_security_context_to_variant (const GSignonDSecurityContext *ctx);
+
+GSignonDSecurityContext *
+gsignond_security_context_from_variant (GVariant *variant);
+
+int
+gsignond_security_context_compare (const GSignonDSecurityContext *ctx1,
+                                   const GSignonDSecurityContext *ctx2);
+
+gboolean
+gsignond_security_context_match (const GSignonDSecurityContext *ctx1,
+                                 const GSignonDSecurityContext *ctx2);
+
+gboolean
+gsignond_security_context_check (const GSignonDSecurityContext *reference,
+                                 const GSignonDSecurityContext *test);
+
+/* security context list related functions */
+
+GVariant *
+gsignond_security_context_list_to_variant (
                                     const GSignonDSecurityContextList *list);
-GSignonDSecurityContextList * gsignond_security_context_deconstruct_variant (
-                                                            GVariant *variant);
 
-GSignonDSecurityContextList * gsignond_security_context_list_copy (
+GSignonDSecurityContextList *
+gsignond_security_context_list_from_variant (GVariant *variant);
+
+GSignonDSecurityContextList *
+gsignond_security_context_list_copy (
                                 const GSignonDSecurityContextList *src_list);
-void gsignond_security_context_list_free (GSignonDSecurityContextList *seclist);
+
+void
+gsignond_security_context_list_free (GSignonDSecurityContextList *seclist);
 
 G_END_DECLS
 
