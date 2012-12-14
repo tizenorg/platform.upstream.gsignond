@@ -23,7 +23,7 @@
  */
 
 #include "gsignond-daemon.h"
-#include "gsignond-config.h"
+#include <common/gsignond-config.h>
 #include "gsignond-auth-service-iface.h"
 #include <common/gsignond-log.h>
 #include <daemon/dbus/gsignond-dbus-auth-service-adapter.h>

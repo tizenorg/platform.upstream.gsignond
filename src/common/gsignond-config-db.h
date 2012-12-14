@@ -25,14 +25,14 @@
 #ifndef __GSIGNOND_CONFIG_DB_H_
 #define __GSIGNOND_CONFIG_DB_H_
 
-#define GSIGNOND_CONFIG_DB_SSO              "SecureStorage"
-#define GSIGNOND_CONFIG_DB_FILE_SYSTEM_NAME GSIGNOND_CONFIG_DB_SSO \
-                                            "/FileSystemName"
-#define GSIGNOND_CONFIG_DB_SIZE             GSIGNOND_CONFIG_DB_SSO \
-                                            "/Size"
-#define GSIGNOND_CONFIG_DB_FILE_SYSTEM_TYPE GSIGNOND_CONFIG_DB_SSO \
-                                            "/FileSystemType"
-#define GSIGNOND_CONFIG_DB_SECRETS_STORAGE  GSIGNOND_CONFIG_DB_SSO \
-                                            "/SecretsStorage"
+#define GSIGNOND_CONFIG_DB_SSO                  "SecureStorage"
+#define GSIGNOND_CONFIG_DB_FILE_SYSTEM_NAME     GSIGNOND_CONFIG_DB_SSO \
+                                                "/FileSystemName"
+#define GSIGNOND_CONFIG_DB_SIZE                 GSIGNOND_CONFIG_DB_SSO \
+                                                "/Size"
+#define GSIGNOND_CONFIG_DB_FILE_SYSTEM_TYPE     GSIGNOND_CONFIG_DB_SSO \
+                                                "/FileSystemType"
+#define GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME   GSIGNOND_CONFIG_DB_SSO \
+                                                "/SecretsStorage"
 
 #endif /* __GSIGNOND_DB_CONFIG_H_ */

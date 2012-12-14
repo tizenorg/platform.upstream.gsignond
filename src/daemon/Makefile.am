@@ -5,8 +5,6 @@ bin_PROGRAMS = gsignond
 
 gsignond_SOURCES = \
     main.c \
-    gsignond-config.c \
-    gsignond-config.h \
     gsignond-auth-service-iface.c \
     gsignond-auth-service-iface.h \
     gsignond-auth-session-iface.c \

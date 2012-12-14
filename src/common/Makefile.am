@@ -14,6 +14,7 @@ libgsignond_common_la_LIBS = \
 
 libgsignond_common_la_SOURCES = \
     gsignond-security-context.c \
+    gsignond-config.c \
     gsignond-error.c \
     gsignond-error.h \
     gsignond-log.h \

@@ -28,6 +28,10 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include "gsignond-config-general.h"
+#include "gsignond-config-db.h"
+#include "gsignond-config-dbus.h"
+
 G_BEGIN_DECLS
 
 #define GSIGNOND_TYPE_CONFIG            (gsignond_config_get_type())
@@ -54,6 +58,9 @@ typedef struct _GSignondConfigPrivate GSignondConfigPrivate;
 #   define GSIGNOND_PLUGIN_SUFFIX "plugin.so"
 #endif
 
+#ifndef GSIGNOND_EXTENSIONS_DIR
+#   define GSIGNOND_EXTENSIONS_DIR "/usr/lib"
+#endif
 
 struct _GSignondConfig
 {
