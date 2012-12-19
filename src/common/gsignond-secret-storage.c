@@ -75,17 +75,15 @@ gsignond_secret_storage_is_open_db (
     return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->is_open_db (self);
 }
 
-gboolean
+GSignondSecretStorageCredentials*
 gsignond_secret_storage_load_credentials (
         GSignondSecretStorage *self,
-        const guint32 id,
-        GString *username,
-        GString *password)
+        const guint32 id)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
 
     return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->load_credentials (self,
-            id, username, password);
+            id);
 }
 
 gboolean
@@ -162,6 +160,34 @@ gsignond_secret_storage_remove_data (
             id, method);
 }
 
+GSignondSecretStorageCredentials*
+gsignond_secret_storage_credentials_new(
+        void)
+{
+    GSignondSecretStorageCredentials *creds = NULL;
+    creds = (GSignondSecretStorageCredentials *)g_malloc0(
+                sizeof(GSignondSecretStorageCredentials));
+    return creds;
+}
+
+void
+gsignond_secret_storage_credentials_free(
+        GSignondSecretStorageCredentials *creds)
+{
+    g_return_if_fail (creds != NULL);
+
+    if (creds->username) {
+        g_string_free(creds->username, TRUE);
+        creds->username = NULL;
+    }
+    if (creds->password) {
+        g_string_free(creds->password, TRUE);
+        creds->password = NULL;
+    }
+    g_free(creds);
+    creds = NULL;
+}
+
 static gboolean
 _gsignond_secret_storage_check_credentials (
         GSignondSecretStorage *self,
@@ -169,25 +195,25 @@ _gsignond_secret_storage_check_credentials (
         GString *username,
         GString *password)
 {
-    GString *stored_username = NULL;
-    GString *stored_password = NULL;
     gboolean comp_uname = FALSE;
     gboolean comp_pwd = FALSE;
+    GSignondSecretStorageCredentials *stored_creds = NULL;
 
     GSignondSecretStorageClass *klass =
             GSIGNOND_SECRET_STORAGE_GET_CLASS (self);
 
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    klass->load_credentials (self, id,
-            stored_username, stored_username);
-    if (stored_username != NULL) {
-        comp_uname = g_string_equal(stored_username, username);
-        g_string_free(stored_username, TRUE);
+    stored_creds = klass->load_credentials (self, id);
+    if (stored_creds) {
+        if (stored_creds->username != NULL) {
+            comp_uname = g_string_equal(stored_creds->username, username);
+        }
+        if (stored_creds->password != NULL) {
+            comp_pwd = g_string_equal(stored_creds->password, password);
+        }
+        gsignond_secret_storage_credentials_free (stored_creds);
     }
-    if (stored_password != NULL) {
-        comp_pwd = g_string_equal(stored_password, password);
-        g_string_free(stored_password, TRUE);
-    }
+
     return comp_uname && comp_pwd;
 }
 
