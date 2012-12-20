@@ -129,18 +129,14 @@ typedef struct {
     /**
      * update_credentials:
      * @self: instance of #GSignondSecretStorage
-     * @id: the identity whose credentials are being updated.
-     * @username: the username.
-     * @password: the password.
+     * @creds: the credentials that are being updated.
      *
      * Stores/updates the credentials for the given identity.
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
     gboolean (*update_credentials) (GSignondSecretStorage *self,
-                                    const guint32 id,
-                                    const GString *username,
-                                    const GString *password);
+                                    GSignondCredentials* creds);
 
     /**
      * remove_credentials:
@@ -157,26 +153,21 @@ typedef struct {
     /**
      * check_credentials:
      * @self: instance of #GSignondSecretStorage
-     * @id: the identity whose credentials are being checked.
-     * @username: the username.
-     * @password: the password.
+     * @creds: the credentials that are being checked.
      *
-     * Checks whether the given username and passwords are correct for the
+     * Checks whether the given credentials are correct for the
      * given identity.
      *
      * Returns: TRUE if successful, FALSE otherwise.
      */
     gboolean (*check_credentials) (GSignondSecretStorage *self,
-                                   const guint32 id,
-                                   GString *username,
-                                   GString *password);
+                                   GSignondCredentials* creds);
 
     /**
      * load_data:
      * @self: instance of #GSignondSecretStorage
-     * @id: the identity whose credentials are being checked.
+     * @id: the identity whose credentials are being fetched.
      * @method: the authentication method the data is used for.
-     * @data: #GHashTable dictionary with the data.
      *
      * Loads secret data.
      *
@@ -189,7 +180,7 @@ typedef struct {
     /**
      * update_data:
      * @self: instance of #GSignondSecretStorage
-     * @id: the identity whose credentials are being checked.
+     * @id: the identity whose credentials are being fetched.
      * @method: the authentication method the data is used for.
      * @data: #GHashTable dictionary with the data.
      *
@@ -240,15 +231,13 @@ GSignondCredentials*
                     GSignondSecretStorage *self, const guint32 id);
 
 gboolean        gsignond_secret_storage_update_credentials (
-                    GSignondSecretStorage *self, const guint32 id,
-                    const GString *username, const GString *password);
+                    GSignondSecretStorage *self, GSignondCredentials* creds);
 
 gboolean        gsignond_secret_storage_remove_credentials (
                     GSignondSecretStorage *self, const guint32 id);
 
 gboolean        gsignond_secret_storage_check_credentials (
-                    GSignondSecretStorage *self, const guint32 id,
-                    GString *username, GString *password);
+                    GSignondSecretStorage *self, GSignondCredentials* creds);
 
 GHashTable*     gsignond_secret_storage_load_data (
                     GSignondSecretStorage *self, const guint32 id,
@@ -256,7 +245,7 @@ GHashTable*     gsignond_secret_storage_load_data (
 
 gboolean        gsignond_secret_storage_update_data (
                     GSignondSecretStorage *self, const guint32 id,
-                    const guint32 method, const GHashTable *data);
+                    const guint32 method, GHashTable *data);
 
 gboolean        gsignond_secret_storage_remove_data (
                     GSignondSecretStorage *self, const guint32 id,

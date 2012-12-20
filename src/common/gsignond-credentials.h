@@ -27,37 +27,78 @@
 #define __GSIGNOND_CREDENTIALS_H__
 
 #include <glib.h>
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 
+#define GSIGNOND_TYPE_CREDENTIALS   \
+                                       (gsignond_credentials_get_type ())
+#define GSIGNOND_CREDENTIALS(obj)   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
+                                           GSIGNOND_TYPE_CREDENTIALS, \
+                                           GSignondCredentials))
+#define GSIGNOND_IS_CREDENTIALS(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
+                                           GSIGNOND_TYPE_CREDENTIALS))
+#define GSIGNOND_CREDENTIALS_CLASS(klass) \
+                                            (G_TYPE_CHECK_CLASS_CAST ((klass), \
+                                             GSIGNOND_TYPE_CREDENTIALS, \
+                                             GSignondCredentialsClass))
+#define GSIGNOND_IS_CREDENTIALS_CLASS(klass) \
+                                            (G_TYPE_CHECK_CLASS_TYPE ((klass), \
+                                             GSIGNOND_TYPE_CREDENTIALS))
+#define GSIGNOND_CREDENTIALS_GET_CLASS(obj) \
+                                            (G_TYPE_INSTANCE_GET_CLASS ((obj), \
+                                             GSIGNOND_TYPE_CREDENTIALS, \
+                                             GSignondCredentialsClass))
+
+typedef struct _GSignondCredentialsPrivate GSignondCredentialsPrivate;
 
 typedef struct {
-    guint32 id; /*the identity associated with the credentials.*/
+    GObject parent_instance;
 
-    GString *username; /*username attached to the id*/
-
-    GString *password; /*password attached to the id*/
+    /*< private >*/
+    GSignondCredentialsPrivate *priv;
 } GSignondCredentials;
 
+typedef struct {
+    GObjectClass parent_class;
 
-GSignondCredentials*    gisgnond_credentials_new(
-                            const guint32 id);
+} GSignondCredentialsClass;
 
-GSignondCredentials*    gsignond_credentials_new_data(
+/* used by GSIGNOND_TYPE_CREDENTIALS */
+GType                   gsignond_credentials_get_type (void);
+
+GSignondCredentials*    gisgnond_credentials_new(void);
+
+gboolean                gsignond_credentials_set_data(
+                            GSignondCredentials *self,
                             const guint32 id,
                             const gchar* username,
                             const gchar* password);
+
+gboolean                gsignond_credentials_set_id(
+                            GSignondCredentials *self,
+                            const guint32 id);
+
+guint32                 gsignond_credentials_get_id(
+                            GSignondCredentials *self);
 
 gboolean                gsignond_credentials_set_username(
                             GSignondCredentials *self,
                             const gchar* username);
 
+const gchar*            gsignond_credentials_get_username(
+                            GSignondCredentials *self);
+
 gboolean                gsignond_credentials_set_password(
                             GSignondCredentials *self,
                             const gchar* password);
 
-void                    gsignond_credentials_free(
-                            GSignondCredentials *creds);
+const gchar*            gsignond_credentials_get_password(
+                            GSignondCredentials *self);
+
+gboolean                gsignond_credentials_equal (
+                            GSignondCredentials *one,
+                            GSignondCredentials *two);
 
 G_END_DECLS
 

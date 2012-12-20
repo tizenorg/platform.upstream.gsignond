@@ -89,14 +89,12 @@ gsignond_secret_storage_load_credentials (
 gboolean
 gsignond_secret_storage_update_credentials (
         GSignondSecretStorage *self,
-        const guint32 id,
-        const GString *username,
-        const GString *password)
+        GSignondCredentials *creds)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
 
     return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->update_credentials (
-            self, id, username, password);
+            self, creds);
 }
 
 gboolean
@@ -113,14 +111,12 @@ gsignond_secret_storage_remove_credentials (
 gboolean
 gsignond_secret_storage_check_credentials (
         GSignondSecretStorage *self,
-        const guint32 id,
-        GString *username,
-        GString *password)
+        GSignondCredentials *creds)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
 
     return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->check_credentials (self,
-            id, username, password);
+            creds);
 }
 
 GHashTable*
@@ -140,7 +136,7 @@ gsignond_secret_storage_update_data (
         GSignondSecretStorage *self,
         const guint32 id,
         const guint32 method,
-        const GHashTable *data)
+        GHashTable *data)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
 
@@ -163,30 +159,26 @@ gsignond_secret_storage_remove_data (
 static gboolean
 _gsignond_secret_storage_check_credentials (
         GSignondSecretStorage *self,
-        const guint32 id,
-        GString *username,
-        GString *password)
+        GSignondCredentials *creds)
 {
-    gboolean comp_uname = FALSE;
-    gboolean comp_pwd = FALSE;
+    gboolean equal = FALSE;
     GSignondCredentials *stored_creds = NULL;
+
+    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
+    g_return_val_if_fail (creds != NULL, FALSE);
 
     GSignondSecretStorageClass *klass =
             GSIGNOND_SECRET_STORAGE_GET_CLASS (self);
 
-    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    stored_creds = klass->load_credentials (self, id);
+    stored_creds = klass->load_credentials (self,
+            gsignond_credentials_get_id(creds));
+
     if (stored_creds) {
-        if (stored_creds->username != NULL) {
-            comp_uname = g_string_equal(stored_creds->username, username);
-        }
-        if (stored_creds->password != NULL) {
-            comp_pwd = g_string_equal(stored_creds->password, password);
-        }
-        gsignond_credentials_free (stored_creds);
+        equal = gsignond_credentials_equal(creds, stored_creds);
+        g_object_unref (stored_creds);
     }
 
-    return comp_uname && comp_pwd;
+    return equal;
 }
 
 static void

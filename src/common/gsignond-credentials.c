@@ -23,55 +23,102 @@
  * 02110-1301 USA
  */
 
+#include "gsignond-log.h"
+
 #include "gsignond-credentials.h"
+
+
+#define GSIGNOND_CREDENTIALS_GET_PRIVATE(obj) \
+                                          (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
+                                           GSIGNOND_TYPE_CREDENTIALS, \
+                                           GSignondCredentialsPrivate))
+
+G_DEFINE_TYPE (GSignondCredentials, gsignond_credentials, G_TYPE_OBJECT);
+
+struct _GSignondCredentialsPrivate {
+    guint32 id; /*the identity associated with the credentials.*/
+
+    GString *username; /*username attached to the id*/
+
+    GString *password; /*password attached to the id*/
+};
 
 /**
  * gsignond_credentials_new:
  *
- * @id: the identity associated with the credentials.
+ * Creates new #GSignondCredentials object
+ * Returns : (transfer full) the #GSignondCredentials object
  *
- * Creates the GSignondCredentials object.
- *
- * Returns: (transfer full) #GSignondCredentials if successful,
- * NULL otherwise.
  */
 GSignondCredentials*
-gsignond_credentials_new(
-        const guint32 id)
+gsignond_credentials_new(void)
 {
-    GSignondCredentials *creds = NULL;
-    creds = (GSignondCredentials *)g_malloc0 (sizeof (GSignondCredentials));
-    creds->id = id;
-    return creds;
+    return GSIGNOND_CREDENTIALS (
+            g_object_new (GSIGNOND_TYPE_CREDENTIALS,
+                         NULL));
 }
 
 /**
- * gsignond_credentials_new_data:
+ * gsignond_credentials_set_data:
  *
+ * @self: the object whose data is to be set.
  * @id: the identity associated with the credentials.
  * @username: the username.
  * @password: the password.
  *
- * Creates the GSignondCredentials object.
+ * Sets the data of the object.
  *
- * Returns: (transfer full) #GSignondCredentials if successful,
- * NULL otherwise.
+ * Returns: TRUE if successful, FALSE otherwise.
  */
-GSignondCredentials*
-gsignond_credentials_new_data(
+gboolean
+gsignond_credentials_set_data(
+        GSignondCredentials *self,
         const guint32 id,
         const gchar* username,
         const gchar* password)
 {
-    GSignondCredentials *creds = NULL;
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), FALSE);
 
-    g_return_val_if_fail (username != NULL, NULL);
-    g_return_val_if_fail (password != NULL, NULL);
+    self->priv->id = id;
+    return gsignond_credentials_set_username (self, username) &&
+           gsignond_credentials_set_password (self, password);
+}
 
-    creds = gsignond_credentials_new (id);
-    creds->username = g_string_new (username);
-    creds->password = g_string_new (password);
-    return creds;
+/**
+ * gsignond_credentials_set_id:
+ *
+ * @self: the object whose id is to be set.
+ * @id: the id.
+ *
+ * Sets the id of the GSignondCredentials object
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_credentials_set_id(
+        GSignondCredentials *self,
+        const guint32 id)
+{
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), FALSE);
+    self->priv->id = id;
+    return TRUE;
+}
+
+/**
+ * gsignond_credentials_get_id:
+ *
+ * @self: the object whose id is to be set.
+ *
+ * Returns the id from the #GSignondCredentials object
+ *
+ * Returns: the id if the object is valid, NULL otherwise.
+ */
+guint32
+gsignond_credentials_get_id(
+        GSignondCredentials *self)
+{
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
+    return self->priv->id;
 }
 
 /**
@@ -90,15 +137,32 @@ gsignond_credentials_set_username(
         GSignondCredentials *self,
         const gchar* username)
 {
-    g_return_val_if_fail (self != NULL, FALSE);
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), FALSE);
     g_return_val_if_fail (username != NULL, FALSE);
 
-    if (self->username) {
-        g_string_free (self->username, TRUE);
-        self->username = NULL;
+    if (self->priv->username) {
+        g_string_free (self->priv->username, TRUE);
+        self->priv->username = NULL;
     }
-    self->username = g_string_new (username);
+    self->priv->username = g_string_new (username);
     return TRUE;
+}
+
+/**
+ * gsignond_credentials_get_username:
+ *
+ * @self: the object whose username is to be set.
+ *
+ * Returns the username from the #GSignondCredentials object
+ *
+ * Returns: the username if the object is valid, NULL otherwise.
+ */
+const gchar*
+gsignond_credentials_get_username(
+        GSignondCredentials *self)
+{
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
+    return self->priv->username->str;
 }
 
 /**
@@ -117,39 +181,104 @@ gsignond_credentials_set_password(
         GSignondCredentials *self,
         const gchar* password)
 {
-    g_return_val_if_fail (self != NULL, FALSE);
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), FALSE);
     g_return_val_if_fail (password != NULL, FALSE);
 
-    if (self->password) {
-        g_string_free (self->password, TRUE);
-        self->password = NULL;
+    if (self->priv->password) {
+        g_string_free (self->priv->password, TRUE);
+        self->priv->password = NULL;
     }
-    self->password = g_string_new (password);
+    self->priv->password = g_string_new (password);
     return TRUE;
 }
 
 /**
- * gsignond_credentials_free:
+ * gsignond_credentials_get_password:
  *
- * Frees the memory allocated for all the elements and the object itself.
+ * @self: the object whose password is to be set.
  *
+ * Returns the password from the #GSignondCredentials object
+ *
+ * Returns: the password if the object is valid, NULL otherwise.
  */
-void
-gsignond_credentials_free(
-        GSignondCredentials *creds)
+const gchar*
+gsignond_credentials_get_password(
+        GSignondCredentials *self)
 {
-    g_return_if_fail (creds != NULL);
-
-    if (creds->username) {
-        g_string_free (creds->username, TRUE);
-        creds->username = NULL;
-    }
-    if (creds->password) {
-        g_string_free (creds->password, TRUE);
-        creds->password = NULL;
-    }
-    g_free (creds);
-    creds = NULL;
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
+    return self->priv->password->str;
 }
 
+/**
+ * gsignond_credentials_equal:
+ *
+ * @one: the first credential to be compared.
+ * @two: the second credential to be compared.
+ *
+ * Compares elements of two GSignondCredentials object for equality.
+ *
+ * Returns: TRUE if id, username and password are same for both credential
+ * objects, FALSE otherwise.
+ */
+gboolean
+gsignond_credentials_equal (
+        GSignondCredentials *one,
+        GSignondCredentials *two)
+{
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (one), FALSE);
+    g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (two), FALSE);
+
+    if ((one != NULL && two == NULL) ||
+        (one == NULL && two != NULL))
+        return FALSE;
+
+    if ( (one == two) ||
+         ( (one->priv->id == two->priv->id) &&
+           g_string_equal(one->priv->username, two->priv->username) &&
+           g_string_equal(one->priv->password, two->priv->password)) ) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static void
+_gsignond_credentials_finalize (
+        GObject *gobject)
+{
+    GSignondCredentials *self = GSIGNOND_CREDENTIALS (gobject);
+
+    if (self->priv->username) {
+        g_string_free (self->priv->username, TRUE);
+        self->priv->username = NULL;
+    }
+    if (self->priv->password) {
+        g_string_free (self->priv->password, TRUE);
+        self->priv->password = NULL;
+    }
+
+    /* Chain up to the parent class */
+    G_OBJECT_CLASS (gsignond_credentials_parent_class)->finalize (gobject);
+}
+
+static void
+gsignond_credentials_class_init (
+        GSignondCredentialsClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+    gobject_class->finalize = _gsignond_credentials_finalize;
+
+    g_type_class_add_private (klass, sizeof (GSignondCredentialsPrivate));
+}
+
+static void
+gsignond_credentials_init (
+        GSignondCredentials *self)
+{
+    self->priv = GSIGNOND_CREDENTIALS_GET_PRIVATE (self);
+    self->priv->id = 0;
+    self->priv->username = NULL;
+    self->priv->password = NULL;
+}
 
