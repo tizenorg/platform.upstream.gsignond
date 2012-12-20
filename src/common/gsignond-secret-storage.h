@@ -30,6 +30,7 @@
 #include <glib-object.h>
 
 #include "gsignond-config.h"
+#include "gsignond-credentials.h"
 
 G_BEGIN_DECLS
 
@@ -56,14 +57,6 @@ G_BEGIN_DECLS
                                              GSignondSecretStorageClass))
 
 typedef struct _GSignondSecretStoragePrivate GSignondSecretStoragePrivate;
-
-typedef struct {
-    guint32 id;
-
-    GString *username;
-
-    GString *password;
-} GSignondSecretStorageCredentials;
 
 typedef struct {
     GObject parent_instance;
@@ -127,12 +120,11 @@ typedef struct {
      *
      * Loads the credentials.
      *
-     * Returns: (transfer full) #GSignondSecretStorageCredentials if successful,
+     * Returns: (transfer full) #GSignondCredentials if successful,
      * NULL otherwise.
      */
-    GSignondSecretStorageCredentials* (*load_credentials) (
-                                        GSignondSecretStorage *self,
-                                        const guint32 id);
+    GSignondCredentials* (*load_credentials) (GSignondSecretStorage *self,
+                                              const guint32 id);
 
     /**
      * update_credentials:
@@ -243,7 +235,7 @@ gboolean        gsignond_secret_storage_clear_db (
 gboolean        gsignond_secret_storage_is_open_db (
                     GSignondSecretStorage *self);
 
-GSignondSecretStorageCredentials*
+GSignondCredentials*
                 gsignond_secret_storage_load_credentials (
                     GSignondSecretStorage *self, const guint32 id);
 
@@ -269,13 +261,6 @@ gboolean        gsignond_secret_storage_update_data (
 gboolean        gsignond_secret_storage_remove_data (
                     GSignondSecretStorage *self, const guint32 id,
                     const guint32 method);
-
-GSignondSecretStorageCredentials*
-                gsignond_secret_storage_credentials_new(
-                    void);
-
-void            gsignond_secret_storage_credentials_free(
-                    GSignondSecretStorageCredentials *creds);
 
 G_END_DECLS
 

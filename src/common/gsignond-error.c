@@ -50,8 +50,8 @@ gsignond_concat_domain_and_error (const gchar *str1,
 GString*
 gsignond_prepend_domain_to_error_msg (const GError *err)
 {
-    GString *msg;
-    const gchar *domain;
+    GString *msg = NULL;
+    const gchar *domain = NULL;
     g_return_val_if_fail (err != NULL, NULL);
     if (err->message != NULL) {
         domain = g_quark_to_string(err->domain);
