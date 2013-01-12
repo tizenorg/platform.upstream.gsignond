@@ -29,8 +29,6 @@
 #include <glib.h>
 #include <sqlite3.h>
 
-#include "gsignond-db-sql-database.h"
-
 G_BEGIN_DECLS
 
 struct _GSignondDbSqlDatabasePrivate

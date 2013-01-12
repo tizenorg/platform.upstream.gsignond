@@ -23,14 +23,17 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-db-secret-storage.h"
+#include "gsignond-db-secret-database.h"
+#include "gsignond-db-error.h"
+
+#include <gsignond/gsignond-secret-storage.h>
 
 #define RETURN_IF_NOT_OPEN(obj, retval) \
     if (gsignond_secret_storage_is_open_db (obj) == FALSE) { \
         GError* last_error = gsignond_db_create_error( \
                             GSIGNOND_DB_ERROR_NOT_OPEN,\
                             "DB Not Open"); \
-        DBG("SecretDB is not available"); \
+        g_debug("SecretDB is not available"); \
         gsignond_secret_storage_set_last_error( \
                 GSIGNOND_SECRET_STORAGE (obj), last_error); \
         return retval; \
@@ -185,7 +188,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     }
 
     if (gsignond_secret_storage_is_open_db (self)) {
-        DBG("SecretDB is already open. Closing first to start again...");
+        g_debug("SecretDB is already open. Closing first to start again...");
         gsignond_secret_storage_close_db (self);
     }
 

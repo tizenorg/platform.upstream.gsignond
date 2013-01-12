@@ -22,10 +22,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-#include <common/gsignond-log.h>
-
-#include "gsignond-db-error.h"
-#include "gsignond-db-defines.h"
+#include <string.h>
+#include <gsignond/gsignond-log.h>
+#include <common/db/gsignond-db-error.h>
 
 #include "gsignond-db-metadata-database.h"
 
@@ -41,6 +40,14 @@ struct _GSignondDbMetadataDatabasePrivate
 {
 };
 
+static gboolean
+_gsignond_db_metadata_database_create (
+        GSignondDbSqlDatabase *obj);
+
+static gboolean
+_gsignond_db_metadata_database_clear (
+        GSignondDbSqlDatabase *obj);
+
 /*!
  * @enum GSignondIdentityFlags
  * Flags for the identity to be stored into db
@@ -51,13 +58,24 @@ enum GSignondIdentityFlags {
     GSignondIdentityFlag_UserNameIsSecret = 0x0004,
 };
 
+static gint
+_compare_strings (
+		const gchar* a,
+		const gchar* b,
+		gpointer data)
+{
+	(void)data;
+	return g_strcmp0 (a,b);
+}
+
 static GSequence *
 _gsignond_db_metadata_database_list_to_sequence (GList *list)
 {
     GSequence *seq = NULL;
     seq = g_sequence_new ((GDestroyNotify)g_free);
     for ( ; list != NULL; list = g_list_next (list)) {
-        g_sequence_insert_sorted (seq, (gchar *) list->data);
+        g_sequence_insert_sorted (seq, (gchar *) list->data,
+        		(GCompareDataFunc)_compare_strings, NULL);
     }
     return seq;
 }
@@ -106,10 +124,10 @@ _gsignond_db_metadata_database_exec (
     gchar *query = NULL;
     va_list args;
 
-    g_return_val_if_fail (query_format != NULL, NULL);
+    g_return_val_if_fail (query_format != NULL, FALSE);
 
     va_start (args, query_format);
-    query = sqlite3_mprintf (query_format, va_list);
+    query = sqlite3_vmprintf (query_format, args);
     va_end (args);
 
     ret = gsignond_db_sql_database_exec (
@@ -135,7 +153,7 @@ _gsignond_db_metadata_database_get_sequence (
     g_return_val_if_fail (query_format != NULL, NULL);
 
     va_start (args, query_format);
-    query = sqlite3_mprintf (query_format, va_list);
+    query = sqlite3_vmprintf (query_format, args);
     va_end (args);
 
     list = gsignond_db_sql_database_query_exec_string_list (
@@ -170,10 +188,10 @@ _gsignond_db_metadata_database_update_credentials (
     if (gsignond_identity_info_get_is_username_secret (identity) )
         flags |= GSignondIdentityFlag_UserNameIsSecret;
 
-    caption = gsignond_identity_info_get_caption ();
-    username = gsignond_identity_info_get_username ();
-    id = gsignond_identity_info_get_id ();
-    type = gsignond_identity_info_get_identity_type ();
+    caption = gsignond_identity_info_get_caption (identity);
+    username = gsignond_identity_info_get_username (identity);
+    id = gsignond_identity_info_get_id (identity);
+    type = gsignond_identity_info_get_identity_type (identity);
     if (!gsignond_identity_info_get_is_identity_new (identity)) {
         query = sqlite3_mprintf ("UPDATE CREDENTIALS SET caption = %Q, "
                 "username = %Q, flags = %u, type = %u WHERE id = %u;",
@@ -761,9 +779,10 @@ gsignond_db_metadata_database_get_methods (
     gchar *query = NULL;
     GList *methods = NULL;
 
-    g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
+    g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
+    g_return_val_if_fail (sec_ctx != NULL, NULL);
 
-    if (token && strlen (token) <= 0) {
+    if (sec_ctx->sys_ctx && strlen (sec_ctx->sys_ctx) <= 0) {
         query = sqlite3_mprintf ("SELECT DISTINCT METHODS.method FROM "
                     "( ACL JOIN METHODS ON ACL.method_id = METHODS.id ) "
                     "WHERE ACL.identity_id = %u;",
@@ -856,7 +875,7 @@ gsignond_db_metadata_database_update_identity (
         goto finished;
     }
 
-    if (!gsignond_identity_info_get_is_identity_new ()) {
+    if (!gsignond_identity_info_get_is_identity_new (identity)) {
         /* remove acl */
         _gsignond_db_metadata_database_exec (self,
                 "DELETE FROM ACL WHERE identity_id = %u;", id);
@@ -983,20 +1002,23 @@ gsignond_db_metadata_database_get_identity (
     GSignondIdentityInfo *identity = NULL;
     gchar *query = NULL;
     gint rows = 0, i;
-    GSequence *realms = NULL, *acl = NULL, *owners = NULL, *mechanisms = NULL;
+    GSequence *realms = NULL, *mechanisms = NULL;
     GHashTable *methods = NULL, *tuples = NULL;
     GHashTableIter iter;
-    const gchar *method = NULL;
+    gchar *method = NULL;
     gint method_id = 0;
+    GSignondSecurityContextList *acl = NULL, *owners = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
 
     identity = gsignond_identity_info_new ();
     query = sqlite3_mprintf ("SELECT caption, username, flags, type "
                              "FROM credentials WHERE id = %u;",
-                             id);
+                             identity_id);
     rows = gsignond_db_sql_database_query_exec (GSIGNOND_DB_SQL_DATABASE (self),
-            query, _gsignond_db_metadata_database_read_identity, identity);
+            query, (GSignondDbSqlDatabaseQueryCallback)
+            _gsignond_db_metadata_database_read_identity,
+            identity);
     sqlite3_free (query);
     if (G_UNLIKELY (rows <= 0)) {
         gsignond_identity_info_free (identity);
@@ -1004,47 +1026,44 @@ gsignond_db_metadata_database_get_identity (
     }
 
     /*realms*/
-    realms = _gsignond_db_metadata_database_get_sequence (
+    realms = _gsignond_db_metadata_database_get_sequence (self,
                              "SELECT realm FROM REALMS "
                              "WHERE identity_id = %u;",
-                             id);
+                             identity_id);
     gsignond_identity_info_set_realms (identity, realms);
     g_sequence_free (realms);
 
     /*acl*/
-    acl = _gsignond_db_metadata_database_get_sequence (
-                           "SELECT token FROM TOKENS WHERE id IN "
-                           "(SELECT token_id FROM ACL WHERE identity_id = %u);",
-                           id);
+    acl = gsignond_db_metadata_database_get_accesscontrol_list (self,
+    		identity_id);
     gsignond_identity_info_set_access_control_list (identity, acl);
-    g_sequence_free (acl);
+    gsignond_security_context_list_free (acl);
 
     /*owners*/
-    owners = _gsignond_db_metadata_database_get_sequence (
-                         "SELECT token FROM TOKENS WHERE id IN "
-                         "(SELECT token_id FROM OWNER WHERE identity_id = %u);",
-                         id);
+    owners = gsignond_db_metadata_database_get_owner_list (self,
+    		identity_id);
     gsignond_identity_info_set_owner_list (identity, owners);
-    g_sequence_free (owners);
+    gsignond_security_context_list_free (owners);
 
     /*methods*/
     query = sqlite3_mprintf ("SELECT DISTINCT ACL.method_id, METHODS.method "
             "FROM ( ACL JOIN METHODS ON ACL.method_id = METHODS.id ) "
             "WHERE ACL.identity_id = %u;",
-                        id);
+            identity_id);
     tuples = gsignond_db_sql_database_query_exec_int_string_tuple (
                     GSIGNOND_DB_SQL_DATABASE (self),
                     query);
     sqlite3_free (query);
 
     g_hash_table_iter_init(&iter, tuples);
-    while (g_hash_table_iter_next (&iter, &method_id, &method)) {
+    while (g_hash_table_iter_next (&iter, (gpointer *)(&method_id),
+    		(gpointer *)&method)) {
         /*mechanisms*/
-        mechanisms = _gsignond_db_metadata_database_get_sequence (
+        mechanisms = _gsignond_db_metadata_database_get_sequence (self,
                  "SELECT DISTINCT MECHANISMS.mechanism FROM "
                  "( MECHANISMS JOIN ACL ON ACL.mechanism_id = MECHANISMS.id ) "
                  "WHERE ACL.method_id = %u AND ACL.identity_id = %u;",
-                 method_id, id);
+                 method_id, identity_id);
         g_hash_table_insert(methods, method, mechanisms);
         g_sequence_free (mechanisms);
     }
@@ -1218,7 +1237,8 @@ gsignond_db_metadata_database_remove_reference (
             identity_id, ref_owner);
 
     len = g_list_length (refs);
-    if (reference && !g_list_find_custom (refs, reference, g_strcmp0))
+    if (reference && !g_list_find_custom (refs, reference,
+    		(GCompareFunc)g_strcmp0))
         ret = FALSE;
     g_list_free_full (refs, (GDestroyNotify)g_free);
     if (len <= 0 || !ret) {
@@ -1276,7 +1296,7 @@ gsignond_db_metadata_database_get_references (
     g_return_val_if_fail (ref_owner != NULL, NULL);
 
 
-    if (!ref_owner->sys_ctx || strlen (ref_owner) <= 0) {
+    if (!ref_owner->sys_ctx || strlen (ref_owner->sys_ctx) <= 0) {
         query = sqlite3_mprintf ("SELECT ref FROM REFS "
                                  "WHERE identity_id = %u;",
                                  identity_id);
@@ -1331,7 +1351,8 @@ gsignond_db_metadata_database_get_accesscontrol_list(
 
     list = g_list_alloc ();
     g_hash_table_iter_init(&iter, tuples);
-    while (g_hash_table_iter_next (&iter, &sysctx, &appctx)) {
+    while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
+    		(gpointer *)&appctx)) {
         ctx = gsignond_security_context_new_from_values (sysctx, appctx);
         g_list_append (list, ctx);
     }
@@ -1377,7 +1398,8 @@ gsignond_db_metadata_database_get_owner_list(
 
     list = g_list_alloc ();
     g_hash_table_iter_init(&iter, tuples);
-    while (g_hash_table_iter_next (&iter, &sysctx, &appctx)) {
+    while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
+    		(gpointer *)&appctx)) {
         ctx = gsignond_security_context_new_from_values (sysctx, appctx);
         g_list_append (list, ctx);
     }

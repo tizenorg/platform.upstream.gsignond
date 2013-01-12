@@ -26,9 +26,9 @@
 #include <glib.h>
 #include <gio/gio.h>
 
-#include <common/gsignond-config.h>
-#include <common/gsignond-log.h>
-#include <common/gsignond-credentials.h>
+#include <gsignond/gsignond-config.h>
+#include <gsignond/gsignond-log.h>
+#include <gsignond/gsignond-credentials.h>
 #include <daemon/db/gsignond-db-default-storage.h>
 #include <daemon/gsignond-daemon.h>
 

@@ -44,6 +44,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 src/common/Makefile
+src/common/db/Makefile
 src/daemon/Makefile
 src/daemon/db/Makefile
 src/daemon/dbus/Makefile

@@ -57,6 +57,16 @@ _gsignond_identity_info_seq_cmp (
     return equal;
 }
 
+static gint
+_compare_strings (
+		const gchar* a,
+		const gchar* b,
+		gpointer data)
+{
+	(void)data;
+	return g_strcmp0 (a,b);
+}
+
 static GSequence *
 _gsignond_identity_info_array_to_sequence (const gchar *const * array)
 {
@@ -66,7 +76,8 @@ _gsignond_identity_info_array_to_sequence (const gchar *const * array)
     seq = g_sequence_new ((GDestroyNotify)g_free);
     i = 0;
     while (array[i]) {
-        g_sequence_insert_sorted (seq, g_strdup (array[i]));
+        g_sequence_insert_sorted (seq, g_strdup (array[i]),
+        		(GCompareDataFunc)_compare_strings, NULL);
         ++i;
     }
     return seq;

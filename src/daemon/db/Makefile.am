@@ -13,6 +13,6 @@ libgsignond_db_la_LIBADD =    \
 libgsignond_db_la_SOURCES = \
    gsignond-db-secret-cache.c \
    gsignond-db-credentials-database.c \
-   gsignond-db-metadata-database.c \
+   gsignond-db-metadata-database.c
 
 CLEANFILES = 

@@ -68,7 +68,7 @@ typedef struct {
 GType
 gsignond_credentials_get_type (void);
 
-GSignondCredentials*
+GSignondCredentials *
 gisgnond_credentials_new(void);
 
 gboolean

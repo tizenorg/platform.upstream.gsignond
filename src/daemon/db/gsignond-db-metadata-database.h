@@ -29,8 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-identity-info.h>
-
-#include "gsignond-db-sql-database.h"
+#include <common/db/gsignond-db-sql-database.h>
 
 G_BEGIN_DECLS
 

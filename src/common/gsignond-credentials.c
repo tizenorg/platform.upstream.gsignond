@@ -86,7 +86,7 @@ gsignond_credentials_init (GSignondCredentials *self)
  * Returns : (transfer full) the #GSignondCredentials object
  *
  */
-GSignondCredentials*
+GSignondCredentials *
 gsignond_credentials_new(void)
 {
     return GSIGNOND_CREDENTIALS (

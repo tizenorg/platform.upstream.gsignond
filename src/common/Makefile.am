@@ -1,7 +1,7 @@
-SUBDIRS = db
+SUBDIRS = db 
+NULL=
 
 lib_LTLIBRARIES = libgsignond-common.la
-NULL=
 
 libgsignond_common_la_CPPFLAGS = \
     -I$(top_srcdir) \
@@ -10,8 +10,13 @@ libgsignond_common_la_CPPFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 
-libgsignond_common_la_LIBS = \
-    $(GSIGNOND_LIBS)
+libgsignond_common_la_DEPENDENCIES = \
+    $(top_builddir)/src/common/db/libgsignond-common-db.la \
+    $(NULL)
+
+libgsignond_common_la_LIBADD = \
+    $(GSIGNOND_LIBS) \
+    $(top_builddir)/src/common/db/libgsignond-common-db.la \
     $(NULL)
 
 libgsignond_common_la_SOURCES = \
@@ -22,10 +27,7 @@ libgsignond_common_la_SOURCES = \
     gsignond-credentials.c \
     gsignond-config.c \
     gsignond-error.c \
-    db/gsignond-db-error.c \
-    db/gsignond-db-sql-database.c \
-    db/gsignond-db-secret-database.c \
-    db/gsignond-db-secret-storage.c \
     $(NULL)
 
 CLEANFILES = 
+

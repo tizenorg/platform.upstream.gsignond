@@ -28,6 +28,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gsignond/gsignond-credentials.h>
 
 #include "gsignond-db-sql-database.h"
 

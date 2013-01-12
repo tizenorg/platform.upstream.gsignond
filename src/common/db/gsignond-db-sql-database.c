@@ -23,10 +23,10 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-db-sql-database-private.h"
 #include "gsignond-db-error.h"
 
 #include "gsignond-db-sql-database.h"
+#include "gsignond-db-sql-database-private.h"
 
 #define GSIGNOND_DB_SQL_DATABASE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\

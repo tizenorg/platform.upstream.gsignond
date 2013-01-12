@@ -29,8 +29,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include <common/gsignond-credentials.h>
-#include <common/gsignond-secret-storage.h>
+#include <gsignond/gsignond-credentials.h>
+#include <gsignond/gsignond-secret-storage.h>
 
 G_BEGIN_DECLS
 

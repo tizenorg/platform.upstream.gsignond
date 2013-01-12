@@ -29,7 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-identity-info.h>
-#include <common/db/gsignond-db-secret-storage.h>
+#include <gsignond/gsignond-secret-storage.h>
 
 #include "gsignond-db-metadata-database.h"
 
@@ -78,7 +78,7 @@ GType
 gsignond_db_credentials_database_get_type (void);
 
 GSignondDbCredentialsDatabase*
-gsignond_db_credentials_database_new (GSignondDbSecretStorage *storage);
+gsignond_db_credentials_database_new (GSignondSecretStorage *storage);
 
 gboolean
 gsignond_db_credentials_database_open_secret_storage (

@@ -23,15 +23,13 @@
  * 02110-1301 USA
  */
 #include <sqlite3.h>
-#include <common/gsignond-log.h>
-#include <common/gsignond-credentials.h>
+#include <gsignond/gsignond-log.h>
 
-#include "gsignond-secret-storage.h"
-#include "gsignond-db-sql-database-private.h"
 #include "gsignond-db-error.h"
 #include "gsignond-db-defines.h"
 
 #include "gsignond-db-secret-database.h"
+#include "gsignond-db-sql-database-private.h"
 
 #define GSIGNOND_DB_SECRET_DATABASE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\

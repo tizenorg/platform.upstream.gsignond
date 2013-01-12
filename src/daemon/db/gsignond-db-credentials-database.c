@@ -22,9 +22,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-#include <common/gsignond-log.h>
+#include <string.h>
+#include <gsignond/gsignond-log.h>
 #include <common/db/gsignond-db-error.h>
-#include <common/db/gsignond-db-defines.h>
 
 #include "gsignond-db-credentials-database.h"
 
@@ -38,7 +38,7 @@ G_DEFINE_TYPE (GSignondDbCredentialsDatabase, gsignond_db_credentials_database,
 
 struct _GSignondDbCredentialsDatabasePrivate
 {
-    GSignondDbSecretStorage *secret_storage;
+    GSignondSecretStorage *secret_storage;
     GSignondDbMetadataDatabase *metadata_db;
 };
 
@@ -85,14 +85,14 @@ gsignond_db_credentials_database_init (
 /**
  * gsignond_db_credentials_database_new:
  *
- * @storage: (transfer full) the #GSignondDbSecretStorage object
+ * @storage: (transfer full) the #GSignondSecretStorage object
  *
  * Creates new #GSignondDbCredentialsDatabase object
  *
  * Returns: (transfer full) the #GSignondDbCredentialsDatabase object
  */
 GSignondDbCredentialsDatabase *
-gsignond_db_credentials_database_new (GSignondDbSecretStorage *storage)
+gsignond_db_credentials_database_new (GSignondSecretStorage *storage)
 {
 
 	GSignondDbCredentialsDatabase *self = NULL;
@@ -120,7 +120,7 @@ gsignond_db_credentials_database_open_secret_storage (
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
     g_return_val_if_fail (self->priv->secret_storage != NULL, FALSE);
 
-	return gsignond_db_secret_storage_open_db (self->priv->secret_storage);
+	return gsignond_secret_storage_open_db (self->priv->secret_storage);
 }
 
 /**
@@ -139,7 +139,7 @@ gsignond_db_credentials_database_close_secret_storage (
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
     g_return_val_if_fail (self->priv->secret_storage != NULL, FALSE);
 
-	return gsignond_db_secret_storage_close_db (self->priv->secret_storage);
+	return gsignond_secret_storage_close_db (self->priv->secret_storage);
 }
 
 /**
@@ -158,7 +158,7 @@ gsignond_db_credentials_database_is_open_secret_storage (
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
     g_return_val_if_fail (self->priv->secret_storage != NULL, FALSE);
 
-	return gsignond_db_secret_storage_is_open_db (self->priv->secret_storage);
+	return gsignond_secret_storage_is_open_db (self->priv->secret_storage);
 }
 
 /**
@@ -176,7 +176,7 @@ gsignond_db_credentials_database_clear (GSignondDbCredentialsDatabase *self)
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
     g_return_val_if_fail (self->priv->secret_storage != NULL, FALSE);
 
-	return gsignond_db_secret_storage_clear_db (self->priv->secret_storage) &&
+	return gsignond_secret_storage_clear_db (self->priv->secret_storage) &&
 			gsignond_db_sql_database_clear (
 					GSIGNOND_DB_SQL_DATABASE (self->priv->metadata_db));
 }
@@ -205,14 +205,15 @@ gsignond_db_credentials_database_load_identity (
 	g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
 
     identity = gsignond_db_metadata_database_get_identity (
-    		self->priv->metadata_db);
+    		self->priv->metadata_db, identity_id);
 
     if (identity && query_secret &&
     	!gsignond_identity_info_get_is_identity_new (identity) &&
     	gsignond_db_credentials_database_is_open_secret_storage (self)) {
     	GSignondCredentials * creds;
 
-    	creds = gsignond_db_secret_storage_load_credentials (identity_id);
+    	creds = gsignond_secret_storage_load_credentials (
+    			self->priv->secret_storage, identity_id);
     	if (creds) {
     		gsignond_identity_info_set_username (identity,
     				gsignond_credentials_get_username (creds));
@@ -321,7 +322,7 @@ gsignond_db_credentials_database_update_identity (
     	}
 
     	if (un_sec || pwd_sec) {
-    		gsignond_db_secret_storage_update_credentials (
+    		gsignond_secret_storage_update_credentials (
     			self->priv->secret_storage, creds);
     	}
     	g_object_unref (creds);
@@ -350,7 +351,7 @@ gsignond_db_credentials_database_remove_identity (
     if (!gsignond_db_credentials_database_is_open_secret_storage (self)) {
     	return FALSE;
     }
-	return gsignond_db_secret_storage_remove_credentials (
+	return gsignond_secret_storage_remove_credentials (
 					self->priv->secret_storage,
 					identity_id) &&
 		   gsignond_db_metadata_database_remove_identity (
@@ -376,7 +377,7 @@ gsignond_db_credentials_database_check_secret (
         const gchar *username,
         const gchar *secret)
 {
-	GSignondIdentity *identity = NULL;
+	GSignondIdentityInfo *identity = NULL;
 	gboolean check = FALSE;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
@@ -390,18 +391,18 @@ gsignond_db_credentials_database_check_secret (
     if (identity) {
     	GSignondCredentials *creds = NULL;
 
-		creds = gsignond_credentials_new();
+		creds = gsignond_credentials_new ();
 		gsignond_credentials_set_id (creds, identity_id);
 		gsignond_credentials_set_password (creds, secret);
 		if (gsignond_identity_info_get_is_username_secret (identity)) {
 			gsignond_credentials_set_username (creds, username);
-			check = gsignond_db_secret_storage_check_credentials (
+			check = gsignond_secret_storage_check_credentials (
 					self->priv->secret_storage, creds);
 		} else {
 			gsignond_credentials_set_username (creds, "");
 			check = g_strcmp0 (username,
 						gsignond_identity_info_get_username (identity)) == 0 &&
-					gsignond_db_secret_storage_check_credentials (
+					gsignond_secret_storage_check_credentials (
 						self->priv->secret_storage, creds);
 		}
 		g_object_unref (creds);
@@ -444,7 +445,7 @@ gsignond_db_credentials_database_load_data (
     if (method_id == 0) {
     	return NULL;
     }
-	return gsignond_db_secret_storage_load_data (self->priv->secret_storage,
+	return gsignond_secret_storage_load_data (self->priv->secret_storage,
 			identity_id, method_id);
 }
 
@@ -489,7 +490,7 @@ gsignond_db_credentials_database_update_data (
     		return FALSE;
     	}
     }
-	return gsignond_db_secret_storage_update_data (self->priv->secret_storage,
+	return gsignond_secret_storage_update_data (self->priv->secret_storage,
 			identity_id, method_id, data);
 }
 
@@ -529,7 +530,7 @@ gsignond_db_credentials_database_remove_data (
         	return FALSE;
         }
     }
-	return gsignond_db_secret_storage_remove_data (self->priv->secret_storage,
+	return gsignond_secret_storage_remove_data (self->priv->secret_storage,
 			identity_id, method_id);
 }
 
@@ -576,7 +577,7 @@ gsignond_db_credentials_database_insert_reference (
         const GSignondSecurityContext *ref_owner,
         const gchar *reference)
 {
-    g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
+    g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
 
     return gsignond_db_metadata_database_insert_reference (
     		self->priv->metadata_db, identity_id, ref_owner,reference);
@@ -601,7 +602,7 @@ gsignond_db_credentials_database_remove_reference (
         const GSignondSecurityContext *ref_owner,
         const gchar *reference)
 {
-    g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
+    g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
 
     return gsignond_db_metadata_database_remove_reference (self->priv->metadata_db,
     		identity_id, ref_owner, reference);
@@ -702,7 +703,7 @@ gsignond_db_credentials_database_get_owner (
 
     list = gsignond_db_metadata_database_get_owner_list (
         		self->priv->metadata_db, identity_id);
-    ctx = g_list_first (list);
+    ctx = (GSignondSecurityContext *) g_list_first (list);
     g_list_remove (list, ctx);
     gsignond_security_context_list_free (list);
     return ctx;
