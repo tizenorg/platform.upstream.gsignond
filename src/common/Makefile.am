@@ -28,6 +28,7 @@ libgsignond_common_la_SOURCES = \
     gsignond-credentials.c \
     gsignond-config.c \
     gsignond-error.c \
+    gsignond-plugin-interface.c \
     $(NULL)
 
 CLEANFILES = 
