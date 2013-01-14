@@ -24,6 +24,7 @@
  */
 #include <string.h>
 #include <gsignond/gsignond-log.h>
+#include <gsignond/gsignond-credentials.h>
 #include <common/db/gsignond-db-error.h>
 
 #include "gsignond-db-credentials-database.h"
@@ -305,10 +306,10 @@ gsignond_db_credentials_database_update_identity (
     if (id != 0 &&
         store_secret &&
     	gsignond_db_credentials_database_is_open_secret_storage (self)) {
-    	GSignondCredentials * creds;
+        GSignondCredentials *creds = NULL;
     	gboolean un_sec, pwd_sec;
 
-    	creds = gsignond_credentials_new();
+    	creds = gsignond_credentials_new ();
     	pwd_sec = gsignond_identity_info_get_store_secret (identity);
     	if (pwd_sec) {
     		gsignond_credentials_set_password (creds,
@@ -704,7 +705,7 @@ gsignond_db_credentials_database_get_owner (
     list = gsignond_db_metadata_database_get_owner_list (
         		self->priv->metadata_db, identity_id);
     ctx = (GSignondSecurityContext *) g_list_first (list);
-    g_list_remove (list, ctx);
+    list = g_list_remove (list, ctx);
     gsignond_security_context_list_free (list);
     return ctx;
 }

@@ -108,7 +108,7 @@ _gsignond_db_metadata_database_read_identity (
     gsignond_identity_info_set_validated (identity,
             flags & GSignondIdentityFlag_Validated);
 
-    gsignond_identity_info_set_type (identity,
+    gsignond_identity_info_set_identity_type (identity,
             sqlite3_column_int (stmt, 3));
 
     return TRUE;
@@ -321,7 +321,7 @@ _gsignond_db_metadata_database_update_acl (
     for (list = acl;  list != NULL; list = g_list_next (list)) {
         ctx = (GSignondSecurityContext *) list->data;
         _gsignond_db_metadata_database_exec (self,
-                "INSERT OR IGNORE INTO TOKENS (sysctx, appctx) "
+                "INSERT OR IGNORE INTO SECCTX (sysctx, appctx) "
                 "VALUES (%Q, %Q);",
                 ctx->sys_ctx, ctx->app_ctx);
     }
@@ -347,7 +347,7 @@ _gsignond_db_metadata_database_update_owners (
         if (ctx->sys_ctx && strlen (ctx->sys_ctx) > 0) {
             _gsignond_db_metadata_database_exec (self,
                     "INSERT OR IGNORE INTO "
-                    "TOKENS (sysctx, appctx) "
+                    "SECCTX (sysctx, appctx) "
                     "VALUES (%Q, %Q);",
                     ctx->sys_ctx, ctx->app_ctx);
         }
@@ -434,14 +434,14 @@ _gsignond_db_metadata_database_create (
             "(id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "mechanism TEXT UNIQUE);"
 
-            "CREATE TABLE TOKENS"
+            "CREATE TABLE SECCTX"
             "(id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "sysctx TEXT,"
             "appctx TEXT,"
             "CONSTRAINT tokc UNIQUE(sysctx, appctx) ON CONFLICT REPLACE);"
 
-            "CREATE INDEX sysidx ON TOKENS(sysctx);"
-            "CREATE INDEX appidx ON TOKENS(appctx);"
+            "CREATE INDEX sysidx ON SECCTX(sysctx);"
+            "CREATE INDEX appidx ON SECCTX(appctx);"
 
             "CREATE TABLE REALMS"
             "(identity_id INTEGER CONSTRAINT fk_identity_id "
@@ -458,16 +458,16 @@ _gsignond_db_metadata_database_create (
             "REFERENCES METHODS(id) ON DELETE CASCADE,"
             "mechanism_id INTEGER CONSTRAINT fk_mechanism_id "
             "REFERENCES MECHANISMS(id) ON DELETE CASCADE,"
-            "token_id INTEGER CONSTRAINT fk_token_id REFERENCES "
-            "TOKENS(id) ON DELETE CASCADE);"
+            "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES "
+            "SECCTX(id) ON DELETE CASCADE);"
 
             "CREATE TABLE REFS"
             "(identity_id INTEGER CONSTRAINT fk_identity_id "
             "REFERENCES CREDENTIALS(id) ON DELETE CASCADE,"
-            "token_id INTEGER CONSTRAINT fk_token_id REFERENCES "
-            "TOKENS(id) ON DELETE CASCADE,"
+            "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES "
+            "SECCTX(id) ON DELETE CASCADE,"
             "ref TEXT,"
-            "PRIMARY KEY (identity_id, token_id, ref));"
+            "PRIMARY KEY (identity_id, secctx_id, ref));"
 
             /*
              * triggers generated with
@@ -584,30 +584,30 @@ _gsignond_db_metadata_database_create (
             "END; "
 
             /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_ACL_token_id_TOKENS_id "
+            "CREATE TRIGGER fki_ACL_secctx_id_SECCTX_id "
             "BEFORE INSERT ON [ACL] "
             "FOR EACH ROW BEGIN "
             "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates foreign "
-            "key constraint fki_ACL_token_id_TOKENS_id') "
-            "  WHERE NEW.token_id IS NOT NULL AND (SELECT id FROM TOKENS "
-            "WHERE id = NEW.token_id) IS NULL; "
+            "key constraint fki_ACL_secctx_id_SECCTX_id') "
+            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL; "
             "END; "
 
             /* Foreign key preventing update */
-            "CREATE TRIGGER fku_ACL_token_id_TOKENS_id "
+            "CREATE TRIGGER fku_ACL_secctx_id_SECCTX_id "
             "BEFORE UPDATE ON [ACL] "
             "FOR EACH ROW BEGIN "
             "    SELECT RAISE(ROLLBACK, 'update on table ACL violates foreign "
-            "key constraint fku_ACL_token_id_TOKENS_id') "
-            "      WHERE NEW.token_id IS NOT NULL AND (SELECT id FROM TOKENS "
-            "WHERE id = NEW.token_id) IS NULL; "
+            "key constraint fku_ACL_secctx_id_SECCTX_id') "
+            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL; "
             "END; "
 
             /* Cascading Delete */
-            "CREATE TRIGGER fkdc_ACL_token_id_TOKENS_id "
-            "BEFORE DELETE ON TOKENS "
+            "CREATE TRIGGER fkdc_ACL_secctx_id_SECCTX_id "
+            "BEFORE DELETE ON SECCTX "
             "FOR EACH ROW BEGIN "
-            "    DELETE FROM ACL WHERE ACL.token_id = OLD.id; "
+            "    DELETE FROM ACL WHERE ACL.secctx_id = OLD.id; "
             "END; "
 
             /* Foreign Key Preventing insert */
@@ -638,30 +638,64 @@ _gsignond_db_metadata_database_create (
             "END; "
 
             /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_REFS_token_id_TOKENS_id "
+            "CREATE TRIGGER fki_REFS_secctx_id_SECCTX_id "
             "BEFORE INSERT ON [REFS] "
             "FOR EACH ROW BEGIN "
             "  SELECT RAISE(ROLLBACK, 'insert on table REFS violates foreign "
-            "key constraint fki_REFS_token_id_TOKENS_id') "
-            "  WHERE NEW.token_id IS NOT NULL AND (SELECT id FROM TOKENS "
-            "WHERE id = NEW.token_id) IS NULL; "
+            "key constraint fki_REFS_secctx_id_SECCTX_id') "
+            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL; "
             "END; "
 
             /* Foreign key preventing update */
-            "CREATE TRIGGER fku_REFS_token_id_TOKENS_id "
+            "CREATE TRIGGER fku_REFS_secctx_id_SECCTX_id "
             "BEFORE UPDATE ON [REFS] "
             "FOR EACH ROW BEGIN "
             "    SELECT RAISE(ROLLBACK, 'update on table REFS violates "
-            "foreign key constraint fku_REFS_token_id_TOKENS_id') "
-            "      WHERE NEW.token_id IS NOT NULL AND (SELECT id FROM "
-            "TOKENS WHERE id = NEW.token_id) IS NULL; "
+            "foreign key constraint fku_REFS_secctx_id_SECCTX_id') "
+            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM "
+            "SECCTX WHERE id = NEW.secctx_id) IS NULL; "
             "END; "
 
             /* Cascading Delete */
-            "CREATE TRIGGER fkdc_REFS_token_id_TOKENS_id "
-            "BEFORE DELETE ON TOKENS "
+            "CREATE TRIGGER fkdc_REFS_secctx_id_SECCTX_id "
+            "BEFORE DELETE ON SECCTX "
             "FOR EACH ROW BEGIN "
-            "    DELETE FROM REFS WHERE REFS.token_id = OLD.id; "
+            "    DELETE FROM REFS WHERE REFS.secctx_id = OLD.id; "
+            "END; "
+
+            //create OWNER table
+            "CREATE TABLE OWNER"
+            "(rowid INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "identity_id INTEGER CONSTRAINT fk_identity_id "
+            "REFERENCES CREDENTIALS(id) ON DELETE CASCADE,"
+            "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES SECCTX(id) "
+            "ON DELETE CASCADE);"
+
+            //added triggers for OWNER
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_OWNER_secctx_id_SECCTX_id "
+            "BEFORE INSERT ON [OWNER] "
+            "FOR EACH ROW BEGIN "
+            "  SELECT RAISE(ROLLBACK, 'insert on table OWNER violates "
+            "foreign key constraint fki_OWNER_secctx_id_SECCTX_id') "
+            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL; "
+            "END; "
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_OWNER_secctx_id_SECCTX_id "
+            "BEFORE UPDATE ON [OWNER] "
+            "FOR EACH ROW BEGIN "
+            "    SELECT RAISE(ROLLBACK, 'update on table OWNER violates "
+            "foreign key constraint fku_OWNER_secctx_id_SECCTX_id') "
+            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL; "
+            "END; "
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_OWNER_secctx_id_SECCTX_id "
+            "BEFORE DELETE ON SECCTX "
+            "FOR EACH ROW BEGIN "
+            "    DELETE FROM OWNER WHERE OWNER.secctx_id = OLD.id; "
             "END; "
 
             "PRAGMA user_version = 1;";
@@ -682,7 +716,7 @@ _gsignond_db_metadata_database_clear (
             "DELETE FROM MECHANISMS;"
             "DELETE FROM ACL;"
             "DELETE FROM REALMS;"
-            "DELETE FROM TOKENS;"
+            "DELETE FROM SECCTX;"
             "DELETE FROM OWNER;";
 
     return gsignond_db_sql_database_transaction_exec (obj, queries);
@@ -790,8 +824,8 @@ gsignond_db_metadata_database_get_methods (
     } else {
         query = sqlite3_mprintf ("SELECT DISTINCT METHODS.method FROM "
                 "( ACL JOIN METHODS ON ACL.method_id = METHODS.id ) "
-                "WHERE ACL.identity_id = %u AND ACL.token_id = "
-                "(SELECT id FROM TOKENS "
+                "WHERE ACL.identity_id = %u AND ACL.secctx_id = "
+                "(SELECT id FROM SECCTX "
                 "WHERE sysctx = %Q AND appctx = %Q);",
                 identity_id, sec_ctx->sys_ctx, sec_ctx->app_ctx);
     }
@@ -900,11 +934,11 @@ gsignond_db_metadata_database_update_identity (
                 while (mech_iter) {
                     _gsignond_db_metadata_database_exec (self,
                             "INSERT OR REPLACE INTO ACL "
-                            "(identity_id, method_id, mechanism_id, token_id) "
+                            "(identity_id, method_id, mechanism_id, secctx_id) "
                             "VALUES ( %u, "
                             "( SELECT id FROM METHODS WHERE method = %Q ),"
                             "( SELECT id FROM MECHANISMS WHERE mechanism= %Q ), "
-                            "( SELECT id FROM TOKENS WHERE sysctx = %Q "
+                            "( SELECT id FROM SECCTX WHERE sysctx = %Q "
                             "AND appctx = %Q));",
                             id, method, g_sequence_get (mech_iter),
                             ctx->sys_ctx, ctx->app_ctx);
@@ -913,10 +947,10 @@ gsignond_db_metadata_database_update_identity (
                 if (g_sequence_get_length (mechanisms) <= 0) {
                     _gsignond_db_metadata_database_exec (self,
                             "INSERT OR REPLACE INTO ACL "
-                            "(identity_id, method_id, token_id) "
+                            "(identity_id, method_id, secctx_id) "
                             "VALUES ( %u, "
                             "( SELECT id FROM METHODS WHERE method = %Q),"
-                            "( SELECT id FROM TOKENS WHERE sysctx = %Q AND "
+                            "( SELECT id FROM SECCTX WHERE sysctx = %Q AND "
                             "appctx = %Q ));",
                             id, method, ctx->sys_ctx, ctx->app_ctx);
                 }
@@ -952,9 +986,9 @@ gsignond_db_metadata_database_update_identity (
             ctx = (GSignondSecurityContext *) list->data;
             _gsignond_db_metadata_database_exec (self,
                     "INSERT OR REPLACE INTO ACL "
-                    "(identity_id, token_id) "
+                    "(identity_id, secctx_id) "
                     "VALUES ( %u, "
-                    "( SELECT id FROM TOKENS WHERE sysctx = %Q AND "
+                    "( SELECT id FROM SECCTX WHERE sysctx = %Q AND "
                     "appctx = %Q));",
                     id, ctx->sys_ctx, ctx->app_ctx);
         }
@@ -966,9 +1000,9 @@ gsignond_db_metadata_database_update_identity (
         ctx = (GSignondSecurityContext *) list->data;
         _gsignond_db_metadata_database_exec (self,
                 "INSERT OR REPLACE INTO OWNER "
-                "(identity_id, token_id) "
+                "(identity_id, secctx_id) "
                 "VALUES ( %u, "
-                "( SELECT id FROM TOKENS WHERE sysctx = %Q AND appctx = %Q ));",
+                "( SELECT id FROM SECCTX WHERE sysctx = %Q AND appctx = %Q ));",
                 id, ctx->sys_ctx, ctx->app_ctx);
     }
 
@@ -1112,7 +1146,7 @@ gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
         identity = gsignond_db_metadata_database_get_identity (self,
                 g_array_index (ids, gint, i));
         if (identity) {
-            g_list_append (identities, identity);
+            identities = g_list_append (identities, identity);
         }
     }
     g_array_free (ids, TRUE);
@@ -1182,16 +1216,16 @@ gsignond_db_metadata_database_insert_reference (
     }
 
     if (!_gsignond_db_metadata_database_exec (self,
-            "INSERT OR IGNORE INTO TOKENS (sysctx, appctx) "
+            "INSERT OR IGNORE INTO SECCTX (sysctx, appctx) "
             "VALUES ( %Q, %Q );", ref_owner->sys_ctx, ref_owner->app_ctx)) {
         gsignond_db_sql_database_rollback_transaction (sql);
         return FALSE;
     }
     if (!_gsignond_db_metadata_database_exec (self,
             "INSERT OR REPLACE INTO REFS "
-            "(identity_id, token_id, ref) "
+            "(identity_id, secctx_id, ref) "
             "VALUES ( %u, "
-            "( SELECT id FROM TOKENS "
+            "( SELECT id FROM SECCTX "
             "WHERE sysctx = %Q AND appctx = %Q), %Q );",
             identity_id, ref_owner->sys_ctx, ref_owner->app_ctx, reference)) {
         gsignond_db_sql_database_rollback_transaction (sql);
@@ -1250,14 +1284,14 @@ gsignond_db_metadata_database_remove_reference (
         ret = _gsignond_db_metadata_database_exec (self,
                 "DELETE FROM REFS "
                 "WHERE identity_id = %u AND "
-                "token_id = ( SELECT id FROM TOKENS "
+                "secctx_id = ( SELECT id FROM SECCTX "
                 "WHERE sysctx = %Q AND appctx = %Q );",
                 identity_id, ref_owner->sys_ctx, ref_owner->app_ctx);
     } else {
         ret = _gsignond_db_metadata_database_exec (self,
                 "DELETE FROM REFS "
                 "WHERE identity_id = %u AND "
-                "token_id = ( SELECT id FROM TOKENS "
+                "secctx_id = ( SELECT id FROM SECCTX "
                 "WHERE sysctx = %Q AND appctx = %Q ) "
                 "AND ref = :ref;",
                 identity_id, ref_owner->sys_ctx, ref_owner->app_ctx, reference);
@@ -1303,7 +1337,7 @@ gsignond_db_metadata_database_get_references (
     } else {
         query = sqlite3_mprintf ("SELECT ref FROM REFS "
                 "WHERE identity_id = %u AND "
-                "token_id = (SELECT id FROM TOKENS "
+                "secctx_id = (SELECT id FROM SECCTX "
                 "WHERE sysctx = %Q AND appctx = %Q );",
                 identity_id, ref_owner->sys_ctx, ref_owner->app_ctx );
     }
@@ -1340,9 +1374,9 @@ gsignond_db_metadata_database_get_accesscontrol_list(
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
 
-    query = sqlite3_mprintf ("SELECT sysctx, appctx FROM TOKENS "
+    query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
-            "(SELECT token_id FROM ACL WHERE identity_id = %u;",
+            "(SELECT secctx_id FROM ACL WHERE identity_id = %u;",
             identity_id);
     tuples = gsignond_db_sql_database_query_exec_string_tuple (
                     GSIGNOND_DB_SQL_DATABASE (self),
@@ -1354,7 +1388,7 @@ gsignond_db_metadata_database_get_accesscontrol_list(
     while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
     		(gpointer *)&appctx)) {
         ctx = gsignond_security_context_new_from_values (sysctx, appctx);
-        g_list_append (list, ctx);
+        list = g_list_append (list, ctx);
     }
     g_hash_table_unref (tuples);
 
@@ -1387,9 +1421,9 @@ gsignond_db_metadata_database_get_owner_list(
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
 
-    query = sqlite3_mprintf ("SELECT sysctx, appctx FROM TOKENS "
+    query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
-            "(SELECT token_id FROM OWNER WHERE identity_id = %u;",
+            "(SELECT secctx_id FROM OWNER WHERE identity_id = %u;",
             identity_id);
     tuples = gsignond_db_sql_database_query_exec_string_tuple (
                     GSIGNOND_DB_SQL_DATABASE (self),
@@ -1401,7 +1435,7 @@ gsignond_db_metadata_database_get_owner_list(
     while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
     		(gpointer *)&appctx)) {
         ctx = gsignond_security_context_new_from_values (sysctx, appctx);
-        g_list_append (list, ctx);
+        list = g_list_append (list, ctx);
     }
     g_hash_table_unref (tuples);
 

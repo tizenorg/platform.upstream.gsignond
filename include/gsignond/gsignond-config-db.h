@@ -34,5 +34,7 @@
                                                 "/FileSystemType"
 #define GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME   GSIGNOND_CONFIG_DB_SSO \
                                                 "/SecretDBFilename"
+#define GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME GSIGNOND_CONFIG_DB_SSO \
+                                                "/MetadataDBFilename"
 
 #endif /* __GSIGNOND_DB_CONFIG_H_ */

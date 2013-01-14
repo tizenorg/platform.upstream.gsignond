@@ -24,6 +24,7 @@ libgsignond_common_la_SOURCES = \
     gsignond-access-control-manager.c \
     gsignond-extension-interface.c \
     gsignond-storage-manager.c \
+    gsignond-identity-info.c \
     gsignond-credentials.c \
     gsignond-config.c \
     gsignond-error.c \

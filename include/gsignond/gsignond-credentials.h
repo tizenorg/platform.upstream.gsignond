@@ -69,7 +69,7 @@ GType
 gsignond_credentials_get_type (void);
 
 GSignondCredentials *
-gisgnond_credentials_new(void);
+gsignond_credentials_new ();
 
 gboolean
 gsignond_credentials_set_data(

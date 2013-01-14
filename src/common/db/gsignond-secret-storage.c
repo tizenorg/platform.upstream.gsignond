@@ -177,10 +177,17 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     g_return_val_if_fail (config_table != NULL, FALSE);
 
     /* TODO: Fix it when config is updated
-     * */
+     *
+    dir = (const gchar *) g_hash_table_lookup (config_table,
+            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     filename = (const gchar *) g_hash_table_lookup (config_table,
             GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME);
-    filename = "/home/imran/.cache/gsignond.db";
+    filename = g_build_filename (dir, filename);
+    for metadatadb, g_get_user_data ();
+
+    */
+
+    filename = "/home/imran/.cache/gsignond-secret.db";
 
     if (!filename) {
         WARN("Invalid db filename...");

@@ -65,7 +65,10 @@ _gsignond_db_sql_database_open (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_SQL_DATABASE (self), FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
-    g_return_val_if_fail (self->priv->db == NULL, FALSE);
+
+    if (_gsignond_db_sql_database_is_open (self)) {
+        return TRUE;
+    }
 
     ret = sqlite3_open_v2 (filename, &self->priv->db, flags, NULL);
     if (ret != SQLITE_OK) {

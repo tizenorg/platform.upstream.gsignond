@@ -200,7 +200,7 @@ gsignond_db_secret_cache_update_credentials (
     } else {
         value = _gsignond_db_auth_cache_new ();
         value->creds = g_object_ref (creds);
-        g_hash_table_insert (self->priv->cache, &id, value);
+        g_hash_table_insert (self->priv->cache, GUINT_TO_POINTER (id), value);
     }
     value->store_password = store_password;
     return TRUE;
@@ -265,11 +265,12 @@ gsignond_db_secret_cache_update_data (
         return TRUE;
     }
 
-    value = (AuthCache *) g_hash_table_lookup (self->priv->cache, &id);
+    value = (AuthCache *) g_hash_table_lookup (self->priv->cache,
+            GUINT_TO_POINTER (id));
     if (value == NULL) {
         value = _gsignond_db_auth_cache_new ();
-        g_hash_table_insert (value->blob_data, &method, data);
-        g_hash_table_insert (self->priv->cache, &id, value);
+        g_hash_table_insert (value->blob_data, GUINT_TO_POINTER (method), data);
+        g_hash_table_insert (self->priv->cache, GUINT_TO_POINTER (id), value);
     } else {
         g_hash_table_replace (value->blob_data, (gpointer)&method, data);
     }

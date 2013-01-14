@@ -27,6 +27,17 @@
 #include "gsignond-identity-info-internal.h"
 
 
+void
+_gsignond_identity_info_free_array (gchar ** array)
+{
+    gint i;
+    i = 0;
+    while (array[i]) {
+        g_free (array[i]);
+    }
+    g_free (array);
+}
+
 static gboolean
 _gsignond_identity_info_seq_cmp (
         GSequence *one,
@@ -120,7 +131,7 @@ _gsignond_identity_info_methods_cmp (
 {
     GHashTableIter iter1;
     GSequence *mechs1 = NULL, *mechs2 = NULL;
-    const gchar *key = NULL;
+    gchar *key = NULL;
     gboolean equal = TRUE;
 
     if ((one != NULL && two == NULL) ||
@@ -132,7 +143,8 @@ _gsignond_identity_info_methods_cmp (
         return TRUE;
 
     g_hash_table_iter_init(&iter1, one);
-    while (g_hash_table_iter_next (&iter1, &key, &mechs1)) {
+    while (g_hash_table_iter_next (&iter1, (gpointer *)&key,
+            (gpointer *)&mechs1)) {
         mechs2 = (GSequence *)g_hash_table_lookup (two, key);
         equal = _gsignond_identity_info_seq_cmp (mechs1, mechs2);
         if (!equal) {
@@ -222,14 +234,14 @@ gsignond_identity_info_new (void)
 }
 
 /**
- * gsignond_identity_info_unref:
+ * gsignond_identity_info_free:
  * @info: instance of #GSignondIdentityInfo
  *
  * Frees the memory allocated by info structure.
  *
  */
 void
-gsignond_identity_info_unref (GSignondIdentityInfo *info)
+gsignond_identity_info_free (GSignondIdentityInfo *info)
 {
     g_return_if_fail (info != NULL);
     g_hash_table_unref (info);
@@ -249,12 +261,12 @@ gsignond_identity_info_copy (GSignondIdentityInfo *other)
 {
     GSignondIdentityInfo *info = NULL;
     GHashTable *methods = NULL;
-    GSignondSecurityContextList *owners = NULL;
-    GSequence *realms, *acl;
+    GSignondSecurityContextList *owners = NULL, *acl = NULL;
+    GSequence *realms = NULL;
 
     g_return_val_if_fail (other != NULL, NULL);
 
-    identity_info_set_id (info, gsignond_identity_info_get_id (other));
+    gsignond_identity_info_set_id (info, gsignond_identity_info_get_id (other));
 
     gsignond_identity_info_set_username (info,
             gsignond_identity_info_get_username (other));
@@ -278,7 +290,7 @@ gsignond_identity_info_copy (GSignondIdentityInfo *other)
 
     acl = gsignond_identity_info_get_access_control_list (other);
     gsignond_identity_info_set_access_control_list (info, acl);
-    g_sequence_free (acl);
+    gsignond_security_context_list_free (acl);
 
     owners = gsignond_identity_info_get_owner_list (other);
     gsignond_identity_info_set_owner_list (info, owners);
@@ -287,8 +299,8 @@ gsignond_identity_info_copy (GSignondIdentityInfo *other)
     gsignond_identity_info_set_validated (info,
             gsignond_identity_info_get_validated (other));
 
-    gsignond_identity_info_set_type (info,
-            gsignond_identity_info_get_type (other));
+    gsignond_identity_info_set_identity_type (info,
+            gsignond_identity_info_get_identity_type (other));
 
     return info;
 }
@@ -396,11 +408,11 @@ gsignond_identity_info_get_username (GSignondIdentityInfo *info)
     GVariant *var = NULL;
     const gchar *name = NULL;
 
-    g_return_val_if_fail (info != NULL, -1);
+    g_return_val_if_fail (info != NULL, NULL);
 
     var = g_hash_table_lookup (info, GSIGNOND_IDENTITY_INFO_USERNAME);
     if (var != NULL) {
-        name = g_variant_get_string (var);
+        name = g_variant_get_string (var, NULL);
     }
 
     return name;
@@ -453,7 +465,7 @@ gsignond_identity_info_get_is_username_secret (GSignondIdentityInfo *info)
 
     var = g_hash_table_lookup (info, GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET);
     if (var != NULL) {
-        is_username_secret = g_variant_new_boolean (var);
+        is_username_secret = g_variant_get_boolean (var);
     }
 
     return is_username_secret;
@@ -506,7 +518,7 @@ gsignond_identity_info_get_secret (GSignondIdentityInfo *info)
 
     var = g_hash_table_lookup (info, GSIGNOND_IDENTITY_INFO_SECRET);
     if (var != NULL) {
-        secret = g_variant_get_string (var);
+        secret = g_variant_get_string (var, NULL);
     }
 
     return secret;
@@ -559,7 +571,7 @@ gsignond_identity_info_get_store_secret (GSignondIdentityInfo *info)
 
     var = g_hash_table_lookup (info, GSIGNOND_IDENTITY_INFO_STORESECRET);
     if (var != NULL) {
-        store_secret = g_variant_new_boolean (var);
+        store_secret = g_variant_get_boolean (var);
     }
 
     return store_secret;
@@ -612,7 +624,7 @@ gsignond_identity_info_get_caption (GSignondIdentityInfo *info)
 
     var = g_hash_table_lookup (info, GSIGNOND_IDENTITY_INFO_CAPTION);
     if (var != NULL) {
-        caption = g_variant_get_string (var);
+        caption = g_variant_get_string (var, NULL);
     }
 
     return caption;
@@ -738,15 +750,17 @@ gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
 
         methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
                                 (GEqualFunc)g_str_equal,
-                                NULL,
+                                (GDestroyNotify)g_free,
                                 (GDestroyNotify)g_sequence_free);
 
         g_variant_iter_init (&iter, var);
         while (g_variant_iter_next (&iter, "{s^as}", &vmethod, &vmechanisms))
         {
-            seq = _gsignond_identity_info_array_to_sequence (vmechanisms);
-            g_hash_table_insert (methods, seq);
-            g_variant_unref (vmechanisms);
+            seq = _gsignond_identity_info_array_to_sequence (
+                    (const gchar *const *)vmechanisms);
+            /*vmethod ownership is transferred to methods*/
+            g_hash_table_insert (methods, vmethod, seq);
+            _gsignond_identity_info_free_array (vmechanisms);
         }
     }
 
@@ -829,14 +843,15 @@ gsignond_identity_info_get_mechanisms (
         while (g_variant_iter_next (&iter, "{s^as}", &vmethod, &vmechanisms))
         {
             if (vmethod != NULL && g_strcmp0 (vmethod, method) == 0) {
+                gint i;
                 mechanisms = _gsignond_identity_info_array_to_sequence (
-                                        vmechanisms);
+                                 (const gchar *const *) vmechanisms);
                 g_free (vmethod);
-                g_variant_unref (vmechanisms);
+                _gsignond_identity_info_free_array (vmechanisms);
                 break;
             }
             g_free (vmethod);
-            g_variant_unref (vmechanisms);
+            _gsignond_identity_info_free_array (vmechanisms);
         }
     }
 
@@ -1121,25 +1136,26 @@ gsignond_identity_info_check_method_mechanism (
         return TRUE;
     }
 
-    if (g_sequence_lookup (mechanisms, method, g_strcmp0, NULL) != NULL) {
+    if (g_sequence_lookup (mechanisms, (gpointer)method,
+            (GCompareDataFunc) g_strcmp0, NULL) != NULL) {
         *allowed_mechanisms = g_strdup (mechanism);
         g_sequence_free (mechanisms);
         return TRUE;
     }
 
-    split_mechs = g_strsplit (mechanism, ' ');
+    split_mechs = g_strsplit (mechanism, (const gchar *)' ', 0);
     if (g_strv_length (split_mechs) <= 1 ) {
         g_sequence_free (mechanisms);
         return FALSE;
     }
 
-    allowed_mechs = g_string_new ();
+    allowed_mechs = g_string_new (NULL);
     i = 0;
     while (split_mechs[i]) {
-        if (g_sequence_lookup (mechanisms, split_mechs[i],
-                               g_strcmp0, NULL) != NULL) {
+        if (g_sequence_lookup (mechanisms, (gpointer)split_mechs[i],
+                (GCompareDataFunc)g_strcmp0, NULL) != NULL) {
             if (j > 0) {
-                g_string_append (allowed_mechs, ' ');
+                g_string_append (allowed_mechs, (const gchar *)' ');
             }
             g_string_append (allowed_mechs, split_mechs[i]);
             ++j;
@@ -1149,7 +1165,7 @@ gsignond_identity_info_check_method_mechanism (
     g_strfreev (split_mechs);
     g_sequence_free (mechanisms);
 
-    *allowed_mechanisms = g_string_free (allowed_mechs);
+    *allowed_mechanisms = g_string_free (allowed_mechs, FALSE);
     return TRUE;
 }
 
@@ -1170,8 +1186,8 @@ gsignond_identity_info_compare (
         GSignondIdentityInfo *other)
 {
     GSequence *info_realms = NULL, *other_realms = NULL;
-    GSequence *info_acl = NULL, *other_acl = NULL;
     GHashTable *info_methods = NULL, *other_methods = NULL;
+    GSignondSecurityContextList *info_acl = NULL, *other_acl = NULL;
     GSignondSecurityContextList *info_owners = NULL, *other_owners = NULL;
     gboolean equal = FALSE;
 
@@ -1222,10 +1238,16 @@ gsignond_identity_info_compare (
     }
 
     info_acl = gsignond_identity_info_get_access_control_list (info);
-    other_acl = gsignond_identity_info_get_access_control_list (other);
-    equal = _gsignond_identity_info_seq_cmp (info_acl, other_acl);
-    g_sequence_free (info_acl);
-    g_sequence_free (other_acl);
+    info_acl = g_list_sort (
+                        info_acl,
+                        (GCompareFunc)gsignond_security_context_compare);
+    other_acl = gsignond_identity_info_get_owner_list (other);
+    other_acl = g_list_sort (
+                        other_acl,
+                        (GCompareFunc)gsignond_security_context_compare);
+    equal = _gsignond_identity_info_sec_context_list_cmp (info_acl, other_acl);
+    gsignond_security_context_list_free (info_acl);
+    gsignond_security_context_list_free (other_acl);
     if (equal != 0) {
         return FALSE;
     }
@@ -1233,12 +1255,13 @@ gsignond_identity_info_compare (
     info_owners = gsignond_identity_info_get_owner_list (info);
     info_owners = g_list_sort (
                         info_owners,
-                        gsignond_security_context_compare);
+                        (GCompareFunc)gsignond_security_context_compare);
     other_owners = gsignond_identity_info_get_owner_list (other);
     other_owners = g_list_sort (
                         other_owners,
-                        gsignond_security_context_compare);
-    equal = _gsignond_identity_info_sec_context_list_cmp (info, other);
+                        (GCompareFunc)gsignond_security_context_compare);
+    equal = _gsignond_identity_info_sec_context_list_cmp (info_owners,
+            other_owners);
     gsignond_security_context_list_free (info_owners);
     gsignond_security_context_list_free (other_owners);
     if (equal != 0) {
@@ -1250,8 +1273,8 @@ gsignond_identity_info_compare (
         return FALSE;
     }
 
-    if (gsignond_identity_info_get_type (info) !=
-        gsignond_identity_info_get_type (other)) {
+    if (gsignond_identity_info_get_identity_type (info) !=
+        gsignond_identity_info_get_identity_type (other)) {
         return FALSE;
     }
 
