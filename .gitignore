@@ -22,3 +22,8 @@ m4/lt*.m4
 *.stamp
 *.typelib
 *.tar.*
+build-aux
+*dbus*gen*
+src/daemon/gsignond
+stamp-h1
+*service
