@@ -23,8 +23,8 @@
  * 02110-1301 USA
  */
 
-#ifndef _TEST_EXTENSION_H_
-#define _TEST_EXTENSION_H_
+#ifndef _TEST_STORAGE_MANAGER_H_
+#define _TEST_STORAGE_MANAGER_H_
 
 #include <glib-object.h>
 #include <gsignond/gsignond-extension-interface.h>
@@ -36,12 +36,12 @@ G_BEGIN_DECLS
 #define EXTENSION_TEST_STORAGE_MANAGER(obj) \
     (G_TYPE_CHECK_INSTANCE_CAST ((obj), EXTENSION_TYPE_TEST_STORAGE_MANAGER, \
                                  ExtensionTestStorageManager))
-#define EXTENSION_IS_TEST(obj) \
+#define EXTENSION_IS_TEST_STORAGE_MANAGER(obj) \
     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), EXTENSION_TYPE_TEST_STORAGE_MANAGER))
 #define EXTENSION_TEST_STORAGE_MANAGER_CLASS(klass) \
     (G_TYPE_CHECK_CLASS_CAST ((klass), EXTENSION_TYPE_TEST_STORAGE_MANAGER, \
                               ExtensionTestStorageManagerClass))
-#define EXTENSION_IS_TEST_CLASS(klass) \
+#define EXTENSION_IS_TEST_STORAGE_MANAGER_CLASS(klass) \
     (G_TYPE_CHECK_CLASS_TYPE ((klass), EXTENSION_TYPE_TEST_STORAGE_MANAGER))
 #define EXTENSION_TEST_STORAGE_MANAGER_GET_CLASS(obj) \
     (G_TYPE_INSTANCE_GET_CLASS ((obj), EXTENSION_TYPE_TEST_STORAGE_MANAGER, \
@@ -69,5 +69,5 @@ GType extension_test_storage_manager_get_type ();
 
 G_END_DECLS
 
-#endif  /* _TEST_EXTENSION_H_ */
+#endif  /* _TEST_STORAGE_MANAGER_H_ */
 

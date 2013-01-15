@@ -95,11 +95,13 @@ _get_access_control_manager (GSignondExtension *self, GSignondConfig *config)
 static void
 extension_test_class_init (ExtensionTestClass *klass)
 {
-    klass->get_extension_name = _get_extension_name;
-    klass->get_extension_version = _get_extension_version;
-    klass->get_storage_manager = _get_storage_manager;
-    klass->get_secret_storage = _get_secret_storage;
-    klass->get_access_control_manager = _get_access_control_manager;
+    GSignondExtensionClass *parent_class = GSIGNOND_EXTENSION_CLASS (klass);
+
+    parent_class->get_extension_name = _get_extension_name;
+    parent_class->get_extension_version = _get_extension_version;
+    parent_class->get_storage_manager = _get_storage_manager;
+    parent_class->get_secret_storage = _get_secret_storage;
+    parent_class->get_access_control_manager = _get_access_control_manager;
 }
 
 static void

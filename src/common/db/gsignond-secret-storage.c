@@ -47,7 +47,6 @@
 struct _GSignondSecretStoragePrivate
 {
     GSignondDbSecretDatabase *database;
-    GSignondConfig *config;
 };
 
 G_DEFINE_TYPE (GSignondSecretStorage, gsignond_secret_storage,
@@ -75,8 +74,8 @@ _set_property (GObject *object, guint prop_id, const GValue *value,
 
     switch (prop_id) {
         case PROP_CONFIG:
-            g_assert (self->priv->config == NULL);
-            self->priv->config = g_value_dup_object (value);
+            g_assert (self->config == NULL);
+            self->config = g_value_dup_object (value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -90,7 +89,7 @@ _get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 
     switch (prop_id) {
         case PROP_CONFIG:
-            g_value_set_object (value, self->priv->config);
+            g_value_set_object (value, self->config);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -111,9 +110,9 @@ _gsignond_secret_storage_dispose (GObject *gobject)
         self->priv->database = NULL;
     }
 
-    if (self->priv->config) {
-        g_object_unref (self->priv->config);
-        self->priv->config = NULL;
+    if (self->config) {
+        g_object_unref (self->config);
+        self->config = NULL;
     }
 
     /* Chain up to the parent class */
@@ -161,7 +160,7 @@ gsignond_secret_storage_init (GSignondSecretStorage *self)
 {
     self->priv = GSIGNOND_SECRET_STORAGE_GET_PRIVATE (self);
     self->priv->database = NULL;
-    self->priv->config = NULL;
+    self->config = NULL;
 }
 
 gboolean
@@ -171,9 +170,9 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     const GHashTable *config_table = NULL;
 
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    g_return_val_if_fail (self->priv->config != NULL, FALSE);
+    g_return_val_if_fail (self->config != NULL, FALSE);
 
-    config_table = gsignond_config_get_config_table(self->priv->config);
+    config_table = gsignond_config_get_config_table(self->config);
     g_return_val_if_fail (config_table != NULL, FALSE);
 
     /* TODO: Fix it when config is updated

@@ -23,44 +23,36 @@
  * 02110-1301 USA
  */
 
-#include "test-storage-manager.h"
+#include "test-secret-storage.h"
 
-#define EXTENSION_TEST_STORAGE_MANAGER_GET_PRIVATE(obj) \
+#define EXTENSION_TEST_SECRET_STORAGE_GET_PRIVATE(obj) \
     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
-                                  EXTENSION_TYPE_TEST_STORAGE_MANAGER, \
-                                  ExtensionTestStorageManagerPrivate))
+                                  EXTENSION_TYPE_TEST_SECRET_STORAGE, \
+                                  ExtensionTestSecretStoragePrivate))
 
-struct _ExtensionTestStorageManagerPrivate
+struct _ExtensionTestSecretStoragePrivate
 {
 };
 
-G_DEFINE_TYPE (ExtensionTestStorageManager,
-               extension_test_storage_manager,
-               GSIGNOND_TYPE_STORAGE_MANAGER);
+G_DEFINE_TYPE (ExtensionTestSecretStorage,
+               extension_test_secret_storage,
+               GSIGNOND_TYPE_SECRET_STORAGE);
 
 static void
-extension_test_storage_manager_class_init (
-                                        ExtensionTestStorageManagerClass *klass)
+extension_test_secret_storage_class_init (
+                                         ExtensionTestSecretStorageClass *klass)
 {
     (void) klass;
 
     /*GObjectClass *base = G_OBJECT_CLASS (klass);
 
     g_type_class_add_private (klass,
-                              sizeof(ExtensionTestStorageManagerPrivate));*/
+                              sizeof(ExtensionTestSecretStoragePrivate));*/
 }
 
 static void
-extension_test_storage_manager_init (ExtensionTestStorageManager *self)
+extension_test_secret_storage_init (ExtensionTestSecretStorage *self)
 {
-    GSignondStorageManager *parent;
-    /*self->priv = EXTENSION_TEST_STORAGE_MANAGER_GET_PRIVATE (self);*/
-
-    parent = GSIGNOND_STORAGE_MANAGER (self);
-    parent->location = g_strdup (g_getenv ("EXTENSION_TEST_DATADIR"));
-    if (!parent->location) {
-        parent->location =
-            g_build_filename (g_get_tmp_dir (), "gsignond-test");
-    }
+    /*self->priv = EXTENSION_TEST_SECRET_STORAGE_GET_PRIVATE (self);*/
 }
 

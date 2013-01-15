@@ -1,1 +1,1 @@
-SUBDIRS=common daemon plugins
+SUBDIRS=common daemon extensions plugins

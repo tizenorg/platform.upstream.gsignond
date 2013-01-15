@@ -49,6 +49,8 @@ src/daemon/Makefile
 src/daemon/db/Makefile
 src/daemon/dbus/Makefile
 src/daemon/dbus/services/com.google.code.AccountsSSO.SingleSignOn.service
+src/extensions/Makefile
+src/extensions/test/Makefile
 src/plugins/Makefile
 src/plugins/password/Makefile
 test/Makefile
