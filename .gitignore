@@ -25,5 +25,7 @@ m4/lt*.m4
 build-aux
 *dbus*gen*
 src/daemon/gsignond
+test/db/testdb
+test/passwordplugin/passwordplugintest
 stamp-h1
 *service

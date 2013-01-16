@@ -28,13 +28,14 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gsignond/gsignond-session-data.h>
 
 G_BEGIN_DECLS
 
-#define GSIGNOND_TYPE_PLUGIN				(gsignond_plugin_get_type ())
-#define GSIGNOND_PLUGIN(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), GSIGNOND_TYPE_PLUGIN, GSignondPlugin))
-#define GSIGNOND_IS_PLUGIN(obj)				(G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSIGNOND_TYPE_PLUGIN))
-#define GSIGNOND_PLUGIN_GET_INTERFACE(inst)		(G_TYPE_INSTANCE_GET_INTERFACE ((inst), GSIGNOND_TYPE_PLUGIN, GSignondPluginInterface))
+#define GSIGNOND_TYPE_PLUGIN    (gsignond_plugin_get_type ())
+#define GSIGNOND_PLUGIN(obj)    (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSIGNOND_TYPE_PLUGIN, GSignondPlugin))
+#define GSIGNOND_IS_PLUGIN(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSIGNOND_TYPE_PLUGIN))
+#define GSIGNOND_PLUGIN_GET_INTERFACE(inst) (G_TYPE_INSTANCE_GET_INTERFACE ((inst), GSIGNOND_TYPE_PLUGIN, GSignondPluginInterface))
 
 typedef struct _GSignondPlugin GSignondPlugin; /* dummy object */
 typedef struct _GSignondPluginInterface GSignondPluginInterface;
@@ -42,11 +43,15 @@ typedef struct _GSignondPluginInterface GSignondPluginInterface;
 struct _GSignondPluginInterface {
     GTypeInterface parent;
 
-    void	(*cancel) (GSignondPlugin *self);
-    void	(*abort) (GSignondPlugin *self);
-    void	(*process) (GSignondPlugin *self, const GVariant *session_data, const gchar *mechanism);
-    void	(*user_action_finished) (GSignondPlugin *self, const GVariant *session_data);
-    void	(*refresh) (GSignondPlugin *self, const GVariant *session_data);
+    void (*cancel) (GSignondPlugin *self);
+    void (*abort) (GSignondPlugin *self);
+    void (*process) (GSignondPlugin *self, 
+                     GSignondSessionData *session_data, 
+                     const gchar *mechanism);
+    void (*user_action_finished) (GSignondPlugin *self, 
+                                  GSignondSessionData *session_data);
+    void (*refresh) (GSignondPlugin *self, 
+                     GSignondSessionData *session_data);
 };
 
 GType gsignond_plugin_get_type (void);
@@ -54,17 +59,27 @@ GType gsignond_plugin_get_type (void);
 /* Methods */
 void gsignond_plugin_cancel (GSignondPlugin *self);
 void gsignond_plugin_abort (GSignondPlugin *self);
-void gsignond_plugin_process (GSignondPlugin *self, const GVariant *session_data, const gchar *mechanism);
-void gsignond_plugin_user_action_finished (GSignondPlugin *self, const GVariant *session_data);
-void gsignond_plugin_refresh (GSignondPlugin *self, const GVariant *session_data);
+void gsignond_plugin_process (GSignondPlugin *self, 
+                              GSignondSessionData *session_data, 
+                              const gchar *mechanism);
+void gsignond_plugin_user_action_finished (GSignondPlugin *self, 
+                                           GSignondSessionData *session_data);
+void gsignond_plugin_refresh (GSignondPlugin *self, 
+                              GSignondSessionData *session_data);
 
 /* Signals */
-void gsignond_plugin_result (GSignondPlugin *self, const GVariant *session_data);
-void gsignond_plugin_store (GSignondPlugin *self, const GVariant *session_data);
-void gsignond_plugin_error (GSignondPlugin *self, int error); //FIXME: what is the error type?
-void gsignond_plugin_user_action_required (GSignondPlugin *self, const GVariant *session_data);
-void gsignond_plugin_refreshed (GSignondPlugin *self, const GVariant *session_data);
-void gsignond_plugin_status_changed (GSignondPlugin *self, const gchar *status, const gchar *message);
+void gsignond_plugin_result (GSignondPlugin *self, 
+                             GSignondSessionData *session_data);
+void gsignond_plugin_store (GSignondPlugin *self, 
+                            GSignondSessionData *session_data);
+void gsignond_plugin_error (GSignondPlugin *self, GError *error);
+void gsignond_plugin_user_action_required (GSignondPlugin *self, 
+                                           GSignondSessionData *session_data);
+void gsignond_plugin_refreshed (GSignondPlugin *self, 
+                                GSignondSessionData *session_data);
+void gsignond_plugin_status_changed (GSignondPlugin *self, 
+                                     const gchar *status, 
+                                     const gchar *message);
 
 G_END_DECLS
 

@@ -46,33 +46,38 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
 {
     signals[RESULT] = g_signal_new ("result", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, G_TYPE_VARIANT);
+        1, GSIGNOND_TYPE_SESSION_DATA);
 
     signals[STORE] = g_signal_new ("store", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, G_TYPE_VARIANT);
+        1, GSIGNOND_TYPE_SESSION_DATA);
 
     signals[ERROR] = g_signal_new ("error", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, G_TYPE_INT);
+        1, G_TYPE_ERROR);
     
-    signals[USER_ACTION_REQUIRED] = g_signal_new ("user-action-required", G_TYPE_FROM_CLASS (g_class),
+    signals[USER_ACTION_REQUIRED] = g_signal_new ("user-action-required", 
+        G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, G_TYPE_VARIANT);
+        1, GSIGNOND_TYPE_SESSION_DATA);
 
     signals[REFRESHED] = g_signal_new ("refreshed", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, G_TYPE_VARIANT);
+        1, GSIGNOND_TYPE_SESSION_DATA);
 
-    signals[STATUS_CHANGED] = g_signal_new ("status-changed", G_TYPE_FROM_CLASS (g_class),
+    signals[STATUS_CHANGED] = g_signal_new ("status-changed", 
+        G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
         2, G_TYPE_STRING, G_TYPE_STRING);
 
     g_object_interface_install_property (g_class,
-	g_param_spec_string ("type", "Type", "Plugin type", "none", G_PARAM_READABLE));
+	g_param_spec_string ("type", "Type", "Plugin type", "none", 
+                             G_PARAM_READABLE));
 
      g_object_interface_install_property (g_class,
-        g_param_spec_boxed ("mechanisms", "Mechanisms", "List of plugin mechanisms", G_TYPE_STRV, G_PARAM_READABLE));
+        g_param_spec_boxed ("mechanisms", "Mechanisms", 
+                            "List of plugin mechanisms", 
+                            G_TYPE_STRV, G_PARAM_READABLE));
     
 }
 
@@ -90,53 +95,63 @@ void gsignond_plugin_abort (GSignondPlugin *self)
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->abort (self);
 }
 
-void gsignond_plugin_process (GSignondPlugin *self, const GVariant *session_data, const gchar *mechanism)
+void gsignond_plugin_process (GSignondPlugin *self, 
+                              GSignondSessionData *session_data, 
+                              const gchar *mechanism)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->process (self, session_data, mechanism);
 }
 
-void gsignond_plugin_user_action_finished (GSignondPlugin *self, const GVariant *session_data)
+void gsignond_plugin_user_action_finished (GSignondPlugin *self, 
+                                           GSignondSessionData *session_data)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
-    GSIGNOND_PLUGIN_GET_INTERFACE (self)->user_action_finished (self, session_data);
+    GSIGNOND_PLUGIN_GET_INTERFACE (self)->user_action_finished (self, 
+                                                                session_data);
 }
 
-void gsignond_plugin_refresh (GSignondPlugin *self, const GVariant *session_data)
+void gsignond_plugin_refresh (GSignondPlugin *self, 
+                              GSignondSessionData *session_data)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->refresh (self, session_data);
 }
 
-void gsignond_plugin_result (GSignondPlugin *self, const GVariant *session_data)
+void gsignond_plugin_result (GSignondPlugin *self, 
+                             GSignondSessionData *session_data)
 {
     g_signal_emit (self, signals[RESULT], 0, session_data);
 }
 
-void gsignond_plugin_store (GSignondPlugin *self, const GVariant *session_data)
+void gsignond_plugin_store (GSignondPlugin *self, 
+                            GSignondSessionData *session_data)
 {
     g_signal_emit (self, signals[STORE], 0, session_data);
 }
 
-void gsignond_plugin_error (GSignondPlugin *self, int error)
+void gsignond_plugin_error (GSignondPlugin *self, GError *error)
 {
     g_signal_emit (self, signals[ERROR], 0, error);
 }
 
-void gsignond_plugin_user_action_required (GSignondPlugin *self, const GVariant *session_data)
+void gsignond_plugin_user_action_required (GSignondPlugin *self, 
+                                           GSignondSessionData *session_data)
 {
     g_signal_emit (self, signals[USER_ACTION_REQUIRED], 0, session_data);
 }
 
-void gsignond_plugin_refreshed (GSignondPlugin *self, const GVariant *session_data)
+void gsignond_plugin_refreshed (GSignondPlugin *self, 
+                                GSignondSessionData *session_data)
 {
     g_signal_emit (self, signals[REFRESHED], 0, session_data);
 }
 
-void gsignond_plugin_status_changed (GSignondPlugin *self, const gchar *status, const gchar *message)
+void gsignond_plugin_status_changed (GSignondPlugin *self, const gchar *status, 
+                                     const gchar *message)
 {
     g_signal_emit (self, signals[STATUS_CHANGED], 0, status, message);
 }

@@ -25,17 +25,22 @@
 
 #include <gsignond/gsignond-plugin-interface.h>
 #include "gsignond-password-plugin.h"
+#include <gsignond/gsignond-error.h>
 
 static void gsignond_plugin_interface_init (GSignondPluginInterface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (GSignondPasswordPlugin, gsignond_password_plugin, G_TYPE_OBJECT,
+G_DEFINE_TYPE_WITH_CODE (GSignondPasswordPlugin, gsignond_password_plugin, 
+                         G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_PLUGIN,
                                                 gsignond_plugin_interface_init));
 
 static void gsignond_password_plugin_cancel (GSignondPlugin *self)
 {
-//  g_print ("Baz implementation of Ibaz interface Action: 0x%x.\n",
-//           self->instance_member);
+    GError* error = g_error_new(GSIGNOND_ERROR, 
+                                GSIGNOND_ERROR_SESSION_CANCELED,
+                                "Session canceled");
+    gsignond_plugin_error (self, error); 
+    g_error_free(error);
 }
 
 static void gsignond_password_plugin_abort (GSignondPlugin *self)
@@ -43,19 +48,74 @@ static void gsignond_password_plugin_abort (GSignondPlugin *self)
     
 }
 
-static void gsignond_password_plugin_process (GSignondPlugin *self, const GVariant *session_data, const gchar *mechanism)
+static void gsignond_password_plugin_process (
+    GSignondPlugin *self, GSignondSessionData *session_data, 
+    const gchar *mechanism)
 {
+    const gchar* username = gsignond_session_data_get_username(session_data);
+    const gchar* secret = gsignond_session_data_get_secret(session_data);
     
+    if (secret != NULL) {
+        GSignondSessionData *response = gsignond_dictionary_new();
+        if (username != NULL)
+            gsignond_session_data_set_username(response, username);
+        gsignond_session_data_set_secret(response, secret);
+        gsignond_plugin_result(self, response);
+        gsignond_dictionary_free(response);
+        return;
+    }
+    
+    GSignondSessionData *user_action_data = gsignond_dictionary_new();
+    if (username == NULL)
+        gsignond_session_data_set_query_username(user_action_data, TRUE);
+    else
+        gsignond_session_data_set_username(user_action_data, username);
+    gsignond_session_data_set_query_password(user_action_data, TRUE);
+    gsignond_plugin_user_action_required(self, user_action_data);
+    gsignond_dictionary_free(user_action_data);
 }
 
-static void gsignond_password_plugin_user_action_finished (GSignondPlugin *self, const GVariant *session_data)
+static void gsignond_password_plugin_user_action_finished (
+    GSignondPlugin *self, 
+    GSignondSessionData *session_data)
 {
+    GSignondQueryError query_error = gsignond_session_data_get_query_error(
+        session_data);
+    const gchar* username = gsignond_session_data_get_username(session_data);
+    const gchar* secret = gsignond_session_data_get_secret(session_data);
     
+    if (query_error == GSIGNOND_QUERY_ERROR_NONE && 
+        username != NULL && 
+        secret != NULL) {
+        GSignondSessionData *response = gsignond_dictionary_new();
+        gsignond_session_data_set_username(response, username);
+        gsignond_session_data_set_secret(response, secret);
+        gsignond_plugin_result(self, response);
+        gsignond_dictionary_free(response);
+        return;
+    } else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
+        GError* error = g_error_new(GSIGNOND_ERROR, 
+                                GSIGNOND_ERROR_SESSION_CANCELED,
+                                "Session canceled");
+        gsignond_plugin_error (self, error); 
+        g_error_free(error);
+    } else {
+        gchar* error_message = g_strdup_printf("userActionFinished error: %d",
+                                               query_error);
+        GError* error = g_error_new(GSIGNOND_ERROR, 
+                                GSIGNOND_ERROR_USER_INTERACTION,
+                                error_message);
+        gsignond_plugin_error (self, error); 
+        g_free(error_message);
+        g_error_free(error);
+    }
 }
 
-static void gsignond_password_plugin_refresh (GSignondPlugin *self, const GVariant *session_data)
+static void gsignond_password_plugin_refresh (
+    GSignondPlugin *self, 
+    GSignondSessionData *session_data)
 {
-    
+    gsignond_plugin_refreshed(self, session_data);
 }
 
 static void
@@ -85,39 +145,39 @@ enum
 
 static void
 gsignond_password_plugin_set_property (GObject      *object,
-				       guint         property_id,
-				       const GValue *value,
-				       GParamSpec   *pspec)
+                                       guint         property_id,
+                                       const GValue *value,
+                                       GParamSpec   *pspec)
 {
     switch (property_id)
     {
-	default:
-	    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-	    break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+            break;
     }
 }
 
 static void
 gsignond_password_plugin_get_property (GObject    *object,
-				       guint       prop_id,
-				       GValue     *value,
-				       GParamSpec *pspec)
+                                       guint       prop_id,
+                                       GValue     *value,
+                                       GParamSpec *pspec)
 {
     GSignondPasswordPlugin *password_plugin = GSIGNOND_PASSWORD_PLUGIN (object);
     gchar *mechanisms[] = { "password", NULL };
     
     switch (prop_id)
     {
-	case PROP_TYPE:
-	    g_value_set_string (value, "password");
-	    break;
-	case PROP_MECHANISMS:
-	    g_value_set_boxed (value, mechanisms);
-	    break;
-	    
-	default:
-	    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-	    break;
+        case PROP_TYPE:
+            g_value_set_string (value, "password");
+            break;
+        case PROP_MECHANISMS:
+            g_value_set_boxed (value, mechanisms);
+            break;
+            
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
     }
 }
 
@@ -130,5 +190,6 @@ gsignond_password_plugin_class_init (GSignondPasswordPluginClass *klass)
     gobject_class->get_property = gsignond_password_plugin_get_property;
     
     g_object_class_override_property (gobject_class, PROP_TYPE, "type");
-    g_object_class_override_property (gobject_class, PROP_MECHANISMS, "mechanisms");
+    g_object_class_override_property (gobject_class, PROP_MECHANISMS, 
+                                      "mechanisms");
 }

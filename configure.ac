@@ -28,6 +28,11 @@ PKG_CHECK_MODULES([GSIGNOND],
 AC_SUBST(GSIGNOND_CFLAGS)
 AC_SUBST(GSIGNOND_LIBS)
 
+# AM_PATH_CHECK() is deprecated, but check documentation fails to tell that :-/
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.4], [have_check=yes], [have_check=no])
+AC_SUBST(CHECK_CFLAGS)
+AC_SUBST(CHECK_LIBS)
+
 DBUS_SERVICES_DIR="`pkg-config --variable session_bus_services_dir dbus-1`"
 AC_SUBST(DBUS_SERVICES_DIR)
 DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
@@ -55,4 +60,5 @@ src/plugins/Makefile
 src/plugins/password/Makefile
 test/Makefile
 test/db/Makefile
+test/passwordplugin/Makefile
 ])

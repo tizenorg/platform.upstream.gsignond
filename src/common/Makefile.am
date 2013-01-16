@@ -29,6 +29,8 @@ libgsignond_common_la_SOURCES = \
     gsignond-config.c \
     gsignond-error.c \
     gsignond-plugin-interface.c \
+    gsignond-dictionary.c \
+    gsignond-session-data.c \
     $(NULL)
 
 CLEANFILES = 

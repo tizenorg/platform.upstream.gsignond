@@ -32,7 +32,7 @@ gsignond_error_quark (void)
 {
     static GQuark quark = 0;
     if (quark == 0) {
-        quark = g_quark_from_static_string (G_LOG_DOMAIN);
+        quark = g_quark_from_static_string (GSIGNOND_ERROR_DOMAIN);
     }
     return quark;
 }

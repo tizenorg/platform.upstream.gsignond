@@ -8,8 +8,9 @@ libpasswordplugin_la_CPPFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 
-libpasswordplugin_la_LIBS = \
-    $(GSIGNOND_LIBS)
+libpasswordplugin_la_LIBADD = \
+    $(top_builddir)/src/common/libgsignond-common.la \
+    $(GSIGNOND_LIBS) \
     $(NULL)
 
 libpasswordplugin_la_SOURCES = \
