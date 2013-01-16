@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2012 Intel Corporation.
  *
+ * Contact: Jussi Laako <jussi.laako@linux.intel.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +24,7 @@
  */
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-config-general.h"
@@ -55,8 +57,6 @@ struct _GSignondConfigPrivate
 
 G_DEFINE_TYPE (GSignondConfig, gsignond_config, G_TYPE_OBJECT);
 
-
-#define GSIGNOND_CONFIG_PATH "/home/imran/.config/gsignond.conf"
 
 static gboolean gsignond_config_load (GSignondConfig *config);
 static gboolean gsignond_config_load_environment (GSignondConfig *config);
@@ -240,7 +240,7 @@ gsignond_config_class_init (GSignondConfigClass *klass)
         g_param_spec_string ("config-file-path",
                              "Daemon Config Path",
                              "Daemon configuration file path",
-                             GSIGNOND_CONFIG_PATH,
+                             NULL,
                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
     properties[PROP_PLUGINS_DIR] =
@@ -297,21 +297,48 @@ gsignond_config_class_init (GSignondConfigClass *klass)
 static gboolean
 gsignond_config_load (GSignondConfig *self)
 {
+    gchar *def_config;
+    const gchar * const *sysconfdirs;
     GError *err = NULL;
     gchar **groups = NULL;
     gsize n_groups = 0;
     int i,j;
     GKeyFile *settings = g_key_file_new ();
 
-    DBG ("Loading SSO config from %s", self->priv->config_file_path);
+    if (!self->priv->config_file_path) {
+        def_config = g_getenv ("GSIGNOND_CONFIG");
+        if (!def_config)
+            def_config = g_build_filename (g_get_user_config_dir(),
+                                           "gsignond/gsignond.conf",
+                                           NULL);
+        if (g_access (def_config, R_OK) == 0) {
+            self->priv->config_file_path = def_config;
+        } else {
+            sysconfdirs = g_get_system_config_dirs ();
+            while (*sysconfdirs != NULL) {
+                g_free (def_config);
+                def_config = g_build_filename (*sysconfdirs,
+                                               "gsignond/gsignond.conf",
+                                               NULL);
+                if (g_access (def_config, R_OK) == 0) {
+                    self->priv->config_file_path = def_config;
+                    break;
+                }
+                sysconfdirs++;
+            }
+        }
+    }
 
-    if (!g_key_file_load_from_file (settings, self->priv->config_file_path,
-                                    G_KEY_FILE_NONE, &err)) {
-        WARN ("error reading config file at '%s': %s",
-             self->priv->config_file_path, err->message);
-        g_error_free (err);
-        g_key_file_free (settings);
-        return FALSE;
+    if (self->priv->config_file_path) {
+        DBG ("Loading SSO config from %s", self->priv->config_file_path);
+        if (!g_key_file_load_from_file (settings, self->priv->config_file_path,
+                                        G_KEY_FILE_NONE, &err)) {
+            WARN ("error reading config file at '%s': %s",
+                 self->priv->config_file_path, err->message);
+            g_error_free (err);
+            g_key_file_free (settings);
+            return FALSE;
+        }
     }
 
     groups = g_key_file_get_groups (settings, &n_groups);

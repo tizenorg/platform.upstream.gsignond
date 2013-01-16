@@ -3,8 +3,9 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012 - 2013 Intel Corporation.
  *
+ * Contact: Jussi Laako <jussi.laako@linux.intel.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +30,7 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-extension-interface.h"
 #include "daemon/dbus/gsignond-dbus-auth-service-adapter.h"
+#include "daemon/db/gsignond-db-credentials-database.h"
 
 #include "gsignond-auth-service-iface.h"
 #include "gsignond-daemon.h"
@@ -49,6 +51,7 @@ struct _GSignondDaemonPrivate
     GSignondExtension   *extension;
     GSignondStorageManager *storage_manager;
     GSignondSecretStorage *secret_storage;
+    GSignondDbCredentialsDatabase *db;
     GSignondAccessControlManager *acm;
     GSignondDbusAuthServiceAdapter *auth_service;
 };
@@ -90,6 +93,7 @@ static gboolean gsignond_daemon_clear (GSignondAuthServiceIface *self);
 static gboolean gsignond_daemon_init_extension (GSignondDaemon *daemon);
 static gboolean gsignond_daemon_init_extensions (GSignondDaemon *daemon);
 static gboolean gsignond_daemon_init_storage (GSignondDaemon *daemon);
+static gboolean gsignond_daemon_open_database (GSignondDaemon *daemon);
 
 static sig_fd[2];
 
@@ -208,6 +212,11 @@ gsignond_daemon_dispose (GObject *object)
         self->priv->auth_service = NULL;
     }
 
+    if (self->priv->db) {
+        g_object_unref (self->priv->db);
+        self->priv->db = NULL;
+    }
+
     if (self->priv->extension) {
         self->priv->storage_manager = NULL;
         self->priv->secret_storage = NULL;
@@ -232,8 +241,9 @@ gsignond_daemon_finalize (GObject *object)
     close(sig_fd[0]);
     close(sig_fd[1]);
 
-    if (!gsignond_secret_storage_close_db (self->priv->secret_storage)) {
-        WARN("gsignond_secret_storage_close_db() failed");
+    if (!gsignond_db_credentials_database_close_secret_storage (
+                                                  self->priv->db)) {
+        WARN("gsignond_db_credentials_database_close_secret_storage() failed");
     }
 
     if (gsignond_storage_manager_filesystem_is_mounted (
@@ -257,9 +267,13 @@ gsignond_daemon_init (GSignondDaemon *self)
 
     self->priv->config = gsignond_config_new ();
 
-    gsignond_daemon_init_extensions (self);
+    if (!gsignond_daemon_init_extensions (self))
+        ERR("gsignond_daemon_init_extensions() failed");
 
-    gsignond_daemon_init_storage (self);
+    if (!gsignond_daemon_init_storage (self))
+        ERR("gsignond_daemon_init_storage() failed");
+    if (!gsignond_daemon_open_database (self))
+        ERR("gisgnond_daemon_open_database() failed");
 
     self->priv->auth_service =
         gsignond_dbus_auth_service_adapter_new (
@@ -402,6 +416,20 @@ gsignond_daemon_init_storage (GSignondDaemon *self)
                           g_strdup (storage_location));
 
     return (storage_location != NULL);
+}
+
+static gboolean
+gsignond_daemon_open_database (GSignondDaemon *self)
+{
+    DBG("Open databases");
+
+    self->priv->db = gsignond_db_credentials_database_new (
+                                                    self->priv->secret_storage);
+    if (!self->priv->db)
+        return FALSE;
+
+    return gsignond_db_credentials_database_open_secret_storage (
+                                                                self->priv->db);
 }
 
 guint gsignond_daemon_identity_timeout (GSignondDaemon *self)

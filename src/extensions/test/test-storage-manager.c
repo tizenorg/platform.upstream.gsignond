@@ -60,7 +60,7 @@ extension_test_storage_manager_init (ExtensionTestStorageManager *self)
     parent->location = g_strdup (g_getenv ("EXTENSION_TEST_DATADIR"));
     if (!parent->location) {
         parent->location =
-            g_build_filename (g_get_tmp_dir (), "gsignond-test");
+            g_build_filename (g_get_tmp_dir (), "gsignond-test", NULL);
     }
 }
 

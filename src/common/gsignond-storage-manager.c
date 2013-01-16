@@ -106,7 +106,6 @@ static gboolean
 _initialize_storage (GSignondStorageManager *self)
 {
     g_assert (self != NULL);
-    g_assert (self->priv != NULL);
     g_return_val_if_fail (self->location, FALSE);
 
     if (g_mkdir_with_parents (self->location, S_IRWXU))
@@ -122,7 +121,6 @@ _delete_storage (GSignondStorageManager *self)
     GDir *storage_dir;
 
     g_assert (self != NULL);
-    g_assert (self->priv != NULL);
     g_return_val_if_fail (self->location, FALSE);
 
     storage_dir = g_dir_open (self->location, 0, NULL);
@@ -142,7 +140,6 @@ static gboolean
 _storage_is_initialized (GSignondStorageManager *self)
 {
     g_assert (self != NULL);
-    g_assert (self->priv != NULL);
     g_return_val_if_fail (self->location, FALSE);
 
     if (g_access (self->location, 0))  /* 0 should equal to F_OK */
@@ -155,7 +152,6 @@ static const gchar *
 _mount_filesystem (GSignondStorageManager *self)
 {
     g_assert (self != NULL);
-    g_assert (self->priv != NULL);
 
     return self->location;
 }
@@ -206,7 +202,7 @@ gsignond_storage_manager_init (GSignondStorageManager *self)
     /*self->priv = GSIGNOND_STORAGE_MANAGER_GET_PRIVATE (self);*/
 
     self->location =
-        g_build_filename (g_get_user_data_dir (), "gsignond");
+        g_build_filename (g_get_user_data_dir (), "gsignond", NULL);
 
     self->config = NULL;
 }

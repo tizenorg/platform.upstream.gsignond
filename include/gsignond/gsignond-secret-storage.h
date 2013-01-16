@@ -60,9 +60,9 @@ typedef struct _GSignondSecretStoragePrivate GSignondSecretStoragePrivate;
 
 typedef struct {
     GObject parent_instance;
-    GSignondConfig *config;
 
     /*< private >*/
+    GSignondConfig *config;
     GSignondSecretStoragePrivate *priv;
 } GSignondSecretStorage;
 
