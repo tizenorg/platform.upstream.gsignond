@@ -22,9 +22,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-#include <gsignond/gsignond-log.h>
-#include <common/db/gsignond-db-error.h>
-
+#include "gsignond/gsignond-log.h"
+#include "common/db/gsignond-db-error.h"
 #include "gsignond-db-secret-cache.h"
 
 #define GSIGNOND_DB_SECRET_CACHE_GET_PRIVATE(obj) \

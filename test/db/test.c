@@ -69,12 +69,21 @@ _value_free (GByteArray *data)
 }
 
 static GByteArray*
-_value_new (const guint8 *data)
+_byte_array_new (const guint8 *data)
 {
     GByteArray *value = NULL;
     value = g_byte_array_new ();
     value = g_byte_array_append (value,
                 data, strlen((const char*)data));
+    return value;
+}
+
+static GSequence*
+_sequence_new (guint8 *data)
+{
+    GSequence *value = NULL;
+    value = g_sequence_new (NULL);
+    g_sequence_append (value, data);
     return value;
 }
 
@@ -97,6 +106,372 @@ _compare_key_value(
     user_data->status = 0;
 }
 
+static gboolean
+_compare_sequences (
+        GSequence *one,
+        GSequence *two)
+{
+    GSequenceIter *iter1 = NULL, *iter2 = NULL;
+    gboolean equal = TRUE;
+
+    if (one == NULL && two == NULL)
+        return TRUE;
+
+    if ((one != NULL && two == NULL) ||
+        (one == NULL && two != NULL) ||
+        (g_sequence_get_length (one) != g_sequence_get_length (two)))
+        return FALSE;
+
+    if (one == two)
+        return TRUE;
+
+    iter1 = g_sequence_get_begin_iter (one);
+    while (!g_sequence_iter_is_end (iter1)) {
+        iter2 = g_sequence_get_iter_at_pos (two,
+                    g_sequence_iter_get_position (iter1));
+        if (g_strcmp0 (g_sequence_get (iter1), g_sequence_get (iter2)) != 0) {
+            equal = FALSE;
+            break;
+        }
+        iter1 = g_sequence_iter_next (iter1);
+    }
+
+    return equal;
+}
+void
+test_identity_info ()
+{
+    guint32 id = 125;
+    guint32 type = 456;
+
+    const gchar *username = "username1";
+    const gchar *secret = "secret1";
+    const gchar *caption = "caption1";
+
+    const gchar *method1 = "method1";
+    GSignondIdentityInfo *identity = NULL;
+    GSignondIdentityInfo *identity2 = NULL;
+    GSignondSecurityContextList *ctx_list, *list;
+    GSignondSecurityContext *ctx, *ctx1, *ctx2, *ctx3 ;
+    GHashTable *methods = NULL, *methods2;
+    GSequence *seq1 = NULL, *seq_realms;
+    gchar *allowmech;
+
+    identity = gsignond_identity_info_new ();
+    if (identity) {
+        INFO ("IdentityInfo created");
+    } else {
+        WARN ("IdentityInfo creation FAILED");
+        return;
+    }
+
+    if (gsignond_identity_info_set_id (identity, id)) {
+        INFO ("IdentityInfo id set");
+    } else {
+        WARN ("IdentityInfo id set FAILED");
+    }
+
+    if (id == gsignond_identity_info_get_id (identity)) {
+        INFO ("IdentityInfo id get");
+    } else {
+        WARN ("IdentityInfo id get FAILED");
+    }
+
+    if (gsignond_identity_info_set_identity_new (identity)) {
+        INFO ("IdentityInfo id set new");
+    } else {
+        WARN ("IdentityInfo id set new FAILED");
+    }
+
+    if (gsignond_identity_info_get_is_identity_new (identity)) {
+        INFO ("IdentityInfo id get new");
+    } else {
+        WARN ("IdentityInfo id get new FAILED");
+    }
+
+    if (gsignond_identity_info_set_username (identity, username)) {
+        INFO ("IdentityInfo username set");
+    } else {
+        WARN ("IdentityInfo username set FAILED");
+    }
+
+    if (g_strcmp0 (username, gsignond_identity_info_get_username (
+            identity)) == 0) {
+        INFO ("IdentityInfo username get");
+    } else {
+        WARN ("IdentityInfo username get FAILED");
+    }
+
+    if (gsignond_identity_info_set_username_secret (identity, TRUE)) {
+        INFO ("IdentityInfo username_secret set");
+    } else {
+        WARN ("IdentityInfo username_secret set FAILED");
+    }
+
+    if (TRUE == gsignond_identity_info_get_is_username_secret (identity)) {
+        INFO ("IdentityInfo username_secret get");
+    } else {
+        WARN ("IdentityInfo username_secret get FAILED");
+    }
+
+    if (gsignond_identity_info_set_secret (identity, secret)) {
+        INFO ("IdentityInfo secret set");
+    } else {
+        WARN ("IdentityInfo secret set FAILED");
+    }
+
+    if (g_strcmp0 (secret, gsignond_identity_info_get_secret (identity)) == 0) {
+        INFO ("IdentityInfo secret get");
+    } else {
+        WARN ("IdentityInfo secret get FAILED");
+    }
+
+    if (gsignond_identity_info_set_store_secret (identity, TRUE)) {
+        INFO ("IdentityInfo store_secret set");
+    } else {
+        WARN ("IdentityInfo store_secret set FAILED");
+    }
+
+    if (TRUE == gsignond_identity_info_get_store_secret (identity)) {
+        INFO ("IdentityInfo store_secret get");
+    } else {
+        WARN ("IdentityInfo store_secret get FAILED");
+    }
+
+    if (gsignond_identity_info_set_caption (identity, caption)) {
+        INFO ("IdentityInfo caption set");
+    } else {
+        WARN ("IdentityInfo caption set FAILED");
+    }
+
+    if (g_strcmp0 (caption, gsignond_identity_info_get_caption (
+            identity)) == 0) {
+        INFO ("IdentityInfo caption get");
+    } else {
+        WARN ("IdentityInfo caption get FAILED");
+    }
+
+    /*realms*/
+    seq_realms = _sequence_new("realms1");
+    if (gsignond_identity_info_set_realms (identity, seq_realms)) {
+        INFO ("IdentityInfo realms set");
+    } else {
+        WARN ("IdentityInfo realms set FAILED");
+    }
+    seq1 = gsignond_identity_info_get_realms (identity);
+    if (seq1 && _compare_sequences (seq1, seq_realms)) {
+        INFO ("IdentityInfo realms get");
+        g_sequence_free (seq1); seq1 = NULL;
+    } else {
+        WARN ("IdentityInfo realms get FAILED");
+    }
+    g_sequence_free (seq_realms);
+
+    /*methods*/
+    methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
+            (GEqualFunc)g_str_equal,
+            (GDestroyNotify)NULL,
+            (GDestroyNotify)g_sequence_free);
+    seq1 = _sequence_new("mech11"); g_sequence_append (seq1, "mech12");
+    g_hash_table_insert (methods, "method1", seq1);
+    g_hash_table_insert (methods, "method2", _sequence_new("mech21"));
+    g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
+    if (gsignond_identity_info_set_methods (identity, methods)) {
+        INFO ("IdentityInfo methods set");
+    } else {
+        WARN ("IdentityInfo methods set FAILED");
+    }
+    methods2 = gsignond_identity_info_get_methods (identity);
+    if (methods2) {
+        GSequence *seq21 = NULL;
+        seq21 = g_hash_table_lookup (methods, "method1");
+        if (!seq21 || !_compare_sequences (seq1,seq21)) {
+            WARN ("IdentityInfo methods get FAILED as invalid seq");
+        }
+        INFO ("IdentityInfo methods get");
+        g_hash_table_unref (methods2);
+    } else {
+        WARN ("IdentityInfo methods get FAILED");
+    }
+    g_hash_table_unref (methods);
+
+    /*acl*/
+    ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
+    ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
+    ctx3 = gsignond_security_context_new_from_values ("sysctx3", "appctx3");
+    ctx_list = g_list_append (ctx_list,ctx1);
+    ctx_list = g_list_append (ctx_list,ctx2);
+    ctx_list = g_list_append (ctx_list,ctx3);
+    if (gsignond_identity_info_set_access_control_list (identity, ctx_list)) {
+        INFO ("IdentityInfo acl set");
+    } else {
+        WARN ("IdentityInfo acl set FAILED");
+    }
+    list = gsignond_identity_info_get_access_control_list (identity);
+    if (list) {
+        GList *list2;
+        INFO ("IdentityInfo acl get");
+        list2 = g_list_nth (list, 0);
+        ctx = (GSignondSecurityContext *) list2->data;
+        if (gsignond_security_context_compare (ctx, ctx1) != 0) {
+            WARN ("IdentityInfo acl get - ctx1 MISMTACH");
+        }
+        list2 = g_list_nth (list, 1);
+        ctx = (GSignondSecurityContext *) list2->data;
+        if (gsignond_security_context_compare (ctx, ctx2) != 0) {
+            WARN ("IdentityInfo acl get - ctx2 MISMTACH");
+        }
+        list2 = g_list_nth (list, 2);
+        ctx = (GSignondSecurityContext *) list2->data;
+        if (gsignond_security_context_compare (ctx, ctx3) != 0) {
+            WARN ("IdentityInfo acl get - ctx3 MISMTACH");
+        }
+        gsignond_security_context_list_free (list); list = NULL;
+    } else {
+        WARN ("IdentityInfo acl get FAILED");
+    }
+
+    /*owners*/
+    if (gsignond_identity_info_set_owner_list (identity, ctx_list)) {
+        INFO ("IdentityInfo owner set");
+    } else {
+        WARN ("IdentityInfo owner set FAILED");
+    }
+    list = gsignond_identity_info_get_owner_list (identity);
+    if (list) {
+        GList *list2;
+        INFO ("IdentityInfo owner get");
+        list2 = g_list_nth (list, 0);
+        ctx = (GSignondSecurityContext *) list2->data;
+        if (gsignond_security_context_compare (ctx, ctx1) != 0) {
+            WARN ("IdentityInfo owner get - ctx1 MISMTACH");
+        }
+        list2 = g_list_nth (list, 1);
+        ctx = (GSignondSecurityContext *) list2->data;
+        if (gsignond_security_context_compare (ctx, ctx2) != 0) {
+            WARN ("IdentityInfo owner get - ctx2 MISMTACH");
+        }
+        list2 = g_list_nth (list, 2);
+        ctx = (GSignondSecurityContext *) list2->data;
+        if (gsignond_security_context_compare (ctx, ctx3) != 0) {
+            WARN ("IdentityInfo owner get - ctx3 MISMTACH");
+        }
+        gsignond_security_context_list_free (list); list = NULL;
+    } else {
+        WARN ("IdentityInfo owner get FAILED");
+    }
+
+    if (gsignond_identity_info_set_validated (identity, FALSE)) {
+        INFO ("IdentityInfo validated set");
+    } else {
+        WARN ("IdentityInfo validated set FAILED");
+    }
+
+    if (FALSE == gsignond_identity_info_get_validated (identity)) {
+        INFO ("IdentityInfo validated get");
+    } else {
+        WARN ("IdentityInfo validated get FAILED");
+    }
+
+    if (gsignond_identity_info_set_identity_type (identity, type)) {
+        INFO ("IdentityInfo type set");
+    } else {
+        WARN ("IdentityInfo type set FAILED");
+    }
+
+    if (type == gsignond_identity_info_get_identity_type (identity)) {
+        INFO ("IdentityInfo type get");
+    } else {
+        WARN ("IdentityInfo type get FAILED");
+    }
+
+    /*copy*/
+    identity2 = gsignond_identity_info_copy (identity);
+    if (gsignond_identity_info_compare (identity, identity2)) {
+        INFO ("IdentityInfo copy/compare");
+    } else {
+        WARN ("IdentityInfo copy/compare FAILED");
+    }
+    gsignond_identity_info_free (identity2);
+
+    if (gsignond_identity_info_check_method_mechanism (identity, "method1",
+            "mech11", &allowmech)) {
+        if (g_strcmp0 (allowmech, "mech11") == 0) {
+            INFO ("IdentityInfo check");
+        } else {
+            WARN ("IdentityInfo check FAILED as allowed mech does not match");
+        }
+    } else {
+        WARN ("IdentityInfo check FAILED");
+    }
+    if (allowmech) g_free (allowmech);
+}
+
+void
+test_metadata_database ()
+{
+    guint32 methodid = 0;
+    const gchar *method1 = "method1";
+    GSignondIdentityInfo *identity = NULL;
+
+    GSignondDbMetadataDatabase* metadata_db = NULL;
+    metadata_db = gsignond_db_metadata_database_new ();
+    if (metadata_db) {
+        INFO ("MetadataDB created");
+    } else {
+        WARN ("MetadataDB creation FAILED");
+    }
+    if (gsignond_db_sql_database_open (
+            GSIGNOND_DB_SQL_DATABASE (metadata_db),
+            "/home/imran/.cache/gsignond-metadata.db",
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) {
+        INFO ("MetadataDB opened ");
+    } else {
+        WARN ("MetadataDB cannot be opened");
+    }
+
+    if (gsignond_db_sql_database_open (
+            GSIGNOND_DB_SQL_DATABASE (metadata_db),
+            "/home/imran/.cache/gsignond-metadata.db",
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) {
+        INFO ("MetadataDB already open");
+    } else {
+        WARN ("MetadataDB opened AGAIN");
+    }
+
+    methodid = gsignond_db_metadata_database_get_method_id (metadata_db,
+            method1);
+    if (methodid > 0 ) {
+        INFO ("MetadataDB method already exists");
+    } else if (gsignond_db_metadata_database_insert_method (
+            metadata_db,
+            method1, &methodid)) {
+        INFO ("MetadataDB inserted method with id %u", methodid);
+    } else {
+        WARN ("MetadataDB method CANNOT be inserted");
+    }
+    if (methodid == gsignond_db_metadata_database_get_method_id (metadata_db,
+            method1)) {
+        INFO ("MetadataDB get method");
+    } else {
+        WARN ("MetadataDB method ids NOT same");
+    }
+
+    identity = gsignond_identity_info_new ();
+    gsignond_identity_info_set_id (identity, 1);
+
+    //gsignond_db_metadata_database_update_identity
+
+    gsignond_identity_info_free (identity);
+
+    if (gsignond_db_sql_database_close (
+            GSIGNOND_DB_SQL_DATABASE (metadata_db))) {
+        INFO ("MetadataDB closed");
+    } else {
+        WARN ("MetadataDB CANNOT be closed");
+    }
+    g_object_unref(metadata_db);
+}
 
 int main (int argc, char **argv)
 {
@@ -188,11 +563,11 @@ int main (int argc, char **argv)
             (GEqualFunc)g_string_equal,
             (GDestroyNotify)_key_free,
             (GDestroyNotify)_value_free);
-    g_hash_table_insert (data, g_string_new("key1"), _value_new("value1"));
-    g_hash_table_insert (data, g_string_new("key2"), _value_new("value2"));
-    g_hash_table_insert (data, g_string_new("key3"), _value_new("value3"));
-    g_hash_table_insert (data, g_string_new("key4"), _value_new("value4"));
-    g_hash_table_insert (data, g_string_new("key5"), _value_new("value5"));
+    g_hash_table_insert (data, g_string_new("key1"), _byte_array_new("value1"));
+    g_hash_table_insert (data, g_string_new("key2"), _byte_array_new("value2"));
+    g_hash_table_insert (data, g_string_new("key3"), _byte_array_new("value3"));
+    g_hash_table_insert (data, g_string_new("key4"), _byte_array_new("value4"));
+    g_hash_table_insert (data, g_string_new("key5"), _byte_array_new("value5"));
     if (gsignond_secret_storage_update_data (storage, id, method, data)) {
         INFO ("Database data ADDED");
     } else {
@@ -234,68 +609,9 @@ int main (int argc, char **argv)
     }
     g_object_unref(storage);
     //g_object_unref(config);
+    test_identity_info ();
     test_metadata_database ();
 
     return 0;
 }
 
-void
-test_metadata_database ()
-{
-    guint32 methodid = 0;
-    const gchar *method1 = "method1";
-
-    GSignondDbMetadataDatabase* metadata_db = NULL;
-    metadata_db = gsignond_db_metadata_database_new ();
-    if (metadata_db) {
-        INFO ("MetadataDB created");
-    } else {
-        WARN ("MetadataDB creation FAILED");
-    }
-    if (gsignond_db_sql_database_open (
-            GSIGNOND_DB_SQL_DATABASE (metadata_db),
-            "/home/imran/.cache/gsignond-metadata.db",
-            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) {
-        INFO ("MetadataDB opened ");
-    } else {
-        WARN ("MetadataDB cannot be opened");
-    }
-
-    if (gsignond_db_sql_database_open (
-            GSIGNOND_DB_SQL_DATABASE (metadata_db),
-            "/home/imran/.cache/gsignond-metadata.db",
-            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) {
-        INFO ("MetadataDB already open");
-    } else {
-        WARN ("MetadataDB opened AGAIN");
-    }
-
-    methodid = gsignond_db_metadata_database_get_method_id (metadata_db,
-            method1);
-    if (methodid > 0 ) {
-        INFO ("MetadataDB method already exists");
-    } else if (gsignond_db_metadata_database_insert_method (
-            metadata_db,
-            method1, &methodid)) {
-        INFO ("MetadataDB inserted method with id %u", methodid);
-    } else {
-        WARN ("MetadataDB method CANNOT be inserted");
-    }
-    if (methodid == gsignond_db_metadata_database_get_method_id (metadata_db,
-            method1)) {
-        INFO ("MetadataDB get method");
-    } else {
-        WARN ("MetadataDB method ids NOT same");
-    }
-
-    gsignond_db_metadata_database_update_identity
-
-
-    if (gsignond_db_sql_database_close (
-            GSIGNOND_DB_SQL_DATABASE (metadata_db))) {
-        INFO ("MetadataDB closed");
-    } else {
-        WARN ("MetadataDB CANNOT be closed");
-    }
-    g_object_unref(metadata_db);
-}

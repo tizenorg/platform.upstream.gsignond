@@ -235,6 +235,17 @@ gsignond_db_sql_database_prepare_transaction_statements (
     return ret;
 }
 
+/**
+ * gsignond_db_sql_database_open:
+ *
+ * @self: instance of #GSignondDbSqlDatabase
+ * @filename: db filename
+ * @flags: sqlite3_open_v2 flags for opening db
+ *
+ * Opens a connection to DB.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_db_sql_database_open (
         GSignondDbSqlDatabase *self,
@@ -247,6 +258,15 @@ gsignond_db_sql_database_open (
             self, filename, flags);
 }
 
+/**
+ * gsignond_db_sql_database_close:
+ *
+ * @self: instance of #GSignondDbSqlDatabase
+ *
+ * Closes the connection to DB if it is opened already.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_db_sql_database_close (GSignondDbSqlDatabase *self)
 {
@@ -255,6 +275,16 @@ gsignond_db_sql_database_close (GSignondDbSqlDatabase *self)
     return GSIGNOND_DB_SQL_DATABASE_GET_CLASS (self)->close (self);
 }
 
+/**
+ * gsignond_db_sql_database_is_open:
+ *
+ * @self: instance of #GSignondDbSqlDatabase
+ *
+ * Retrieves the connectivity status to database if it is open or not.
+ *
+ * Returns: TRUE if there exist a valid connection to database,
+ * FALSE otherwise.
+ */
 gboolean
 gsignond_db_sql_database_is_open (GSignondDbSqlDatabase *self)
 {
@@ -263,6 +293,15 @@ gsignond_db_sql_database_is_open (GSignondDbSqlDatabase *self)
     return GSIGNOND_DB_SQL_DATABASE_GET_CLASS (self)->is_open (self);
 }
 
+/**
+ * gsignond_db_sql_database_create:
+ *
+ * @self: instance of #GSignondDbSqlDatabase
+ *
+ * Creates database structure/tables if does not already exist.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_db_sql_database_create (GSignondDbSqlDatabase *self)
 {
@@ -271,6 +310,15 @@ gsignond_db_sql_database_create (GSignondDbSqlDatabase *self)
     return GSIGNOND_DB_SQL_DATABASE_GET_CLASS (self)->create (self);
 }
 
+/**
+ * gsignond_db_sql_database_clear:
+ *
+ * @self: instance of #GSignondDbSqlDatabase
+ *
+ * Clear database data as per needed.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_db_sql_database_clear (GSignondDbSqlDatabase *self)
 {

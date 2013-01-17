@@ -25,7 +25,7 @@
 #ifndef __GSIGNOND_CONFIG_DB_H_
 #define __GSIGNOND_CONFIG_DB_H_
 
-#define GSIGNOND_CONFIG_DB_SSO                  "SecureStorage"
+#define GSIGNOND_CONFIG_DB_SSO                  "Storage"
 #define GSIGNOND_CONFIG_DB_FILE_SYSTEM_NAME     GSIGNOND_CONFIG_DB_SSO \
                                                 "/FileSystemName"
 #define GSIGNOND_CONFIG_DB_SIZE                 GSIGNOND_CONFIG_DB_SSO \

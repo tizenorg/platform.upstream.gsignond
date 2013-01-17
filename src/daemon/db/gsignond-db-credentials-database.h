@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-identity-info.h>
+#include <gsignond/gsignond-config.h>
 #include <gsignond/gsignond-secret-storage.h>
 
 #include "gsignond-db-metadata-database.h"
@@ -65,6 +66,8 @@ typedef struct
     GObject parent_instance;
 
     /*< private >*/
+    GSignondConfig *config;
+    GSignondSecretStorage *secret_storage;
     GSignondDbCredentialsDatabasePrivate *priv;
 } GSignondDbCredentialsDatabase;
 
@@ -78,7 +81,9 @@ GType
 gsignond_db_credentials_database_get_type (void);
 
 GSignondDbCredentialsDatabase*
-gsignond_db_credentials_database_new (GSignondSecretStorage *storage);
+gsignond_db_credentials_database_new (
+        GSignondConfig *config,
+        GSignondSecretStorage *storage);
 
 gboolean
 gsignond_db_credentials_database_open_secret_storage (

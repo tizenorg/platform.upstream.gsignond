@@ -23,11 +23,10 @@
  * 02110-1301 USA
  */
 #include <sqlite3.h>
-#include <gsignond/gsignond-log.h>
 
+#include "gsignond/gsignond-log.h"
 #include "gsignond-db-error.h"
 #include "gsignond-db-defines.h"
-
 #include "gsignond-db-secret-database.h"
 #include "gsignond-db-sql-database-private.h"
 
@@ -38,13 +37,6 @@
 
 G_DEFINE_TYPE (GSignondDbSecretDatabase, gsignond_db_secret_database,
         GSIGNOND_DB_TYPE_SQL_DATABASE);
-
-typedef struct {
-    guint32 identity_id;
-    guint32 method_id;
-    GString * key;
-    GByteArray * value;
-} StoreTable;
 
 struct _GSignondDbSecretDatabasePrivate
 {
@@ -115,31 +107,16 @@ _gsignond_db_read_username_password (
     return TRUE;
 }
 
-
-static void
-_gsignond_db_key_free (GString *data)
-{
-    g_string_free (data, TRUE);
-}
-
-static void
-_gsignond_db_value_free (GByteArray *data)
-{
-    g_byte_array_free (data, TRUE);
-}
-
 static gboolean
 _gsignond_db_read_key_value (
         sqlite3_stmt *stmt,
         GHashTable* data)
 {
-    GString *key = NULL;
-    GByteArray *value = NULL;
-    key = g_string_new ((const gchar *)sqlite3_column_text (stmt, 0));
-    value = g_byte_array_new ();
-    value = g_byte_array_append (value,
-                (const guint8*) sqlite3_column_blob(stmt, 1),
-                (guint) sqlite3_column_bytes(stmt, 1));
+    gchar *key = NULL;
+    GBytes *value = NULL;
+    key = g_strdup ((const gchar *)sqlite3_column_text (stmt, 0));
+    value = g_bytes_new ((gconstpointer) sqlite3_column_blob(stmt, 1),
+                         (gsize) sqlite3_column_bytes(stmt, 1));
 
     g_hash_table_insert(data, key, value);
     return TRUE;
@@ -280,10 +257,10 @@ gsignond_db_secret_database_load_data (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), FALSE);
 
-    data = g_hash_table_new_full ((GHashFunc)g_string_hash,
-                                  (GEqualFunc)g_string_equal,
-                                  (GDestroyNotify)_gsignond_db_key_free,
-                                  (GDestroyNotify)_gsignond_db_value_free);
+    data = g_hash_table_new_full ((GHashFunc)g_str_hash,
+                                  (GEqualFunc)g_str_equal,
+                                  (GDestroyNotify)g_free,
+                                  (GDestroyNotify)g_bytes_unref);
 
     query = sqlite3_mprintf (
             "SELECT key, value "
@@ -315,8 +292,8 @@ gsignond_db_secret_database_update_data (
     gchar *query = NULL;
     gint ret = 0;
     GHashTableIter iter;
-    GString *key = NULL;
-    GByteArray *value = NULL;
+    gchar *key = NULL;
+    GBytes *value = NULL;
     guint32 data_counter = 0;
     GSignondDbSqlDatabase *parent = NULL;
 
@@ -344,7 +321,7 @@ gsignond_db_secret_database_update_data (
     g_hash_table_iter_init (&iter, data);
     while (g_hash_table_iter_next (&iter,(gpointer *) &key,
             (gpointer *) &value)) {
-        data_counter = data_counter + key->len + value->len;
+        data_counter = data_counter + strlen (key) + g_bytes_get_size (value);
         if (data_counter >= GSIGNOND_DB_MAX_TOKEN_STORAGE) {
             gsignond_db_sql_database_rollback_transaction (parent);
             WARN ("%s: size limit is exceeded", G_STRFUNC);
@@ -356,12 +333,15 @@ gsignond_db_secret_database_update_data (
     g_hash_table_iter_init (&iter, data);
     while (g_hash_table_iter_next (&iter, (gpointer *)&key,
             (gpointer *) &value )) {
-        query = sqlite3_mprintf ("INSERT OR REPLACE INTO STORE "
-                                 "(identity_id, method_id, key, value) "
-                                  "VALUES(%u, %u, %Q, %Q);",
-                                 id, method,
-                                 key->str,
-                                 value->data);
+        gsize val_size;
+        query = sqlite3_mprintf (
+                "INSERT OR REPLACE INTO STORE "
+                "(identity_id, method_id, key, value) "
+                "VALUES(%u, %u, %Q, %Q);",
+                id, method,
+                key,
+                (const gchar *)g_bytes_get_data (value, &val_size));
+
         ret = sqlite3_exec (parent->priv->db, query, NULL, NULL, NULL);
         sqlite3_free (query);
         if (G_UNLIKELY (ret != SQLITE_OK)) {

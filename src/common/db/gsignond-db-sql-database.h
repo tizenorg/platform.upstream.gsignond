@@ -72,61 +72,46 @@ typedef struct {
 
     /**
      * open:
-     * @self: instance of #GSignondDbSqlDatabase
      *
-     * @filename: db filename
-     * @flags: sqlite3_open_v2 flags for opening db
-     *
-     * Opens a connection to DB.
-     *
-     * Returns: TRUE if successful, FALSE otherwise.
+     * See #gsignond_db_sql_database_open.
      */
-    gboolean (*open) (
+    gboolean
+    (*open) (
             GSignondDbSqlDatabase *self,
             const gchar *filename,
             int flags);
 
     /**
      * close:
-     * @self: instance of #GSignondDbSqlDatabase
      *
-     * Closes the connection to DB if it is opened already.
-     *
-     * Returns: TRUE if successful, FALSE otherwise.
+     * See #gsignond_db_sql_database_close.
      */
-    gboolean (*close) (GSignondDbSqlDatabase *self);
-
+    gboolean
+    (*close) (GSignondDbSqlDatabase *self);
 
     /**
      * is_open:
-     * @self: instance of #GSignondDbSqlDatabase
      *
-     * Retrieves the connectivity status to database if it is open or not.
-     *
-     * Returns: TRUE if there exist a valid connection to database,
-     * FALSE otherwise.
+     * See #gsignond_db_sql_database_is_open
      */
-    gboolean (*is_open) (GSignondDbSqlDatabase *self);
+    gboolean
+    (*is_open) (GSignondDbSqlDatabase *self);
 
     /**
      * create:
-     * @self: instance of #GSignondDbSqlDatabase
      *
-     * Creates database structure/tables if does not already exist.
-     *
-     * Returns: TRUE if successful, FALSE otherwise.
+     * See #gsignond_db_sql_database_create.
      */
-    gboolean (*create) (GSignondDbSqlDatabase *self);
+    gboolean
+    (*create) (GSignondDbSqlDatabase *self);
 
     /**
      * clear:
-     * @self: instance of #GSignondDbSqlDatabase
      *
-     * Clear database data as per needed.
-     *
-     * Returns: TRUE if successful, FALSE otherwise.
+     * See #gsignond_db_sql_database_clear.
      */
-    gboolean (*clear) (GSignondDbSqlDatabase *self);
+    gboolean
+    (*clear) (GSignondDbSqlDatabase *self);
 
 } GSignondDbSqlDatabaseClass;
 

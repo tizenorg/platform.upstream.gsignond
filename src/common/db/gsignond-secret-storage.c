@@ -26,7 +26,10 @@
 #include "gsignond-db-secret-database.h"
 #include "gsignond-db-error.h"
 
-#include <gsignond/gsignond-secret-storage.h>
+#include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-secret-storage.h"
+
+#define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "gsignond-secret.db"
 
 #define RETURN_IF_NOT_OPEN(obj, retval) \
     if (gsignond_secret_storage_is_open_db (obj) == FALSE) { \
@@ -163,11 +166,24 @@ gsignond_secret_storage_init (GSignondSecretStorage *self)
     self->config = NULL;
 }
 
+/**
+ * gsignond_secret_storage_open_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Opens (and initializes) DB. The implementation should take
+ * care of creating the DB, if it doesn't exist.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_open_db (GSignondSecretStorage *self)
 {
-    const gchar *filename;
-    const GHashTable *config_table = NULL;
+    GHashTable *config_table = NULL;
+    const gchar *dir = NULL;
+    const gchar *filename = NULL;
+    gchar *db_filename = NULL;
+    gboolean ret = FALSE;
 
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
     g_return_val_if_fail (self->config != NULL, FALSE);
@@ -175,20 +191,22 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     config_table = gsignond_config_get_config_table(self->config);
     g_return_val_if_fail (config_table != NULL, FALSE);
 
-    /* TODO: Fix it when config is updated
-     *
     dir = (const gchar *) g_hash_table_lookup (config_table,
             GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+    if (!dir) {
+        dir = g_get_user_data_dir ();
+        if (!dir) {
+            WARN("No directory specified in config object for secret db...");
+            return FALSE;
+        }
+    }
     filename = (const gchar *) g_hash_table_lookup (config_table,
             GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME);
-    filename = g_build_filename (dir, filename);
-    for metadatadb, g_get_user_data ();
-
-    */
-
-    filename = "/home/imran/.cache/gsignond-secret.db";
-
     if (!filename) {
+        filename = GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME;
+    }
+    db_filename = g_build_filename (dir, filename, NULL);
+    if (!db_filename) {
         WARN("Invalid db filename...");
         return FALSE;
     }
@@ -200,18 +218,28 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
 
     self->priv->database = gsignond_db_secret_database_new();
 
-    if (!gsignond_db_sql_database_open (
-            GSIGNOND_DB_SQL_DATABASE (self->priv->database),
-            filename,
-            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) {
+    ret = gsignond_db_sql_database_open (
+                GSIGNOND_DB_SQL_DATABASE (self->priv->database),
+                db_filename,
+                SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+    g_free (db_filename);
+    if (!ret) {
         g_object_unref (self->priv->database);
         self->priv->database = NULL;
         return FALSE;
     }
-
     return TRUE;
 }
 
+/**
+ * gsignond_secret_storage_close_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Closes the secrets DB. To reopen it, call open_db().
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_close_db (GSignondSecretStorage *self)
 {
@@ -227,6 +255,15 @@ gsignond_secret_storage_close_db (GSignondSecretStorage *self)
     return TRUE;
 }
 
+/**
+ * gsignond_secret_storage_clear_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Removes all stored secrets.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_clear_db (GSignondSecretStorage *self)
 {
@@ -236,6 +273,15 @@ gsignond_secret_storage_clear_db (GSignondSecretStorage *self)
             self->priv->database));
 }
 
+/**
+ * gsignond_secret_storage_is_open_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Checks if the db is open or not.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_is_open_db (GSignondSecretStorage *self)
 {
@@ -245,6 +291,17 @@ gsignond_secret_storage_is_open_db (GSignondSecretStorage *self)
                     self->priv->database)));
 }
 
+/**
+ * gsignond_secret_storage_load_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @id: the identity whose credentials are being loaded.
+ *
+ * Loads the credentials.
+ *
+ * Returns: (transfer full) #GSignondCredentials if successful,
+ * NULL otherwise.
+ */
 GSignondCredentials*
 gsignond_secret_storage_load_credentials (
         GSignondSecretStorage *self,
@@ -256,6 +313,16 @@ gsignond_secret_storage_load_credentials (
             id);
 }
 
+/**
+ * gsignond_secret_storage_update_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @creds: (transfer none) the credentials that are being updated.
+ *
+ * Stores/updates the credentials for the given identity.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_update_credentials (
         GSignondSecretStorage *self,
@@ -267,6 +334,16 @@ gsignond_secret_storage_update_credentials (
             creds);
 }
 
+/**
+ * gsignond_secret_storage_remove_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @id: the identity whose credentials are being updated.
+ *
+ * Remove the credentials for the given identity.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_remove_credentials (
         GSignondSecretStorage *self,
@@ -278,6 +355,17 @@ gsignond_secret_storage_remove_credentials (
             id);
 }
 
+/**
+ * gsignond_secret_storage_check_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @creds: (transfer none) the credentials that are being checked.
+ *
+ * Checks whether the given credentials are correct for the
+ * given identity.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_check_credentials (
         GSignondSecretStorage *self,
@@ -303,6 +391,18 @@ gsignond_secret_storage_check_credentials (
     return equal;
 }
 
+/**
+ * gsignond_secret_storage_load_data:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @id: the identity whose credentials are being fetched.
+ * @method: the authentication method the data is used for.
+ *
+ * Loads secret data.
+ *
+ * Returns: (transfer full) #GHashTable (gchar*, GBytes*) data. When done data
+ * should be freed with g_hash_table_unref (data)
+ */
 GHashTable*
 gsignond_secret_storage_load_data (
         GSignondSecretStorage *self,
@@ -315,6 +415,19 @@ gsignond_secret_storage_load_data (
             id, method);
 }
 
+/**
+ * gsignond_secret_storage_update_data:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @id: the identity whose credentials are being fetched.
+ * @method: the authentication method the data is used for.
+ * @data: (transfer none) the data as #GHashTable (gchar*, GBytes*)
+ *
+ * Stores/replaces secret data. Calling this method replaces any data
+ * which was previously stored for the given id/method.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_update_data (
         GSignondSecretStorage *self,
@@ -328,6 +441,17 @@ gsignond_secret_storage_update_data (
             id, method, data);
 }
 
+/**
+ * gsignond_secret_storage_remove_data:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @id: the identity whose credentials are being checked.
+ * @method: the authentication method the data is used for.
+ *
+ * Removes secret data.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
 gboolean
 gsignond_secret_storage_remove_data (
         GSignondSecretStorage *self,

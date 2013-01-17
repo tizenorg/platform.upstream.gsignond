@@ -23,10 +23,13 @@
  * 02110-1301 USA
  */
 #include <string.h>
-#include <gsignond/gsignond-log.h>
-#include <common/db/gsignond-db-error.h>
 
+#include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-config.h"
+#include "common/db/gsignond-db-error.h"
 #include "gsignond-db-metadata-database.h"
+
+#define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "gsignond-metadata.db"
 
 #define GSIGNOND_DB_METADATA_DATABASE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
@@ -39,6 +42,51 @@ G_DEFINE_TYPE (GSignondDbMetadataDatabase, gsignond_db_metadata_database,
 struct _GSignondDbMetadataDatabasePrivate
 {
 };
+
+enum
+{
+    PROP_0,
+    PROP_CONFIG,
+    N_PROPERTIES
+};
+
+static GParamSpec *properties[N_PROPERTIES] = { NULL, };
+
+static void
+_set_property (GObject *object, guint prop_id, const GValue *value,
+               GParamSpec *pspec)
+{
+    GSignondDbMetadataDatabase *self = GSIGNOND_DB_METADATA_DATABASE (object);
+
+    switch (prop_id) {
+        case PROP_CONFIG:
+            g_assert (self->config == NULL);
+            self->config = g_value_dup_object (value);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+static void
+_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+    GSignondDbMetadataDatabase *self = GSIGNOND_DB_METADATA_DATABASE (object);
+
+    switch (prop_id) {
+        case PROP_CONFIG:
+            g_value_set_object (value, self->config);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+static gboolean
+_gsignond_db_metadata_database_open (
+        GSignondDbSqlDatabase *obj,
+        const gchar *filename,
+        int flags);
 
 static gboolean
 _gsignond_db_metadata_database_create (
@@ -243,7 +291,7 @@ _gsignond_db_metadata_database_update_realms (
 
     /* realms insert */
     iter = g_sequence_get_begin_iter (realms);
-    while (iter) {
+    while (!g_sequence_iter_is_end (iter)) {
         if (!_gsignond_db_metadata_database_exec (self,
                 "INSERT OR IGNORE INTO REALMS (identity_id, realm) "
                 "VALUES (%u, %Q);", id, g_sequence_get (iter))) {
@@ -290,7 +338,7 @@ _gsignond_db_metadata_database_insert_methods (
         }
         /* mechanisms insert */
         mech_iter = g_sequence_get_begin_iter (mechanisms);
-        while (mech_iter) {
+        while (!g_sequence_iter_is_end (mech_iter)) {
             if (!_gsignond_db_metadata_database_exec (self,
                     "INSERT OR IGNORE INTO MECHANISMS (mechanism) "
                     "VALUES(%Q);",
@@ -357,13 +405,18 @@ _gsignond_db_metadata_database_update_owners (
 }
 
 static void
-_gsignond_db_metadata_database_finalize (
-        GObject *gobject)
+_gsignond_db_metadata_database_dispose (GObject *gobject)
 {
+    g_return_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (gobject));
     GSignondDbMetadataDatabase *self = GSIGNOND_DB_METADATA_DATABASE (gobject);
 
+    if (self->config) {
+        g_object_unref (self->config);
+        self->config = NULL;
+    }
+
     /* Chain up to the parent class */
-    G_OBJECT_CLASS (gsignond_db_metadata_database_parent_class)->finalize (
+    G_OBJECT_CLASS (gsignond_db_metadata_database_parent_class)->dispose (
             gobject);
 }
 
@@ -373,7 +426,17 @@ gsignond_db_metadata_database_class_init (
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-    gobject_class->finalize = _gsignond_db_metadata_database_finalize;
+    gobject_class->set_property = _set_property;
+    gobject_class->get_property = _get_property;
+    gobject_class->dispose = _gsignond_db_metadata_database_dispose;
+
+    properties[PROP_CONFIG] = g_param_spec_object ("config",
+                                                   "config",
+                                                   "Configuration object",
+                                                   GSIGNOND_TYPE_CONFIG,
+                                                   G_PARAM_CONSTRUCT_ONLY |
+                                                   G_PARAM_READWRITE);
+    g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
 
     GSignondDbSqlDatabaseClass *sql_class =
             GSIGNOND_DB_SQL_DATABASE_CLASS (klass);
@@ -387,22 +450,54 @@ static void
 gsignond_db_metadata_database_init (
         GSignondDbMetadataDatabase *self)
 {
-    /*self->priv = GSIGNOND_DB_METADATA_DATABASE_GET_PRIVATE (self);*/
+    self->config = NULL;
 }
 
 /**
  * gsignond_db_metadata_database_new:
  *
- * Creates new #GSignondDbMetadataDatabase object
- * Returns : (transfer full) the #GSignondDbMetadataDatabase object
+ * @config: (transfer none) #GSignondConfig config data
  *
+ * Creates new #GSignondDbMetadataDatabase object
+ *
+ * Returns : (transfer full) the #GSignondDbMetadataDatabase object
  */
 GSignondDbMetadataDatabase *
-gsignond_db_metadata_database_new ()
+gsignond_db_metadata_database_new (GSignondConfig *config)
 {
     return GSIGNOND_DB_METADATA_DATABASE (
             g_object_new (GSIGNOND_DB_TYPE_METADATA_DATABASE,
-                         NULL));
+                          "config", config, NULL));
+}
+
+static gboolean
+_gsignond_db_metadata_database_open (
+        GSignondDbSqlDatabase *obj,
+        const gchar *filename,
+        int flags)
+{
+    const gchar *dir = NULL;
+    gchar *db_filename = NULL;
+    gboolean ret = FALSE;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
+
+    if (!filename || strlen (filename) <= 0) {
+        filename = GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME;
+    }
+    dir = g_get_user_data_dir ();
+    if (!dir) {
+        WARN ("Invalid metadata db directory...");
+        return FALSE;
+    }
+    db_filename = g_build_filename (dir, filename, NULL);
+    if (!db_filename) {
+        WARN ("Invalid db filename...");
+        return FALSE;
+    }
+    ret = gsignond_db_sql_database_open (obj, db_filename, flags);
+    g_free (db_filename);
+    return ret;
 }
 
 static gboolean
@@ -723,6 +818,34 @@ _gsignond_db_metadata_database_clear (
 }
 
 /**
+ * gsignond_db_metadata_database_open:
+ *
+ * @self: instance of #GSignondDbMetadataDatabase
+ *
+ * Opens a connection to DB.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_db_metadata_database_open (GSignondDbMetadataDatabase *self)
+{
+    const gchar *filename = NULL;
+    GHashTable *config_table = NULL;
+
+    g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
+
+    config_table = gsignond_config_get_config_table(self->config);
+    g_return_val_if_fail (config_table != NULL, FALSE);
+
+    filename = (const gchar *) g_hash_table_lookup (config_table,
+            GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME);
+
+    return _gsignond_db_metadata_database_open (
+            GSIGNOND_DB_SQL_DATABASE (self), filename,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+}
+
+/**
  * gsignond_db_metadata_database_insert_method:
  *
  * @self: instance of #GSignondDbMetadataDatabase
@@ -931,7 +1054,7 @@ gsignond_db_metadata_database_update_identity (
 
                 ctx = (GSignondSecurityContext *) list->data;
                 mech_iter = g_sequence_get_begin_iter (mechanisms);
-                while (mech_iter) {
+                while (!g_sequence_iter_is_end (mech_iter)) {
                     _gsignond_db_metadata_database_exec (self,
                             "INSERT OR REPLACE INTO ACL "
                             "(identity_id, method_id, mechanism_id, secctx_id) "
@@ -959,7 +1082,7 @@ gsignond_db_metadata_database_update_identity (
         } else {
             GSequenceIter *mech_iter = NULL;
             mech_iter = g_sequence_get_begin_iter (mechanisms);
-            while (mech_iter) {
+            while (!g_sequence_iter_is_end (mech_iter)) {
                 _gsignond_db_metadata_database_exec (self,
                         "INSERT OR REPLACE INTO ACL "
                         "(identity_id, method_id, mechanism_id) "

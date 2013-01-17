@@ -423,7 +423,7 @@ gsignond_daemon_open_database (GSignondDaemon *self)
 {
     DBG("Open databases");
 
-    self->priv->db = gsignond_db_credentials_database_new (
+    self->priv->db = gsignond_db_credentials_database_new (self->priv->config,
                                                     self->priv->secret_storage);
     if (!self->priv->db)
         return FALSE;

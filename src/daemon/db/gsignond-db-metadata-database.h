@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-identity-info.h>
+#include <gsignond/gsignond-config.h>
 #include <common/db/gsignond-db-sql-database.h>
 
 G_BEGIN_DECLS
@@ -63,6 +64,7 @@ typedef struct
     GSignondDbSqlDatabase parent_instance;
 
     /*< private >*/
+    GSignondConfig *config;
     GSignondDbMetadataDatabasePrivate *priv;
 } GSignondDbMetadataDatabase;
 
@@ -76,7 +78,10 @@ GType
 gsignond_db_metadata_database_get_type (void);
 
 GSignondDbMetadataDatabase*
-gsignond_db_metadata_database_new (void);
+gsignond_db_metadata_database_new (GSignondConfig *config);
+
+gboolean
+gsignond_db_metadata_database_open (GSignondDbMetadataDatabase *self);
 
 gboolean
 gsignond_db_metadata_database_insert_method (
