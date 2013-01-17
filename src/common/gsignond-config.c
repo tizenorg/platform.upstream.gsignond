@@ -6,6 +6,7 @@
  * Copyright (C) 2012 Intel Corporation.
  *
  * Contact: Jussi Laako <jussi.laako@linux.intel.com>
+ *          Amarnath Valluri <amarnath.valluri@linux.intel.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
