@@ -29,7 +29,7 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-secret-storage.h"
 
-#define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "gsignond-secret.db"
+#define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "secret.db"
 
 #define RETURN_IF_NOT_OPEN(obj, retval) \
     if (gsignond_secret_storage_is_open_db (obj) == FALSE) { \

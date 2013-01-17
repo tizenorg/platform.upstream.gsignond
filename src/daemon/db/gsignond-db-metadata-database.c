@@ -29,7 +29,7 @@
 #include "common/db/gsignond-db-error.h"
 #include "gsignond-db-metadata-database.h"
 
-#define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "gsignond-metadata.db"
+#define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "metadata.db"
 
 #define GSIGNOND_DB_METADATA_DATABASE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
@@ -490,7 +490,7 @@ _gsignond_db_metadata_database_open (
         WARN ("Invalid metadata db directory...");
         return FALSE;
     }
-    db_filename = g_build_filename (dir, filename, NULL);
+    db_filename = g_build_filename (dir, "gsignond", filename, NULL);
     if (!db_filename) {
         WARN ("Invalid db filename...");
         return FALSE;
