@@ -49,9 +49,8 @@ _gsignond_db_auth_cache_new (void)
 {
     AuthCache *auth_cache = NULL;
     auth_cache = (AuthCache *)g_malloc0 (sizeof (AuthCache));
-    auth_cache->blob_data =  g_hash_table_new_full ((GHashFunc)g_int_hash,
-                                (GEqualFunc)g_int_equal, NULL,
-                                (GDestroyNotify)g_hash_table_unref);
+    auth_cache->blob_data = NULL;
+    auth_cache->creds = NULL;
     return auth_cache;
 }
 
@@ -84,7 +83,7 @@ _gsignond_db_secret_cache_dispose (
       * calling g_object_unref() on an invalid GObject.
     */
     if (self->priv->cache) {
-        g_object_unref (self->priv->cache);
+        g_hash_table_unref (self->priv->cache);
         self->priv->cache = NULL;
     }
 
@@ -119,7 +118,8 @@ gsignond_db_secret_cache_init (GSignondDbSecretCache *self)
 {
     self->priv = GSIGNOND_DB_SECRET_CACHE_GET_PRIVATE (self);
     self->priv->cache =  g_hash_table_new_full ((GHashFunc)g_int_hash,
-                            (GEqualFunc)g_int_equal, NULL,
+                            (GEqualFunc)g_int_equal,
+                            (GDestroyNotify)g_free,
                             (GDestroyNotify)_gsignond_db_auth_cache_free);
 }
 
@@ -127,8 +127,8 @@ gsignond_db_secret_cache_init (GSignondDbSecretCache *self)
  * gsignond_db_secret_cache_new:
  *
  * Creates new #GSignondDbSecretCache object
- * Returns : (transfer full) the #GSignondDbSecretCache object
  *
+ * Returns : (transfer full) the #GSignondDbSecretCache object
  */
 GSignondDbSecretCache *
 gsignond_db_secret_cache_new ()
@@ -140,13 +140,15 @@ gsignond_db_secret_cache_new ()
 
 /**
  * gsignond_db_secret_cache_get_credentials:
+ *
  * @self: instance of #GSignondSecretCache
  * @id: the identity whose credentials are being fetched.
  *
  * Gets the credentials from the cache.
  *
- * Returns: #GSignondCredentials if successful,
- * NULL otherwise.
+ * Returns: (transfer none) #GSignondCredentials if successful,
+ * NULL otherwise. When done use g_object_unref (creds) to release the
+ * reference.
  */
 GSignondCredentials*
 gsignond_db_secret_cache_get_credentials (
@@ -159,7 +161,7 @@ gsignond_db_secret_cache_get_credentials (
 
     value = (AuthCache *) g_hash_table_lookup (self->priv->cache, &id);
     if (value) {
-        return value->creds;
+        return g_object_ref (value->creds);
     }
     return NULL;
 }
@@ -167,7 +169,7 @@ gsignond_db_secret_cache_get_credentials (
 /**
  * gsignond_db_secret_cache_update_credentials:
  * @self: instance of #GSignondSecretCache
- * @creds: the credentials to be updated.
+ * @creds: (transfer full) the credentials to be updated.
  * @store_password: flag to store the password or not.
  *
  * Updates the credentials for the given identity to the cache.
@@ -194,12 +196,15 @@ gsignond_db_secret_cache_update_credentials (
 
     value = (AuthCache *) g_hash_table_lookup (self->priv->cache, &id);
     if (value) {
-        g_object_unref (value->creds);
+        if (value->creds) g_object_unref (value->creds);
         value->creds = g_object_ref (creds);
     } else {
+        guint32 *cred_id = NULL;
         value = _gsignond_db_auth_cache_new ();
         value->creds = g_object_ref (creds);
-        g_hash_table_insert (self->priv->cache, GUINT_TO_POINTER (id), value);
+        cred_id = g_malloc (sizeof (guint32));
+        *cred_id = id;
+        g_hash_table_insert (self->priv->cache, cred_id, value);
     }
     value->store_password = store_password;
     return TRUE;
@@ -207,15 +212,16 @@ gsignond_db_secret_cache_update_credentials (
 
 /**
  * gsignond_db_secret_cache_get_data:
+ *
  * @self: instance of #GSignondSecretCache
  * @id: the identity whose credentials are being fetched.
  * @method: the authentication method the data is used for.
  *
  * Gets the data from the cache.
  *
- * Returns: #GHashTable dictionary with the data; returns
- * NULL if fails.
- *
+ * Returns: (transfer none) #GHashTable  (gchar*, GBytes*) dictionary with the
+ * data; returns NULL if fails. When done use g_hash_table_unref (data) to
+ * release the reference
  */
 GHashTable *
 gsignond_db_secret_cache_get_data (
@@ -229,10 +235,12 @@ gsignond_db_secret_cache_get_data (
     g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_CACHE (self), NULL);
 
     value = (AuthCache *) g_hash_table_lookup (self->priv->cache, &id);
-    if (value) {
+    if (value && value->blob_data) {
         blob = (GHashTable *) g_hash_table_lookup (value->blob_data, &method);
+        if (blob)
+            return g_hash_table_ref (blob);
     }
-    return blob;
+    return NULL;
 }
 
 /**
@@ -240,7 +248,7 @@ gsignond_db_secret_cache_get_data (
  * @self: instance of #GSignondSecretCache
  * @id: the identity whose credentials are being fetched.
  * @method: the authentication method the data is used for.
- * @data: (transfer full) #GHashTable dictionary with the data.
+ * @data: (transfer full) #GHashTable (gchar*, GBytes*) dictionary with the data
  *
  * Updates the data to the cache.
  *
@@ -255,6 +263,7 @@ gsignond_db_secret_cache_update_data (
 {
     AuthCache *value = NULL;
     GHashTable *blob = NULL;
+    guint32 *methodid = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_CACHE (self), FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
@@ -265,13 +274,26 @@ gsignond_db_secret_cache_update_data (
     }
 
     value = (AuthCache *) g_hash_table_lookup (self->priv->cache,
-            GUINT_TO_POINTER (id));
+            &id);
+    methodid = (guint32 *)g_malloc (sizeof (guint32));
+    *methodid = method;
+    if (!value->blob_data) {
+        value->blob_data = g_hash_table_new_full ((GHashFunc)g_int_hash,
+                                    (GEqualFunc)g_int_equal,
+                                    (GDestroyNotify)g_free,
+                                    (GDestroyNotify)g_hash_table_unref);
+    }
     if (value == NULL) {
+        guint32 *cacheid = NULL;
         value = _gsignond_db_auth_cache_new ();
-        g_hash_table_insert (value->blob_data, GUINT_TO_POINTER (method), data);
-        g_hash_table_insert (self->priv->cache, GUINT_TO_POINTER (id), value);
+        g_hash_table_insert (value->blob_data, methodid,
+                g_hash_table_ref (data));
+        cacheid = (guint32 *)g_malloc (sizeof (guint32));
+        *cacheid = id;
+        g_hash_table_insert (self->priv->cache, cacheid, value);
     } else {
-        g_hash_table_replace (value->blob_data, (gpointer)&method, data);
+        g_hash_table_replace (value->blob_data, methodid,
+                g_hash_table_ref (data));
     }
     return TRUE;
 }

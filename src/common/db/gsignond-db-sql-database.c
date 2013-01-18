@@ -471,9 +471,9 @@ gsignond_db_sql_database_query_exec_string (
 static gboolean
 _gsignond_db_read_strings (
         sqlite3_stmt *stmt,
-        GList* strings)
+        GList** strings)
 {
-    g_list_append (strings,
+    *strings = g_list_append (*strings,
             g_strdup ((const gchar *)sqlite3_column_text (stmt, 0)));
     return TRUE;
 }
@@ -500,12 +500,11 @@ gsignond_db_sql_database_query_exec_string_list (
     g_return_val_if_fail (GSIGNOND_DB_IS_SQL_DATABASE (self), 0);
     g_return_val_if_fail (self->priv->db != NULL, 0);
 
-    list = g_list_alloc ();
     rows = gsignond_db_sql_database_query_exec (GSIGNOND_DB_SQL_DATABASE (self),
             query,
             (GSignondDbSqlDatabaseQueryCallback)
             _gsignond_db_read_strings,
-            list);
+            &list);
 
     if (G_UNLIKELY (rows <= 0)) {
         g_list_free_full (list, g_free);
@@ -570,9 +569,13 @@ _gsignond_db_read_int_string_tuple (
         sqlite3_stmt *stmt,
         GHashTable *tuples)
 {
-    g_hash_table_insert(tuples,
-            sqlite3_column_int (stmt, 0),
-            g_strdup ((const gchar *)sqlite3_column_text (stmt, 1)));
+    gint * id;
+    const gchar *method = NULL;
+
+    id = (gint *)g_malloc (sizeof(gint));
+    *id = sqlite3_column_int (stmt, 0);
+    method = (const gchar *)sqlite3_column_text (stmt, 1);
+    g_hash_table_insert(tuples, id, g_strdup (method));
     return TRUE;
 }
 
@@ -598,8 +601,8 @@ gsignond_db_sql_database_query_exec_int_string_tuple (
     g_return_val_if_fail (GSIGNOND_DB_IS_SQL_DATABASE (self), 0);
     g_return_val_if_fail (self->priv->db != NULL, 0);
 
-    tuples = g_hash_table_new_full ((GHashFunc)g_str_hash,
-                                    (GEqualFunc)g_str_equal,
+    tuples = g_hash_table_new_full ((GHashFunc)g_int_hash,
+                                    (GEqualFunc)g_int_equal,
                                     (GDestroyNotify)g_free,
                                     (GDestroyNotify)g_free);
 

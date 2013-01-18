@@ -1,1 +1,1 @@
-# SUBDIRS = db
+SUBDIRS = db

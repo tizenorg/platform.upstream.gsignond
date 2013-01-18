@@ -110,6 +110,14 @@ gsignond_db_metadata_database_get_identity (
         GSignondDbMetadataDatabase *self,
         const guint32 identity_id);
 
+GSignondIdentityInfoList *
+gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self);
+
+gboolean
+gsignond_db_metadata_database_remove_identity (
+        GSignondDbMetadataDatabase *self,
+        const guint32 identity_id);
+
 gboolean
 gsignond_db_metadata_database_insert_reference (
         GSignondDbMetadataDatabase *self,
@@ -118,24 +126,16 @@ gsignond_db_metadata_database_insert_reference (
         const gchar *reference);
 
 gboolean
-gsignond_db_metadata_database_remove_identity (
-        GSignondDbMetadataDatabase *self,
-        const guint32 identity_id);
-
-GSignondIdentityInfoList *
-gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self);
-
-gboolean
 gsignond_db_metadata_database_remove_reference (
         GSignondDbMetadataDatabase *self,
-        const guint32 id,
+        const guint32 identity_id,
         const GSignondSecurityContext *ref_owner,
         const gchar *reference);
 
 GList *
 gsignond_db_metadata_database_get_references (
         GSignondDbMetadataDatabase *self,
-        const guint32 id,
+        const guint32 identity_id,
         const GSignondSecurityContext* ref_owner);
 
 GSignondSecurityContextList *

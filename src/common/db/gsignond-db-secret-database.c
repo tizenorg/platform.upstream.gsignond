@@ -194,8 +194,9 @@ gsignond_db_secret_database_load_credentials (
     if (G_UNLIKELY (rows <= 0)) {
         g_object_unref (creds);
         creds = NULL;
+    } else {
+        gsignond_credentials_set_id (creds, id);
     }
-    gsignond_credentials_set_id (creds, id);
     return creds;
 }
 
@@ -218,7 +219,8 @@ gsignond_db_secret_database_update_credentials (
     query = sqlite3_mprintf ("INSERT OR REPLACE INTO CREDENTIALS "
                              "(id, username, password) "
                              "VALUES (%u, %Q, %Q);",
-                             id, username, password);
+                             id, username ? username : "",
+                             password ? password : "");
     ret = gsignond_db_sql_database_transaction_exec (
             GSIGNOND_DB_SQL_DATABASE (self), query);
     sqlite3_free (query);

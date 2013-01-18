@@ -503,14 +503,15 @@ gsignond_identity_info_set_username (
 {
     GVariant *vname = NULL;
     g_return_val_if_fail (info != NULL, FALSE);
-    g_return_val_if_fail (username != NULL, FALSE);
 
-    vname = g_variant_new_string (username);
-    g_variant_ref_sink(vname);
-    g_hash_table_replace (
-            info,
-            GSIGNOND_IDENTITY_INFO_USERNAME,
-            vname);
+    if (username) {
+        vname = g_variant_new_string (username);
+        g_variant_ref_sink(vname);
+        g_hash_table_replace (
+                info,
+                GSIGNOND_IDENTITY_INFO_USERNAME,
+                vname);
+    }
 
     return TRUE;
 }
@@ -609,15 +610,15 @@ gsignond_identity_info_set_secret (
 {
     GVariant *vsecret = NULL;
     g_return_val_if_fail (info != NULL, FALSE);
-    g_return_val_if_fail (secret != NULL, FALSE);
 
-    vsecret = g_variant_new_string (secret);
-    g_variant_ref_sink(vsecret);
-    g_hash_table_replace (
-            info,
-            GSIGNOND_IDENTITY_INFO_SECRET,
-            vsecret);
-
+    if (secret) {
+        vsecret = g_variant_new_string (secret);
+        g_variant_ref_sink(vsecret);
+        g_hash_table_replace (
+                info,
+                GSIGNOND_IDENTITY_INFO_SECRET,
+                vsecret);
+    }
     return TRUE;
 }
 
@@ -715,14 +716,15 @@ gsignond_identity_info_set_caption (
 {
     GVariant *vcaption = NULL;
     g_return_val_if_fail (info != NULL, FALSE);
-    g_return_val_if_fail (caption != NULL, FALSE);
 
-    vcaption = g_variant_new_string (caption);
-    g_variant_ref_sink(vcaption);
-    g_hash_table_replace (
-            info,
-            GSIGNOND_IDENTITY_INFO_CAPTION,
-            vcaption);
+    if (caption) {
+        vcaption = g_variant_new_string (caption);
+        g_variant_ref_sink(vcaption);
+        g_hash_table_replace (
+                info,
+                GSIGNOND_IDENTITY_INFO_CAPTION,
+                vcaption);
+    }
 
     return TRUE;
 }
@@ -1344,14 +1346,6 @@ gsignond_identity_info_compare (
     }
 
     return TRUE;
-}
-
-GSignondIdentityInfoList *
-gsignond_identity_info_list_new (void)
-{
-    GSignondIdentityInfoList *list = NULL;
-    list = g_list_alloc ();
-    return list;
 }
 
 void

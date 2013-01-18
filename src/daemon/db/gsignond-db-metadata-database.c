@@ -121,6 +121,7 @@ _gsignond_db_metadata_database_list_to_sequence (GList *list)
 {
     GSequence *seq = NULL;
     seq = g_sequence_new ((GDestroyNotify)g_free);
+    list = g_list_first (list);
     for ( ; list != NULL; list = g_list_next (list)) {
         g_sequence_insert_sorted (seq, (gchar *) list->data,
         		(GCompareDataFunc)_compare_strings, NULL);
@@ -294,7 +295,7 @@ _gsignond_db_metadata_database_update_realms (
     while (!g_sequence_iter_is_end (iter)) {
         if (!_gsignond_db_metadata_database_exec (self,
                 "INSERT OR IGNORE INTO REALMS (identity_id, realm) "
-                "VALUES (%u, %Q);", id, g_sequence_get (iter))) {
+                "VALUES (%u, %Q);", id, (const gchar *)g_sequence_get (iter))) {
             return FALSE;
         }
         iter = g_sequence_iter_next (iter);
@@ -1181,6 +1182,7 @@ gsignond_db_metadata_database_get_identity (
         gsignond_identity_info_free (identity);
         return NULL;
     }
+    gsignond_identity_info_set_id (identity, identity_id);
 
     /*realms*/
     realms = _gsignond_db_metadata_database_get_sequence (self,
@@ -1212,8 +1214,12 @@ gsignond_db_metadata_database_get_identity (
                     query);
     sqlite3_free (query);
 
+    methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
+                            (GEqualFunc)g_str_equal,
+                            (GDestroyNotify)g_free,
+                            (GDestroyNotify)g_sequence_free);
     g_hash_table_iter_init(&iter, tuples);
-    while (g_hash_table_iter_next (&iter, (gpointer *)(&method_id),
+    while (g_hash_table_iter_next (&iter, (gpointer *)&method_id,
     		(gpointer *)&method)) {
         /*mechanisms*/
         mechanisms = _gsignond_db_metadata_database_get_sequence (self,
@@ -1221,8 +1227,7 @@ gsignond_db_metadata_database_get_identity (
                  "( MECHANISMS JOIN ACL ON ACL.mechanism_id = MECHANISMS.id ) "
                  "WHERE ACL.method_id = %u AND ACL.identity_id = %u;",
                  method_id, identity_id);
-        g_hash_table_insert(methods, method, mechanisms);
-        g_sequence_free (mechanisms);
+        g_hash_table_insert(methods, g_strdup(method), mechanisms);
     }
     g_hash_table_destroy (tuples);
 
@@ -1263,7 +1268,6 @@ gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
         return NULL;
     }
 
-    identities = gsignond_identity_info_list_new ();
     for (i=0; i < ids->len; i++) {
         GSignondIdentityInfo *identity = NULL;
         identity = gsignond_db_metadata_database_get_identity (self,
@@ -1379,7 +1383,7 @@ gsignond_db_metadata_database_remove_reference (
 {
     GSignondDbSqlDatabase *sql = NULL;
     GList *refs = NULL;
-    gboolean ret = FALSE;
+    gboolean ret = TRUE;
     guint len = 0;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
@@ -1499,14 +1503,13 @@ gsignond_db_metadata_database_get_accesscontrol_list(
 
     query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
-            "(SELECT secctx_id FROM ACL WHERE identity_id = %u;",
+            "(SELECT secctx_id FROM ACL WHERE identity_id = %u);",
             identity_id);
     tuples = gsignond_db_sql_database_query_exec_string_tuple (
                     GSIGNOND_DB_SQL_DATABASE (self),
                     query);
     sqlite3_free (query);
 
-    list = g_list_alloc ();
     g_hash_table_iter_init(&iter, tuples);
     while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
     		(gpointer *)&appctx)) {
@@ -1546,14 +1549,13 @@ gsignond_db_metadata_database_get_owner_list(
 
     query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
-            "(SELECT secctx_id FROM OWNER WHERE identity_id = %u;",
+            "(SELECT secctx_id FROM OWNER WHERE identity_id = %u);",
             identity_id);
     tuples = gsignond_db_sql_database_query_exec_string_tuple (
                     GSIGNOND_DB_SQL_DATABASE (self),
                     query);
     sqlite3_free (query);
 
-    list = g_list_alloc ();
     g_hash_table_iter_init(&iter, tuples);
     while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
     		(gpointer *)&appctx)) {
@@ -1561,7 +1563,6 @@ gsignond_db_metadata_database_get_owner_list(
         list = g_list_append (list, ctx);
     }
     g_hash_table_unref (tuples);
-
     return list;
 }
 

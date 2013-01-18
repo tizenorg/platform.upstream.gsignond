@@ -393,6 +393,7 @@ gsignond_db_credentials_database_update_identity (
     	gboolean un_sec, pwd_sec;
 
     	creds = gsignond_credentials_new ();
+    	gsignond_credentials_set_id (creds, id);
     	pwd_sec = gsignond_identity_info_get_store_secret (identity);
     	if (pwd_sec) {
     		gsignond_credentials_set_password (creds,
@@ -447,10 +448,11 @@ gsignond_db_credentials_database_remove_identity (
  * gsignond_db_credentials_database_check_secret:
  *
  * @self: instance of #GSignondDbCredentialsDatabase
+ * @identity_id: the id of the identity
  * @username: the username of the identity
  * @secret: the secret of the identity
  *
- * Removes the identity info from the credentials database.
+ * Checks the identity info from the credentials database.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -688,8 +690,8 @@ gsignond_db_credentials_database_remove_reference (
 {
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
 
-    return gsignond_db_metadata_database_remove_reference (self->priv->metadata_db,
-    		identity_id, ref_owner, reference);
+    return gsignond_db_metadata_database_remove_reference (
+            self->priv->metadata_db, identity_id, ref_owner, reference);
 }
 
 /**
@@ -787,7 +789,7 @@ gsignond_db_credentials_database_get_owner (
 
     list = gsignond_db_metadata_database_get_owner_list (
         		self->priv->metadata_db, identity_id);
-    ctx = (GSignondSecurityContext *) g_list_first (list);
+    ctx = (GSignondSecurityContext *) g_list_first (list)->data;
     list = g_list_remove (list, ctx);
     gsignond_security_context_list_free (list);
     return ctx;

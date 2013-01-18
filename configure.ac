@@ -54,4 +54,5 @@ src/extensions/test/Makefile
 src/plugins/Makefile
 src/plugins/password/Makefile
 test/Makefile
+test/db/Makefile
 ])

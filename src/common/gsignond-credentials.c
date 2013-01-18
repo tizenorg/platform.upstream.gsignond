@@ -173,13 +173,14 @@ gsignond_credentials_set_username(
         const gchar* username)
 {
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), FALSE);
-    g_return_val_if_fail (username != NULL, FALSE);
 
     if (self->priv->username) {
         g_string_free (self->priv->username, TRUE);
         self->priv->username = NULL;
     }
-    self->priv->username = g_string_new (username);
+    if (username) {
+        self->priv->username = g_string_new (username);
+    }
     return TRUE;
 }
 
@@ -196,7 +197,7 @@ const gchar*
 gsignond_credentials_get_username(GSignondCredentials *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
-    return self->priv->username->str;
+    return self->priv->username ? self->priv->username->str : NULL;
 }
 
 /**
@@ -216,13 +217,14 @@ gsignond_credentials_set_password(
         const gchar* password)
 {
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), FALSE);
-    g_return_val_if_fail (password != NULL, FALSE);
 
     if (self->priv->password) {
         g_string_free (self->priv->password, TRUE);
         self->priv->password = NULL;
     }
-    self->priv->password = g_string_new (password);
+    if (password) {
+        self->priv->password = g_string_new (password);
+    }
     return TRUE;
 }
 
@@ -239,7 +241,7 @@ const gchar*
 gsignond_credentials_get_password(GSignondCredentials *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (self), NULL);
-    return self->priv->password->str;
+    return self->priv->password? self->priv->password->str : NULL;
 }
 
 /**
@@ -267,6 +269,7 @@ gsignond_credentials_equal (
 
     if ( (one == two) ||
          ( (one->priv->id == two->priv->id) &&
+           (one->priv->username && two->priv->username) &&
            g_string_equal(one->priv->username, two->priv->username) &&
            g_string_equal(one->priv->password, two->priv->password)) ) {
         return TRUE;

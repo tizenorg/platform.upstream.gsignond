@@ -35,6 +35,8 @@
 #include <daemon/gsignond-daemon.h>
 
 #include <daemon/db/gsignond-db-metadata-database.h>
+#include <daemon/db/gsignond-db-credentials-database.h>
+#include <daemon/db/gsignond-db-secret-cache.h>
 
 GSignondDaemon *_daemon = NULL;
 
@@ -56,28 +58,6 @@ static void _install_sighandlers()
     sigaction (SIGINT, &act, 0);
 }
 
-static void
-_key_free (GString *data)
-{
-    g_string_free (data, TRUE);
-}
-
-static void
-_value_free (GByteArray *data)
-{
-    g_byte_array_free (data, TRUE);
-}
-
-static GByteArray*
-_byte_array_new (const guint8 *data)
-{
-    GByteArray *value = NULL;
-    value = g_byte_array_new ();
-    value = g_byte_array_append (value,
-                data, strlen((const char*)data));
-    return value;
-}
-
 static GSequence*
 _sequence_new (guint8 *data)
 {
@@ -94,14 +74,13 @@ typedef struct {
 
 void
 _compare_key_value(
-        GString *key,
-        GByteArray *value,
+        gchar *key,
+        GBytes *value,
         Data *user_data)
 {
-    GByteArray *value_found = NULL;
-    value_found = (GByteArray *)g_hash_table_lookup (user_data->table, key);
-    if (value_found &&
-        g_strcmp0(value_found->data, value->data) == 0)
+    GBytes *value2 = NULL;
+    value2 = (GBytes *)g_hash_table_lookup (user_data->table, key);
+    if (value2 && g_bytes_compare (value2, value) == 0)
         return;
     user_data->status = 0;
 }
@@ -138,6 +117,64 @@ _compare_sequences (
 
     return equal;
 }
+
+GSignondIdentityInfo *
+get_filled_identity_info (guint32 identity_id)
+{
+    guint32 id = 0;
+    guint32 type = 456;
+    const gchar *username = "username1";
+    const gchar *secret = "secret1";
+    const gchar *caption = "caption1";
+    const gchar *method1 = "method1";
+    GSignondIdentityInfo *identity = NULL;
+    GSignondSecurityContextList *ctx_list;
+    GSignondSecurityContext *ctx, *ctx1, *ctx2, *ctx3 ;
+    GHashTable *methods = NULL;
+    GSequence *seq1 = NULL, *seq_realms;
+
+    identity = gsignond_identity_info_new ();
+    gsignond_identity_info_set_identity_new (identity);
+    gsignond_identity_info_set_username (identity, username);
+    gsignond_identity_info_set_secret (identity, secret);
+    gsignond_identity_info_set_store_secret (identity, TRUE);
+    gsignond_identity_info_set_caption (identity, caption);
+
+    /*realms*/
+    seq_realms = _sequence_new("realms1");
+    gsignond_identity_info_set_realms (identity, seq_realms);
+    g_sequence_free (seq_realms);
+
+    /*methods*/
+    methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
+            (GEqualFunc)g_str_equal,
+            (GDestroyNotify)NULL,
+            (GDestroyNotify)g_sequence_free);
+    seq1 = _sequence_new("mech11"); g_sequence_append (seq1, "mech12");
+    g_hash_table_insert (methods, "method1", seq1);
+    g_hash_table_insert (methods, "method2", _sequence_new("mech21"));
+    g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
+    gsignond_identity_info_set_methods (identity, methods);
+    g_hash_table_unref (methods);
+
+    /*acl*/
+    ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
+    ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
+    ctx3 = gsignond_security_context_new_from_values ("sysctx3", "appctx3");
+    ctx_list = g_list_append (ctx_list,ctx1);
+    ctx_list = g_list_append (ctx_list,ctx2);
+    ctx_list = g_list_append (ctx_list,ctx3);
+    gsignond_identity_info_set_access_control_list (identity, ctx_list);
+
+    /*owners*/
+    gsignond_identity_info_set_owner_list (identity, ctx_list);
+    gsignond_security_context_list_free (ctx_list);
+
+    gsignond_identity_info_set_validated (identity, FALSE);
+    gsignond_identity_info_set_identity_type (identity, type);
+    return identity;
+}
+
 void
 test_identity_info ()
 {
@@ -360,6 +397,7 @@ test_identity_info ()
     } else {
         WARN ("IdentityInfo owner get FAILED");
     }
+    gsignond_security_context_list_free (ctx_list);
 
     if (gsignond_identity_info_set_validated (identity, FALSE)) {
         INFO ("IdentityInfo validated set");
@@ -408,35 +446,320 @@ test_identity_info ()
 }
 
 void
+test_credentials_database ()
+{
+    GSignondConfig *config = NULL;
+    guint32 methodid = 0;
+    guint32 identity_id = 5;
+    const gchar *method1 = "method1";
+    GSignondIdentityInfo *identity = NULL, *identity2= NULL;
+    GSignondIdentityInfoList *identities = NULL;
+    GSignondSecurityContext *ctx1 = NULL;
+    GList *methods = NULL, *reflist = NULL;
+    GSignondSecurityContextList *acl, *owners;
+    GSignondSecurityContext *owner;
+    GSignondDbCredentialsDatabase *credentials_db = NULL;
+    GSignondSecretStorage *storage =NULL;
+    GHashTable *data = NULL;
+    GHashTable *data2 = NULL;
+    Data input;
+
+    config = gsignond_config_new ();
+
+    storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
+            "config", config, NULL);
+
+    credentials_db = gsignond_db_credentials_database_new (config,
+            storage);
+    g_object_unref (storage);
+
+    if (credentials_db) {
+        INFO ("CredentialsDB created");
+    } else {
+        WARN ("CredentialsDB creation FAILED");
+    }
+
+    if (gsignond_db_credentials_database_open_secret_storage (credentials_db)) {
+        INFO ("CredentialsDB open_secret_storage");
+    } else {
+        WARN ("CredentialsDB open_secret_storage FAILED");
+    }
+
+    if (gsignond_db_credentials_database_clear (credentials_db)) {
+        INFO ("CredentialsDB clear");
+    } else {
+        WARN ("CredentialsDB clear FAILED");
+    }
+
+    identity = get_filled_identity_info (identity_id);
+
+    identity_id = gsignond_db_credentials_database_insert_identity (
+            credentials_db, identity, TRUE);
+    if (identity_id != 0) {
+        INFO ("CredentialsDB insert_identity");
+    } else {
+        WARN ("CredentialsDB insert_identity FAILED");
+    }
+    gsignond_identity_info_set_id (identity, identity_id);
+
+    identity2 = gsignond_db_credentials_database_load_identity (credentials_db,
+            identity_id, TRUE);
+    if (identity2) {
+        INFO ("CredentialsDB load_identity");
+        gsignond_identity_info_free (identity2);
+    } else {
+        WARN ("CredentialsDB load_identity FAILED");
+    }
+
+    if (gsignond_db_credentials_database_check_secret (credentials_db,
+            identity_id, "username1", "secret1")) {
+        INFO ("CredentialsDB check_secret");
+    } else {
+        WARN ("CredentialsDB check_secret FAILED");
+    }
+
+    ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
+    methods = gsignond_db_credentials_database_get_methods (credentials_db,
+                identity_id, ctx1);
+    if (methods) {
+        INFO ("CredentialsDB get_methods");
+        g_list_free_full (methods, g_free);
+    } else {
+        WARN ("CredentialsDB get_methods FAILED");
+    }
+
+    /* add data to store */
+    data = g_hash_table_new_full ((GHashFunc)g_str_hash,
+            (GEqualFunc)g_str_equal,
+            (GDestroyNotify)NULL,
+            (GDestroyNotify)g_bytes_unref);
+    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
+    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
+    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
+    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
+    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
+    if (gsignond_db_credentials_database_update_data (credentials_db,
+            identity_id, "method1", data)) {
+        INFO ("CredentialsDB update_data");
+    } else {
+        WARN ("CredentialsDB update_data FAILED");
+    }
+
+    data2 = gsignond_db_credentials_database_load_data (credentials_db,
+            identity_id, "method1");
+    if (data2) {
+        INFO ("CredentialsDB load_data");
+        input.table = data;
+        input.status = 1;
+        g_hash_table_foreach (data2, (GHFunc)_compare_key_value, &input);
+        if (input.status != 1) {
+            WARN ("CredentialsDB load_data - data DOES NOT MATCH");
+        }
+        g_hash_table_unref(data2);
+
+    } else {
+        WARN ("CredentialsDB load_data FAILED");
+    }
+    g_hash_table_unref(data);
+
+    if (gsignond_db_credentials_database_remove_data (credentials_db,
+            identity_id, "method1")) {
+        INFO ("CredentialsDB remove_data");
+    } else {
+        WARN ("CredentialsDB remove_data");
+    }
+
+
+    if (gsignond_db_credentials_database_insert_reference (credentials_db,
+            identity_id, ctx1, "reference1" )) {
+        INFO ("CredentialsDB insert_reference");
+    } else {
+        WARN ("CredentialsDB insert_reference FAILED");
+    }
+
+    reflist = gsignond_db_credentials_database_get_references (credentials_db,
+                identity_id, ctx1);
+    if (reflist) {
+        if (g_list_length (reflist) == 1) {
+            INFO ("CredentialsDB get_references");
+        } else {
+            WARN ("CredentialsDB get_references FAILED - count does not match");
+        }
+        g_list_free_full (reflist, g_free);
+    } else {
+        WARN ("CredentialsDB get_references FAILED");
+    }
+
+    if (gsignond_db_credentials_database_remove_reference (credentials_db,
+            identity_id, ctx1, "reference1" )) {
+        INFO ("CredentialsDB remove_reference");
+    } else {
+        WARN ("CredentialsDB remove_reference FAILED");
+    }
+    gsignond_security_context_free (ctx1);
+
+    acl = gsignond_db_credentials_database_get_accesscontrol_list (
+            credentials_db, identity_id);
+    if (acl) {
+        INFO ("CredentialsDB get_acl");
+        gsignond_security_context_list_free (acl);
+    } else {
+        WARN ("CredentialsDB get_acl FAILED");
+    }
+
+    owners = gsignond_db_credentials_database_get_owner_list (credentials_db,
+            identity_id);
+    if (owners) {
+        INFO ("CredentialsDB get_owners");
+        gsignond_security_context_list_free (owners);
+    } else {
+        WARN ("CredentialsDB get_owners FAILED");
+    }
+
+    owner = gsignond_db_credentials_database_get_owner (credentials_db,
+            identity_id);
+    if (owner) {
+        INFO ("CredentialsDB get_owner");
+        gsignond_security_context_free (owner);
+    } else {
+        WARN ("CredentialsDB get_owner FAILED");
+    }
+
+    identities = gsignond_db_credentials_database_load_identities (
+            credentials_db);
+    if (identities) {
+        if (g_list_length (identities) == 1) {
+            INFO ("CredentialsDB load_identities");
+        } else {
+            WARN ("CredentialsDB load_identities FAILED - not same size");
+        }
+        gsignond_identity_info_list_free (identities);
+    } else {
+        WARN ("CredentialsDB get_identities FAILED");
+    }
+
+    if (gsignond_db_credentials_database_remove_identity (credentials_db,
+            identity_id)) {
+        INFO ("CredentialsDB remove_identity");
+    } else {
+        WARN ("CredentialsDB remove_identity FAILED");
+    }
+    gsignond_identity_info_free (identity);
+
+    g_object_unref(credentials_db);
+}
+
+void
+test_secret_cache ()
+{
+    GSignondConfig *config = NULL;
+    GSignondSecretStorage *storage =NULL;
+    GHashTable *data = NULL;
+    GHashTable *data2 = NULL;
+    GSignondDbSecretCache *cache = NULL;
+    GSignondCredentials *creds = NULL, *creds2;
+
+    cache = gsignond_db_secret_cache_new();
+    if (cache) {
+        INFO ("SecretCache created");
+    } else {
+        WARN ("SecretCache creation FAILED");
+    }
+
+    creds = gsignond_credentials_new ();
+    gsignond_credentials_set_data (creds, 1, "username2", "password2");
+    if (gsignond_db_secret_cache_update_credentials (cache, creds, TRUE)) {
+        INFO ("SecretCache update_credentials");
+    } else {
+        WARN ("SecretCache update_credentials FAILED");
+    }
+
+    creds2 = gsignond_db_secret_cache_get_credentials (cache, 1);
+    if (creds2) {
+        if (gsignond_credentials_equal (creds, creds2)) {
+            INFO ("SecretCache get_credentials");
+        } else {
+            WARN ("SecretCache get_credentials FAILED - mismatch");
+        }
+    } else {
+        WARN ("SecretCache get_credentials FAILED");
+    }
+    g_object_unref (creds);
+
+    data = g_hash_table_new_full ((GHashFunc)g_str_hash,
+            (GEqualFunc)g_str_equal,
+            (GDestroyNotify)NULL,
+            (GDestroyNotify)g_bytes_unref);
+    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
+    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
+    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
+    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
+    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
+    if (gsignond_db_secret_cache_update_data (cache, 1, 5, data)) {
+        INFO ("SecretCache update_data");
+    } else {
+        WARN ("SecretCache update_data FAILED");
+    }
+    g_hash_table_unref (data);
+
+    data2 = gsignond_db_secret_cache_get_data (cache, 1, 5);
+    if (data2) {
+        INFO ("SecretCache get_data");
+    } else {
+        WARN ("SecretCache get_data FAILED");
+    }
+
+    config = gsignond_config_new ();
+    storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
+            "config", config, NULL);
+    gsignond_secret_storage_open_db (storage);
+    if (gsignond_db_secret_cache_write_to_storage (cache, storage)) {
+        INFO ("SecretCache write_to_storage");
+    } else {
+        WARN ("SecretCache write_to_storage FAILED");
+    }
+    g_object_unref (storage);
+    g_object_unref (cache);
+}
+
+void
 test_metadata_database ()
 {
+    GSignondConfig *config = NULL;
     guint32 methodid = 0;
+    guint32 identity_id = 5;
     const gchar *method1 = "method1";
-    GSignondIdentityInfo *identity = NULL;
+    GSignondIdentityInfo *identity = NULL, *identity2= NULL;
+    GSignondIdentityInfoList *identities = NULL;
+    GSignondSecurityContext *ctx1 = NULL;
+    GList *methods = NULL, *reflist = NULL;
+    GSignondSecurityContextList *acl, *owners;
 
+    config = gsignond_config_new ();
     GSignondDbMetadataDatabase* metadata_db = NULL;
-    metadata_db = gsignond_db_metadata_database_new ();
+    metadata_db = gsignond_db_metadata_database_new (config);
     if (metadata_db) {
         INFO ("MetadataDB created");
     } else {
         WARN ("MetadataDB creation FAILED");
     }
-    if (gsignond_db_sql_database_open (
-            GSIGNOND_DB_SQL_DATABASE (metadata_db),
-            "/home/imran/.cache/gsignond-metadata.db",
-            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) {
+    if (gsignond_db_metadata_database_open (metadata_db)) {
         INFO ("MetadataDB opened ");
     } else {
         WARN ("MetadataDB cannot be opened");
     }
 
-    if (gsignond_db_sql_database_open (
-            GSIGNOND_DB_SQL_DATABASE (metadata_db),
-            "/home/imran/.cache/gsignond-metadata.db",
-            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) {
+    if (gsignond_db_metadata_database_open (metadata_db)) {
         INFO ("MetadataDB already open");
     } else {
         WARN ("MetadataDB opened AGAIN");
+    }
+
+    if (gsignond_db_sql_database_clear (
+            GSIGNOND_DB_SQL_DATABASE (metadata_db))) {
+        INFO ("MetadataDB clear");
+    } else {
+        WARN ("MetadataDB clear FAILED");
     }
 
     methodid = gsignond_db_metadata_database_get_method_id (metadata_db,
@@ -457,11 +780,99 @@ test_metadata_database ()
         WARN ("MetadataDB method ids NOT same");
     }
 
-    identity = gsignond_identity_info_new ();
-    gsignond_identity_info_set_id (identity, 1);
+    identity = get_filled_identity_info (identity_id);
 
-    //gsignond_db_metadata_database_update_identity
+    identity_id = gsignond_db_metadata_database_update_identity (metadata_db,
+                identity);
+    if (identity_id != 0) {
+        INFO ("MetadataDB update_identity");
+    } else {
+        WARN ("MetadataDB update_identity FAILED");
+    }
+    gsignond_identity_info_set_id (identity, identity_id);
 
+    identity2 = gsignond_db_metadata_database_get_identity (metadata_db,
+            identity_id);
+    if (identity2) {
+        INFO ("MetadataDB get identity");
+        gsignond_identity_info_free (identity2);
+    } else {
+        WARN ("MetadataDB get identity FAILED");
+    }
+
+    ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
+    methods = gsignond_db_metadata_database_get_methods (metadata_db,
+                identity_id, ctx1);
+    if (methods) {
+        INFO ("MetadataDB get_methods");
+        g_list_free_full (methods, g_free);
+    } else {
+        WARN ("MetadataDB get_methods FAILED");
+    }
+
+    if (gsignond_db_metadata_database_insert_reference (metadata_db,
+            identity_id, ctx1, "reference1" )) {
+        INFO ("MetadataDB insert_reference");
+    } else {
+        WARN ("MetadataDB insert_reference FAILED");
+    }
+
+    reflist = gsignond_db_metadata_database_get_references (metadata_db,
+                identity_id, ctx1);
+    if (reflist) {
+        if (g_list_length (reflist) == 1) {
+            INFO ("MetadataDB get_references");
+        } else {
+            WARN ("MetadataDB get_references FAILED - count does not match");
+        }
+        g_list_free_full (reflist, g_free);
+    } else {
+        WARN ("MetadataDB get_references FAILED");
+    }
+
+    if (gsignond_db_metadata_database_remove_reference (metadata_db,
+            identity_id, ctx1, "reference1" )) {
+        INFO ("MetadataDB remove_reference");
+    } else {
+        WARN ("MetadataDB remove_reference FAILED");
+    }
+    gsignond_security_context_free (ctx1);
+
+    acl = gsignond_db_metadata_database_get_accesscontrol_list (metadata_db,
+            identity_id);
+    if (acl) {
+        INFO ("MetadataDB get_acl");
+        gsignond_security_context_list_free (acl);
+    } else {
+        WARN ("MetadataDB get_acl FAILED");
+    }
+
+    owners = gsignond_db_metadata_database_get_owner_list (metadata_db,
+            identity_id);
+    if (owners) {
+        INFO ("MetadataDB get_owners");
+        gsignond_security_context_list_free (owners);
+    } else {
+        WARN ("MetadataDB get_owners FAILED");
+    }
+
+    identities = gsignond_db_metadata_database_get_identities (metadata_db);
+    if (identities) {
+        if (g_list_length (identities) == 1) {
+            INFO ("MetadataDB get_identities");
+        } else {
+            WARN ("MetadataDB get_identities FAILED - not same size");
+        }
+        gsignond_identity_info_list_free (identities);
+    } else {
+        WARN ("MetadataDB get_identities FAILED");
+    }
+    if (gsignond_db_metadata_database_remove_identity (metadata_db,
+            identity_id)) {
+        INFO ("MetadataDB remove_identity");
+    } else {
+        WARN ("MetadataDB remove_identity FAILED");
+    }
     gsignond_identity_info_free (identity);
 
     if (gsignond_db_sql_database_close (
@@ -473,16 +884,9 @@ test_metadata_database ()
     g_object_unref(metadata_db);
 }
 
-int main (int argc, char **argv)
+void
+test_secret_storage ()
 {
-    GError *error = NULL;
-    GOptionContext *opt_context = NULL;
-    gint ret = 0;
-    guint sigint_id =  0;
-    GOptionEntry opt_entries[] = {
-        {NULL }
-    };
-    GMainLoop *loop = 0;
     GSignondSecretStorage *storage = NULL;
     GSignondConfig *config = NULL;
     GString *un = NULL;
@@ -497,20 +901,10 @@ int main (int argc, char **argv)
     GByteArray *value =NULL;
     Data input;
 
-    g_type_init ();
-
-    opt_context = g_option_context_new ("SSO daemon");
-    g_option_context_add_main_entries (opt_context, opt_entries, NULL);
-    if (!g_option_context_parse (opt_context, &argc, &argv, &error)) {
-        ERR ("Error parsing options: %s", error->message);
-        g_error_free (error);
-        return -1;
-    }
-
     config = gsignond_config_new ();
     /* Secret Storage */
     storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
-                              "config", config, NULL);
+            "config", config, NULL);
     if (gsignond_secret_storage_open_db (storage)) {
         INFO ("Database open");
     } else {
@@ -559,15 +953,15 @@ int main (int argc, char **argv)
     }
 
     /* add data to store */
-    data = g_hash_table_new_full ((GHashFunc)g_string_hash,
-            (GEqualFunc)g_string_equal,
-            (GDestroyNotify)_key_free,
-            (GDestroyNotify)_value_free);
-    g_hash_table_insert (data, g_string_new("key1"), _byte_array_new("value1"));
-    g_hash_table_insert (data, g_string_new("key2"), _byte_array_new("value2"));
-    g_hash_table_insert (data, g_string_new("key3"), _byte_array_new("value3"));
-    g_hash_table_insert (data, g_string_new("key4"), _byte_array_new("value4"));
-    g_hash_table_insert (data, g_string_new("key5"), _byte_array_new("value5"));
+    data = g_hash_table_new_full ((GHashFunc)g_str_hash,
+            (GEqualFunc)g_str_equal,
+            (GDestroyNotify)NULL,
+            (GDestroyNotify)g_bytes_unref);
+    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
+    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
+    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
+    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
+    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
     if (gsignond_secret_storage_update_data (storage, id, method, data)) {
         INFO ("Database data ADDED");
     } else {
@@ -609,8 +1003,17 @@ int main (int argc, char **argv)
     }
     g_object_unref(storage);
     //g_object_unref(config);
+}
+
+int main (int argc, char **argv)
+{
+    g_type_init ();
+
+    test_secret_storage ();
     test_identity_info ();
+    test_secret_cache ();
     test_metadata_database ();
+    test_credentials_database ();
 
     return 0;
 }

@@ -179,9 +179,6 @@ gsignond_identity_info_compare (
         GSignondIdentityInfo *info,
         GSignondIdentityInfo *other);
 
-GSignondIdentityInfoList *
-gsignond_identity_info_list_new (void);
-
 void
 gsignond_identity_info_list_free (GSignondIdentityInfoList *list);
 
