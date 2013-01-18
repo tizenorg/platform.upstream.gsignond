@@ -95,7 +95,8 @@ _dispose (GObject *object)
 static void
 _security_context_of_peer (GSignondAccessControlManager *self,
                            GSignondSecurityContext *peer_ctx,
-                           int peer_fd, const gchar *peer_app_ctx)
+                           int peer_fd, const gchar *peer_service,
+                           const gchar *peer_app_ctx)
 {
     (void) self;
     (void) peer_fd;
@@ -107,7 +108,8 @@ _security_context_of_peer (GSignondAccessControlManager *self,
 
 static gboolean
 _peer_is_allowed_to_use_identity (GSignondAccessControlManager *self,
-                                int peer_fd, const gchar *peer_app_ctx,
+                                int peer_fd, const gchar *peer_service,
+                                const gchar *peer_app_ctx,
                                 const GSignondSecurityContextList *identity_acl)
 {
     (void) self;
@@ -120,7 +122,8 @@ _peer_is_allowed_to_use_identity (GSignondAccessControlManager *self,
 
 static gboolean
 _peer_is_owner_of_identity (GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_app_ctx,
+                            int peer_fd, const gchar *peer_service,
+                            const gchar *peer_app_ctx,
                             const GSignondSecurityContext *identity_owner)
 {
     (void) self;
@@ -133,7 +136,8 @@ _peer_is_owner_of_identity (GSignondAccessControlManager *self,
 
 static gboolean
 _acl_is_valid (GSignondAccessControlManager *self,
-               int peer_fd, const gchar *peer_app_ctx,
+               int peer_fd, const gchar *peer_service,
+               const gchar *peer_app_ctx,
                const GSignondSecurityContextList *identity_acl)
 {
     (void) self;
@@ -200,10 +204,12 @@ void
 gsignond_access_control_manager_security_context_of_peer (
                             GSignondAccessControlManager *self,
                             GSignondSecurityContext *peer_ctx,
-                            int peer_fd, const gchar *peer_app_ctx)
+                            int peer_fd, const gchar *peer_service,
+                            const gchar *peer_app_ctx)
 {
     GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        security_context_of_peer (self, peer_ctx, peer_fd, peer_app_ctx);
+        security_context_of_peer (self, peer_ctx, peer_fd,
+                                  peer_service, peer_app_ctx);
 }
 
 /**
@@ -220,13 +226,13 @@ gsignond_access_control_manager_security_context_of_peer (
 gboolean
 gsignond_access_control_manager_peer_is_allowed_to_use_identity (
                             GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_app_ctx,
+                            int peer_fd, const gchar *peer_service,
+                            const gchar *peer_app_ctx,
                             const GSignondSecurityContextList *identity_acl)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        peer_is_allowed_to_use_identity (self,
-                                         peer_fd, peer_app_ctx,
-                                         identity_acl);
+        peer_is_allowed_to_use_identity (self, peer_fd, peer_service,
+                                         peer_app_ctx, identity_acl);
 }
 
 /**
@@ -243,11 +249,13 @@ gsignond_access_control_manager_peer_is_allowed_to_use_identity (
 gboolean
 gsignond_access_control_manager_peer_is_owner_of_identity (
                             GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_app_ctx,
+                            int peer_fd, const gchar *peer_service,
+                            const gchar *peer_app_ctx,
                             const GSignondSecurityContext *identity_owner)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        peer_is_owner_of_identity (self, peer_fd, peer_app_ctx, identity_owner);
+        peer_is_owner_of_identity (self,  peer_fd, peer_service,
+                                   peer_app_ctx, identity_owner);
 }
 
 /**
@@ -265,11 +273,12 @@ gsignond_access_control_manager_peer_is_owner_of_identity (
 gboolean
 gsignond_access_control_manager_acl_is_valid (
                             GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_app_ctx,
+                            int peer_fd, const gchar *peer_service,
+                            const gchar *peer_app_ctx,
                             const GSignondSecurityContextList *identity_acl)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        acl_is_valid (self, peer_fd, peer_app_ctx, identity_acl);
+        acl_is_valid (self, peer_fd, peer_service, peer_app_ctx, identity_acl);
 }
 
 /**

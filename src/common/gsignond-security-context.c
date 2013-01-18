@@ -33,6 +33,12 @@ _security_context_free (gpointer ptr)
     gsignond_security_context_free (ctx);
 }
 
+static GSignondSecurityContext *
+_security_context_alloc ()
+{
+    return g_new0 (GSignondSecurityContext, 1);
+}
+
 /**
  * gsignond_security_context_new:
  *
@@ -45,7 +51,7 @@ gsignond_security_context_new ()
 {
     GSignondSecurityContext *ctx;
 
-    ctx = g_new0 (GSignondSecurityContext, 1);
+    ctx = _security_context_alloc ();
     ctx->sys_ctx = g_strdup ("");
     ctx->app_ctx = g_strdup ("");
 
@@ -69,7 +75,7 @@ gsignond_security_context_new_from_values (const gchar *system_context,
 
     g_return_val_if_fail (system_context != NULL, NULL);
 
-    ctx = g_new0 (GSignondSecurityContext, 1);
+    ctx = _security_context_alloc ();
     ctx->sys_ctx = g_strdup (system_context);
     if (application_context)
         ctx->app_ctx = g_strdup (application_context);
@@ -191,29 +197,20 @@ gsignond_security_context_get_application_context (
  * signon_security_conetxt_to_variant:
  * @ctx: #GSignondSecurityContext item.
  *
- * Build a GVariant of type "as" from a #GSignondSecurityContext item.
+ * Build a GVariant of type "(ss)" from a #GSignondSecurityContext item.
  *
  * Returns: (transfer full) GVariant construct of a #GSignondSecurityContext.
  */
 GVariant *
 gsignond_security_context_to_variant (const GSignondSecurityContext *ctx)
 {
-    GVariantBuilder builder;
     GVariant *variant;
 
     g_return_val_if_fail (ctx != NULL, NULL);
 
-    /* clean way, but what is the supported QDBus item? */
-    /*variant = g_variant_new ("(ss)", ctx->sys_ctx, ctx->app_ctx);*/
-
-    g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
-    g_variant_builder_add_value (&builder, (ctx->sys_ctx) ?
-                                 g_variant_new_string (ctx->sys_ctx) :
-                                 g_variant_new_string (""));
-    g_variant_builder_add_value (&builder, (ctx->app_ctx) ?
-                                 g_variant_new_string (ctx->app_ctx) :
-                                 g_variant_new_string (""));
-    variant = g_variant_builder_end (&builder);
+    variant = g_variant_new ("(ss)",
+                             ctx->sys_ctx ? ctx->sys_ctx : "",
+                             ctx->app_ctx ? ctx->app_ctx : "");
 
     return variant;
 }
@@ -222,34 +219,23 @@ gsignond_security_context_to_variant (const GSignondSecurityContext *ctx)
  * gsignond_security_context_from_variant:
  * @variant: GVariant item with a #GSignondSecurityContext construct.
  *
- * Builds a #GSignondSecurityContext item from a GVariant of type "as".
+ * Builds a #GSignondSecurityContext item from a GVariant of type "(ss)".
  *
  * Returns: (transfer full) #GSignondSecurityContext item.
  */
 GSignondSecurityContext *
 gsignond_security_context_from_variant (GVariant *variant)
 {
-    GVariantIter iter;
-    GVariant *value;
+    gchar *sys_ctx = NULL;
+    gchar *app_ctx = NULL;
     GSignondSecurityContext *ctx;
 
     g_return_val_if_fail (variant != NULL, NULL);
 
-    ctx = gsignond_security_context_new ();
-    g_variant_iter_init (&iter, variant);
-    value = g_variant_iter_next_value (&iter);
-    if (value) {
-        gsignond_security_context_set_system_context (ctx,
-                                            g_variant_get_string (value, NULL));
-        g_variant_unref (value);
-        value = g_variant_iter_next_value (&iter);
-        if (value) {
-            gsignond_security_context_set_application_context (ctx,
-                                            g_variant_get_string (value, NULL));
-            g_variant_unref (value);
-        }
-    }
-
+    g_variant_get (variant, "(ss)", &sys_ctx, &app_ctx);
+    ctx = gsignond_security_context_new_from_values (sys_ctx, app_ctx);
+    g_free (sys_ctx);
+    g_free (app_ctx);
     return ctx;
 }
 
@@ -337,7 +323,7 @@ gsignond_security_context_check (const GSignondSecurityContext *reference,
  * gsignond_security_context_list_to_variant:
  * @list: #GSignondSecurityContextList item.
  *
- * Builds a GVariant of type "aas" from a GList of #GSignondSecurityContext
+ * Builds a GVariant of type "a(ss)" from a GList of #GSignondSecurityContext
  * items.
  *
  * Returns: (transfer full) GVariant construct of a #GSignondSecurityContextList.
@@ -367,7 +353,7 @@ gsignond_security_context_list_to_variant (
  * @variant: GVariant item with a list of security context tuples.
  *
  * Builds a GList of #GSignondSecurityContext items from a GVariant of type
- * "aas".
+ * "a(ss)".
  *
  * Returns: (transfer full) #GSignondSecurityContextList item.
  */

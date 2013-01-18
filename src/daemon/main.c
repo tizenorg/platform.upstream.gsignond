@@ -29,6 +29,7 @@
 
 #include "gsignond/gsignond-log.h"
 #include "daemon/gsignond-daemon.h"
+#include "daemon/dbus/gsignond-dbus.h"
 
 GSignondDaemon *_daemon;
 
@@ -106,7 +107,7 @@ int main (int argc, char **argv)
     loop = g_main_loop_new (NULL, FALSE);
 
     name_owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
-            "com.google.code.AccountsSSO.SingleSignOn",
+            GSIGNOND_SERVICE, // "com.google.code.AccountsSSO.SingleSignOn",
             G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
             G_BUS_NAME_OWNER_FLAGS_REPLACE,
             _on_bus_acquired,

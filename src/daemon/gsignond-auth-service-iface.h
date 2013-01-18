@@ -42,41 +42,99 @@ typedef struct _GSignondAuthServiceIfaceInterface GSignondAuthServiceIfaceInterf
 struct _GSignondAuthServiceIfaceInterface {
     GTypeInterface parent;
 
-    const gchar * (*register_new_identity) (GSignondAuthServiceIface *iface, const GVariant *app_context);
-    gboolean (*get_identity) (GSignondAuthServiceIface *iface, guint32 id, const GVariant *app_context, gchar **object_path, GVariant **identity_data);
-    const gchar * (*get_auth_session_object_path) (GSignondAuthServiceIface *iface, guint32 id, const gchar *type, const GVariant *app_context);
-    gchar ** (*query_methods) (GSignondAuthServiceIface *iface);
-    gchar ** (*query_mechanisms) (GSignondAuthServiceIface *iface, const gchar *method);
-    GVariant * (*query_identities) (GSignondAuthServiceIface *iface, const GVariant *filter);
-    gboolean (*clear) (GSignondAuthServiceIface *iface);
+    /**
+     * register_new_identity:
+     * @auth_service: An instance of #GSignondAuthServiceIface
+     * @app_context: application context
+     *
+     * Creates new identity object and registers it on the DBus. Returns the
+     * dbus object of the newly created identity.
+     *
+     * Returns: (transfer null) object of the newly created identity if success, @NULL otherwise.
+     */
+    const gchar * (*register_new_identity) (GSignondAuthServiceIface *auth_service, const gchar *app_context);
+
+    /**
+     * get_identity:
+     * @auth_service: An instance of #GSignondAuthServiceIface
+     * @id: id to query
+     * @app_context: application context
+     * @object_path: (transfers full) holds the object path of the identity
+     * @identity_data: (transfers full) holds the identity data
+     *
+     * Retrives idnetity information stored and object path on DBus with the given id @id.
+     *
+     * Returns: (transfer null) object of the newly created identity if success, @NULL otherwise.
+     */
+    const gchar* (*get_identity) (GSignondAuthServiceIface *auth_service, guint32 id, const gchar *app_context, GVariant **identity_data);
+
+    /**
+     * query_methods:
+     * @auth_service: An instance of #GSignondAuthServiceIface
+     *
+     * Retrieves the supported authentication methods on this service object.
+     *
+     * Returns: (transfer full): list of authentication methods. Caller should call g_strfreev()
+     * once done with results.
+     */
+    gchar ** (*query_methods) (GSignondAuthServiceIface *auth_service);
+
+    /**
+     * query_mechanisms:
+     * @auth_service: An instance of #GSignondAuthServiceIface
+     * @method: authentication method
+     *
+     * Retrieves the supported authentication mechanisms for given @method on this service object.
+     *
+     * Returns: (transfer full): list of authentication mechanisms. Caller should call g_strfreev()
+     * once done with results.
+     */
+    gchar ** (*query_mechanisms) (GSignondAuthServiceIface *auth_service, const gchar *method);
+
+    /**
+     * query_identities:
+     * @auth_service: An instance of #GSignondAuthServiceIface
+     * @filter: filter to be applied
+     *
+     * Query for stored identities which satisifies the given filter @filter.
+     *
+     * Returns: (transfers full) identity list
+     */
+    GVariant * (*query_identities) (GSignondAuthServiceIface *auth_service, const GVariant *filter);
+
+    /**
+     * clear:
+     * @auth_service: An instance of #GSignondAuthServiceIface
+     *
+     * Clears all the identity information stored.
+     *
+     * Retruns: @TRUE on success, @FALSE otherwise
+     */
+    gboolean (*clear) (GSignondAuthServiceIface *auth_service);
 
 };
 
 GType gsignond_auth_service_iface_get_type (void);
 
-const gchar * gsignond_auth_service_iface_register_new_identity (
+const gchar * 
+gsignond_auth_service_iface_register_new_identity (
                                                 GSignondAuthServiceIface *self,
-                                                const GVariant *app_context);
-gboolean gsignond_auth_service_iface_get_identity (
-                                                GSignondAuthServiceIface *self,
-                                                guint32 id,
-                                                const GVariant *app_context, 
-                                                gchar **object_path,
-                                                GVariant **identity_data);
-const gchar * gsignond_auth_service_iface_get_auth_session_object_path (
-                                                GSignondAuthServiceIface *self,
-                                                guint32 id,
-                                                const gchar *type,
-                                                const GVariant *app_context);
-gchar ** gsignond_auth_service_iface_query_methods (
-                                                GSignondAuthServiceIface *self);
-gchar ** gsignond_auth_service_iface_query_mechanisms (
-                                                GSignondAuthServiceIface *self,
-                                                const gchar *method);
-GVariant * gsignond_auth_service_iface_query_identities (
-                                                GSignondAuthServiceIface *self,
-                                                const GVariant *filter);
-gboolean gsignond_auth_service_iface_clear (GSignondAuthServiceIface *self);
+                                                const gchar *app_context);
+const gchar *
+gsignond_auth_service_iface_get_identity (GSignondAuthServiceIface *self,
+                                          guint32 id,
+                                          const gchar *app_context, 
+                                          GVariant **identity_data);
+char **
+gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self);
+gchar **
+gsignond_auth_service_iface_query_mechanisms (GSignondAuthServiceIface *self,
+                                              const gchar *method);
+GVariant *
+gsignond_auth_service_iface_query_identities (GSignondAuthServiceIface *self,
+                                              const GVariant *filter);
+gboolean
+gsignond_auth_service_iface_clear (GSignondAuthServiceIface *self);
 
 G_END_DECLS
 

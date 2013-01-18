@@ -5,14 +5,16 @@ bin_PROGRAMS = gsignond
 
 gsignond_SOURCES = \
     main.c \
+    gsignond-auth-session.c \
+    gsignond-auth-session.h \
     gsignond-auth-service-iface.c \
     gsignond-auth-service-iface.h \
     gsignond-auth-session-iface.c \
     gsignond-auth-session-iface.h \
-    gsignond-identity-iface.c \
-    gsignond-identity-iface.h \
     gsignond-daemon.c \
     gsignond-daemon.h \
+    gsignond-identity-iface.c \
+    gsignond-identity-iface.h \
     gsignond-identity.c \
     gsignond-identity.h \
     $(NULL)

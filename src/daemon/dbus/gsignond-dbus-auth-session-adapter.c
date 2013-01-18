@@ -30,9 +30,7 @@
 enum
 {
     PROP_0,
-
     PROP_IMPL,
-    PROP_OBJECT_PATH,
     N_PROPERTIES
 };
 
@@ -42,13 +40,12 @@ struct _GSignondDbusAuthSessionAdapterPrivate
 {
     GDBusConnection     *connection;
     GSignondAuthSessionIface *parent;
-    gchar *object_path;
 };
 
 G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapter, GSIGNOND_DBUS_TYPE_AUTH_SESSION_SKELETON)
 
 
-#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterPrivate)
+#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterPrivate)
 
 static void _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const gchar **, gpointer);
 static void _handle_process (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const GVariant *, const gchar *, gpointer);
@@ -71,15 +68,6 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
             }
             break;
         }
-        case PROP_OBJECT_PATH: {
-            const gchar *name = g_value_get_string (value);
-            if (name) {
-                if (self->priv->object_path) g_free (self->priv->object_path);
-
-                self->priv->object_path = g_strdup (name);
-            }
-            break;
-        }
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -96,10 +84,6 @@ gsignond_dbus_auth_session_adapter_get_property (GObject *object,
     switch (property_id) {
         case PROP_IMPL: {
             g_value_set_instance (value, g_object_ref (self->priv->parent));
-            break;
-        }
-        case PROP_OBJECT_PATH: {
-            g_value_set_string (value, self->priv->object_path);
             break;
         }
         default:
@@ -130,11 +114,6 @@ gsignond_dbus_auth_session_adapter_finalize (GObject *object)
 
     g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
 
-    if (self->priv->object_path) {
-        g_free (self->priv->object_path);
-        self->priv->object_path = NULL;
-    }
-
     G_OBJECT_CLASS (gsignond_dbus_auth_session_adapter_parent_class)->finalize (object);
 }
 
@@ -163,13 +142,13 @@ static void
 gsignond_dbus_auth_session_adapter_init (GSignondDbusAuthSessionAdapter *self)
 {
     static guint32 object_counter;
+    char *object_path = NULL;
     GError *err = 0;
 
     self->priv = GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_GET_PRIV(self);
 
     self->priv->connection = 0;
     self->priv->parent = 0;
-    self->priv->object_path = g_strdup_printf ("%s/AuthSession_%d", GSIGNOND_DAEMON_OBJECTPATH, object_counter++);
 
 
     self->priv->connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &err);
@@ -179,14 +158,18 @@ gsignond_dbus_auth_session_adapter_init (GSignondDbusAuthSessionAdapter *self)
         return;
     }
 
+    object_path = g_strdup_printf ("%s/AuthSession_%d", GSIGNOND_DAEMON_OBJECTPATH, object_counter++);
     if (!g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (self),
                                            self->priv->connection,
-                                           self->priv->object_path,
+                                           object_path,
                                            &err)) {
         ERR ("failed to register object: %s", err->message);
         g_error_free (err);
+        g_free (object_path);
         return ;
     }
+
+    g_free (object_path);
 
     g_signal_connect (self, "handle-query-available-mechanisms", G_CALLBACK (_handle_query_available_mechanisms), NULL);
     g_signal_connect (self, "handle-process", G_CALLBACK(_handle_process), NULL);
@@ -217,6 +200,34 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
     }
 }
 
+typedef struct {
+    GSignondDbusAuthSessionAdapter *adapter;
+    GDBusMethodInvocation *invocation;
+    gpointer user_data;
+} _AuthSessionDbusInfo;
+
+static void
+_on_process_result (GSignondAuthSessionIface *auth_session, const GVariant *result, gpointer user_data)
+{
+    _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo *) info;
+    GSignondDbusAuthSession *iface = GSIGNOND_DBUS_AUTH_SESSION (info->adapter);
+
+    gsignond_dbus_auth_session_complete_process (iface, info->invocation, result);
+
+    g_free (info);
+}
+
+static void
+_on_process_error (GSignondAuthSessionIface *auth_session, guint error, gpointer user_data)
+{
+    /*
+     * TODO: Prepare error
+     * GError *err = g_error_new ();
+     * g_dbus_method_invocation_return_gerror (invocation, err);
+     * g_error_free (err);
+     */
+}
+
 static void
 _handle_process (GSignondDbusAuthSessionAdapter *self,
                  GDBusMethodInvocation *invocation,
@@ -224,23 +235,16 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
                  const gchar *mechanisms,
                  gpointer user_data)
 {
-    GSignondDbusAuthSession *iface = GSIGNOND_DBUS_AUTH_SESSION (self);
-    GVariant *data = 0;
+    _AuthSessionDbusInfo *info = 0;
 
-    data = gsignond_auth_session_iface_process (self->priv->parent, session_data, mechanisms);
+    gsignond_auth_session_iface_process (self->priv->parent, session_data, mechanisms);
 
-    if (data) {
-        gsignond_dbus_auth_session_complete_process (iface, invocation, data);
-        g_variant_unref (data);
-    }
-    else {
-        /*
-         * TODO: Prepare error
-         * GError *err = g_error_new ();
-         * g_dbus_method_invocation_return_gerror (invocation, err);
-         * g_error_free (err);
-         */
-    }
+    info = g_new0 (_AuthSessionDbusInfo, 1);
+    info->adapter = self;
+    info->invocation = invocation;
+
+    g_signal_connect (self->priv->parent, "process-error", G_CALLBACK(_on_process_error), self);
+    g_signal_connect (self->priv->parent, "process-result", G_CALLBACK (_on_process_result), self);
 }
 
 static void
@@ -268,3 +272,8 @@ _handle_set_id (GSignondDbusAuthSessionAdapter   *self,
     gsignond_dbus_auth_session_complete_set_id (iface, invocation);
 }
 
+GSignondDbusAuthSessionAdapter *
+gsignond_dbus_auth_session_adapter_new (GSignondAuthSessionIface *impl)
+{
+    return g_object_new (GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, "auth-session-impl", impl, NULL);
+}

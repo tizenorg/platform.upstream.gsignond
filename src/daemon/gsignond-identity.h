@@ -29,7 +29,9 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include "gsignond-daemon.h"
+#include <gsignond/gsignond-identity-info.h>
+
+#include "gsignond-auth-service-iface.h"
 
 G_BEGIN_DECLS
 
@@ -59,11 +61,16 @@ struct _GSignondIdentityClass
 
 GType gsignond_identity_get_type (void) G_GNUC_CONST;
 
-GSignondIdentity * gsignond_identity_new (guint32 id, GSignondDaemon *parent);
+GSignondIdentity * gsignond_identity_new (GSignondAuthServiceIface *owner,
+                                          GSignondIdentityInfo *info,
+                                          const gchar *app_context);
 
 guint32 gsignond_identity_get_id (GSignondIdentity *identity);
 
 gboolean gsignond_identity_set_id (GSignondIdentity *identity, guint32 id);
+
+const gchar *
+gsignond_identity_get_object_path (GSignondIdentity *identity);
 
 G_END_DECLS
 

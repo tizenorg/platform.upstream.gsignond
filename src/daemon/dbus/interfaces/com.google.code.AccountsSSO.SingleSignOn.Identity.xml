@@ -11,7 +11,11 @@
       <arg name="message" type="s" direction="in"/>
     </method>
     <method name="getInfo">
-      <arg type="a{sv}" direction="out"/>
+      <arg name="identityInfo" type="a{sv}" direction="out"/>
+    </method>
+    <method name="getAuthSession">
+      <arg name="objectPath" type="o" direction="out"/>
+      <arg name="method" type="s" direction="in"/>
     </method>
     <method name="verifyUser">
       <arg type="b" direction="out"/>

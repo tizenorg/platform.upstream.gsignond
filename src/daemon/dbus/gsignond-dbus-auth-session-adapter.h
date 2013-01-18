@@ -32,12 +32,12 @@
 
 G_BEGIN_DECLS
 
-#define GSIGNOND_TYPE_AUTH_SESSION_ADAPTER            (gsignond_dbus_auth_session_adapter_get_type())
-#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), GSIGNOND_TYPE_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapter))
-#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), GSIGNOND_TYPE_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterClass))
-#define GSIGNOND_IS_AUTH_SESSION_ADAPTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), GSIGNOND_TYPE_AUTH_SESSION_ADAPTER))
-#define GSIGNOND_IS_AUTH_SESSION_ADAPTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_AUTH_SESSION_ADAPTER))
-#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), GSIGNOND_TYPE_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterClass))
+#define GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER            (gsignond_dbus_auth_session_adapter_get_type())
+#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapter))
+#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterClass))
+#define GSIGNOND_IS_AUTH_SESSION_ADAPTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER))
+#define GSIGNOND_IS_AUTH_SESSION_ADAPTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER))
+#define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterClass))
 
 typedef struct _GSignondDbusAuthSessionAdapter GSignondDbusAuthSessionAdapter;
 typedef struct _GSignondDbusAuthSessionAdapterClass GSignondDbusAuthSessionAdapterClass;
@@ -57,6 +57,9 @@ struct _GSignondDbusAuthSessionAdapterClass
 };
 
 GType gsignond_dbus_auth_session_adapter_get_type (void) G_GNUC_CONST;
+
+#define gsignond_dbus_auth_session_adapter_get_object_path(adapter) \
+    g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON (adapter))
 
 GSignondDbusAuthSessionAdapter * gsignond_dbus_auth_session_adapter_new (GSignondAuthSessionIface *parent);
 

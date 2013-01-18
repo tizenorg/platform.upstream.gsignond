@@ -58,6 +58,9 @@ struct _GSignondDbusIdentityAdapterClass
 
 GType gsignond_dbus_identity_adapter_get_type (void) G_GNUC_CONST;
 
+#define gsignond_dbus_identity_adapter_get_object_path(adapter) \
+    g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON (adapter))
+
 GSignondDbusIdentityAdapter * gsignond_dbus_identity_adapter_new (GSignondIdentityIface *parent);
 
 G_END_DECLS

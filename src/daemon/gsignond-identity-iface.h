@@ -41,37 +41,184 @@ typedef struct _GSignondIdentityIfaceInterface GSignondIdentityIfaceInterface;
 
 struct _GSignondIdentityIfaceInterface {
     GTypeInterface parent;
+    
+   /**
+     * request_credentials_update:
+     * @identity: Instance of #GSignondIdentityIface
+     * @message: message to be shown to user
+     *
+     * Requests user to update username and password for this identity @identity.
+     *
+     * Returns: identity id.
+     * FIXME: What is the use of returning identity id
+     */
+    guint32   (*request_credentials_update) (GSignondIdentityIface *identity, const gchar *message);
 
-    guint32   (*request_credentials_update) (GSignondIdentityIface *iface, const gchar *message);
-    GVariant *(*get_info) (GSignondIdentityIface *iface);
-    gboolean  (*verify_user) (GSignondIdentityIface *iface, const GVariant *params);
-    gboolean  (*verify_secret) (GSignondIdentityIface *iface, const gchar *secret);
-    void      (*remove) (GSignondIdentityIface *iface);
-    gboolean  (*sign_out) (GSignondIdentityIface *iface);
-    guint32   (*store) (GSignondIdentityIface *iface, const GVariant *info);
-    gint32    (*add_reference) (GSignondIdentityIface *iface, const gchar *reference);
-    gint32    (*remove_reference) (GSignondIdentityIface *iface, const gchar *reference);
+    /**
+     * get_info:
+     * @identity: Instance of #GSignondIdentityIface
+     *
+     * Retrives identity information stroed for this identity.
+     *
+     * Returns: (transfer full)identity information
+     */
+    GVariant *(*get_info) (GSignondIdentityIface *identity);
 
+    /**
+     * get_auth_session:
+     * @identity: Instance of #GSignondIdentityIface
+     * @method: authentication method to use
+     *
+     * Opens an authentication session for #identity using authentication method #method.
+     *
+     * Returns: (transfers none) Dbus object path of the session object
+     */
+    const gchar *   (*get_auth_session) (GSignondIdentityIface *identity, const gchar *method);
+ 
+    /**
+     * verify_user:
+     * @identity: Instance of #GSignondIdentityIface
+     * @params:
+     *
+     * Starts user verification process. Once the verification process completed
+     * that is informed via #user_verified.
+     *
+     * Returns: @TRUE on success, @FALSE otherwise
+     */
+    gboolean  (*verify_user) (GSignondIdentityIface *identity, const GVariant *params);
+
+    /**
+     * verify_secret:
+     * @identity: Instance of #GSignondIdentityIface
+     * @secret: secret to verify
+     *
+     * Starts secret verification process. Once the verification process completed
+     * that is informed via #secret_verified
+     *
+     * Returns: @TRUE on success, @FALSE otherwise
+     */
+    gboolean  (*verify_secret) (GSignondIdentityIface *identity, const gchar *secret);
+
+    /**
+     * remove:
+     * @identity: Instance of #GSignondIdentityIface
+     *
+     * Removes identity from database
+     */
+    void      (*remove) (GSignondIdentityIface *identity);
+
+    /**
+     * store:
+     * @identity: Instance of #GSignondIdentityIface
+     * @info: information to be stored
+     *
+     * Stores the given identity information @info to database.
+     *
+     * Returns: id of the identity
+     */
+    guint32   (*store) (GSignondIdentityIface *identity, const GVariant *info);
+
+    /**
+     * sign_out:
+     * @identity: Instance of #GSignondIdentityIface
+     *
+     * Returns: @TRUE on success, @FALSE otherwise.
+     */
+    gboolean  (*sign_out) (GSignondIdentityIface *identity);
+
+    /**
+     * add_reference:
+     * @identity: Instance of #GSignondIdentityIface
+     * @reference: named referece
+     *
+     * Adds a named referece to identity.
+     *
+     * Returns: identity id
+     */
+    gint32    (*add_reference) (GSignondIdentityIface *identity, const gchar *reference);
+
+    /**
+     * remove_reference:
+     * @identity: Instance of #GSignondIdentityIface
+     * @reference: name of the reference to be removed
+     *
+     * Removes named reference @reference form list of references of identity @identity.
+     *
+     * Returns: identity id
+     */
+    gint32    (*remove_reference) (GSignondIdentityIface *identity, const gchar *reference);
+
+    /**
+     * user_verified:
+     * ®identity: Instance of #GSignondIdentityIface
+     * @error: (transfers none): instance of #GError, in case of error occured.
+     *
+     * Function to be called in responce to #verify_user, when user verification process completed.
+     */
+    void      (*user_verified) (GSignondIdentityIface *identity, const GError *error);
+
+    /**
+     * secret_verified
+     * ®identity: Instance of #GSignondIdentityIface
+     * @error: (transfers none): instance of #GError, in case of error occured.
+     *
+     * Function to be called in responce to #verify_secret, when user verification process completed.
+     */
+    void      (*secret_verified) (GSignondIdentityIface *identity, const GError *error);
 };
 
 GType gsignond_identity_iface_get_type (void);
 
-guint32 gsignond_identity_iface_request_credentials_update (
+guint32 
+gsignond_identity_iface_request_credentials_update (
                                                     GSignondIdentityIface *self,
                                                     const gchar *message);
-GVariant * gsignond_identity_iface_get_info (GSignondIdentityIface *self);
-gboolean gsignond_identity_iface_verify_user (GSignondIdentityIface *self,
-                                              const GVariant *params);
-gboolean gsignond_identity_iface_verify_secret (GSignondIdentityIface *self,
-                                                const gchar *secret);
-void gsignond_identity_iface_remove (GSignondIdentityIface *self);
-gboolean gsignond_identity_iface_sign_out (GSignondIdentityIface *self);
-guint32 gsignond_identity_iface_store (GSignondIdentityIface *self,
-                                       const GVariant *info);
-gint32 gsignond_identity_iface_add_reference (GSignondIdentityIface *self,
-                                              const gchar *reference);
-gint32 gsignond_identity_iface_remove_reference (GSignondIdentityIface *self,
-                                                 const gchar *reference);
+GVariant * 
+gsignond_identity_iface_get_info (GSignondIdentityIface *self);
+
+const gchar *
+gsignond_identity_iface_get_auth_session (GSignondIdentityIface *iface,
+                                          const gchar *method);
+
+gboolean 
+gsignond_identity_iface_verify_user (GSignondIdentityIface *self,
+                                     const GVariant *params);
+
+gboolean 
+gsignond_identity_iface_verify_secret (GSignondIdentityIface *self,
+                                       const gchar *secret);
+
+void 
+gsignond_identity_iface_remove (GSignondIdentityIface *self);
+
+gboolean 
+gsignond_identity_iface_sign_out (GSignondIdentityIface *self);
+
+guint32 
+gsignond_identity_iface_store (GSignondIdentityIface *self,
+                               const GVariant *info);
+
+gint32 
+gsignond_identity_iface_add_reference (GSignondIdentityIface *self,
+                                       const gchar *reference);
+
+gint32 
+gsignond_identity_iface_remove_reference (GSignondIdentityIface *self,
+                                          const gchar *reference);
+
+void 
+gsignond_identity_iface_notify_user_verified (GSignondIdentityIface *identity, 
+                                              const GError *error);
+
+void
+gsignond_identity_iface_notify_secret_verified (GSignondIdentityIface *identity, 
+                                                const GError *error);
+
+void gsignond_identity_iface_notify_user_verified (GSignondIdentityIface *identity, 
+                                                   const GError *error);
+
+void gsignond_identity_iface_notify_secret_verified (GSignondIdentityIface *identity, 
+                                                     const GError *error);
 
 G_END_DECLS
 

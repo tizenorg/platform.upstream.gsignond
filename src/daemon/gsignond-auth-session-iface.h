@@ -42,10 +42,71 @@ typedef struct _GSignondAuthSessionIfaceInterface GSignondAuthSessionIfaceInterf
 struct _GSignondAuthSessionIfaceInterface {
     GTypeInterface parent;
 
-    gchar **   (*query_available_mechanisms) (GSignondAuthSessionIface *iface, const gchar **wanted_mechansims);
-    GVariant * (*process) (GSignondAuthSessionIface *iface, const GVariant *session_data, const gchar *mechanism);
-    void       (*cancel) (GSignondAuthSessionIface *iface);
-    void       (*set_id) (GSignondAuthSessionIface *iface, guint32 id);
+    /**
+     * query_available_mechanisms:
+     * @session: instance of #GSignondAuthSessionIface
+     * @desired_mechanisms: desired authentication mechanisms
+     *
+     * Checks for support of desired authentication mechanisms #desired_mechanisms for this
+     * authentication session, The result will be interseciton of desired authenticaiton mechansims 
+     * and available authenticaiton mechansims.
+     *
+     * Returns: (transfer full) list of supported authentication mechansims out of #desired_mechanisms
+     * Caller should use g_strfreev() when done with return value.
+     */
+    gchar **   (*query_available_mechanisms) (GSignondAuthSessionIface *session,
+                                              const gchar **desired_mechanisms);
+
+    /**
+     * process:
+     * @session: instance of #GSignondAuthSessionIface
+     * @session_data: authentication session data to use
+     * @mechansims: authentication mechanism to use
+     *
+     * Initiates authentication process on #session, On successful authentication #process_reply will be called.
+     * In case failure occured in authentication process, the error is informed via #process_error.
+
+     * Returns: @TRUE if authentication process was started successfully, @FALSE otherwise
+     */
+    gboolean   (*process) (GSignondAuthSessionIface *session,
+                           const GVariant *session_data,
+                           const gchar *mechanism);
+
+    /**
+     * cancel:
+     * @session: instance of #GSignondAuthSessionIface
+     *
+     */
+    void       (*cancel) (GSignondAuthSessionIface *session);
+    
+    /**
+     * cancel:
+     * @session: instance of #GSignondAuthSessionIface
+     *
+     */
+    void       (*set_id) (GSignondAuthSessionIface *session,
+                          guint32 id);
+
+    /* handlers */
+    /**
+     * process_reply:
+     * @session: instance of #GSignondAuthSessionIface
+     * @results: authentication process results
+     *
+     * Function to be called with #results on authentication process success.
+     */
+    void       (*process_reply) (GSignondAuthSessionIface *session,
+                                 const GVariant *results);
+    
+    /**
+     * process_error:
+     * @session: instance of #GSignondAuthSessionIface
+     * @error: error of type #GError, occured during authentication process
+     *
+     * Function to be called with #error on authentication process failure.
+     */
+    void       (*process_error) (GSignondAuthSessionIface *session,
+                                 const GError *error);
 };
 
 GType gsignond_auth_session_iface_get_type (void);
@@ -53,12 +114,21 @@ GType gsignond_auth_session_iface_get_type (void);
 gchar ** gsignond_auth_session_iface_query_available_mechanisms (
                                             GSignondAuthSessionIface *self,
                                             const gchar **wanted_mechanisms);
-GVariant * gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
-                                                const GVariant *session_data,
-                                                const gchar *mechanism);
+gboolean gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
+                                              const GVariant *session_data,
+                                              const gchar *mechanism);
 void gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self);
 void gsignond_auth_session_iface_set_id (GSignondAuthSessionIface *self,
                                          guint32 id);
+
+void
+gsignond_auth_session_iface_notify_process_result (
+                                                GSignondAuthSessionIface *iface,
+                                                const GVariant *result);
+void
+gsignond_auth_session_iface_notify_process_error (
+                                                GSignondAuthSessionIface *iface,
+                                                const GError *error);
 
 G_END_DECLS
 
