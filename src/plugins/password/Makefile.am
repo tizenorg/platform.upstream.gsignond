@@ -1,4 +1,5 @@
-lib_LTLIBRARIES = libpasswordplugin.la
+include $(top_srcdir)/common.mk
+plugins_LTLIBRARIES = libpasswordplugin.la
 NULL=
 
 libpasswordplugin_la_CPPFLAGS = \

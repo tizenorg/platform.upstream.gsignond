@@ -46,23 +46,6 @@ typedef struct _GSignondConfig GSignondConfig;
 typedef struct _GSignondConfigClass GSignondConfigClass;
 typedef struct _GSignondConfigPrivate GSignondConfigPrivate;
 
-
-#ifndef GSIGNOND_PLUGINS_DIR
-#   define GSIGNOND_PLUGINS_DIR "/usr/lib/signon"
-#endif
-
-#ifndef GSIGNOND_PLUGIN_PREFIX
-#   define GSIGNOND_PLUGIN_PREFIX "lib"
-#endif
-
-#ifndef GSIGNOND_PLUGIN_SUFFIX
-#   define GSIGNOND_PLUGIN_SUFFIX "plugin.so"
-#endif
-
-#ifndef GSIGNOND_EXTENSIONS_DIR
-#   define GSIGNOND_EXTENSIONS_DIR "/usr/lib"
-#endif
-
 struct _GSignondConfig
 {
     GObject parent;
