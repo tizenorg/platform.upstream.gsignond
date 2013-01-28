@@ -351,7 +351,7 @@ gsignond_db_credentials_database_insert_identity (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
 
-    new_identity = gsignond_identity_info_copy (identity);
+    new_identity = gsignond_dictionary_copy (identity);
     if (!gsignond_identity_info_get_is_identity_new (new_identity)) {
     	gsignond_identity_info_set_identity_new (new_identity);
     }

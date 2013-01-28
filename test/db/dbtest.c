@@ -293,7 +293,7 @@ START_TEST (test_identity_info)
     fail_unless (type == gsignond_identity_info_get_identity_type (identity));
 
     /*copy*/
-    identity2 = gsignond_identity_info_copy (identity);
+    identity2 = gsignond_dictionary_copy (identity);
     fail_if (identity2 == NULL);
     fail_unless (gsignond_identity_info_compare (identity, identity2) == TRUE);
     gsignond_identity_info_free (identity2);

@@ -29,10 +29,11 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-security-context.h>
+#include <gsignond/gsignond-dictionary.h>
 
 G_BEGIN_DECLS
 
-#define GSIGNOND_TYPE_IDENTITY_INFO (G_TYPE_HASH_TABLE)
+#define GSIGNOND_TYPE_IDENTITY_INFO (GSIGNOND_TYPE_DICTIONARY)
 
 #define GSIGNOND_IDENTITY_INFO(obj)  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
                                            GSIGNOND_TYPE_IDENTITY_INFO, \
@@ -40,26 +41,14 @@ G_BEGIN_DECLS
 #define GSIGNOND_IS_IDENTITY_INFO(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj),\
                                            GSIGNOND_TYPE_IDENTITY_INFO))
 
-typedef GHashTable GSignondIdentityInfo;
+typedef GSignondDictionary GSignondIdentityInfo;
 typedef GList GSignondIdentityInfoList;
-
-GType
-gsignond_identity_info_get_type (void);
 
 GSignondIdentityInfo *
 gsignond_identity_info_new (void);
 
 void
 gsignond_identity_info_free (GSignondIdentityInfo *info);
-
-GSignondIdentityInfo *
-gsignond_identity_info_new_from_variant (GVariant *variant);
-
-GVariant *
-gsignond_identity_info_to_variant (GSignondIdentityInfo *self);
-
-GSignondIdentityInfo *
-gsignond_identity_info_copy (GSignondIdentityInfo *other);
 
 gint
 gsignond_identity_info_get_id (GSignondIdentityInfo *info);

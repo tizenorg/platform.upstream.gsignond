@@ -123,10 +123,10 @@ gsignond_dictionary_free (GSignondDictionary *dict)
  *
  * Retrieves a value from the dictionary.
  *
- * Returns: the value; NULL is returned in case of failure.
+ * Returns: (transfer none) the value; NULL is returned in case of failure.
  */
 GVariant *
-gsignond_dictionary_get (GSignondDictionary *dict, gchar *key)
+gsignond_dictionary_get (GSignondDictionary *dict, const gchar *key)
 {
     g_return_val_if_fail (dict != NULL, NULL);
     g_return_val_if_fail (key != NULL, NULL);
@@ -145,13 +145,13 @@ gsignond_dictionary_get (GSignondDictionary *dict, gchar *key)
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
-void
+gboolean
 gsignond_dictionary_set (GSignondDictionary *dict, 
-    gchar *key, GVariant *value)
+    const gchar *key, GVariant *value)
 {
-    g_return_if_fail (dict != NULL);
-    g_return_if_fail (key != NULL);
-    g_return_if_fail (value != NULL);
+    g_return_val_if_fail (dict != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
+    g_return_val_if_fail (value != NULL, FALSE);
 
     g_variant_ref_sink(value);
     
@@ -160,7 +160,7 @@ gsignond_dictionary_set (GSignondDictionary *dict,
             g_strdup(key),
             value);
 
-    return;
+    return TRUE;
 }
 
 /**

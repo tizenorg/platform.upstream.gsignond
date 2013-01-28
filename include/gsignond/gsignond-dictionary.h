@@ -60,11 +60,11 @@ GVariant *
 gsignond_dictionary_to_variant (GSignondDictionary *self);
 
 GVariant *
-gsignond_dictionary_get (GSignondDictionary *dict, gchar *key);
+gsignond_dictionary_get (GSignondDictionary *dict, const gchar *key);
 
-void
+gboolean
 gsignond_dictionary_set (GSignondDictionary *dict, 
-    gchar *key, GVariant *value);
+    const gchar *key, GVariant *value);
 
 G_END_DECLS
 
