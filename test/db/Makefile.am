@@ -1,21 +1,14 @@
-NULL=
-
-bin_PROGRAMS = testdb
-
-testdb_SOURCES = \
-    test.c \
-    $(NULL)
-
-testdb_CFLAGS = \
-    -I$(top_srcdir) \
-    -I$(top_builddir)/include/ \
-    -I$(top_builddir)/src/ \
+TESTS = dbtest
+check_PROGRAMS = dbtest
+dbtest_SOURCES = dbtest.c
+dbtest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
-    $(NULL)
+    $(CHECK_CFLAGS) \
+    -I$(top_srcdir)/src/ \
+    -I$(top_srcdir)/include/ 
 
-testdb_LDADD = \
+dbtest_LDADD = \
     $(top_builddir)/src/common/libgsignond-common.la \
     $(top_builddir)/src/daemon/db/libgsignond-db.la \
     $(GSIGNOND_LIBS) \
-    $(NULL)
-
+    $(CHECK_LIBS)
