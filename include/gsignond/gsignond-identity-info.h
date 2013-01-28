@@ -53,6 +53,12 @@ void
 gsignond_identity_info_free (GSignondIdentityInfo *info);
 
 GSignondIdentityInfo *
+gsignond_identity_info_new_from_variant (GVariant *variant);
+
+GVariant *
+gsignond_identity_info_to_variant (GSignondIdentityInfo *self);
+
+GSignondIdentityInfo *
 gsignond_identity_info_copy (GSignondIdentityInfo *other);
 
 gint

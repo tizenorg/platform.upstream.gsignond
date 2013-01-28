@@ -50,12 +50,6 @@ G_BEGIN_DECLS
 #define GSIGNOND_IDENTITY_INFO_VALIDATED             "Validated"
 #define GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET    "UserNameSecret"
 
-GSignondIdentityInfo *
-gsignond_identity_info_new_from_variant (GVariant *variant);
-
-GVariant *
-gsignond_identity_info_to_variant (GSignondIdentityInfo *self);
-
 G_END_DECLS
 
 #endif /* __GSIGNOND_IDENTITY_INFO_INTERNAL_H__ */

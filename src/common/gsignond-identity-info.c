@@ -206,67 +206,6 @@ _gsignond_identity_info_methods_cmp (
 }
 
 /**
- * gsignond_identity_info_new_from_variant:
- * @variant: instance of #GVariant
- *
- * Converts the variant to GSignondIdentityInfo.
- *
- * Returns: (transfer full) object if successful, NULL otherwise.
- */
-GSignondIdentityInfo *
-gsignond_identity_info_new_from_variant (GVariant *variant)
-{
-    GSignondIdentityInfo *info = NULL;
-    GVariantIter iter;
-    gchar *key = NULL;
-    GVariant *value = NULL;
-
-    g_return_val_if_fail (variant != NULL, NULL);
-
-    info = gsignond_identity_info_new ();
-    g_variant_iter_init (&iter, variant);
-    while (g_variant_iter_next (&iter, "{sv}", &key, &value))
-    {
-        g_hash_table_insert (info, key, value);
-    }
-
-    return info;
-}
-
-/**
- * gsignond_identity_info_to_variant:
- * @info: instance of #GSignondIdentityInfo
- *
- * Converts the GSignondIdentityInfo to variant.
- *
- * Returns: (transfer full) #GVariant object if successful, NULL otherwise.
- */
-GVariant *
-gsignond_identity_info_to_variant (GSignondIdentityInfo *info)
-{
-    GVariantBuilder builder;
-    GHashTableIter iter;
-    GVariant *vinfo = NULL;
-    const gchar *key = NULL;
-    GVariant *value = NULL;
-
-    g_return_val_if_fail (info != NULL, NULL);
-
-    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
-    g_hash_table_iter_init (&iter, info);
-    while (g_hash_table_iter_next (&iter,
-                                   (gpointer)&key,
-                                   (gpointer)&value))
-    {
-        g_variant_builder_add (&builder, "{sv}",
-                               key,
-                               value);
-    }
-    vinfo = g_variant_builder_end (&builder);
-    return vinfo;
-}
-
-/**
  * gsignond_identity_info_new:
  *
  * Creates new instance of GSignondIdentityInfo.
@@ -371,6 +310,68 @@ gsignond_identity_info_copy (GSignondIdentityInfo *other)
             gsignond_identity_info_get_identity_type (other));
 
     return info;
+}
+
+
+/**
+ * gsignond_identity_info_new_from_variant:
+ * @variant: instance of #GVariant
+ *
+ * Converts the variant to GSignondIdentityInfo.
+ *
+ * Returns: (transfer full) object if successful, NULL otherwise.
+ */
+GSignondIdentityInfo *
+gsignond_identity_info_new_from_variant (GVariant *variant)
+{
+    GSignondIdentityInfo *info = NULL;
+    GVariantIter iter;
+    gchar *key = NULL;
+    GVariant *value = NULL;
+
+    g_return_val_if_fail (variant != NULL, NULL);
+
+    info = gsignond_identity_info_new ();
+    g_variant_iter_init (&iter, variant);
+    while (g_variant_iter_next (&iter, "{sv}", &key, &value))
+    {
+        g_hash_table_insert (info, key, value);
+    }
+
+    return info;
+}
+
+/**
+ * gsignond_identity_info_to_variant:
+ * @info: instance of #GSignondIdentityInfo
+ *
+ * Converts the GSignondIdentityInfo to variant.
+ *
+ * Returns: (transfer full) #GVariant object if successful, NULL otherwise.
+ */
+GVariant *
+gsignond_identity_info_to_variant (GSignondIdentityInfo *info)
+{
+    GVariantBuilder builder;
+    GHashTableIter iter;
+    GVariant *vinfo = NULL;
+    const gchar *key = NULL;
+    GVariant *value = NULL;
+
+    g_return_val_if_fail (info != NULL, NULL);
+
+    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+    g_hash_table_iter_init (&iter, info);
+    while (g_hash_table_iter_next (&iter,
+                                   (gpointer)&key,
+                                   (gpointer)&value))
+    {
+        g_variant_builder_add (&builder, "{sv}",
+                               key,
+                               value);
+    }
+    vinfo = g_variant_builder_end (&builder);
+    return vinfo;
 }
 
 /**
