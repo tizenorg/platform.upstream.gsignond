@@ -105,7 +105,7 @@ _dispose (GObject *object)
 static gboolean
 _initialize_storage (GSignondStorageManager *self)
 {
-    g_assert (self != NULL);
+    g_return_val_if_fail (self != NULL, FALSE);
     g_return_val_if_fail (self->location, FALSE);
 
     if (g_mkdir_with_parents (self->location, S_IRWXU))
@@ -120,7 +120,7 @@ _delete_storage (GSignondStorageManager *self)
     const gchar *filename;
     GDir *storage_dir;
 
-    g_assert (self != NULL);
+    g_return_val_if_fail (self != NULL, FALSE);
     g_return_val_if_fail (self->location, FALSE);
 
     storage_dir = g_dir_open (self->location, 0, NULL);
@@ -139,7 +139,7 @@ _delete_storage (GSignondStorageManager *self)
 static gboolean
 _storage_is_initialized (GSignondStorageManager *self)
 {
-    g_assert (self != NULL);
+    g_return_val_if_fail (self != NULL, FALSE);
     g_return_val_if_fail (self->location, FALSE);
 
     if (g_access (self->location, 0))  /* 0 should equal to F_OK */
@@ -151,7 +151,10 @@ _storage_is_initialized (GSignondStorageManager *self)
 static const gchar *
 _mount_filesystem (GSignondStorageManager *self)
 {
-    g_assert (self != NULL);
+    g_return_val_if_fail (self != NULL, NULL);
+
+    if (g_mkdir_with_parents (self->location, S_IRWXU))
+        return NULL;
 
     return self->location;
 }
@@ -159,7 +162,7 @@ _mount_filesystem (GSignondStorageManager *self)
 static gboolean
 _unmount_filesystem (GSignondStorageManager *self)
 {
-    (void) self;
+    g_return_val_if_fail (self != NULL, FALSE);
 
     return TRUE;
 }
