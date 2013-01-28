@@ -848,10 +848,7 @@ gsignond_db_metadata_database_open (GSignondDbMetadataDatabase *self)
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
 
-    config_table = gsignond_config_get_config_table(self->config);
-    g_return_val_if_fail (config_table != NULL, FALSE);
-
-    filename = (const gchar *) g_hash_table_lookup (config_table,
+    filename = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME);
 
     return _gsignond_db_metadata_database_open (

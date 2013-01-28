@@ -188,10 +188,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
     g_return_val_if_fail (self->config != NULL, FALSE);
 
-    config_table = gsignond_config_get_config_table(self->config);
-    g_return_val_if_fail (config_table != NULL, FALSE);
-
-    dir = (const gchar *) g_hash_table_lookup (config_table,
+    dir = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     if (!dir) {
         dir = g_get_user_data_dir ();
@@ -200,7 +197,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
             return FALSE;
         }
     }
-    filename = (const gchar *) g_hash_table_lookup (config_table,
+    filename = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME);
     if (!filename) {
         filename = GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME;
