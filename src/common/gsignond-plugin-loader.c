@@ -41,15 +41,16 @@ gsignond_load_plugin(GSignondConfig* config, gchar* plugin_type)
     g_free(plugin_filename);
     if (plugin_module == NULL) {
         DBG("Plugin couldn't be opened");
-        return;
+        return NULL;
     }
     
     gchar* plugin_get_type = g_strdup_printf("gsignond_%s_plugin_get_type",
         plugin_type);
-    GType (*plugin_get_type_f)(void);
+    gpointer p;
+
     DBG("Resolving symbol %s", plugin_get_type);
     gboolean symfound = g_module_symbol (plugin_module,
-        plugin_get_type, &plugin_get_type_f);
+        plugin_get_type, &p);
     g_free(plugin_get_type);
     g_module_close (plugin_module);
     if (!symfound) {
@@ -58,6 +59,7 @@ gsignond_load_plugin(GSignondConfig* config, gchar* plugin_type)
     }
     
     DBG("Creating plugin object");
+    GType (*plugin_get_type_f)(void) = p;
     GSignondPlugin* plugin = g_object_new(plugin_get_type_f(), NULL);
     if (plugin == NULL) {
         DBG("Plugin couldn't be created");

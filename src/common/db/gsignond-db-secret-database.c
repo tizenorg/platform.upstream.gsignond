@@ -23,6 +23,7 @@
  * 02110-1301 USA
  */
 #include <sqlite3.h>
+#include <string.h>
 
 #include "gsignond/gsignond-log.h"
 #include "gsignond-db-error.h"

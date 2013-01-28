@@ -766,7 +766,7 @@ gsignond_db_credentials_database_get_owner_list(
 }
 
 /**
- * gsignond_db_credentials_database_get_owner:
+ * gsignond_db_credentials_database_get_identity_owner:
  *
  * @self: instance of #GSignondDbCredentialsDatabase
  * @identity_id: the id of the identity whose owner is needed
@@ -778,7 +778,7 @@ gsignond_db_credentials_database_get_owner_list(
  * gsignond_identity_info_free
  */
 GSignondSecurityContext *
-gsignond_db_credentials_database_get_owner (
+gsignond_db_credentials_database_get_identity_owner (
 		GSignondDbCredentialsDatabase *self,
         const guint32 identity_id)
 {

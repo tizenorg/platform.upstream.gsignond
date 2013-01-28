@@ -632,7 +632,7 @@ START_TEST (test_credentials_database)
     fail_if (owners == NULL);
     gsignond_security_context_list_free (owners);
 
-    owner = gsignond_db_credentials_database_get_owner (
+    owner = gsignond_db_credentials_database_get_identity_owner (
             credentials_db, identity_id);
     fail_if (owner == NULL);
     gsignond_security_context_free (owner);
