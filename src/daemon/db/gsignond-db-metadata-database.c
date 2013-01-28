@@ -23,6 +23,7 @@
  * 02110-1301 USA
  */
 #include <string.h>
+#include <sys/stat.h>
 
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-config.h"
@@ -478,8 +479,10 @@ _gsignond_db_metadata_database_open (
         int flags)
 {
     const gchar *dir = NULL;
+    gchar *db_dir = NULL;
     gchar *db_filename = NULL;
     gboolean ret = FALSE;
+    gint dir_created = 0;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
 
@@ -496,6 +499,16 @@ _gsignond_db_metadata_database_open (
         WARN ("Invalid db filename...");
         return FALSE;
     }
+
+    db_dir = g_path_get_dirname (db_filename);
+    dir_created = g_mkdir_with_parents (db_dir, S_IRWXU);
+    g_free (db_dir);
+    if (dir_created != 0) {
+        WARN ("Invalid db directory...");
+        g_free (db_filename);
+        return FALSE;
+    }
+
     ret = gsignond_db_sql_database_open (obj, db_filename, flags);
     g_free (db_filename);
     return ret;
