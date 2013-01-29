@@ -52,7 +52,7 @@ gsignond_db_create_error (
 
     error = g_error_new (GSIGNOND_DB_ERROR,
                          code,
-                         msg);
+                         "%s", msg);
     return error;
 }
 

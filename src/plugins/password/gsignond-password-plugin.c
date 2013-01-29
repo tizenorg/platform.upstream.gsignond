@@ -100,13 +100,11 @@ static void gsignond_password_plugin_user_action_finished (
         gsignond_plugin_error (self, error); 
         g_error_free(error);
     } else {
-        gchar* error_message = g_strdup_printf("userActionFinished error: %d",
-                                               query_error);
         GError* error = g_error_new(GSIGNOND_ERROR, 
                                 GSIGNOND_ERROR_USER_INTERACTION,
-                                error_message);
+                                "userActionFinished error: %d",
+                                query_error);
         gsignond_plugin_error (self, error); 
-        g_free(error_message);
         g_error_free(error);
     }
 }

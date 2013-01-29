@@ -1,4 +1,5 @@
-lib_LTLIBRARIES = libextension-test.la
+include $(top_srcdir)/common.mk
+extensions_LTLIBRARIES = libextension-test.la
 
 libextension_test_la_CPPFLAGS = \
 	-I$(top_srcdir) \

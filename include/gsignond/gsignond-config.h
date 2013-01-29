@@ -46,23 +46,6 @@ typedef struct _GSignondConfig GSignondConfig;
 typedef struct _GSignondConfigClass GSignondConfigClass;
 typedef struct _GSignondConfigPrivate GSignondConfigPrivate;
 
-
-#ifndef GSIGNOND_PLUGINS_DIR
-#   define GSIGNOND_PLUGINS_DIR "/usr/lib/signon"
-#endif
-
-#ifndef GSIGNOND_PLUGIN_PREFIX
-#   define GSIGNOND_PLUGIN_PREFIX "lib"
-#endif
-
-#ifndef GSIGNOND_PLUGIN_SUFFIX
-#   define GSIGNOND_PLUGIN_SUFFIX "plugin.so"
-#endif
-
-#ifndef GSIGNOND_EXTENSIONS_DIR
-#   define GSIGNOND_EXTENSIONS_DIR "/usr/lib"
-#endif
-
 struct _GSignondConfig
 {
     GObject parent;
@@ -80,31 +63,18 @@ GType gsignond_config_get_type (void) G_GNUC_CONST;
 
 GSignondConfig * gsignond_config_new ();
 
-gboolean gsignond_config_set_plugins_dir (GSignondConfig *config,
-                                          const gchar *dir);
-const gchar * gsignond_config_get_plugins_dir (GSignondConfig *config) G_GNUC_CONST;
+gint
+gsignond_config_get_integer (GSignondConfig *config, const gchar *key);
 
-gboolean gsignond_config_set_extensions_dir (GSignondConfig *config,
-                                             const gchar *dir);
-const gchar * gsignond_config_get_extensions_dir (GSignondConfig *config) G_GNUC_CONST;
+void
+gsignond_config_set_integer (GSignondConfig *config, const gchar *key,
+                             gint value) ;
+const gchar*
+gsignond_config_get_string (GSignondConfig *config, const gchar *key);
 
-gboolean gsignond_config_set_extension (GSignondConfig *config,
-                                        const gchar *extension);
-const gchar * gsignond_config_get_extension (GSignondConfig *config) G_GNUC_CONST;
-
-gboolean gsignond_config_set_daemon_timeout (GSignondConfig *config,
-                                             guint timeout);
-guint gsignond_config_get_daemon_timeout (GSignondConfig *config) G_GNUC_CONST;
-
-gboolean gsignond_config_set_identity_timeout (GSignondConfig *config,
-                                               guint timeout);
-guint gsignond_config_get_identity_timeout (GSignondConfig *config) G_GNUC_CONST;
-
-gboolean gsignond_config_set_auth_session_timeout (GSignondConfig *config,
-                                                   guint timeout);
-guint gsignond_config_get_auth_session_timeout (GSignondConfig *config) G_GNUC_CONST;
-
-const GHashTable * gsignond_config_get_config_table (GSignondConfig *config);
+void
+gsignond_config_set_string (GSignondConfig *config, const gchar *key,
+                             const gchar *value); 
 
 G_END_DECLS
 

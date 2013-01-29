@@ -1,3 +1,5 @@
+include $(top_srcdir)/common.mk
+
 SUBDIRS = db 
 NULL=
 
@@ -8,6 +10,8 @@ libgsignond_common_la_CPPFLAGS = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     $(GSIGNOND_CFLAGS) \
+    -DGSIGNOND_PLUGINS_DIR='"$(pluginsdir)"' \
+    -DGSIGNOND_EXTENSIONS_DIR='"$(extensionsdir)"' \
     $(NULL)
 
 libgsignond_common_la_DEPENDENCIES = \
@@ -31,6 +35,7 @@ libgsignond_common_la_SOURCES = \
     gsignond-plugin-interface.c \
     gsignond-dictionary.c \
     gsignond-session-data.c \
+    gsignond-plugin-loader.c \
     $(NULL)
 
 CLEANFILES = 

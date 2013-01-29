@@ -29,7 +29,8 @@
 #include <gsignond/gsignond-session-data.h>
 #include <gsignond/gsignond-plugin-interface.h>
 #include <gsignond/gsignond-error.h>
-
+#include <gsignond/gsignond-plugin-loader.h>
+#include <gsignond/gsignond-config.h>
 
 START_TEST (test_session_data)
 {
@@ -91,13 +92,11 @@ START_TEST (test_session_data)
 }
 END_TEST
 
-START_TEST (test_passwordplugin_create)
+static void check_plugin(GSignondPlugin* plugin)
 {
-    gpointer plugin;
     gchar* type;
     gchar** mechanisms;
-    
-    plugin = g_object_new(GSIGNOND_TYPE_PASSWORD_PLUGIN, NULL);
+
     fail_if(plugin == NULL);
     
     g_object_get(plugin, "type", &type, "mechanisms", &mechanisms, NULL);
@@ -108,6 +107,14 @@ START_TEST (test_passwordplugin_create)
     
     g_free(type);
     g_strfreev(mechanisms);
+}
+
+START_TEST (test_passwordplugin_create)
+{
+    gpointer plugin;
+    
+    plugin = g_object_new(GSIGNOND_TYPE_PASSWORD_PLUGIN, NULL);
+    check_plugin(plugin);
     g_object_unref(plugin);
 }
 END_TEST
@@ -301,6 +308,21 @@ START_TEST (test_passwordplugin_refresh)
 }
 END_TEST
 
+START_TEST (test_passwordplugin_loader)
+{
+    GSignondConfig* config = gsignond_config_new();
+    fail_if(config == NULL);
+
+    GSignondPlugin* absent_plugin = gsignond_load_plugin(config, "absentplugin");
+    fail_if(absent_plugin != NULL);
+    
+    GSignondPlugin* plugin = gsignond_load_plugin(config, "password");
+    check_plugin(plugin);    
+    
+    g_object_unref(plugin);
+    g_object_unref(config);
+}
+END_TEST
 
 Suite* passwordplugin_suite (void)
 {
@@ -313,6 +335,7 @@ Suite* passwordplugin_suite (void)
     tcase_add_test (tc_core, test_passwordplugin_process);
     tcase_add_test (tc_core, test_passwordplugin_user_action_finished);
     tcase_add_test (tc_core, test_passwordplugin_refresh);
+    tcase_add_test (tc_core, test_passwordplugin_loader);
     suite_add_tcase (s, tc_core);
     return s;
 }

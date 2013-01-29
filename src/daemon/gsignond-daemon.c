@@ -358,8 +358,10 @@ gsignond_daemon_init_extensions (GSignondDaemon *self)
     gchar *initf_name;
     GSignondExtensionInit ext_init;
 
-    ext_path = gsignond_config_get_extensions_dir (self->priv->config);
-    ext_name = gsignond_config_get_extension (self->priv->config);
+    ext_path = gsignond_config_get_string (self->priv->config, 
+        GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR);
+    ext_name = gsignond_config_get_string (self->priv->config,
+        GSIGNOND_CONFIG_GENERAL_EXTENSION);
     if (ext_name && !ext_path) return FALSE;
 
     if (ext_name && g_strcmp0 (ext_name, "default") != 0) {
@@ -410,10 +412,8 @@ gsignond_daemon_init_storage (GSignondDaemon *self)
 
     storage_location = gsignond_storage_manager_mount_filesystem (
                                                    self->priv->storage_manager);
-    config_table = gsignond_config_get_config_table (self->priv->config);
-    g_assert (config_table != NULL);
-    g_hash_table_replace (config_table, GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
-                          g_strdup (storage_location));
+    gsignond_config_set_string(self->priv->config, 
+        GSIGNOND_CONFIG_GENERAL_SECURE_DIR, storage_location);                                                 
 
     return (storage_location != NULL);
 }
@@ -434,12 +434,14 @@ gsignond_daemon_open_database (GSignondDaemon *self)
 
 guint gsignond_daemon_identity_timeout (GSignondDaemon *self)
 {
-    return gsignond_config_get_identity_timeout (self->priv->config);
+    return gsignond_config_get_integer (self->priv->config,
+        GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT);
 }
 
 guint gsignond_daemon_auth_session_timeout (GSignondDaemon *self)
 {
-    return gsignond_config_get_auth_session_timeout (self->priv->config);
+    return gsignond_config_get_integer (self->priv->config,
+        GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT);
 }
 
 static const gchar * 
