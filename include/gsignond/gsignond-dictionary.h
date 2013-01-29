@@ -66,6 +66,9 @@ gboolean
 gsignond_dictionary_set (GSignondDictionary *dict, 
     const gchar *key, GVariant *value);
 
+gboolean
+gsignond_dictionary_remove (GSignondDictionary *dict, const gchar *key);
+
 G_END_DECLS
 
 #endif /* __GSIGNOND_DICTIONARY_H__ */

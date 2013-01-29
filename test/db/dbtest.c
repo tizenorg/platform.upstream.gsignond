@@ -167,12 +167,30 @@ START_TEST (test_identity_info)
     GSignondSecurityContextList *ctx_list, *list;
     GSignondSecurityContext *ctx, *ctx1, *ctx2, *ctx3 ;
     GHashTable *methods = NULL, *methods2;
-    GSequence *seq1 = NULL, *seq_realms, *seq21;
+    GSequence *seq1 = NULL, *seq_realms, *seq21, *mechs;
     gchar *allowmech;
     GList *list2;
 
     identity = gsignond_identity_info_new ();
     fail_if (identity == NULL);
+
+    fail_unless (gsignond_identity_info_get_id (identity) == -1);
+    fail_unless (gsignond_identity_info_get_is_identity_new (identity)== TRUE);
+    fail_unless (gsignond_identity_info_get_username (identity) == NULL);
+    fail_unless (gsignond_identity_info_get_is_username_secret (
+            identity) == FALSE);
+    fail_unless (gsignond_identity_info_get_secret (identity) == NULL);
+    fail_unless (gsignond_identity_info_get_store_secret (identity) == FALSE);
+    fail_unless (gsignond_identity_info_get_caption (identity) == NULL);
+    fail_unless (gsignond_identity_info_get_realms (identity) == NULL);
+    fail_unless (gsignond_identity_info_get_methods (identity) == NULL);
+    fail_unless (gsignond_identity_info_get_mechanisms (
+            identity, "testmech") == NULL);
+    fail_unless (gsignond_identity_info_get_access_control_list (
+            identity) == NULL);
+    fail_unless (gsignond_identity_info_get_owner_list (identity) == NULL);
+    fail_unless (gsignond_identity_info_get_validated (identity) == FALSE);
+    fail_unless (gsignond_identity_info_get_identity_type (identity) == -1);
 
     fail_unless (gsignond_identity_info_set_id (identity, id) == TRUE);
 
@@ -182,6 +200,11 @@ START_TEST (test_identity_info)
 
     fail_unless (gsignond_identity_info_get_is_identity_new (
             identity) == TRUE);
+
+    fail_unless (gsignond_identity_info_set_username (
+            identity, NULL) == FALSE);
+
+    fail_unless (gsignond_identity_info_get_username (identity) == NULL);
 
     fail_unless (gsignond_identity_info_set_username (
             identity, username) == TRUE);
@@ -195,6 +218,10 @@ START_TEST (test_identity_info)
     fail_unless (gsignond_identity_info_get_is_username_secret (
             identity) == TRUE);
 
+    fail_unless (gsignond_identity_info_set_secret (identity, NULL) == FALSE);
+
+    fail_unless (gsignond_identity_info_get_secret (identity) == NULL);
+
     fail_unless (gsignond_identity_info_set_secret (identity, secret) == TRUE);
 
     fail_unless (g_strcmp0 (secret, gsignond_identity_info_get_secret (
@@ -205,6 +232,10 @@ START_TEST (test_identity_info)
 
     fail_unless (gsignond_identity_info_get_store_secret (
             identity) == TRUE);
+
+    fail_unless (gsignond_identity_info_set_caption (identity, NULL) == FALSE);
+
+    fail_unless (gsignond_identity_info_get_caption (identity) == NULL);
 
     fail_unless (gsignond_identity_info_set_caption (
             identity, caption) == TRUE);
@@ -229,9 +260,12 @@ START_TEST (test_identity_info)
             (GDestroyNotify)NULL,
             (GDestroyNotify)g_sequence_free);
     seq1 = _sequence_new("mech11"); g_sequence_append (seq1, "mech12");
+    fail_unless (gsignond_identity_info_set_methods (
+            identity, methods) == TRUE);
     g_hash_table_insert (methods, "method1", seq1);
     g_hash_table_insert (methods, "method2", _sequence_new("mech21"));
     g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
+    g_hash_table_insert (methods, "method4", _sequence_new("mech41"));
     fail_unless (gsignond_identity_info_set_methods (
             identity, methods) == TRUE);
 
@@ -242,6 +276,39 @@ START_TEST (test_identity_info)
     fail_unless (_compare_sequences (seq1, seq21) == TRUE);
     g_hash_table_unref (methods2);
     g_hash_table_unref (methods);
+
+    fail_unless (gsignond_identity_info_get_mechanisms (
+            identity, "method20") == NULL);
+
+    mechs = gsignond_identity_info_get_mechanisms (
+                identity, "method1");
+    fail_if (mechs == NULL);
+    g_sequence_free (mechs);
+
+    fail_unless (gsignond_identity_info_remove_method (
+            identity, "method20") == FALSE);
+    fail_unless (gsignond_identity_info_remove_method (
+            identity, "method4") == TRUE);
+
+    allowmech = NULL;
+    fail_unless (gsignond_identity_info_check_method_mechanism (
+            identity, "method4", "mech567", &allowmech) == TRUE);
+
+    allowmech = NULL;
+    fail_unless (gsignond_identity_info_check_method_mechanism (
+            identity, "method1", "mech11", &allowmech) == TRUE);
+    fail_if (allowmech == NULL);
+
+    fail_unless (g_strcmp0 (allowmech, "mech11") == 0);
+    g_free (allowmech);allowmech = NULL;
+
+    fail_unless (gsignond_identity_info_check_method_mechanism (
+            identity, "method1", "mech11 mech12", &allowmech) == TRUE);
+    fail_unless (g_strcmp0 (allowmech, "mech11 mech12") == 0);
+    g_free (allowmech);allowmech = NULL;
+
+    fail_unless (gsignond_identity_info_check_method_mechanism (
+            identity, "method1", "mech21", &allowmech) == FALSE);
 
     /*acl*/
     ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
@@ -297,11 +364,11 @@ START_TEST (test_identity_info)
     fail_if (identity2 == NULL);
     fail_unless (gsignond_identity_info_compare (identity, identity2) == TRUE);
     gsignond_identity_info_free (identity2);
+    fail_unless (gsignond_identity_info_compare (identity, NULL) == FALSE);
+    fail_unless (gsignond_identity_info_compare (NULL, identity) == FALSE);
+    fail_unless (gsignond_identity_info_compare (NULL, NULL) == TRUE);
+    fail_unless (gsignond_identity_info_compare (identity, identity) == TRUE);
 
-    fail_unless (gsignond_identity_info_check_method_mechanism (
-            identity, "method1", "mech11", &allowmech) == TRUE);
-    fail_unless (g_strcmp0 (allowmech, "mech11") == 0);
-    g_free (allowmech);
     gsignond_identity_info_free (identity);
 }
 END_TEST
@@ -566,7 +633,7 @@ START_TEST (test_credentials_database)
     identity = _get_filled_identity_info (identity_id);
 
     identity_id = gsignond_db_credentials_database_insert_identity (
-            credentials_db, identity, TRUE);
+            credentials_db, identity);
     fail_unless (identity_id != 0);
     gsignond_identity_info_set_id (identity, identity_id);
     identity2 = gsignond_db_credentials_database_load_identity (

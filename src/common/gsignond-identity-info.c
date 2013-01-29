@@ -100,6 +100,7 @@ _gsignond_identity_info_sequence_to_variant (GSequence *seq)
         iter = g_sequence_iter_next (iter);
     }
     var = g_variant_builder_end (&builder);
+    return var;
 }
 
 static GSequence *
@@ -322,16 +323,14 @@ gsignond_identity_info_set_username (
         GSignondIdentityInfo *info,
         const gchar *username)
 {
-    GVariant *vname = NULL;
-    g_return_val_if_fail (username != NULL, FALSE);
-
-    if (username) {
-        vname = g_variant_new_string (username);
+    if (!username) {
+        return gsignond_dictionary_remove (info,
+                            GSIGNOND_IDENTITY_INFO_USERNAME);
     }
     return gsignond_dictionary_set (
                     info,
                     GSIGNOND_IDENTITY_INFO_USERNAME,
-                    vname);
+                    g_variant_new_string (username));
 }
 
 /**
@@ -409,14 +408,14 @@ gsignond_identity_info_set_secret (
         GSignondIdentityInfo *info,
         const gchar *secret)
 {
-    GVariant *vsecret = NULL;
-    if (secret) {
-        vsecret = g_variant_new_string (secret);
+    if (!secret) {
+        return gsignond_dictionary_remove (info,
+                GSIGNOND_IDENTITY_INFO_SECRET);
     }
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_SECRET,
-            vsecret);
+            g_variant_new_string (secret));
 }
 
 /**
@@ -493,14 +492,14 @@ gsignond_identity_info_set_caption (
         GSignondIdentityInfo *info,
         const gchar *caption)
 {
-    GVariant *vcaption = NULL;
-    if (caption) {
-        vcaption = g_variant_new_string (caption);
+    if (!caption) {
+        return gsignond_dictionary_remove (info,
+                GSIGNOND_IDENTITY_INFO_CAPTION);
     }
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_CAPTION,
-            vcaption);
+            g_variant_new_string (caption));
 }
 
 /**
@@ -888,24 +887,24 @@ gsignond_identity_info_check_method_mechanism (
     gchar ** split_mechs = NULL;
     GString* allowed_mechs = NULL;
     gint i, j=0;
+    const gchar *space = " ";
 
     g_return_val_if_fail (info != NULL, FALSE);
     g_return_val_if_fail (method != NULL && mechanism != NULL, FALSE);
 
+    *allowed_mechanisms = NULL;
     mechanisms = gsignond_identity_info_get_mechanisms (info, method);
-
     if (mechanisms == NULL) {
         return TRUE;
     }
 
     if (g_sequence_lookup (mechanisms, (gpointer)mechanism,
-            (GCompareDataFunc) g_strcmp0, NULL) != NULL) {
+            (GCompareDataFunc) _compare_strings, NULL) != NULL) {
         *allowed_mechanisms = g_strdup (mechanism);
         g_sequence_free (mechanisms);
         return TRUE;
     }
-
-    split_mechs = g_strsplit (mechanism, (const gchar *)' ', 0);
+    split_mechs = g_strsplit (mechanism, space, 0);
     if (g_strv_length (split_mechs) <= 1 ) {
         g_sequence_free (mechanisms);
         return FALSE;
@@ -915,9 +914,9 @@ gsignond_identity_info_check_method_mechanism (
     i = 0;
     while (split_mechs[i]) {
         if (g_sequence_lookup (mechanisms, (gpointer)split_mechs[i],
-                (GCompareDataFunc)g_strcmp0, NULL) != NULL) {
+                (GCompareDataFunc)_compare_strings, NULL) != NULL) {
             if (j > 0) {
-                g_string_append (allowed_mechs, (const gchar *)' ');
+                g_string_append (allowed_mechs, space);
             }
             g_string_append (allowed_mechs, split_mechs[i]);
             ++j;
@@ -928,6 +927,7 @@ gsignond_identity_info_check_method_mechanism (
     g_sequence_free (mechanisms);
 
     *allowed_mechanisms = g_string_free (allowed_mechs, FALSE);
+
     return TRUE;
 }
 
@@ -952,8 +952,11 @@ gsignond_identity_info_compare (
     GSignondSecurityContextList *info_owners = NULL, *other_owners = NULL;
     gboolean equal = FALSE;
 
-    g_return_val_if_fail (info != NULL, FALSE);
-    g_return_val_if_fail (other != NULL, FALSE);
+    if (info == other)
+        return TRUE;
+
+    if (info == NULL || other == NULL)
+        return FALSE;
 
     if (gsignond_identity_info_get_id (info) !=
         gsignond_identity_info_get_id (other)) {

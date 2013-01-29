@@ -164,6 +164,28 @@ gsignond_dictionary_set (GSignondDictionary *dict,
 }
 
 /**
+ * gsignond_dictionary_remove:
+ * @dict: instance of #GSignondDictionary
+ *
+ * @key: key which needs to be removed from the dictionary
+ * @value: value to be set
+ *
+ * Removes key-value pair in the dictionary as per key.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_dictionary_remove (GSignondDictionary *dict, const gchar *key)
+{
+    g_return_val_if_fail (dict != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
+
+    return g_hash_table_remove (
+            dict,
+            key);
+}
+
+/**
  * gsignond_dictionary_copy:
  * @other: instance of #GSignondDictionary
  *

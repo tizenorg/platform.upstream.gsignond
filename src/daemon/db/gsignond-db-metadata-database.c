@@ -235,11 +235,14 @@ _gsignond_db_metadata_database_update_credentials (
         flags |= GSignondIdentityFlag_Validated;
     if (gsignond_identity_info_get_store_secret (identity) )
         flags |= GSignondIdentityFlag_RememberSecret;
-    if (gsignond_identity_info_get_is_username_secret (identity) )
+    if (gsignond_identity_info_get_is_username_secret (identity) ) {
         flags |= GSignondIdentityFlag_UserNameIsSecret;
+        username = "";
+    } else {
+        username = gsignond_identity_info_get_username (identity);
+    }
 
     caption = gsignond_identity_info_get_caption (identity);
-    username = gsignond_identity_info_get_username (identity);
     id = gsignond_identity_info_get_id (identity);
     type = gsignond_identity_info_get_identity_type (identity);
     if (!gsignond_identity_info_get_is_identity_new (identity)) {

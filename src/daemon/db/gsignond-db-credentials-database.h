@@ -111,17 +111,15 @@ GSignondIdentityInfoList *
 gsignond_db_credentials_database_load_identities (
         GSignondDbCredentialsDatabase *self);
 
-gboolean
+guint32
 gsignond_db_credentials_database_insert_identity (
         GSignondDbCredentialsDatabase *self,
-        GSignondIdentityInfo* identity,
-        gboolean store_secret);
+        GSignondIdentityInfo* identity);
 
-gboolean
+guint32
 gsignond_db_credentials_database_update_identity (
         GSignondDbCredentialsDatabase *self,
-        GSignondIdentityInfo* identity,
-        gboolean store_secret);
+        GSignondIdentityInfo* identity);
 
 gboolean
 gsignond_db_credentials_database_remove_identity (

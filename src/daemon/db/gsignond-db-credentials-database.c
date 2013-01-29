@@ -338,13 +338,12 @@ gsignond_db_credentials_database_load_identities (
  *
  * Inserts the identity as new into the credentials database.
  *
- * Returns: TRUE if successful, FALSE otherwise.
+ * Returns: the id of the updated identity, 0 otherwise.
  */
-gboolean
+guint32
 gsignond_db_credentials_database_insert_identity (
         GSignondDbCredentialsDatabase *self,
-        GSignondIdentityInfo* identity,
-        gboolean store_secret)
+        GSignondIdentityInfo* identity)
 {
 	GSignondIdentityInfo* new_identity = NULL;
 	gboolean ret = FALSE;
@@ -356,8 +355,7 @@ gsignond_db_credentials_database_insert_identity (
     	gsignond_identity_info_set_identity_new (new_identity);
     }
 
-	ret = gsignond_db_credentials_database_update_identity (self, new_identity,
-			store_secret);
+	ret = gsignond_db_credentials_database_update_identity (self, new_identity);
 	gsignond_identity_info_free (new_identity);
 	return ret;
 }
@@ -371,13 +369,12 @@ gsignond_db_credentials_database_insert_identity (
  *
  * Updates the identity info in the credentials database.
  *
- * Returns: TRUE if successful, FALSE otherwise.
+ * Returns: the id of the updated identity, 0 otherwise.
  */
-gboolean
+guint32
 gsignond_db_credentials_database_update_identity (
         GSignondDbCredentialsDatabase *self,
-        GSignondIdentityInfo* identity,
-        gboolean store_secret)
+        GSignondIdentityInfo* identity)
 {
 	guint32 id = 0;
 
@@ -387,14 +384,14 @@ gsignond_db_credentials_database_update_identity (
     		identity);
 
     if (id != 0 &&
-        store_secret &&
     	gsignond_db_credentials_database_is_open_secret_storage (self)) {
         GSignondCredentials *creds = NULL;
-    	gboolean un_sec, pwd_sec;
+        gboolean un_sec, pwd_sec;
 
     	creds = gsignond_credentials_new ();
     	gsignond_credentials_set_id (creds, id);
-    	pwd_sec = gsignond_identity_info_get_store_secret (identity);
+
+        pwd_sec = gsignond_identity_info_get_store_secret (identity);
     	if (pwd_sec) {
     		gsignond_credentials_set_password (creds,
     			gsignond_identity_info_get_secret (identity));
