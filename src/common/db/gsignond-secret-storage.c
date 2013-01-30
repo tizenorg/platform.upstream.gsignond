@@ -36,9 +36,8 @@
         GError* last_error = gsignond_db_create_error( \
                             GSIGNOND_DB_ERROR_NOT_OPEN,\
                             "DB Not Open"); \
-        g_debug("SecretDB is not available"); \
-        gsignond_secret_storage_set_last_error( \
-                GSIGNOND_SECRET_STORAGE (obj), last_error); \
+        DBG("SecretDB is not available"); \
+        gsignond_secret_storage_set_last_error(obj, last_error); \
         return retval; \
     }
 
@@ -162,7 +161,7 @@ static void
 gsignond_secret_storage_init (GSignondSecretStorage *self)
 {
     self->priv = GSIGNOND_SECRET_STORAGE_GET_PRIVATE (self);
-    self->priv->database = NULL;
+    self->priv->database = gsignond_db_secret_database_new ();
     self->config = NULL;
 }
 
@@ -213,7 +212,9 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
         gsignond_secret_storage_close_db (self);
     }
 
-    self->priv->database = gsignond_db_secret_database_new();
+    if (self->priv->database == NULL) {
+        self->priv->database = gsignond_db_secret_database_new ();
+    }
 
     ret = gsignond_db_sql_database_open (
                 GSIGNOND_DB_SQL_DATABASE (self->priv->database),
@@ -245,10 +246,7 @@ gsignond_secret_storage_close_db (GSignondSecretStorage *self)
     if (self->priv->database != NULL) {
         gsignond_db_sql_database_close (GSIGNOND_DB_SQL_DATABASE (
                 self->priv->database));
-        g_object_unref (self->priv->database);
-        self->priv->database = NULL;
     }
-
     return TRUE;
 }
 
@@ -493,9 +491,11 @@ const GError *
 gsignond_secret_storage_get_last_error (GSignondSecretStorage *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), NULL);
-    g_return_val_if_fail (self->priv->database != NULL, NULL);
-    return gsignond_db_sql_database_get_last_error (
-            GSIGNOND_DB_SQL_DATABASE (self->priv->database));
+    if (self->priv->database != NULL) {
+        return gsignond_db_sql_database_get_last_error (
+                GSIGNOND_DB_SQL_DATABASE (self->priv->database));
+    }
+    return NULL;
 }
 
 /**
@@ -509,9 +509,10 @@ void
 gsignond_secret_storage_clear_last_error (GSignondSecretStorage *self)
 {
     g_return_if_fail (GSIGNOND_IS_SECRET_STORAGE (self));
-    g_return_if_fail (self->priv->database != NULL);
-    gsignond_db_sql_database_clear_last_error (
-            GSIGNOND_DB_SQL_DATABASE (self->priv->database));
+    if (self->priv->database != NULL) {
+        gsignond_db_sql_database_clear_last_error (
+                GSIGNOND_DB_SQL_DATABASE (self->priv->database));
+    }
 }
 
 

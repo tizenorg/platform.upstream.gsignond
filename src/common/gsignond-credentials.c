@@ -263,15 +263,16 @@ gsignond_credentials_equal (
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (one), FALSE);
     g_return_val_if_fail (GSIGNOND_IS_CREDENTIALS (two), FALSE);
 
-    if ((one != NULL && two == NULL) ||
-        (one == NULL && two != NULL))
+    if (one == two)
+        return TRUE;
+
+    if (one == NULL || two == NULL)
         return FALSE;
 
-    if ( (one == two) ||
-         ( (one->priv->id == two->priv->id) &&
-           (one->priv->username && two->priv->username) &&
-           g_string_equal(one->priv->username, two->priv->username) &&
-           g_string_equal(one->priv->password, two->priv->password)) ) {
+    if ( (one->priv->id == two->priv->id) &&
+         (one->priv->username && two->priv->username) &&
+         g_string_equal(one->priv->username, two->priv->username) &&
+         g_string_equal(one->priv->password, two->priv->password) ) {
         return TRUE;
     }
 

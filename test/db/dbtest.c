@@ -98,7 +98,13 @@ _compare_sequences (
 }
 
 static GSignondIdentityInfo *
-_get_filled_identity_info (guint32 identity_id)
+_get_filled_identity_info_2 (
+        GSignondIdentityInfo **identity_inp,
+        gboolean add_creds,
+        gboolean add_methods,
+        gboolean add_realms,
+        gboolean add_acl,
+        gboolean add_owners)
 {
     guint32 id = 0;
     guint32 type = 456;
@@ -111,30 +117,39 @@ _get_filled_identity_info (guint32 identity_id)
     GSignondSecurityContext *ctx, *ctx1, *ctx2, *ctx3 ;
     GHashTable *methods = NULL;
     GSequence *seq1 = NULL, *seq_realms;
+    identity = *identity_inp;
 
-    identity = gsignond_identity_info_new ();
+    if (identity == NULL)
+        identity = gsignond_identity_info_new ();
     gsignond_identity_info_set_identity_new (identity);
-    gsignond_identity_info_set_username (identity, username);
     gsignond_identity_info_set_secret (identity, secret);
     gsignond_identity_info_set_store_secret (identity, TRUE);
-    gsignond_identity_info_set_caption (identity, caption);
+    if (add_creds) {
+        gsignond_identity_info_set_username (identity, username);
+        gsignond_identity_info_set_username_secret (identity, TRUE);
+        gsignond_identity_info_set_caption (identity, caption);
+    }
 
     /*realms*/
-    seq_realms = _sequence_new("realms1");
-    gsignond_identity_info_set_realms (identity, seq_realms);
-    g_sequence_free (seq_realms);
+    if (add_realms) {
+        seq_realms = _sequence_new("realms1");
+        gsignond_identity_info_set_realms (identity, seq_realms);
+        g_sequence_free (seq_realms);
+    }
 
     /*methods*/
-    methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
-            (GEqualFunc)g_str_equal,
-            (GDestroyNotify)NULL,
-            (GDestroyNotify)g_sequence_free);
-    seq1 = _sequence_new("mech11"); g_sequence_append (seq1, "mech12");
-    g_hash_table_insert (methods, "method1", seq1);
-    g_hash_table_insert (methods, "method2", _sequence_new("mech21"));
-    g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
-    gsignond_identity_info_set_methods (identity, methods);
-    g_hash_table_unref (methods);
+    if (add_methods) {
+        methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
+                (GEqualFunc)g_str_equal,
+                (GDestroyNotify)NULL,
+                (GDestroyNotify)g_sequence_free);
+        seq1 = _sequence_new("mech11"); g_sequence_append (seq1, "mech12");
+        g_hash_table_insert (methods, "method1", seq1);
+        g_hash_table_insert (methods, "method2", _sequence_new("mech21"));
+        g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
+        gsignond_identity_info_set_methods (identity, methods);
+        g_hash_table_unref (methods);
+    }
 
     /*acl*/
     ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
@@ -143,15 +158,27 @@ _get_filled_identity_info (guint32 identity_id)
     ctx_list = g_list_append (ctx_list,ctx1);
     ctx_list = g_list_append (ctx_list,ctx2);
     ctx_list = g_list_append (ctx_list,ctx3);
-    gsignond_identity_info_set_access_control_list (identity, ctx_list);
+    if (add_acl) {
+        gsignond_identity_info_set_access_control_list (identity, ctx_list);
+    }
 
     /*owners*/
-    gsignond_identity_info_set_owner_list (identity, ctx_list);
+    if (add_owners) {
+        gsignond_identity_info_set_owner_list (identity, ctx_list);
+    }
     gsignond_security_context_list_free (ctx_list);
 
     gsignond_identity_info_set_validated (identity, FALSE);
     gsignond_identity_info_set_identity_type (identity, type);
     return identity;
+}
+
+static GSignondIdentityInfo *
+_get_filled_identity_info (void)
+{
+    GSignondIdentityInfo *identity = NULL;
+    return _get_filled_identity_info_2 (&identity,
+            TRUE, TRUE, TRUE, TRUE, TRUE);
 }
 
 START_TEST (test_identity_info)
@@ -386,8 +413,15 @@ START_TEST (test_secret_cache)
     fail_if (cache == NULL);
 
     creds = gsignond_credentials_new ();
-    gsignond_credentials_set_data (creds, 1, "username2", "password2");
+    gsignond_credentials_set_data (creds, 0, "username2", "password2");
 
+    fail_unless (gsignond_db_secret_cache_get_credentials (cache, 1) == NULL);
+    fail_unless (gsignond_db_secret_cache_get_data (cache, 1, 5) == NULL);
+
+    fail_unless (gsignond_db_secret_cache_update_credentials (
+            cache, creds, TRUE) == TRUE);
+
+    gsignond_credentials_set_id (creds, 1);
     fail_unless (gsignond_db_secret_cache_update_credentials (
             cache, creds, TRUE) == TRUE);
 
@@ -447,6 +481,21 @@ START_TEST (test_secret_storage)
     g_object_unref(config);
     fail_if (storage == NULL);
 
+    fail_unless (gsignond_secret_storage_get_last_error (storage) == NULL);
+    fail_unless (gsignond_secret_storage_clear_db (storage) == FALSE);
+    fail_unless (gsignond_secret_storage_is_open_db (storage) == FALSE);
+    fail_unless (gsignond_secret_storage_load_credentials (storage, 1) == NULL);
+    fail_unless (gsignond_secret_storage_update_credentials (
+            storage, NULL) == FALSE);
+    fail_unless (gsignond_secret_storage_remove_credentials (
+            storage, 1) == FALSE);
+    fail_unless (gsignond_secret_storage_load_data (
+            storage, 1, 2) == NULL);
+    fail_unless (gsignond_secret_storage_update_data (
+            storage, 1, 2, NULL) == FALSE);
+    fail_unless (gsignond_secret_storage_remove_data (
+            storage, 1, 2) == FALSE);
+
     fail_unless (gsignond_secret_storage_open_db (storage) == TRUE);
     /* don't open the db again if its already open */
     fail_unless (gsignond_secret_storage_open_db (storage) == TRUE);
@@ -466,9 +515,11 @@ START_TEST (test_secret_storage)
 
     fail_unless (gsignond_secret_storage_check_credentials (
             storage, creds) == TRUE);
-    if (creds) {
-        g_object_unref (creds);
-    }
+
+    gsignond_credentials_set_id (creds, 3);
+    fail_unless (gsignond_secret_storage_check_credentials (
+            storage, creds) == FALSE);
+    g_object_unref (creds);
 
     /* remove the added credentials */
     fail_unless (gsignond_secret_storage_remove_credentials (
@@ -524,6 +575,35 @@ START_TEST (test_metadata_database)
     metadata_db = gsignond_db_metadata_database_new (config);
     g_object_unref(config);
     fail_if (metadata_db == NULL);
+
+    ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
+    identity = _get_filled_identity_info_2 (&identity,
+            FALSE, FALSE, FALSE, FALSE, FALSE);
+    fail_unless (gsignond_db_metadata_database_insert_method (
+            metadata_db, method1, &methodid) == FALSE);
+    fail_unless (gsignond_db_metadata_database_get_method_id (
+            metadata_db, method1) == 0);
+    fail_unless (gsignond_db_metadata_database_get_methods (
+            metadata_db, identity_id, ctx1) == NULL);
+    fail_unless (gsignond_db_metadata_database_get_methods (
+            metadata_db, identity_id, ctx1) == NULL);
+    fail_unless (gsignond_db_metadata_database_update_identity (
+            metadata_db, identity) == FALSE);
+    fail_unless (gsignond_db_metadata_database_get_identity (
+            metadata_db, identity_id) == NULL);
+    fail_unless (gsignond_db_metadata_database_get_identities (
+            metadata_db) == NULL);
+    fail_unless (gsignond_db_metadata_database_remove_identity (
+            metadata_db, identity_id) == FALSE);
+    fail_unless (gsignond_db_metadata_database_remove_reference (
+            metadata_db, identity_id, ctx1, "reference1") == FALSE);
+    fail_unless (gsignond_db_metadata_database_get_references (
+            metadata_db, identity_id, ctx1) == NULL);
+    fail_unless (gsignond_db_metadata_database_get_accesscontrol_list (
+            metadata_db, identity_id) == NULL);
+    fail_unless (gsignond_db_metadata_database_get_owner_list (
+            metadata_db, identity_id) == NULL);
+
     fail_unless (gsignond_db_metadata_database_open (metadata_db) == TRUE);
 
     fail_unless (gsignond_db_metadata_database_open (metadata_db) == TRUE);
@@ -531,20 +611,52 @@ START_TEST (test_metadata_database)
     fail_unless (gsignond_db_sql_database_clear (
             GSIGNOND_DB_SQL_DATABASE (metadata_db)) == TRUE);
 
-    methodid = gsignond_db_metadata_database_get_method_id (
-            metadata_db, method1);
-    if (methodid <= 0) {
-        fail_unless (gsignond_db_metadata_database_insert_method (
+    fail_unless (gsignond_db_metadata_database_get_accesscontrol_list (
+            metadata_db, identity_id) == NULL);
+
+    fail_unless (gsignond_db_metadata_database_get_owner_list (
+            metadata_db, identity_id) == NULL);
+
+    fail_unless (gsignond_db_metadata_database_get_method_id (
+            metadata_db, method1) == 0);
+    fail_unless (gsignond_db_metadata_database_insert_method (
                         metadata_db, method1, &methodid) == TRUE);
-    }
 
     fail_unless (methodid == gsignond_db_metadata_database_get_method_id (
             metadata_db, method1) == TRUE);
 
-    identity = _get_filled_identity_info (identity_id);
+    /*update_identity*/
+    identity = _get_filled_identity_info_2 (&identity,
+            TRUE, FALSE, FALSE, FALSE, FALSE);
+    fail_unless (gsignond_db_metadata_database_update_identity (
+            metadata_db, identity) == 0);
+
+    identity = _get_filled_identity_info_2 (&identity,
+            FALSE, TRUE, FALSE, FALSE, FALSE);
+    fail_unless (gsignond_db_metadata_database_update_identity (
+            metadata_db, identity) == 0);
+
+    identity = _get_filled_identity_info_2 (&identity,
+            FALSE, FALSE, TRUE, FALSE, FALSE);
+    identity_id = gsignond_db_metadata_database_update_identity (
+                    metadata_db, identity);
+    fail_unless (identity_id != 0);
+    gsignond_db_metadata_database_remove_identity (
+                metadata_db, identity_id);
+
+    identity = _get_filled_identity_info_2 (&identity,
+            FALSE, FALSE, FALSE, TRUE, FALSE);
+    identity_id = gsignond_db_metadata_database_update_identity (
+                    metadata_db, identity);
+    fail_unless (identity_id != 0);
+    gsignond_db_metadata_database_remove_identity (
+                metadata_db, identity_id);
+
+    identity = _get_filled_identity_info_2 (&identity,
+           FALSE, FALSE, FALSE, FALSE, TRUE);
     identity_id = gsignond_db_metadata_database_update_identity (
             metadata_db, identity);
-    fail_if (identity_id == 0);
+    fail_unless (identity_id != 0);
     gsignond_identity_info_set_id (identity, identity_id);
 
     identity2 = gsignond_db_metadata_database_get_identity (
@@ -552,11 +664,29 @@ START_TEST (test_metadata_database)
     fail_if (identity2 == NULL);
     gsignond_identity_info_free (identity2);
 
-    ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
+    /*get_identity/identities*/
+    fail_unless (gsignond_db_metadata_database_get_identity (
+            metadata_db, 2222) == NULL);
+
+    identities = gsignond_db_metadata_database_get_identities (metadata_db);
+    fail_unless (identities != NULL);
+    fail_unless (g_list_length (identities) == 1);
+    gsignond_identity_info_list_free (identities);
+
+    /*methods*/
     methods = gsignond_db_metadata_database_get_methods (metadata_db,
                 identity_id, ctx1);
     fail_if (methods == NULL);
     g_list_free_full (methods, g_free);
+
+    /*references*/
+    fail_unless (gsignond_db_metadata_database_get_references (
+                metadata_db, identity_id, ctx1) == NULL);
+    fail_unless (gsignond_db_metadata_database_remove_reference (
+            metadata_db, identity_id, ctx1, "reference1" ) == FALSE);
+
+    fail_unless (gsignond_db_metadata_database_insert_reference (
+            metadata_db, identity_id, ctx1, "reference1") == TRUE);
 
     fail_unless (gsignond_db_metadata_database_insert_reference (
             metadata_db, identity_id, ctx1, "reference1") == TRUE);
@@ -571,23 +701,23 @@ START_TEST (test_metadata_database)
             metadata_db, identity_id, ctx1, "reference1" ) == TRUE);
     gsignond_security_context_free (ctx1);
 
+    /*acl*/
     acl = gsignond_db_metadata_database_get_accesscontrol_list (metadata_db,
             identity_id);
     fail_if (acl == NULL);
     gsignond_security_context_list_free (acl);
 
+    /*owners*/
     owners = gsignond_db_metadata_database_get_owner_list (metadata_db,
             identity_id);
     fail_if (owners == NULL);
     gsignond_security_context_list_free (owners);
 
-    identities = gsignond_db_metadata_database_get_identities (metadata_db);
-    fail_if (identities == NULL);
-    fail_unless (g_list_length (identities) == 1);
-    gsignond_identity_info_list_free (identities);
-
     fail_unless (gsignond_db_metadata_database_remove_identity (
             metadata_db, identity_id) == TRUE);
+    fail_unless (gsignond_db_metadata_database_get_identities (
+            metadata_db) == NULL);
+
     gsignond_identity_info_free (identity);
 
     fail_unless (gsignond_db_sql_database_close (
@@ -621,7 +751,6 @@ START_TEST (test_credentials_database)
     credentials_db = gsignond_db_credentials_database_new (
             config, storage);
     g_object_unref (storage);
-
     fail_if (credentials_db == NULL);
 
     fail_unless (gsignond_db_credentials_database_open_secret_storage (
@@ -630,16 +759,39 @@ START_TEST (test_credentials_database)
     fail_unless (gsignond_db_credentials_database_clear (
             credentials_db) == TRUE);
 
-    identity = _get_filled_identity_info (identity_id);
+    identity = _get_filled_identity_info ();
 
-    identity_id = gsignond_db_credentials_database_insert_identity (
+    /*identity load/update*/
+    identity_id = gsignond_db_credentials_database_update_identity (
             credentials_db, identity);
     fail_unless (identity_id != 0);
     gsignond_identity_info_set_id (identity, identity_id);
+
+    fail_unless (gsignond_db_credentials_database_load_identity (
+                credentials_db, 555, FALSE) == NULL);
+    identity2 = gsignond_db_credentials_database_load_identity (
+            credentials_db, identity_id, FALSE);
+    fail_if (identity2 == NULL);
+    gsignond_identity_info_free (identity2);
+
     identity2 = gsignond_db_credentials_database_load_identity (
             credentials_db, identity_id, TRUE);
     fail_if (identity2 == NULL);
+
+    fail_unless (g_strcmp0 (gsignond_identity_info_get_username (
+            identity2), "username1") == 0);
+    fail_unless (g_strcmp0 (gsignond_identity_info_get_secret (
+            identity2), "secret1") == 0);
     gsignond_identity_info_free (identity2);
+
+    fail_unless (gsignond_db_credentials_database_check_secret (
+            credentials_db, identity_id, "username2", "secret1") == FALSE);
+
+    fail_unless (gsignond_db_credentials_database_check_secret (
+            credentials_db, identity_id, "username1", "secret2") == FALSE);
+
+    fail_unless (gsignond_db_credentials_database_check_secret (
+            credentials_db, 0, "username1", "secret2") == FALSE);
 
     fail_unless (gsignond_db_credentials_database_check_secret (
             credentials_db, identity_id, "username1", "secret1") == TRUE);
@@ -660,8 +812,20 @@ START_TEST (test_credentials_database)
     g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
     g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
     g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
+
+    fail_unless (gsignond_db_credentials_database_update_data (
+            credentials_db, 0, "method1", data) == FALSE);
+
     fail_unless (gsignond_db_credentials_database_update_data (
             credentials_db, identity_id, "method1", data) == TRUE);
+
+    fail_unless (gsignond_db_credentials_database_update_data (
+            credentials_db, identity_id, "method1", data) == TRUE);
+
+    fail_unless (gsignond_db_credentials_database_load_data (
+            credentials_db, 0, "method1") == NULL);
+    fail_unless (gsignond_db_credentials_database_load_data (
+            credentials_db, identity_id, "method2") == NULL);
 
     data2 = gsignond_db_credentials_database_load_data (credentials_db,
             identity_id, "method1");
@@ -674,8 +838,12 @@ START_TEST (test_credentials_database)
     g_hash_table_unref(data);
 
     fail_unless (gsignond_db_credentials_database_remove_data (
+            credentials_db, 0, "method1") == FALSE);
+
+    fail_unless (gsignond_db_credentials_database_remove_data (
             credentials_db, identity_id, "method1") == TRUE);
 
+    /*references*/
     fail_unless (gsignond_db_credentials_database_insert_reference (
             credentials_db, identity_id, ctx1, "reference1") == TRUE);
 
@@ -684,6 +852,9 @@ START_TEST (test_credentials_database)
     fail_if (reflist == NULL);
     fail_unless (g_list_length (reflist) == 1);
     g_list_free_full (reflist, g_free);
+
+    fail_unless (gsignond_db_credentials_database_remove_reference (
+            credentials_db, identity_id, ctx1, "reference2") == FALSE);
 
     fail_unless (gsignond_db_credentials_database_remove_reference (
             credentials_db, identity_id, ctx1, "reference1") == TRUE);

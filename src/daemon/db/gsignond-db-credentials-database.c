@@ -330,37 +330,6 @@ gsignond_db_credentials_database_load_identities (
 }
 
 /**
- * gsignond_db_credentials_database_insert_identity:
- *
- * @self: instance of #GSignondDbCredentialsDatabase
- * @identity: the identity info which needs to be inserted to db
- * @store_secret: flag to indicate whether to store the secret or not
- *
- * Inserts the identity as new into the credentials database.
- *
- * Returns: the id of the updated identity, 0 otherwise.
- */
-guint32
-gsignond_db_credentials_database_insert_identity (
-        GSignondDbCredentialsDatabase *self,
-        GSignondIdentityInfo* identity)
-{
-	GSignondIdentityInfo* new_identity = NULL;
-	gboolean ret = FALSE;
-
-    g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
-
-    new_identity = gsignond_dictionary_copy (identity);
-    if (!gsignond_identity_info_get_is_identity_new (new_identity)) {
-    	gsignond_identity_info_set_identity_new (new_identity);
-    }
-
-	ret = gsignond_db_credentials_database_update_identity (self, new_identity);
-	gsignond_identity_info_free (new_identity);
-	return ret;
-}
-
-/**
  * gsignond_db_credentials_database_update_identity:
  *
  * @self: instance of #GSignondDbCredentialsDatabase
