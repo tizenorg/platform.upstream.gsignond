@@ -31,16 +31,6 @@
 
 #define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "secret.db"
 
-#define RETURN_IF_NOT_OPEN(obj, retval) \
-    if (gsignond_secret_storage_is_open_db (obj) == FALSE) { \
-        GError* last_error = gsignond_db_create_error( \
-                            GSIGNOND_DB_ERROR_NOT_OPEN,\
-                            "DB Not Open"); \
-        DBG("SecretDB is not available"); \
-        gsignond_secret_storage_set_last_error(obj, last_error); \
-        return retval; \
-    }
-
 #define GSIGNOND_SECRET_STORAGE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
                                            GSIGNOND_TYPE_SECRET_STORAGE, \
@@ -192,7 +182,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     if (!dir) {
         dir = g_get_user_data_dir ();
         if (!dir) {
-            WARN("No directory specified in config object for secret db...");
+            DBG("No directory specified in config object for secret db...");
             return FALSE;
         }
     }
@@ -203,7 +193,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     }
     db_filename = g_build_filename (dir, filename, NULL);
     if (!db_filename) {
-        WARN("Invalid db filename...");
+        DBG("Invalid db filename...");
         return FALSE;
     }
 
@@ -222,6 +212,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
                 SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     g_free (db_filename);
     if (!ret) {
+        DBG ("Open DB failed");
         g_object_unref (self->priv->database);
         self->priv->database = NULL;
         return FALSE;
@@ -263,7 +254,6 @@ gboolean
 gsignond_secret_storage_clear_db (GSignondSecretStorage *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
     return gsignond_db_sql_database_clear (GSIGNOND_DB_SQL_DATABASE (
             self->priv->database));
 }
@@ -303,7 +293,6 @@ gsignond_secret_storage_load_credentials (
         const guint32 id)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
     return gsignond_db_secret_database_load_credentials (self->priv->database,
             id);
 }
@@ -324,7 +313,6 @@ gsignond_secret_storage_update_credentials (
         GSignondCredentials *creds)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
     return gsignond_db_secret_database_update_credentials (self->priv->database,
             creds);
 }
@@ -345,7 +333,6 @@ gsignond_secret_storage_remove_credentials (
         const guint32 id)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
     return gsignond_db_secret_database_remove_credentials (self->priv->database,
             id);
 }
@@ -379,6 +366,7 @@ gsignond_secret_storage_check_credentials (
             gsignond_credentials_get_id(creds));
 
     if (stored_creds) {
+        DBG ("Credentials from DB found");
         equal = gsignond_credentials_equal(creds, stored_creds);
         g_object_unref (stored_creds);
     }
@@ -405,7 +393,6 @@ gsignond_secret_storage_load_data (
         const guint32 method)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), NULL);
-    RETURN_IF_NOT_OPEN (self, NULL);
     return gsignond_db_secret_database_load_data (self->priv->database,
             id, method);
 }
@@ -431,7 +418,6 @@ gsignond_secret_storage_update_data (
         GHashTable *data)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
     return gsignond_db_secret_database_update_data (self->priv->database,
             id, method, data);
 }
@@ -454,7 +440,6 @@ gsignond_secret_storage_remove_data (
         const guint32 method)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
     return gsignond_db_secret_database_remove_data (self->priv->database,
             id, method);
 }

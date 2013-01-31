@@ -31,8 +31,10 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-credentials.h"
 #include "gsignond/gsignond-secret-storage.h"
+#include "common/db/gsignond-db-error.h"
+#include "common/db/gsignond-db-secret-database.h"
+#include "common/db/gsignond-db-sql-database.h"
 #include "daemon/gsignond-daemon.h"
-
 #include "daemon/db/gsignond-db-metadata-database.h"
 #include "daemon/db/gsignond-db-credentials-database.h"
 #include "daemon/db/gsignond-db-secret-cache.h"
@@ -455,6 +457,238 @@ START_TEST (test_secret_cache)
             cache, storage) == TRUE);
     g_object_unref (storage);
     g_object_unref (cache);
+}
+END_TEST
+
+static gboolean
+_gsignond_query_read_int (
+        sqlite3_stmt *stmt,
+        gint *status)
+{
+    *status = sqlite3_column_int (stmt, 0);
+    return TRUE;
+}
+static gboolean
+_gsignond_query_read_string (
+        sqlite3_stmt *stmt,
+        gint *status)
+{
+    const gchar* str = NULL;
+    *status = 0;
+    str = (const gchar *)sqlite3_column_text (stmt, 0);
+    if (str && strlen(str) > 0 &&
+        g_strcmp0 (str, "username1") == 0) {
+        *status = 1;
+    }
+    return TRUE;
+}
+
+START_TEST (test_secret_database)
+{
+    GSignondDbSecretDatabase *database = NULL;
+    GSignondConfig *config = NULL;
+    gchar *filename = NULL, *query;
+    const gchar *dir = NULL;
+    GString *un = NULL;
+    GString *pass = NULL;
+    GSignondCredentials *creds = NULL;
+    GSignondCredentials *creds1 = NULL;
+    guint32 id = 1, method = 2;
+    GHashTable *data = NULL;
+    GHashTable *data2 = NULL;
+    GHashTableIter iter;
+    GString *key = NULL;
+    GByteArray *value = NULL;
+    Data input;
+    sqlite3_stmt *stmt = NULL;
+    gint status=0;
+    GList *list = NULL;
+    GHashTable* hashtable = NULL;
+    GArray *array = NULL;
+    GSignondDbSqlDatabase *sqldb = NULL;
+    GError *error = NULL;
+
+    /* Secret Storage */
+    database = gsignond_db_secret_database_new ();
+    fail_if (database == NULL);
+    sqldb = GSIGNOND_DB_SQL_DATABASE (database);
+
+    fail_unless (gsignond_db_sql_database_clear (sqldb) == FALSE);
+    fail_unless (gsignond_db_sql_database_is_open (sqldb) == FALSE);
+    fail_unless (gsignond_db_secret_database_load_credentials (
+            database, 1) == NULL);
+    fail_unless (gsignond_db_secret_database_update_credentials (
+            database, NULL) == FALSE);
+    fail_unless (gsignond_db_secret_database_remove_credentials (
+            database, 1) == FALSE);
+    fail_unless (gsignond_db_secret_database_load_data (
+            database, 1, 2) == NULL);
+    fail_unless (gsignond_db_secret_database_update_data (
+            database, 1, 2, NULL) == FALSE);
+    fail_unless (gsignond_db_secret_database_remove_data (
+            database, 1, 2) == FALSE);
+
+    config = gsignond_config_new ();
+    dir = gsignond_config_get_string (config,
+            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+    if (!dir) {
+        dir = g_get_user_data_dir ();
+    }
+    filename = g_build_filename (dir, "secret_test.db", NULL);
+    fail_unless (gsignond_db_sql_database_open (sqldb, filename,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) == TRUE);
+    /* don't open the db again if its already open */
+    fail_unless (gsignond_db_sql_database_open (sqldb, filename,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) == TRUE);
+    g_free (filename);
+    g_object_unref(config);
+
+    creds = gsignond_credentials_new ();
+    fail_if (creds == NULL);
+
+    fail_unless (gsignond_credentials_set_data (
+            creds, id, "user 1", "pass 1") == TRUE);
+
+    fail_unless (gsignond_db_secret_database_update_credentials (
+            database, creds) == TRUE);
+    g_object_unref (creds); creds = NULL;
+
+    creds = gsignond_db_secret_database_load_credentials (database, id);
+    fail_if (creds == NULL);
+    g_object_unref (creds);
+
+    /* remove the added credentials */
+    fail_unless (gsignond_db_secret_database_remove_credentials (
+            database, id) == TRUE);
+
+    /* add data to store */
+    data = g_hash_table_new_full ((GHashFunc)g_str_hash,
+            (GEqualFunc)g_str_equal,
+            (GDestroyNotify)NULL,
+            (GDestroyNotify)g_bytes_unref);
+    fail_if (data == NULL);
+
+    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
+    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
+    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
+    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
+    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
+
+    fail_unless (gsignond_db_secret_database_update_data (
+            database, id, method, data) == TRUE);
+    data2 = gsignond_db_secret_database_load_data (database, id, method);
+    fail_if (data2 == NULL);
+    input.table = data;
+    input.status = 1;
+    g_hash_table_foreach (data2, (GHFunc)_compare_key_value, &input);
+    fail_if (input.status != 1);
+
+    g_hash_table_unref(data2);
+    g_hash_table_unref(data);
+
+
+    /*sql database tests*/
+    fail_unless (gsignond_db_sql_database_clear (sqldb) == TRUE);
+    stmt = gsignond_db_sql_database_prepare_statement (
+            sqldb, "INSERT INTO CREDENTIALS "
+            "(id, username, password) VALUES (1, \"username1\",\"password\");");
+    fail_if (stmt == NULL);
+    fail_unless (sqlite3_finalize (stmt) == SQLITE_OK); stmt = NULL;
+
+    fail_unless (gsignond_db_sql_database_exec (
+            sqldb, "INSERT INTO CREDENTIALS (id, username, password) "
+                    "VALUES (1, \"username1\",\"password\");") == TRUE);
+
+    fail_unless (gsignond_db_sql_database_exec (
+            sqldb, "INSERT INTO CREDENTIALS (id, username, password) "
+                    "VALUES (2, \"username2\",\"password2\");") == TRUE);
+
+    fail_unless (gsignond_db_sql_database_exec (
+            sqldb, "SELECT id from CREDENTIALS limit 1;") == TRUE);
+
+    fail_unless (gsignond_db_sql_database_query_exec (
+            sqldb, "SELECT id from CREDENTIALS limit 1;",
+            (GSignondDbSqlDatabaseQueryCallback)_gsignond_query_read_int,
+            &status) == 1);
+    fail_unless (status == 1);
+
+    fail_unless (gsignond_db_sql_database_query_exec (
+            sqldb, "SELECT username from CREDENTIALS where id=1;",
+            (GSignondDbSqlDatabaseQueryCallback)_gsignond_query_read_string,
+            &status) == 1);
+    fail_unless (status == 1);
+
+    list = gsignond_db_sql_database_query_exec_string_list (
+            sqldb, "SELECT username from CREDENTIALS;");
+    fail_if (list == NULL);
+    fail_unless (g_list_length (list) == 2);
+    g_list_free_full (list, g_free);
+
+    hashtable = gsignond_db_sql_database_query_exec_string_tuple (
+            sqldb, "SELECT username, password from CREDENTIALS;");
+    fail_if (hashtable == NULL);
+    fail_unless (g_hash_table_size (hashtable) == 2);
+    g_hash_table_unref (hashtable);
+
+    hashtable = gsignond_db_sql_database_query_exec_int_string_tuple (
+            sqldb, "SELECT id, username from CREDENTIALS "
+                        "where password=\"password2\";");
+    fail_if (hashtable == NULL);
+    fail_unless (g_hash_table_size (hashtable) == 1);
+    g_hash_table_unref (hashtable);
+
+    fail_unless (gsignond_db_sql_database_query_exec_int (
+            sqldb,"SELECT id from CREDENTIALS where username=\"username2\";",
+            &status) == TRUE);
+    fail_unless (status == 2);
+
+    array = gsignond_db_sql_database_query_exec_int_array (
+            sqldb,"SELECT id from CREDENTIALS;");
+    fail_if (array == NULL);
+    fail_unless (array->len == 2);
+    g_array_free (array, TRUE);
+
+    stmt = gsignond_db_sql_database_prepare_statement (
+            sqldb, "SELECT id from CREDENTIALS where username=\"username1\";");
+    fail_if (stmt == NULL);
+    fail_unless (gsignond_db_sql_database_query_exec_stmt (
+            sqldb, stmt, NULL, NULL) == 1);
+    stmt = NULL;
+
+    fail_unless (gsignond_db_sql_database_start_transaction (sqldb) == TRUE);
+    fail_unless (gsignond_db_sql_database_commit_transaction (sqldb) == TRUE);
+    fail_unless (gsignond_db_sql_database_start_transaction (sqldb) == TRUE);
+    fail_unless (gsignond_db_sql_database_rollback_transaction (sqldb) == TRUE);
+    fail_unless (gsignond_db_sql_database_start_transaction (sqldb) == TRUE);
+    fail_unless (gsignond_db_sql_database_start_transaction (sqldb) == FALSE);
+    fail_unless (gsignond_db_sql_database_rollback_transaction (sqldb) == TRUE);
+
+    fail_unless (gsignond_db_sql_database_transaction_exec (
+            sqldb, "SELECT id from CREDENTIALS "
+                   "where username=\"username1\";") == TRUE);
+
+    fail_unless (gsignond_db_sql_database_get_db_version (
+            sqldb, "PRAGMA user_version;") == 1);
+
+    error = gsignond_db_create_error(GSIGNOND_DB_ERROR_UNKNOWN,"Unknown error");
+    gsignond_db_sql_database_clear_last_error (sqldb);
+    fail_unless (gsignond_db_sql_database_get_last_error (sqldb) == NULL);
+    gsignond_db_sql_database_set_last_error (sqldb, error);
+    fail_unless (gsignond_db_sql_database_get_last_error (sqldb) != NULL);
+    gsignond_db_sql_database_clear_last_error (sqldb);
+    fail_unless (gsignond_db_sql_database_get_last_error (sqldb) == NULL);
+
+    fail_unless (gsignond_db_sql_database_exec (
+            sqldb, "INSERT INTO CREDENTIALS (id, username, password) "
+                    "VALUES (4, \"username4\",\"password3\");") == TRUE);
+    fail_unless (gsignond_db_sql_database_get_last_insert_rowid (
+            sqldb) == 4);
+
+    fail_unless (gsignond_db_secret_database_remove_data (
+            database, id, method) == TRUE);
+    fail_unless (gsignond_db_sql_database_clear (sqldb) == TRUE);
+    fail_unless (gsignond_db_sql_database_close (sqldb) == TRUE);
+    g_object_unref(database);
 }
 END_TEST
 
@@ -896,6 +1130,7 @@ Suite* db_suite (void)
     TCase *tc_core = tcase_create ("Tests");
     tcase_add_test (tc_core, test_identity_info);
     tcase_add_test (tc_core, test_secret_cache);
+    tcase_add_test (tc_core, test_secret_database);
     tcase_add_test (tc_core, test_secret_storage);
     tcase_add_test (tc_core, test_metadata_database);
     tcase_add_test (tc_core, test_credentials_database);
