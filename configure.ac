@@ -59,13 +59,14 @@ src/daemon/Makefile
 src/daemon/db/Makefile
 src/daemon/dbus/Makefile
 src/daemon/dbus/services/com.google.code.AccountsSSO.SingleSignOn.service
+src/daemon/plugins/Makefile
 src/extensions/Makefile
 src/extensions/test/Makefile
 src/plugins/Makefile
 src/plugins/password/Makefile
 test/Makefile
 test/db/Makefile
-test/passwordplugin/Makefile
 test/daemon/Makefile
 test/daemon/services/com.google.code.AccountsSSO.SingleSignOn.service
+test/plugins/Makefile
 ])

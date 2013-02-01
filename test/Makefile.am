@@ -1,1 +1,1 @@
-SUBDIRS = db passwordplugin daemon
+SUBDIRS = db plugins daemon

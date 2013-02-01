@@ -1,4 +1,4 @@
-SUBDIRS = db dbus
+SUBDIRS = db dbus plugins
 NULL=
 
 bin_PROGRAMS = gsignond
@@ -39,8 +39,6 @@ gsignond_SOURCES = \
     $(NULL)
 
 gsignond_CFLAGS = \
-    -DG_LOG_DOMAIN=\"gsignon-daemon\" \
-    -DGSIGNOND_EXTENSIONS_DIR="\"$(libdir)/signon/extensions\"" \
     -I$(top_srcdir) \
     -I$(top_builddir)/include/ \
     -I$(top_builddir)/src/ \
@@ -51,6 +49,7 @@ gsignond_LDADD = \
     $(top_builddir)/src/common/libgsignond-common.la \
     $(top_builddir)/src/daemon/db/libgsignond-db.la \
     $(top_builddir)/src/daemon/dbus/libgsignond-dbus.la \
+    $(top_builddir)/src/daemon/plugins/libgsignond-plugins.la \
     $(GSIGNOND_LIBS) \
     $(NULL)
 

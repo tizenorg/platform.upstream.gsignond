@@ -308,22 +308,6 @@ START_TEST (test_passwordplugin_refresh)
 }
 END_TEST
 
-START_TEST (test_passwordplugin_loader)
-{
-    GSignondConfig* config = gsignond_config_new();
-    fail_if(config == NULL);
-
-    GSignondPlugin* absent_plugin = gsignond_load_plugin(config, "absentplugin");
-    fail_if(absent_plugin != NULL);
-    
-    GSignondPlugin* plugin = gsignond_load_plugin(config, "password");
-    check_plugin(plugin);    
-    
-    g_object_unref(plugin);
-    g_object_unref(config);
-}
-END_TEST
-
 Suite* passwordplugin_suite (void)
 {
     Suite *s = suite_create ("Password plugin");
@@ -335,7 +319,6 @@ Suite* passwordplugin_suite (void)
     tcase_add_test (tc_core, test_passwordplugin_process);
     tcase_add_test (tc_core, test_passwordplugin_user_action_finished);
     tcase_add_test (tc_core, test_passwordplugin_refresh);
-    tcase_add_test (tc_core, test_passwordplugin_loader);
     suite_add_tcase (s, tc_core);
     return s;
 }

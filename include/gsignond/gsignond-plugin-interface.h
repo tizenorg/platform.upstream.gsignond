@@ -57,27 +57,38 @@ struct _GSignondPluginInterface {
 GType gsignond_plugin_get_type (void);
 
 /* Methods */
-void gsignond_plugin_cancel (GSignondPlugin *self);
-void gsignond_plugin_abort (GSignondPlugin *self);
-void gsignond_plugin_process (GSignondPlugin *self, 
+void 
+gsignond_plugin_cancel (GSignondPlugin *self);
+void 
+gsignond_plugin_abort (GSignondPlugin *self);
+void 
+gsignond_plugin_process (GSignondPlugin *self, 
                               GSignondSessionData *session_data, 
                               const gchar *mechanism);
-void gsignond_plugin_user_action_finished (GSignondPlugin *self, 
+void 
+gsignond_plugin_user_action_finished (GSignondPlugin *self, 
                                            GSignondSessionData *session_data);
-void gsignond_plugin_refresh (GSignondPlugin *self, 
+void 
+gsignond_plugin_refresh (GSignondPlugin *self, 
                               GSignondSessionData *session_data);
 
 /* Signals */
-void gsignond_plugin_result (GSignondPlugin *self, 
+void 
+gsignond_plugin_result (GSignondPlugin *self, 
                              GSignondSessionData *session_data);
-void gsignond_plugin_store (GSignondPlugin *self, 
+void 
+gsignond_plugin_store (GSignondPlugin *self, 
                             GSignondSessionData *session_data);
-void gsignond_plugin_error (GSignondPlugin *self, GError *error);
-void gsignond_plugin_user_action_required (GSignondPlugin *self, 
+void 
+gsignond_plugin_error (GSignondPlugin *self, GError *error);
+void 
+gsignond_plugin_user_action_required (GSignondPlugin *self, 
                                            GSignondSessionData *session_data);
-void gsignond_plugin_refreshed (GSignondPlugin *self, 
+void 
+gsignond_plugin_refreshed (GSignondPlugin *self, 
                                 GSignondSessionData *session_data);
-void gsignond_plugin_status_changed (GSignondPlugin *self, 
+void 
+gsignond_plugin_status_changed (GSignondPlugin *self, 
                                      const gchar *status, 
                                      const gchar *message);
 

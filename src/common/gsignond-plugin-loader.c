@@ -52,9 +52,9 @@ gsignond_load_plugin(GSignondConfig* config, gchar* plugin_type)
     gboolean symfound = g_module_symbol (plugin_module,
         plugin_get_type, &p);
     g_free(plugin_get_type);
-    g_module_close (plugin_module);
     if (!symfound) {
         DBG("Symbol couldn't be resolved");
+        g_module_close (plugin_module);
         return NULL;
     }
     
@@ -63,8 +63,9 @@ gsignond_load_plugin(GSignondConfig* config, gchar* plugin_type)
     GSignondPlugin* plugin = g_object_new(plugin_get_type_f(), NULL);
     if (plugin == NULL) {
         DBG("Plugin couldn't be created");
+        g_module_close (plugin_module);
         return NULL;
     }
-    
+    g_module_make_resident (plugin_module);
     return plugin;
 }

@@ -26,6 +26,7 @@ build-aux
 *dbus*gen*
 src/daemon/gsignond
 test/db/dbtest
-test/passwordplugin/passwordplugintest
+test/plugins/passwordplugintest
+test/plugins/pluginproxytest
 stamp-h1
 *service
