@@ -296,6 +296,7 @@ gsignond_db_credentials_database_load_identity (
     	gsignond_db_credentials_database_is_open_secret_storage (self)) {
     	GSignondCredentials * creds;
 
+    	DBG ("Add credentials to identity as it is not new");
     	creds = gsignond_secret_storage_load_credentials (
     			self->secret_storage, identity_id);
     	if (creds) {
@@ -327,37 +328,6 @@ gsignond_db_credentials_database_load_identities (
 
 	return gsignond_db_metadata_database_get_identities (
 			self->priv->metadata_db);
-}
-
-/**
- * gsignond_db_credentials_database_insert_identity:
- *
- * @self: instance of #GSignondDbCredentialsDatabase
- * @identity: the identity info which needs to be inserted to db
- * @store_secret: flag to indicate whether to store the secret or not
- *
- * Inserts the identity as new into the credentials database.
- *
- * Returns: the id of the updated identity, 0 otherwise.
- */
-guint32
-gsignond_db_credentials_database_insert_identity (
-        GSignondDbCredentialsDatabase *self,
-        GSignondIdentityInfo* identity)
-{
-	GSignondIdentityInfo* new_identity = NULL;
-	gboolean ret = FALSE;
-
-    g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
-
-    new_identity = gsignond_dictionary_copy (identity);
-    if (!gsignond_identity_info_get_is_identity_new (new_identity)) {
-    	gsignond_identity_info_set_identity_new (new_identity);
-    }
-
-	ret = gsignond_db_credentials_database_update_identity (self, new_identity);
-	gsignond_identity_info_free (new_identity);
-	return ret;
 }
 
 /**
@@ -404,6 +374,7 @@ gsignond_db_credentials_database_update_identity (
     	}
 
     	if (un_sec || pwd_sec) {
+            DBG ("Add credentials to secret storage");
     		gsignond_secret_storage_update_credentials (
     			self->secret_storage, creds);
     	}
@@ -431,6 +402,7 @@ gsignond_db_credentials_database_remove_identity (
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
 
     if (!gsignond_db_credentials_database_is_open_secret_storage (self)) {
+        DBG ("Remove failed as DB is not open");
     	return FALSE;
     }
 	return gsignond_secret_storage_remove_credentials (
@@ -466,6 +438,7 @@ gsignond_db_credentials_database_check_secret (
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
 
     if (!gsignond_db_credentials_database_is_open_secret_storage (self)) {
+        DBG ("Check failed as DB is not open");
     	return FALSE;
     }
 
@@ -478,6 +451,7 @@ gsignond_db_credentials_database_check_secret (
 		gsignond_credentials_set_id (creds, identity_id);
 		gsignond_credentials_set_password (creds, secret);
 		if (gsignond_identity_info_get_is_username_secret (identity)) {
+	        DBG ("Check credentials from storage");
 			gsignond_credentials_set_username (creds, username);
 			check = gsignond_secret_storage_check_credentials (
 					self->secret_storage, creds);
@@ -519,6 +493,7 @@ gsignond_db_credentials_database_load_data (
 
     if (identity_id == 0 ||
     	!gsignond_db_credentials_database_is_open_secret_storage (self)) {
+        DBG ("Load data failed - invalid id/secret storage not opened");
     	return NULL;
     }
 
@@ -526,6 +501,7 @@ gsignond_db_credentials_database_load_data (
     				self->priv->metadata_db,
     				method);
     if (method_id == 0) {
+        DBG ("Load data failed - invalid method id");
     	return NULL;
     }
 	return gsignond_secret_storage_load_data (self->secret_storage,
@@ -559,6 +535,7 @@ gsignond_db_credentials_database_update_data (
 
     if (identity_id == 0 ||
     	!gsignond_db_credentials_database_is_open_secret_storage (self)) {
+        DBG ("Update data failed - invalid id/secret storage not opened");
     	return FALSE;
     }
 
@@ -570,6 +547,7 @@ gsignond_db_credentials_database_update_data (
     	    				self->priv->metadata_db,
     	    				method,
     	    				&method_id)) {
+            DBG ("Update data failed - insertion of method to DB failed");
     		return FALSE;
     	}
     }
@@ -602,6 +580,7 @@ gsignond_db_credentials_database_remove_data (
 
     if (identity_id == 0 ||
     	!gsignond_db_credentials_database_is_open_secret_storage (self)) {
+        DBG ("Remove data failed - invalid id/secret storage not opened");
     	return FALSE;
     }
 
@@ -610,6 +589,7 @@ gsignond_db_credentials_database_remove_data (
         				self->priv->metadata_db,
         				method);
         if (method_id == 0) {
+            DBG ("Remove data failed - method not found");
         	return FALSE;
         }
     }

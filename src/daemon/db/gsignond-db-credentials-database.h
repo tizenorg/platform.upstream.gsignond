@@ -112,11 +112,6 @@ gsignond_db_credentials_database_load_identities (
         GSignondDbCredentialsDatabase *self);
 
 guint32
-gsignond_db_credentials_database_insert_identity (
-        GSignondDbCredentialsDatabase *self,
-        GSignondIdentityInfo* identity);
-
-guint32
 gsignond_db_credentials_database_update_identity (
         GSignondDbCredentialsDatabase *self,
         GSignondIdentityInfo* identity);

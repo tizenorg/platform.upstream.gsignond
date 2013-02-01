@@ -196,6 +196,7 @@ gsignond_db_secret_cache_update_credentials (
 
     value = (AuthCache *) g_hash_table_lookup (self->priv->cache, &id);
     if (value) {
+        DBG ("Removing existing credentials");
         if (value->creds) g_object_unref (value->creds);
         value->creds = g_object_ref (creds);
     } else {
@@ -236,9 +237,11 @@ gsignond_db_secret_cache_get_data (
 
     value = (AuthCache *) g_hash_table_lookup (self->priv->cache, &id);
     if (value && value->blob_data) {
+        DBG ("Credentials exist - check method blob");
         blob = (GHashTable *) g_hash_table_lookup (value->blob_data, &method);
-        if (blob)
+        if (blob) {
             return g_hash_table_ref (blob);
+        }
     }
     return NULL;
 }
@@ -277,13 +280,15 @@ gsignond_db_secret_cache_update_data (
             &id);
     methodid = (guint32 *)g_malloc (sizeof (guint32));
     *methodid = method;
-    if (!value->blob_data) {
+    if (value && !value->blob_data) {
+        DBG ("Create new as no blob data exists for the identity");
         value->blob_data = g_hash_table_new_full ((GHashFunc)g_int_hash,
                                     (GEqualFunc)g_int_equal,
                                     (GDestroyNotify)g_free,
                                     (GDestroyNotify)g_hash_table_unref);
     }
     if (value == NULL) {
+        DBG ("Create new cache entry as it does not exist already");
         guint32 *cacheid = NULL;
         value = _gsignond_db_auth_cache_new ();
         g_hash_table_insert (value->blob_data, methodid,

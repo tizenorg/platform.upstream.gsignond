@@ -23,8 +23,8 @@
  * 02110-1301 USA
  */
 
+#include "gsignond/gsignond-log.h"
 #include "gsignond-db-error.h"
-
 #include "gsignond-db-sql-database.h"
 #include "gsignond-db-sql-database-private.h"
 
@@ -73,7 +73,7 @@ _gsignond_db_sql_database_open (
     ret = sqlite3_open_v2 (filename, &self->priv->db, flags, NULL);
     if (ret != SQLITE_OK) {
         if (self->priv->db) {
-            g_warning ("Cannot open %s DB: %s", filename,
+            DBG ("Cannot open %s DB: %s", filename,
                     sqlite3_errmsg (self->priv->db));
         }
         gsignond_db_sql_database_update_error_from_db(self);
@@ -97,8 +97,7 @@ _gsignond_db_sql_database_close (GSignondDbSqlDatabase *self)
     _gsignond_db_sql_database_finalize_db (self);
 
     if (sqlite3_close (self->priv->db) != SQLITE_OK) {
-        g_warning ("Unable to close db: %s",
-                   sqlite3_errmsg (self->priv->db));
+        DBG ("Unable to close db: %s", sqlite3_errmsg (self->priv->db));
         gsignond_db_sql_database_update_error_from_db(self);
     }
     self->priv->db = NULL;
@@ -229,7 +228,7 @@ gsignond_db_sql_database_prepare_transaction_statements (
             "COMMIT;");
     if (ret != SQLITE_OK) return ret;
 
-    ret = _prepare_transaction_statement(self, &(self->priv->rollback_statement),
+    ret = _prepare_transaction_statement(self,&(self->priv->rollback_statement),
             "ROLLBACK;");
 
     return ret;
@@ -349,7 +348,7 @@ gsignond_db_sql_database_prepare_statement (
 
     ret = sqlite3_prepare_v2 (self->priv->db, query, -1, &sql_stmt, NULL);
     if (ret != SQLITE_OK) {
-        g_warning ("%s: statement preparation failed for \"%s\": %s", G_STRFUNC,
+        DBG ("statement preparation failed for \"%s\": %s",
                 query, sqlite3_errmsg (self->priv->db));
         return NULL;
     }
@@ -487,7 +486,8 @@ _gsignond_db_read_strings (
  * in the list.
  *
  * Returns: (transfer full) list if rows fetched are greater than 0,
- * NULL otherwise.
+ * NULL otherwise. When done with list, it must be freed using
+ * g_list_free_full (list, g_free)
  */
 GList *
 gsignond_db_sql_database_query_exec_string_list (
@@ -533,7 +533,8 @@ _gsignond_db_read_string_tuple (
  * the results into the hash table.
  *
  * Returns: (transfer full) string tuples if rows fetched are greater than 0,
- * NULL otherwise.
+ * NULL otherwise. When done with tuples, it must be freed using
+ * g_hash_table_unref (tuples)
  */
 GHashTable *
 gsignond_db_sql_database_query_exec_string_tuple (
@@ -743,8 +744,7 @@ gsignond_db_sql_database_query_exec_stmt (
             rows++;
         } else if (ret != SQLITE_DONE) {
             gsignond_db_sql_database_update_error_from_db (self);
-            g_warning ("%s: error executing query : %s",
-                    G_STRFUNC, sqlite3_errmsg (self->priv->db));
+            DBG ("error executing query : %s", sqlite3_errmsg (self->priv->db));
             break;
         }
 
@@ -775,6 +775,7 @@ gsignond_db_sql_database_start_transaction (GSignondDbSqlDatabase *self)
     /* prepare transaction begin, commit and rollback statements */
     ret = gsignond_db_sql_database_prepare_transaction_statements (self);
     if (G_UNLIKELY (ret != SQLITE_OK)) {
+        DBG ("Prepare statement failed");
         gsignond_db_sql_database_update_error_from_db (self);
         return FALSE;
     }
@@ -782,10 +783,11 @@ gsignond_db_sql_database_start_transaction (GSignondDbSqlDatabase *self)
     /* begin statement */
     ret = sqlite3_step (self->priv->begin_statement);
     if (G_UNLIKELY (ret != SQLITE_DONE)) {
+        DBG ("Begin statement failed");
         gsignond_db_sql_database_update_error_from_db (self);
         return FALSE;
     }
-    return ret;
+    return TRUE;
 }
 
 /**
@@ -807,6 +809,7 @@ gsignond_db_sql_database_commit_transaction (GSignondDbSqlDatabase *self)
 
     ret = sqlite3_step (self->priv->commit_statement);
     if (G_UNLIKELY (ret != SQLITE_DONE)) {
+        DBG ("Commit statement failed");
         gsignond_db_sql_database_update_error_from_db (self);
         sqlite3_reset (self->priv->commit_statement);
         return FALSE;
@@ -835,6 +838,7 @@ gsignond_db_sql_database_rollback_transaction (GSignondDbSqlDatabase *self)
 
     ret = sqlite3_step (self->priv->rollback_statement);
     if (G_UNLIKELY (ret != SQLITE_DONE)) {
+        DBG ("Rollback statement failed");
         gsignond_db_sql_database_update_error_from_db (self);
         sqlite3_reset (self->priv->rollback_statement);
         return FALSE;

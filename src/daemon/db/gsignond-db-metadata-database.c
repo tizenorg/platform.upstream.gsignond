@@ -32,6 +32,17 @@
 
 #define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "metadata.db"
 
+#define RETURN_IF_NOT_OPEN(obj, retval) \
+    if (gsignond_db_sql_database_is_open (\
+            GSIGNOND_DB_SQL_DATABASE (obj)) == FALSE) { \
+        GError* last_error = gsignond_db_create_error( \
+                            GSIGNOND_DB_ERROR_NOT_OPEN,\
+                            "DB Not Open"); \
+        DBG("MetadataDB is not available"); \
+        gsignond_db_sql_database_set_last_error(obj, last_error); \
+        return retval; \
+    }
+
 #define GSIGNOND_DB_METADATA_DATABASE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
                                            GSIGNOND_DB_TYPE_METADATA_DATABASE, \
@@ -241,8 +252,10 @@ _gsignond_db_metadata_database_update_credentials (
     } else {
         username = gsignond_identity_info_get_username (identity);
     }
-
     caption = gsignond_identity_info_get_caption (identity);
+    if (!caption || !username)
+        return FALSE;
+
     id = gsignond_identity_info_get_id (identity);
     type = gsignond_identity_info_get_identity_type (identity);
     if (!gsignond_identity_info_get_is_identity_new (identity)) {
@@ -255,7 +268,6 @@ _gsignond_db_metadata_database_update_credentials (
                 "VALUES(%Q, %Q, %u, %u);",
                  caption, username, flags, type);
     }
-
     ret = gsignond_db_sql_database_exec (
                 GSIGNOND_DB_SQL_DATABASE (self),
                 query);
@@ -268,7 +280,6 @@ _gsignond_db_metadata_database_update_credentials (
         id = gsignond_db_sql_database_get_last_insert_rowid (
                     GSIGNOND_DB_SQL_DATABASE (self));
     }
-
     return (guint32)id;
 }
 
@@ -285,11 +296,13 @@ _gsignond_db_metadata_database_update_realms (
     g_return_val_if_fail (identity != NULL, FALSE);
 
     if (!realms) {
+        DBG ("NULL realms cannot be updated");
         return FALSE;
     }
 
     if (!gsignond_identity_info_get_is_identity_new (identity)) {
         /* remove realms list */
+        DBG ("Remove old realms from DB as identity is not new");
         _gsignond_db_metadata_database_exec (self,
                 "DELETE FROM REALMS WHERE identity_id = %u;", id);
     }
@@ -300,6 +313,7 @@ _gsignond_db_metadata_database_update_realms (
         if (!_gsignond_db_metadata_database_exec (self,
                 "INSERT OR IGNORE INTO REALMS (identity_id, realm) "
                 "VALUES (%u, %Q);", id, (const gchar *)g_sequence_get (iter))) {
+            DBG ("Insert realms to DB failed");
             return FALSE;
         }
         iter = g_sequence_iter_next (iter);
@@ -339,6 +353,7 @@ _gsignond_db_metadata_database_insert_methods (
                 "INSERT OR IGNORE INTO METHODS (method) "
                 "VALUES( %Q );",
                 method)) {
+            DBG ("Insert methods to DB failed");
             return FALSE;
         }
         /* mechanisms insert */
@@ -348,6 +363,7 @@ _gsignond_db_metadata_database_insert_methods (
                     "INSERT OR IGNORE INTO MECHANISMS (mechanism) "
                     "VALUES(%Q);",
                     g_sequence_get (mech_iter))) {
+                DBG ("Insert mechanisms to DB failed");
                 return FALSE;
             }
             mech_iter = g_sequence_iter_next (mech_iter);
@@ -494,12 +510,12 @@ _gsignond_db_metadata_database_open (
     }
     dir = g_get_user_data_dir ();
     if (!dir) {
-        WARN ("Invalid metadata db directory...");
+        DBG ("Invalid Metadata DB directory");
         return FALSE;
     }
     db_filename = g_build_filename (dir, "gsignond", filename, NULL);
     if (!db_filename) {
-        WARN ("Invalid db filename...");
+        DBG ("Invalid Metadata DB filename");
         return FALSE;
     }
 
@@ -507,7 +523,7 @@ _gsignond_db_metadata_database_open (
     dir_created = g_mkdir_with_parents (db_dir, S_IRWXU);
     g_free (db_dir);
     if (dir_created != 0) {
-        WARN ("Invalid db directory...");
+        DBG ("Metadata DB directory does not exist");
         g_free (db_filename);
         return FALSE;
     }
@@ -523,10 +539,11 @@ _gsignond_db_metadata_database_create (
 {
     const gchar *queries = NULL;
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_METADATA_DATABASE (obj), FALSE);
 
     if (gsignond_db_sql_database_get_db_version(obj,
             "PRAGMA user_version;") > 0) {
-        /* DB is already created */
+        DBG ("Metadata DB is already created");
         return TRUE;
     }
 
@@ -822,6 +839,8 @@ _gsignond_db_metadata_database_clear (
     const gchar *queries = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_METADATA_DATABASE (obj), FALSE);
+
     queries = ""
             "DELETE FROM CREDENTIALS;"
             "DELETE FROM METHODS;"
@@ -847,9 +866,11 @@ gboolean
 gsignond_db_metadata_database_open (GSignondDbMetadataDatabase *self)
 {
     const gchar *filename = NULL;
-    GHashTable *config_table = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
+
+    if (gsignond_db_sql_database_is_open (GSIGNOND_DB_SQL_DATABASE (self)))
+        return TRUE;
 
     filename = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME);
@@ -882,6 +903,7 @@ gsignond_db_metadata_database_insert_method (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (method != NULL, FALSE);
+    RETURN_IF_NOT_OPEN (self, FALSE);
 
     query = sqlite3_mprintf ("INSERT INTO METHODS (method) "
                              "VALUES (%Q);",
@@ -890,6 +912,7 @@ gsignond_db_metadata_database_insert_method (
             GSIGNOND_DB_SQL_DATABASE (self), query);
     sqlite3_free (query);
     if (ret) {
+        DBG ("Retrieve method id for the inserted method");
         *method_id = gsignond_db_metadata_database_get_method_id (self, method);
     }
     return ret;
@@ -916,6 +939,7 @@ gsignond_db_metadata_database_get_method_id (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (method != NULL, FALSE);
+    RETURN_IF_NOT_OPEN (self, method_id);
 
     query = sqlite3_mprintf ("SELECT id FROM METHODS "
                              "WHERE method = %Q;",
@@ -952,6 +976,7 @@ gsignond_db_metadata_database_get_methods (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
     g_return_val_if_fail (sec_ctx != NULL, NULL);
+    RETURN_IF_NOT_OPEN (self, NULL);
 
     if (sec_ctx->sys_ctx && strlen (sec_ctx->sys_ctx) <= 0) {
         query = sqlite3_mprintf ("SELECT DISTINCT METHODS.method FROM "
@@ -1003,6 +1028,7 @@ gsignond_db_metadata_database_update_identity (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
     g_return_val_if_fail (identity != NULL, 0);
+    RETURN_IF_NOT_OPEN (self, id);
 
     sql = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (sql)) {
@@ -1012,6 +1038,7 @@ gsignond_db_metadata_database_update_identity (
     /* credentials */
     id = _gsignond_db_metadata_database_update_credentials (self, identity);
     if (id == 0) {
+        DBG ("Update credentials failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         return 0;
     }
@@ -1020,6 +1047,7 @@ gsignond_db_metadata_database_update_identity (
     methods = gsignond_identity_info_get_methods (identity);
     if (!_gsignond_db_metadata_database_insert_methods (self, identity,
             methods)) {
+        DBG ("Update methods failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         goto finished;
     }
@@ -1028,6 +1056,7 @@ gsignond_db_metadata_database_update_identity (
     realms = gsignond_identity_info_get_realms (identity);
     if (!_gsignond_db_metadata_database_update_realms (self,
             identity, id, realms)) {
+        DBG ("Update realms failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         goto finished;
     }
@@ -1035,6 +1064,7 @@ gsignond_db_metadata_database_update_identity (
     /* acl */
     acl = gsignond_identity_info_get_access_control_list (identity);
     if (!_gsignond_db_metadata_database_update_acl (self, identity, acl)) {
+        DBG ("Update acl failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         goto finished;
     }
@@ -1042,11 +1072,13 @@ gsignond_db_metadata_database_update_identity (
     /* owners */
     owners = gsignond_identity_info_get_owner_list (identity);
     if (!_gsignond_db_metadata_database_update_owners (self, identity, owners)){
+        DBG ("Update owner list failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         goto finished;
     }
 
     if (!gsignond_identity_info_get_is_identity_new (identity)) {
+        DBG ("Remove old acl and owner list as identity is not new");
         /* remove acl */
         _gsignond_db_metadata_database_exec (self,
                 "DELETE FROM ACL WHERE identity_id = %u;", id);
@@ -1074,8 +1106,8 @@ gsignond_db_metadata_database_update_identity (
                             "(identity_id, method_id, mechanism_id, secctx_id) "
                             "VALUES ( %u, "
                             "( SELECT id FROM METHODS WHERE method = %Q ),"
-                            "( SELECT id FROM MECHANISMS WHERE mechanism= %Q ), "
-                            "( SELECT id FROM SECCTX WHERE sysctx = %Q "
+                            "( SELECT id FROM MECHANISMS WHERE mechanism= %Q ),"
+                            " ( SELECT id FROM SECCTX WHERE sysctx = %Q "
                             "AND appctx = %Q));",
                             id, method, g_sequence_get (mech_iter),
                             ctx->sys_ctx, ctx->app_ctx);
@@ -1143,13 +1175,16 @@ gsignond_db_metadata_database_update_identity (
                 id, ctx->sys_ctx, ctx->app_ctx);
     }
 
-    if (gsignond_db_sql_database_commit_transaction (sql)) ret = id;
+    if (gsignond_db_sql_database_commit_transaction (sql)) {
+        DBG ("Identity updated");
+        ret = id;
+    }
 
 finished:
-    g_hash_table_unref (methods);
-    g_sequence_free (realms);
-    gsignond_security_context_list_free (acl);
-    gsignond_security_context_list_free (owners);
+    if (methods) g_hash_table_unref (methods);
+    if (realms) g_sequence_free (realms);
+    if (acl) gsignond_security_context_list_free (acl);
+    if (owners) gsignond_security_context_list_free (owners);
 
     return ret;
 }
@@ -1181,6 +1216,7 @@ gsignond_db_metadata_database_get_identity (
     GSignondSecurityContextList *acl = NULL, *owners = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
+    RETURN_IF_NOT_OPEN (self, NULL);
 
     identity = gsignond_identity_info_new ();
     query = sqlite3_mprintf ("SELECT caption, username, flags, type "
@@ -1192,6 +1228,7 @@ gsignond_db_metadata_database_get_identity (
             identity);
     sqlite3_free (query);
     if (G_UNLIKELY (rows <= 0)) {
+        DBG ("Fetch credentials failed");
         gsignond_identity_info_free (identity);
         return NULL;
     }
@@ -1199,23 +1236,29 @@ gsignond_db_metadata_database_get_identity (
 
     /*realms*/
     realms = _gsignond_db_metadata_database_get_sequence (self,
-                             "SELECT realm FROM REALMS "
-                             "WHERE identity_id = %u;",
-                             identity_id);
-    gsignond_identity_info_set_realms (identity, realms);
-    g_sequence_free (realms);
+            "SELECT realm FROM REALMS "
+            "WHERE identity_id = %u;",
+            identity_id);
+    if (realms) {
+        gsignond_identity_info_set_realms (identity, realms);
+        g_sequence_free (realms);
+    }
 
     /*acl*/
     acl = gsignond_db_metadata_database_get_accesscontrol_list (self,
-    		identity_id);
-    gsignond_identity_info_set_access_control_list (identity, acl);
-    gsignond_security_context_list_free (acl);
+            identity_id);
+    if (acl) {
+        gsignond_identity_info_set_access_control_list (identity, acl);
+        gsignond_security_context_list_free (acl);
+    }
 
     /*owners*/
     owners = gsignond_db_metadata_database_get_owner_list (self,
-    		identity_id);
-    gsignond_identity_info_set_owner_list (identity, owners);
-    gsignond_security_context_list_free (owners);
+            identity_id);
+    if (owners) {
+        gsignond_identity_info_set_owner_list (identity, owners);
+        gsignond_security_context_list_free (owners);
+    }
 
     /*methods*/
     query = sqlite3_mprintf ("SELECT DISTINCT ACL.method_id, METHODS.method "
@@ -1227,26 +1270,26 @@ gsignond_db_metadata_database_get_identity (
                     query);
     sqlite3_free (query);
 
-    methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
-                            (GEqualFunc)g_str_equal,
-                            (GDestroyNotify)g_free,
-                            (GDestroyNotify)g_sequence_free);
-    g_hash_table_iter_init(&iter, tuples);
-    while (g_hash_table_iter_next (&iter, (gpointer *)&method_id,
-    		(gpointer *)&method)) {
-        /*mechanisms*/
-        mechanisms = _gsignond_db_metadata_database_get_sequence (self,
-                 "SELECT DISTINCT MECHANISMS.mechanism FROM "
-                 "( MECHANISMS JOIN ACL ON ACL.mechanism_id = MECHANISMS.id ) "
-                 "WHERE ACL.method_id = %u AND ACL.identity_id = %u;",
-                 method_id, identity_id);
-        g_hash_table_insert(methods, g_strdup(method), mechanisms);
+    if (tuples) {
+        methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
+                (GEqualFunc)g_str_equal,
+                (GDestroyNotify)g_free,
+                (GDestroyNotify)g_sequence_free);
+        g_hash_table_iter_init(&iter, tuples);
+        while (g_hash_table_iter_next (&iter, (gpointer *)&method_id,
+                (gpointer *)&method)) {
+            /*mechanisms*/
+            mechanisms = _gsignond_db_metadata_database_get_sequence (self,
+                    "SELECT DISTINCT MECHANISMS.mechanism FROM "
+                    "( MECHANISMS JOIN ACL ON ACL.mechanism_id = MECHANISMS.id ) "
+                    "WHERE ACL.method_id = %u AND ACL.identity_id = %u;",
+                    method_id, identity_id);
+            g_hash_table_insert(methods, g_strdup(method), mechanisms);
+        }
+        g_hash_table_destroy (tuples);
+        gsignond_identity_info_set_methods (identity, methods);
+        g_hash_table_destroy (methods);
     }
-    g_hash_table_destroy (tuples);
-
-    gsignond_identity_info_set_methods (identity, methods);
-
-    g_hash_table_destroy (methods);
 
     return identity;
 }
@@ -1271,6 +1314,7 @@ gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
     gint rows = 0, i;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
+    RETURN_IF_NOT_OPEN (self, NULL);
 
     query = sqlite3_mprintf ("SELECT id FROM credentials ORDER BY id");
     ids = gsignond_db_sql_database_query_exec_int_array (
@@ -1278,6 +1322,7 @@ gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
                 query);
     sqlite3_free (query);
     if (!ids) {
+        DBG ("No identity found");
         return NULL;
     }
 
@@ -1312,6 +1357,7 @@ gsignond_db_metadata_database_remove_identity (
     gboolean ret = FALSE;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
+    RETURN_IF_NOT_OPEN (self, FALSE);
 
     queries = sqlite3_mprintf ("DELETE FROM CREDENTIALS WHERE id = %u;"
                                "DELETE FROM ACL WHERE identity_id = %u;"
@@ -1349,15 +1395,18 @@ gsignond_db_metadata_database_insert_reference (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
     g_return_val_if_fail (ref_owner != NULL && reference != NULL, FALSE);
+    RETURN_IF_NOT_OPEN (self, FALSE);
 
     sql = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (sql)) {
+        DBG ("Start transaction failed");
         return FALSE;
     }
 
     if (!_gsignond_db_metadata_database_exec (self,
             "INSERT OR IGNORE INTO SECCTX (sysctx, appctx) "
             "VALUES ( %Q, %Q );", ref_owner->sys_ctx, ref_owner->app_ctx)) {
+        DBG ("Insertion SECCTX to DB failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         return FALSE;
     }
@@ -1368,6 +1417,7 @@ gsignond_db_metadata_database_insert_reference (
             "( SELECT id FROM SECCTX "
             "WHERE sysctx = %Q AND appctx = %Q), %Q );",
             identity_id, ref_owner->sys_ctx, ref_owner->app_ctx, reference)) {
+        DBG ("Insertion to REFS failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         return FALSE;
     }
@@ -1401,9 +1451,11 @@ gsignond_db_metadata_database_remove_reference (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
     g_return_val_if_fail (ref_owner != NULL, FALSE);
+    RETURN_IF_NOT_OPEN (self, FALSE);
 
     sql = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (sql)) {
+        DBG ("Start transaction failed");
         return FALSE;
     }
 
@@ -1416,6 +1468,7 @@ gsignond_db_metadata_database_remove_reference (
         ret = FALSE;
     g_list_free_full (refs, (GDestroyNotify)g_free);
     if (len <= 0 || !ret) {
+        DBG ("No ref found");
         gsignond_db_sql_database_rollback_transaction (sql);
         return FALSE;
     }
@@ -1437,6 +1490,7 @@ gsignond_db_metadata_database_remove_reference (
                 identity_id, ref_owner->sys_ctx, ref_owner->app_ctx, reference);
     }
     if (!ret) {
+        DBG ("Delete refs from DB failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         return FALSE;
     }
@@ -1468,7 +1522,7 @@ gsignond_db_metadata_database_get_references (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
     g_return_val_if_fail (ref_owner != NULL, NULL);
-
+    RETURN_IF_NOT_OPEN (self, NULL);
 
     if (!ref_owner->sys_ctx || strlen (ref_owner->sys_ctx) <= 0) {
         query = sqlite3_mprintf ("SELECT ref FROM REFS "
@@ -1513,6 +1567,7 @@ gsignond_db_metadata_database_get_accesscontrol_list(
     GSignondSecurityContext *ctx = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
+    RETURN_IF_NOT_OPEN (self, NULL);
 
     query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
@@ -1523,14 +1578,15 @@ gsignond_db_metadata_database_get_accesscontrol_list(
                     query);
     sqlite3_free (query);
 
-    g_hash_table_iter_init(&iter, tuples);
-    while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
-    		(gpointer *)&appctx)) {
-        ctx = gsignond_security_context_new_from_values (sysctx, appctx);
-        list = g_list_append (list, ctx);
+    if (tuples) {
+        g_hash_table_iter_init(&iter, tuples);
+        while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
+                (gpointer *)&appctx)) {
+            ctx = gsignond_security_context_new_from_values (sysctx, appctx);
+            list = g_list_append (list, ctx);
+        }
+        g_hash_table_unref (tuples);
     }
-    g_hash_table_unref (tuples);
-
     return list;
 }
 
@@ -1559,6 +1615,7 @@ gsignond_db_metadata_database_get_owner_list(
     GSignondSecurityContext *ctx = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
+    RETURN_IF_NOT_OPEN (self, NULL);
 
     query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
@@ -1569,13 +1626,15 @@ gsignond_db_metadata_database_get_owner_list(
                     query);
     sqlite3_free (query);
 
-    g_hash_table_iter_init(&iter, tuples);
-    while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
-    		(gpointer *)&appctx)) {
-        ctx = gsignond_security_context_new_from_values (sysctx, appctx);
-        list = g_list_append (list, ctx);
+    if (tuples) {
+        g_hash_table_iter_init(&iter, tuples);
+        while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
+                (gpointer *)&appctx)) {
+            ctx = gsignond_security_context_new_from_values (sysctx, appctx);
+            list = g_list_append (list, ctx);
+        }
+        g_hash_table_unref (tuples);
     }
-    g_hash_table_unref (tuples);
     return list;
 }
 
