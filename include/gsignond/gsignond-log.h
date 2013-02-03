@@ -24,12 +24,15 @@
 
 #ifndef __GSIGNOND_LOG_H_
 #define __GSIGNOND_LOG_H_
+
+#include <glib.h>
+
 /*
  * TODO: Currently logging is directed to stdio, should resolve this properly
  */
 #define INFO(frmt, args...) g_print("[I] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
-#define ERR(frmt, args...)  g_print("[E] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
-#define WARN(frmt, args...)  g_print("[W] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
-#define DBG(frmt, args...)  g_print("[D] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
+#define ERR(frmt, args...)  g_error("[E] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
+#define WARN(frmt, args...)  g_warning("[W] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
+#define DBG(frmt, args...)  g_debug("[D] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
 
 #endif /* __GSIGNOND_LOG_H_ */

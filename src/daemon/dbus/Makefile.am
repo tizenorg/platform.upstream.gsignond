@@ -41,7 +41,20 @@ gsignond-dbus-identity-gen.c gsignond-dbus-identity-gen.h : $(INTERFACES_DIR)/co
        --generate-docbook gsignond-dbus-identity-doc-gen     \
        $<
 
-lib_LTLIBRARIES = libgsignond-dbus.la
+lib_LTLIBRARIES = libgsignond-dbus-glue.la
+
+libgsignond_dbus_glue_la_CPPFLAGS = \
+    -I$(top_srcdir) \
+    $(GSIGNOND_CFLAGS) \
+    $(NULL)
+
+libgsignond_dbus_glue_la_LIBS = \
+    $(GSIGNOND_LIBS) \
+    $(NULL)
+
+libgsignond_dbus_glue_la_SOURCES = $(DBUS_BUILT_SOURCES)
+
+lib_LTLIBRARIES += libgsignond-dbus.la
 
 libgsignond_dbus_la_CPPFLAGS = \
     -I$(top_srcdir) \
@@ -51,6 +64,7 @@ libgsignond_dbus_la_CPPFLAGS = \
     $(NULL)
 
 libgsignond_dbus_la_LIBS = \
+    $(top_srcdir)/src/daemon/dbus/libgsignond_dbus_glue.so \
     $(GSIGNOND_LIBS) \
     $(NULL)
 

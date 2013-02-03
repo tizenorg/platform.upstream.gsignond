@@ -40,7 +40,20 @@ enum
     N_PROPERTIES
 };
 
+enum {
+    SIG_REQUEST_CREDENTIALS_UPDATE,
+    SIG_STORE,
+    SIG_REMOVE,
+    SIG_VERIFY_USER,
+    SIG_VERIFY_SECRET,
+    SIG_ADD_REFERENCE,
+    SIG_REMOVE_REFERENCE,
+    SIG_SIGNOUT,
+    SIG_MAX
+};
+
 static GParamSpec *properties[N_PROPERTIES];
+static guint signals[SIG_MAX];
 
 struct _GSignondIdentityPrivate
 {
@@ -174,44 +187,79 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
-    g_signal_new ("remove",
+    signals[SIG_REQUEST_CREDENTIALS_UPDATE] = g_signal_new ("request-credentials-update",
                   GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST|G_SIGNAL_ACTION,
+                  G_SIGNAL_RUN_FIRST| G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                  0,
+                  NULL, NULL,
+                  NULL,
+                  G_TYPE_UINT,
+                  1,
+                  G_TYPE_STRING);
+
+    signals[SIG_REMOVE] = g_signal_new ("remove",
+                  GSIGNOND_TYPE_IDENTITY,
+                  G_SIGNAL_RUN_FIRST| G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                   0,
                   NULL, NULL,
                   NULL,
                   G_TYPE_BOOLEAN,
                   1,
                   GSIGNOND_TYPE_IDENTITY_INFO);
-    g_signal_new ("store",
+    signals[SIG_STORE] = g_signal_new ("store",
                   GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST|G_SIGNAL_ACTION,
+                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                   0,
                   NULL, NULL,
                   NULL,
                   G_TYPE_UINT,
                   1,
                   GSIGNOND_TYPE_IDENTITY_INFO);
-    g_signal_new ("add-reference",
+    signals[SIG_ADD_REFERENCE] = g_signal_new ("add-reference",
                   GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST|G_SIGNAL_ACTION,
+                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                   0,
                   NULL, NULL,
                   NULL,
                   G_TYPE_INT,
-                  2,
-                  GSIGNOND_TYPE_IDENTITY_INFO,
+                  1,
                   G_TYPE_STRING);
-    g_signal_new ("remove-reference",
+    signals[SIG_REMOVE_REFERENCE] = g_signal_new ("remove-reference",
                   GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST|G_SIGNAL_ACTION,
+                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                   0,
                   NULL, NULL,
                   NULL,
                   G_TYPE_INT,
-                  2,
-                  GSIGNOND_TYPE_IDENTITY_INFO,
+                  1,
                   G_TYPE_STRING);
+    signals[SIG_VERIFY_USER] = g_signal_new ("verify-user",
+                  GSIGNOND_TYPE_IDENTITY,
+                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                  0,
+                  NULL, NULL,
+                  NULL,
+                  G_TYPE_BOOLEAN,
+                  1,
+                  G_TYPE_VARIANT);
+    signals[SIG_VERIFY_SECRET] = g_signal_new ("verify-secret",
+                  GSIGNOND_TYPE_IDENTITY,
+                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                  0,
+                  NULL, NULL,
+                  NULL,
+                  G_TYPE_BOOLEAN,
+                  1,
+                  G_TYPE_STRING);
+    signals[SIG_SIGNOUT] = g_signal_new ("signout",
+                  GSIGNOND_TYPE_IDENTITY,
+                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                  0,
+                  NULL, NULL,
+                  NULL,
+                  G_TYPE_BOOLEAN,
+                  0,
+                  G_TYPE_NONE);
 }
 
 static guint32
@@ -219,9 +267,12 @@ _request_credentials_update (GSignondIdentityIface *self, const gchar *message)
 {
     guint32 id = 0;
 
-    g_signal_emit_by_name (self,
-                           "request-credentials-update",
-                           message, &id);
+    g_signal_emit (self, 
+                   signals[SIG_REQUEST_CREDENTIALS_UPDATE],
+                   0,
+                   message,
+                   &id);
+
     return id;
 }
 
@@ -276,33 +327,44 @@ _get_auth_session (GSignondIdentityIface *self, const gchar *method)
 }
 
 static gboolean 
-_verify_user (GSignondIdentityIface *self, const GVariant *params)
+_verify_user (GSignondIdentityIface *iface, const GVariant *params)
 {
     gboolean success = FALSE;
 
-    g_signal_emit_by_name (self,
-                           "verify-user",
-                           params, &success);
+    g_signal_emit (iface,
+                   signals[SIG_VERIFY_USER],
+                   0,
+                   params, 
+                   &success);
+
     return success;
 }
 
 static gboolean
-_verify_secret (GSignondIdentityIface *self, const gchar *secret)
+_verify_secret (GSignondIdentityIface *iface, const gchar *secret)
 {
     gboolean success = FALSE;
 
-    g_signal_emit_by_name (self,
-                           "verify-secret",
-                           secret, &success);
+    g_signal_emit (iface,
+                   signals[SIG_VERIFY_SECRET],
+                   0,
+                   secret, 
+                   &success);
+
     return success;
 }
 
 static gboolean 
-_sign_out (GSignondIdentityIface *self)
+_sign_out (GSignondIdentityIface *iface)
 {
-    (void) self;
+    gboolean success = FALSE;
 
-    return FALSE;
+    g_signal_emit (iface,
+                   signals[SIG_SIGNOUT],
+                   0,
+                   &success);
+
+    return success;
 }
 
 static guint32
@@ -340,37 +402,38 @@ _remove (GSignondIdentityIface *iface)
 {
     GSignondIdentity *self = GSIGNOND_IDENTITY(iface);
 
-    g_signal_emit_by_name (self,
-                           "remove",
-                           self->priv->info,
-                           NULL);
+    g_signal_emit (self,
+                   signals[SIG_REMOVE],
+                   0,
+                   self->priv->info,
+                   NULL);
 }
 
 static gint32
-_add_reference (GSignondIdentityIface *iface, const gchar *reference)
+_add_reference (GSignondIdentityIface *self, const gchar *reference)
 {
-    GSignondIdentity *self = GSIGNOND_IDENTITY(iface);
     gint32 res;
 
-    g_signal_emit_by_name (self,
-                           "add-reference",
-                           self->priv->info,
-                           reference,
-                           &res);
+    g_signal_emit (self,
+                   signals[SIG_ADD_REFERENCE],
+                   0,
+                   reference,
+                   &res);
+
     return res;
 }
 
 static gint32
-_remove_reference (GSignondIdentityIface *iface, const gchar *reference)
+_remove_reference (GSignondIdentityIface *self, const gchar *reference)
 {
-    GSignondIdentity *self = GSIGNOND_IDENTITY(iface);
     gint32 res;
 
-    g_signal_emit_by_name (self,
-                           "remove-reference",
-                           self->priv->info,
-                           reference,
-                           &res);
+    g_signal_emit (self,
+                   signals[SIG_REMOVE_REFERENCE],
+                   0,
+                   reference,
+                   &res);
+
     return res;
 }
 
@@ -460,5 +523,7 @@ GSignondIdentity * gsignond_identity_new ( GSignondAuthServiceIface *owner,
                                         NULL));
 
     identity->priv->owner = g_object_ref (owner);
+
+    return identity;
 }
 

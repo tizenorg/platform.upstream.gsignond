@@ -48,20 +48,20 @@ G_DEFINE_TYPE (GSignondDbusAuthServiceAdapter, gsignond_dbus_auth_service_adapte
 
 #define GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, GSignondDbusAuthServiceAdapterPrivate)
 
-static void _handle_register_new_identity (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, 
+static gboolean _handle_register_new_identity (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, 
                                            const gchar *, gpointer);
-static void _handle_get_identity (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, guint32, 
+static gboolean _handle_get_identity (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, guint32, 
                                   const gchar *, gpointer);
-static void _handle_query_methods (GSignondDbusAuthServiceAdapter *,
+static gboolean _handle_query_methods (GSignondDbusAuthServiceAdapter *,
                                    GDBusMethodInvocation *,
                                    gpointer);
-static void _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *,
+static gboolean _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *,
                                       GDBusMethodInvocation *,
                                       const gchar *, gpointer);
-static void _handle_query_identities (GSignondDbusAuthServiceAdapter *,
+static gboolean _handle_query_identities (GSignondDbusAuthServiceAdapter *,
                                       GDBusMethodInvocation *,
                                       const GVariant*, gpointer);
-static void _handle_clear (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, gpointer);
+static gboolean _handle_clear (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, gpointer);
 
 static void
 gsignond_dbus_auth_service_adapter_set_property (GObject *object,
@@ -194,7 +194,7 @@ _on_connnection_lost (GDBusConnection *conn,
      */
 }
 
-static void
+static gboolean
 _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
                                GDBusMethodInvocation *invocation,
                                const gchar *app_context,
@@ -225,9 +225,11 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
          * g_error_free (err);
          */
     }
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
                       GDBusMethodInvocation *invocation,
                       guint32 id,
@@ -263,9 +265,11 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
          * g_error_free (err);
          */
     }
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
                        GDBusMethodInvocation *invocation,
                        gpointer               user_data)
@@ -275,9 +279,11 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
 
     gsignond_dbus_auth_service_complete_query_methods (iface, invocation, (const gchar * const*)methods);
     if (methods) g_strfreev(methods);
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
                           GDBusMethodInvocation *invocation,
                           const gchar *method,
@@ -291,9 +297,11 @@ _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
     gsignond_dbus_auth_service_complete_query_mechanisms (iface, invocation, (const gchar* const*)mechanisms);
 
     if (mechanisms) g_strfreev(mechanisms);
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
                           GDBusMethodInvocation *invocation,
                           const GVariant *filter,
@@ -303,9 +311,11 @@ _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
     GVariant *identities = gsignond_auth_service_iface_query_identities (self->priv->parent, filter);
 
     gsignond_dbus_auth_service_complete_query_identities (iface, invocation, identities);
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_clear (GSignondDbusAuthServiceAdapter *self,
                GDBusMethodInvocation *invocation,
                gpointer user_data)
@@ -316,10 +326,11 @@ _handle_clear (GSignondDbusAuthServiceAdapter *self,
     res = gsignond_auth_service_iface_clear (self->priv->parent);
 
     gsignond_dbus_auth_service_complete_clear (iface, invocation, res);
+
+    return TRUE;
 }
 
 GSignondDbusAuthServiceAdapter * gsignond_dbus_auth_service_adapter_new (GSignondAuthServiceIface *impl)
 {
     return GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (g_object_new (GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, "auth-session-impl", impl, NULL));
 }
-

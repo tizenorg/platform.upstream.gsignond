@@ -47,18 +47,18 @@ struct _GSignondDbusIdentityAdapterPrivate
 G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIGNOND_DBUS_TYPE_IDENTITY_SKELETON)
 
 
-#define GSIGNOND_DBUS_IDENTITY_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_IDENTITY_ADAPTER, GSignondDbusIdentityAdapterPrivate)
+#define GSIGNOND_DBUS_IDENTITY_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DBUS_IDENTITY_ADAPTER, GSignondDbusIdentityAdapterPrivate)
 
-static void _handle_request_credentials_update (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar*, gpointer);
-static void _handle_get_info (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
-static void _handle_get_auth_session (GSignondDbusIdentityAdapter *self, GDBusMethodInvocation *invocation, const gchar *method, gpointer user_data);
-static void _handle_verify_user (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const GVariant *, gpointer);
-static void _handle_verify_secret (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
-static void _handle_remove (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
-static void _handle_sign_out (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
-static void _handle_store (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const GVariant *, gpointer);
-static void _handle_add_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
-static void _handle_remove_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
+static gboolean _handle_request_credentials_update (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar*, gpointer);
+static gboolean _handle_get_info (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
+static gboolean _handle_get_auth_session (GSignondDbusIdentityAdapter *self, GDBusMethodInvocation *invocation, const gchar *method, gpointer user_data);
+static gboolean _handle_verify_user (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const GVariant *, gpointer);
+static gboolean _handle_verify_secret (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
+static gboolean _handle_remove (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
+static gboolean _handle_sign_out (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
+static gboolean _handle_store (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const GVariant *, gpointer);
+static gboolean _handle_add_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
+static gboolean _handle_remove_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
 
 static void
 gsignond_dbus_identity_adapter_set_property (GObject *object,
@@ -142,9 +142,9 @@ gsignond_dbus_identity_adapter_class_init (GSignondDbusIdentityAdapterClass *kla
     object_class->dispose = gsignond_dbus_identity_adapter_dispose;
     object_class->finalize = gsignond_dbus_identity_adapter_finalize;
 
-    properties[PROP_IMPL] = g_param_spec_object ("auth-session-impl",
-                                                  "Auth session impl",
-                                                  "AuthSessionIface implementation object",
+    properties[PROP_IMPL] = g_param_spec_object ("identity-impl",
+                                                  "Identity Iface implementation",
+                                                  "IdentityIface implementation object",
                                                   GSIGNOND_TYPE_IDENTITY_IFACE,
                                                   G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
@@ -187,7 +187,7 @@ gsignond_dbus_identity_adapter_init (GSignondDbusIdentityAdapter *self)
     g_signal_connect (self, "handle-get-auth-session", G_CALLBACK(_handle_get_auth_session), NULL);
     g_signal_connect (self, "handle-verify-user", G_CALLBACK(_handle_verify_user), NULL);
     g_signal_connect (self, "handle-verify-secret", G_CALLBACK(_handle_verify_secret), NULL);
-    g_signal_connect (self, "handle-remvoe", G_CALLBACK(_handle_remove), NULL);
+    g_signal_connect (self, "handle-remove", G_CALLBACK(_handle_remove), NULL);
     g_signal_connect (self, "handle-sign-out", G_CALLBACK(_handle_sign_out), NULL);
     g_signal_connect (self, "handle-store", G_CALLBACK(_handle_store), NULL);
     g_signal_connect (self, "handle-add-reference", G_CALLBACK(_handle_add_reference), NULL);
@@ -195,7 +195,7 @@ gsignond_dbus_identity_adapter_init (GSignondDbusIdentityAdapter *self)
 
 }
 
-static void
+static gboolean
 _handle_request_credentials_update (GSignondDbusIdentityAdapter *self,
                                     GDBusMethodInvocation *invocation,
                                     const gchar *message,
@@ -214,9 +214,11 @@ _handle_request_credentials_update (GSignondDbusIdentityAdapter *self,
          * g_error_free (err);
          */
     }
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_get_info (GSignondDbusIdentityAdapter *self,
                   GDBusMethodInvocation *invocation,
                   gpointer user_data)
@@ -237,9 +239,11 @@ _handle_get_info (GSignondDbusIdentityAdapter *self,
          * g_error_free (err);
          */
     }
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
                           GDBusMethodInvocation *invocation,
                           const gchar *method,
@@ -249,10 +253,11 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
     const gchar *object_path = gsignond_identity_iface_get_auth_session (self->priv->parent, method);
 
     gsignond_dbus_identity_complete_get_auth_session (iface, invocation, object_path);
+
+    return TRUE;
 }
 
-
-static void
+static gboolean
 _handle_verify_user (GSignondDbusIdentityAdapter *self,
                      GDBusMethodInvocation *invocation,
                      const GVariant *params,
@@ -262,9 +267,11 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
     gboolean res = gsignond_identity_iface_verify_user (self->priv->parent, params);
 
     gsignond_dbus_identity_complete_verify_user (iface, invocation, res);
+
+    return;
 }
 
-static void
+static gboolean
 _handle_verify_secret (GSignondDbusIdentityAdapter *self,
                       GDBusMethodInvocation *invocation,
                       const gchar *secret,
@@ -274,9 +281,11 @@ _handle_verify_secret (GSignondDbusIdentityAdapter *self,
     gboolean res = gsignond_identity_iface_verify_secret (self->priv->parent, secret);
 
     gsignond_dbus_identity_complete_verify_secret (iface, invocation, res);
+
+    return;
 }
 
-static void
+static gboolean 
 _handle_remove (GSignondDbusIdentityAdapter   *self,
                 GDBusMethodInvocation *invocation,
                 gpointer               user_data)
@@ -286,9 +295,11 @@ _handle_remove (GSignondDbusIdentityAdapter   *self,
     gsignond_identity_iface_remove (self->priv->parent);
 
     gsignond_dbus_identity_complete_remove (iface, invocation);
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_sign_out (GSignondDbusIdentityAdapter *self,
                   GDBusMethodInvocation *invocation,
                   gpointer user_data)
@@ -298,9 +309,11 @@ _handle_sign_out (GSignondDbusIdentityAdapter *self,
     gboolean res = gsignond_identity_iface_sign_out (self->priv->parent);
 
     gsignond_dbus_identity_complete_sign_out (iface, invocation, res);
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_store (GSignondDbusIdentityAdapter *self,
                GDBusMethodInvocation *invocation,
                const GVariant *info,
@@ -310,9 +323,11 @@ _handle_store (GSignondDbusIdentityAdapter *self,
     guint id = gsignond_identity_iface_store (self->priv->parent, info);
 
     gsignond_dbus_identity_complete_store (iface, invocation, id);
+
+    return;
 }
 
-static void
+static gboolean
 _handle_add_reference (GSignondDbusIdentityAdapter *self,
                        GDBusMethodInvocation *invocation,
                        const gchar *reference,
@@ -324,9 +339,11 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
     id = gsignond_identity_iface_add_reference (self->priv->parent, reference);
 
     gsignond_dbus_identity_complete_add_reference (iface, invocation, id);
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_remove_reference (GSignondDbusIdentityAdapter *self,
                           GDBusMethodInvocation *invocation,
                           const gchar *reference,
@@ -338,6 +355,8 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
     id = gsignond_identity_iface_remove_reference (self->priv->parent, reference);
 
     gsignond_dbus_identity_complete_remove_reference (iface, invocation, id);
+
+    return TRUE;
 }
 
 /**
@@ -351,6 +370,5 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
 GSignondDbusIdentityAdapter * 
 gsignond_dbus_identity_adapter_new (GSignondIdentityIface *impl)
 {
-    return GSIGNOND_DBUS_IDENTITY_ADAPTER (g_object_new (GSIGNOND_TYPE_IDENTITY_ADAPTER, "identity-impl", impl, NULL));
+    return GSIGNOND_DBUS_IDENTITY_ADAPTER (g_object_new (GSIGNOND_TYPE_DBUS_IDENTITY_ADAPTER, "identity-impl", impl, NULL));
 }
-

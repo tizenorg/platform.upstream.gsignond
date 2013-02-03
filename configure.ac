@@ -61,4 +61,6 @@ src/plugins/password/Makefile
 test/Makefile
 test/db/Makefile
 test/passwordplugin/Makefile
+test/daemon/Makefile
+test/daemon/services/com.google.code.AccountsSSO.SingleSignOn.service
 ])
