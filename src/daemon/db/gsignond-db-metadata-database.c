@@ -33,13 +33,13 @@
 #define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "metadata.db"
 
 #define RETURN_IF_NOT_OPEN(obj, retval) \
-    if (gsignond_db_sql_database_is_open (\
-            GSIGNOND_DB_SQL_DATABASE (obj)) == FALSE) { \
+    if (gsignond_db_sql_database_is_open (obj) == FALSE) { \
         GError* last_error = gsignond_db_create_error( \
                             GSIGNOND_DB_ERROR_NOT_OPEN,\
                             "DB Not Open"); \
         DBG("MetadataDB is not available"); \
-        gsignond_db_sql_database_set_last_error(obj, last_error); \
+        gsignond_db_sql_database_set_last_error(obj,\
+                                                last_error); \
         return retval; \
     }
 
@@ -539,7 +539,7 @@ _gsignond_db_metadata_database_create (
 {
     const gchar *queries = NULL;
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
-    RETURN_IF_NOT_OPEN (GSIGNOND_DB_METADATA_DATABASE (obj), FALSE);
+    RETURN_IF_NOT_OPEN (obj, FALSE);
 
     if (gsignond_db_sql_database_get_db_version(obj,
             "PRAGMA user_version;") > 0) {
@@ -839,7 +839,7 @@ _gsignond_db_metadata_database_clear (
     const gchar *queries = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
-    RETURN_IF_NOT_OPEN (GSIGNOND_DB_METADATA_DATABASE (obj), FALSE);
+    RETURN_IF_NOT_OPEN (obj, FALSE);
 
     queries = ""
             "DELETE FROM CREDENTIALS;"
@@ -903,7 +903,7 @@ gsignond_db_metadata_database_insert_method (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (method != NULL, FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), FALSE);
 
     query = sqlite3_mprintf ("INSERT INTO METHODS (method) "
                              "VALUES (%Q);",
@@ -939,7 +939,7 @@ gsignond_db_metadata_database_get_method_id (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (method != NULL, FALSE);
-    RETURN_IF_NOT_OPEN (self, method_id);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), method_id);
 
     query = sqlite3_mprintf ("SELECT id FROM METHODS "
                              "WHERE method = %Q;",
@@ -976,7 +976,7 @@ gsignond_db_metadata_database_get_methods (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
     g_return_val_if_fail (sec_ctx != NULL, NULL);
-    RETURN_IF_NOT_OPEN (self, NULL);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
 
     if (sec_ctx->sys_ctx && strlen (sec_ctx->sys_ctx) <= 0) {
         query = sqlite3_mprintf ("SELECT DISTINCT METHODS.method FROM "
@@ -1028,7 +1028,7 @@ gsignond_db_metadata_database_update_identity (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
     g_return_val_if_fail (identity != NULL, 0);
-    RETURN_IF_NOT_OPEN (self, id);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), id);
 
     sql = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (sql)) {
@@ -1216,7 +1216,7 @@ gsignond_db_metadata_database_get_identity (
     GSignondSecurityContextList *acl = NULL, *owners = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
-    RETURN_IF_NOT_OPEN (self, NULL);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
 
     identity = gsignond_identity_info_new ();
     query = sqlite3_mprintf ("SELECT caption, username, flags, type "
@@ -1314,7 +1314,7 @@ gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
     gint rows = 0, i;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, NULL);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
 
     query = sqlite3_mprintf ("SELECT id FROM credentials ORDER BY id");
     ids = gsignond_db_sql_database_query_exec_int_array (
@@ -1357,7 +1357,7 @@ gsignond_db_metadata_database_remove_identity (
     gboolean ret = FALSE;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), FALSE);
 
     queries = sqlite3_mprintf ("DELETE FROM CREDENTIALS WHERE id = %u;"
                                "DELETE FROM ACL WHERE identity_id = %u;"
@@ -1395,7 +1395,7 @@ gsignond_db_metadata_database_insert_reference (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
     g_return_val_if_fail (ref_owner != NULL && reference != NULL, FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), FALSE);
 
     sql = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (sql)) {
@@ -1451,7 +1451,7 @@ gsignond_db_metadata_database_remove_reference (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
     g_return_val_if_fail (ref_owner != NULL, FALSE);
-    RETURN_IF_NOT_OPEN (self, FALSE);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), FALSE);
 
     sql = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (sql)) {
@@ -1522,7 +1522,7 @@ gsignond_db_metadata_database_get_references (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
     g_return_val_if_fail (ref_owner != NULL, NULL);
-    RETURN_IF_NOT_OPEN (self, NULL);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
 
     if (!ref_owner->sys_ctx || strlen (ref_owner->sys_ctx) <= 0) {
         query = sqlite3_mprintf ("SELECT ref FROM REFS "
@@ -1567,7 +1567,7 @@ gsignond_db_metadata_database_get_accesscontrol_list(
     GSignondSecurityContext *ctx = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, NULL);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
 
     query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
@@ -1615,7 +1615,7 @@ gsignond_db_metadata_database_get_owner_list(
     GSignondSecurityContext *ctx = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
-    RETURN_IF_NOT_OPEN (self, NULL);
+    RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
 
     query = sqlite3_mprintf ("SELECT sysctx, appctx FROM SECCTX "
             "WHERE id IN "
