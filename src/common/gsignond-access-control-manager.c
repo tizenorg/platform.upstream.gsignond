@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Jussi Laako <jussi.laako@linux.intel.com>
  *
@@ -108,13 +108,11 @@ _security_context_of_peer (GSignondAccessControlManager *self,
 
 static gboolean
 _peer_is_allowed_to_use_identity (GSignondAccessControlManager *self,
-                                int peer_fd, const gchar *peer_service,
-                                const gchar *peer_app_ctx,
+                                const GSignondSecurityContext *peer_ctx,
                                 const GSignondSecurityContextList *identity_acl)
 {
     (void) self;
-    (void) peer_fd;
-    (void) peer_app_ctx;
+    (void) peer_ctx;
     (void) identity_acl;
 
     return TRUE;
@@ -122,13 +120,11 @@ _peer_is_allowed_to_use_identity (GSignondAccessControlManager *self,
 
 static gboolean
 _peer_is_owner_of_identity (GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_service,
-                            const gchar *peer_app_ctx,
+                            const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContext *identity_owner)
 {
     (void) self;
-    (void) peer_fd;
-    (void) peer_app_ctx;
+    (void) peer_ctx;
     (void) identity_owner;
 
     return TRUE;
@@ -136,13 +132,11 @@ _peer_is_owner_of_identity (GSignondAccessControlManager *self,
 
 static gboolean
 _acl_is_valid (GSignondAccessControlManager *self,
-               int peer_fd, const gchar *peer_service,
-               const gchar *peer_app_ctx,
+               const GSignondSecurityContext *peer_ctx,
                const GSignondSecurityContextList *identity_acl)
 {
     (void) self;
-    (void) peer_fd;
-    (void) peer_app_ctx;
+    (void) peer_ctx;
     (void) identity_acl;
 
     return TRUE;
@@ -215,8 +209,7 @@ gsignond_access_control_manager_security_context_of_peer (
 /**
  * gsignond_access_control_manager_peer_is_allowed_to_use_identity:
  * @self: object instance.
- * @peer_fd: file descriptor of the peer connection.
- * @peer_app_ctx: application context of the peer connection.
+ * @peer_ctx: security context of the peer connection.
  * @identity_acl: access control list for the identity in question.
  *
  * Checks if specified peer is allowed to access the specified identity.
@@ -226,20 +219,17 @@ gsignond_access_control_manager_security_context_of_peer (
 gboolean
 gsignond_access_control_manager_peer_is_allowed_to_use_identity (
                             GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_service,
-                            const gchar *peer_app_ctx,
+                            const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContextList *identity_acl)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        peer_is_allowed_to_use_identity (self, peer_fd, peer_service,
-                                         peer_app_ctx, identity_acl);
+        peer_is_allowed_to_use_identity (self, peer_ctx, identity_acl);
 }
 
 /**
  * gsignond_access_control_manager_peer_is_owner_of_identity:
  * @self: object instance.
- * @peer_fd: file descriptor of the peer connection.
- * @peer_app_ctx: application context of the peer connection.
+ * @peer_ctx: security context of the peer connection.
  * @identity_owner: security context of the identity owner.
  *
  * Checks if the specified peer is owner of the identity.
@@ -249,20 +239,17 @@ gsignond_access_control_manager_peer_is_allowed_to_use_identity (
 gboolean
 gsignond_access_control_manager_peer_is_owner_of_identity (
                             GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_service,
-                            const gchar *peer_app_ctx,
+                            const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContext *identity_owner)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        peer_is_owner_of_identity (self,  peer_fd, peer_service,
-                                   peer_app_ctx, identity_owner);
+        peer_is_owner_of_identity (self, peer_ctx, identity_owner);
 }
 
 /**
  * gsignond_access_control_manager_acl_is_valid:
  * @self: object instance.
- * @peer_fd: file descriptor of the peer connection.
- * @peer_app_ctx: application context of the peer connection.
+ * @peer_ctx: security context of the peer connection.
  * @identity_acl: access control list for the identity.
  *
  * Checks if the specified peer is allowed to set the specified access
@@ -273,12 +260,11 @@ gsignond_access_control_manager_peer_is_owner_of_identity (
 gboolean
 gsignond_access_control_manager_acl_is_valid (
                             GSignondAccessControlManager *self,
-                            int peer_fd, const gchar *peer_service,
-                            const gchar *peer_app_ctx,
+                            const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContextList *identity_acl)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        acl_is_valid (self, peer_fd, peer_service, peer_app_ctx, identity_acl);
+        acl_is_valid (self, peer_ctx, identity_acl);
 }
 
 /**
