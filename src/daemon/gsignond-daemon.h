@@ -28,8 +28,6 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include <gsignond/gsignond-access-control-manager.h>
-
 G_BEGIN_DECLS
 
 #define GSIGNOND_TYPE_DAEMON            (gsignond_daemon_get_type())
@@ -63,9 +61,6 @@ GSignondDaemon * gsignond_daemon_new ();
 guint gsignond_daemon_identity_timeout (GSignondDaemon *self);
 
 guint gsignond_daemon_auth_session_timeout (GSignondDaemon *self);
-
-GSignondAccessControlManager *
-gsignond_daemon_get_access_control_manager (GSignondDaemon *self);
 
 G_END_DECLS
 

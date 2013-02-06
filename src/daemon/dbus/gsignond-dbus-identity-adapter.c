@@ -32,6 +32,7 @@ enum
     PROP_0,
 
     PROP_IMPL,
+    PROP_APP_CONTEXT,
     N_PROPERTIES
 };
 
@@ -40,14 +41,28 @@ static GParamSpec *properties[N_PROPERTIES];
 struct _GSignondDbusIdentityAdapterPrivate
 {
     GDBusConnection       *connection;
-    GSignondIdentityIface *parent;
+    GSignondIdentityIface *identity;
     gchar *object_path;
+    gchar *app_context;
+    GSignondSecurityContext sec_context;
 };
 
 G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIGNOND_DBUS_TYPE_IDENTITY_SKELETON)
 
-
 #define GSIGNOND_DBUS_IDENTITY_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DBUS_IDENTITY_ADAPTER, GSignondDbusIdentityAdapterPrivate)
+
+#define PREPARE_SECURITY_CONTEXT(dbus_object, invocation) \
+{ \
+    GSignondDbusIdentityAdapterPrivate *priv = dbus_object->priv; \
+    const gchar *sender = g_dbus_method_invocation_get_sender (invocation); \
+    GSignondAccessControlManager *acm = gsignond_identity_iface_get_acm (priv->identity); \
+    gsignond_access_control_manager_security_context_of_peer( \
+            acm, \
+            &priv->sec_context, \
+            -1, \
+            sender, \
+            priv->app_context); \
+}
 
 static gboolean _handle_request_credentials_update (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar*, gpointer);
 static gboolean _handle_get_info (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
@@ -59,6 +74,7 @@ static gboolean _handle_sign_out (GSignondDbusIdentityAdapter *, GDBusMethodInvo
 static gboolean _handle_store (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const GVariant *, gpointer);
 static gboolean _handle_add_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
 static gboolean _handle_remove_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
+static void _emit_info_updated (GSignondIdentityIface *identity, GSignondIdentityChangeType change, gpointer userdata);
 
 static void
 gsignond_dbus_identity_adapter_set_property (GObject *object,
@@ -71,9 +87,18 @@ gsignond_dbus_identity_adapter_set_property (GObject *object,
         case PROP_IMPL: {
             gpointer iface = g_value_peek_pointer (value);
             if (iface) {
-                if (self->priv->parent) g_object_unref (self->priv->parent);
-                self->priv->parent = GSIGNOND_IDENTITY_IFACE (g_object_ref (iface));
+                if (self->priv->identity) {
+                    g_signal_handlers_disconnect_by_func (self->priv->identity, _emit_info_updated, self);
+                    g_object_unref (self->priv->identity);
+                }
+                self->priv->identity = GSIGNOND_IDENTITY_IFACE (g_object_ref (iface));
+                g_signal_connect (self->priv->identity, "info-updated", G_CALLBACK (_emit_info_updated), self);
             }
+            break;
+        }
+        case PROP_APP_CONTEXT: {
+            if (self->priv->app_context) g_free (self->priv->app_context);
+            self->priv->app_context = g_strdup (g_value_get_string (value));
             break;
         }
         default:
@@ -91,9 +116,12 @@ gsignond_dbus_identity_adapter_get_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            g_value_set_instance (value, g_object_ref (self->priv->parent));
+            g_value_set_instance (value, g_object_ref (self->priv->identity));
             break;
         }
+        case PROP_APP_CONTEXT:
+            g_value_set_string (value, self->priv->app_context);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -104,9 +132,9 @@ gsignond_dbus_identity_adapter_dispose (GObject *object)
 {
     GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (object);
 
-    if (self->priv->parent) {
-        g_object_unref (self->priv->parent);
-        self->priv->parent = NULL;
+    if (self->priv->identity) {
+        g_object_unref (self->priv->identity);
+        self->priv->identity = NULL;
     }
 
     if (self->priv->connection) {
@@ -126,6 +154,13 @@ gsignond_dbus_identity_adapter_finalize (GObject *object)
         g_free (self->priv->object_path);
         self->priv->object_path = NULL;
     }
+
+    if (self->priv->app_context) {
+        g_free (self->priv->app_context);
+        self->priv->app_context = NULL;
+    }
+
+    gsignond_dbus_auth_session_emit_unregistered (GSIGNOND_DBUS_IDENTITY (object));
 
     G_OBJECT_CLASS (gsignond_dbus_identity_adapter_parent_class)->finalize (object);
 }
@@ -147,7 +182,13 @@ gsignond_dbus_identity_adapter_class_init (GSignondDbusIdentityAdapterClass *kla
                                                   "IdentityIface implementation object",
                                                   GSIGNOND_TYPE_IDENTITY_IFACE,
                                                   G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-
+    properties[PROP_APP_CONTEXT] = g_param_spec_string (
+                "app-context",
+                "application security context",
+                "Application security context of the identity object creater",
+                NULL,
+                G_PARAM_READWRITE);
+    
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }
 
@@ -161,7 +202,8 @@ gsignond_dbus_identity_adapter_init (GSignondDbusIdentityAdapter *self)
     self->priv = GSIGNOND_DBUS_IDENTITY_ADAPTER_GET_PRIV(self);
 
     self->priv->connection = 0;
-    self->priv->parent = 0;
+    self->priv->identity = 0;
+    self->priv->app_context = 0;
 
     self->priv->connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &err);
     if (err) {
@@ -202,7 +244,11 @@ _handle_request_credentials_update (GSignondDbusIdentityAdapter *self,
                                     gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
-    guint32 id = gsignond_identity_iface_request_credentials_update (self->priv->parent, message);
+    guint32 id;
+
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+    
+    id = gsignond_identity_iface_request_credentials_update (self->priv->identity, message, &self->priv->sec_context);
     if (id) {
         gsignond_dbus_identity_complete_request_credentials_update (iface, invocation, id);
     }
@@ -223,10 +269,11 @@ _handle_get_info (GSignondDbusIdentityAdapter *self,
                   GDBusMethodInvocation *invocation,
                   gpointer user_data)
 {
-    GVariant *identity_data = 0;
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
+    GVariant *identity_data = 0;
 
-    identity_data = gsignond_identity_iface_get_info (self->priv->parent);
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+    identity_data = gsignond_identity_iface_get_info (self->priv->identity, &self->priv->sec_context);
 
     if (identity_data) {
         gsignond_dbus_identity_complete_get_info (iface, invocation, identity_data);
@@ -250,7 +297,11 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
                           gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
-    const gchar *object_path = gsignond_identity_iface_get_auth_session (self->priv->parent, method);
+    const gchar *object_path = NULL;
+
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    object_path = gsignond_identity_iface_get_auth_session (self->priv->identity, method, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_get_auth_session (iface, invocation, object_path);
 
@@ -264,7 +315,11 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
                      gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
-    gboolean res = gsignond_identity_iface_verify_user (self->priv->parent, params);
+    gboolean res = FALSE;
+
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    res = gsignond_identity_iface_verify_user (self->priv->identity, params, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_verify_user (iface, invocation, res);
 
@@ -278,7 +333,11 @@ _handle_verify_secret (GSignondDbusIdentityAdapter *self,
                       gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
-    gboolean res = gsignond_identity_iface_verify_secret (self->priv->parent, secret);
+    gboolean res = FALSE;
+
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+    
+    res = gsignond_identity_iface_verify_secret (self->priv->identity, secret, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_verify_secret (iface, invocation, res);
 
@@ -292,7 +351,9 @@ _handle_remove (GSignondDbusIdentityAdapter   *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     
-    gsignond_identity_iface_remove (self->priv->parent);
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    gsignond_identity_iface_remove (self->priv->identity, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_remove (iface, invocation);
 
@@ -305,8 +366,11 @@ _handle_sign_out (GSignondDbusIdentityAdapter *self,
                   gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
+    gboolean res = FALSE;
+    
+    PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    gboolean res = gsignond_identity_iface_sign_out (self->priv->parent);
+    res = gsignond_identity_iface_sign_out (self->priv->identity, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_sign_out (iface, invocation, res);
 
@@ -320,7 +384,11 @@ _handle_store (GSignondDbusIdentityAdapter *self,
                gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
-    guint id = gsignond_identity_iface_store (self->priv->parent, info);
+    guint id = 0;
+
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    id = gsignond_identity_iface_store (self->priv->identity, info, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_store (iface, invocation, id);
 
@@ -334,9 +402,11 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
                        gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
-    gint32 id ;
+    gint32 id = 0;
 
-    id = gsignond_identity_iface_add_reference (self->priv->parent, reference);
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    id = gsignond_identity_iface_add_reference (self->priv->identity, reference, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_add_reference (iface, invocation, id);
 
@@ -350,13 +420,25 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
                           gpointer user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
-    gint32 id ;
+    gint32 id = 0;
 
-    id = gsignond_identity_iface_remove_reference (self->priv->parent, reference);
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    id = gsignond_identity_iface_remove_reference (self->priv->identity, reference, &self->priv->sec_context);
 
     gsignond_dbus_identity_complete_remove_reference (iface, invocation, id);
 
     return TRUE;
+}
+
+static void
+_emit_info_updated (GSignondIdentityIface *identity,
+                   GSignondIdentityChangeType change,
+                   gpointer userdata)
+{
+    GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (userdata);
+
+    gsignond_dbus_identity_emit_info_updated (self, change);
 }
 
 /**
@@ -372,3 +454,5 @@ gsignond_dbus_identity_adapter_new (GSignondIdentityIface *impl)
 {
     return GSIGNOND_DBUS_IDENTITY_ADAPTER (g_object_new (GSIGNOND_TYPE_DBUS_IDENTITY_ADAPTER, "identity-impl", impl, NULL));
 }
+
+#undef PREPARE_SECURITY_CONTEXT

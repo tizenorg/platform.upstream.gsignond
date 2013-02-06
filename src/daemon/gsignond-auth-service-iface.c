@@ -82,6 +82,14 @@ _dummy_clear (GSignondAuthServiceIface *self)
     return FALSE;
 }
 
+static GSignondAccessControlManager *
+_dummy_get_acm (GSignondAuthServiceIface *self)
+{
+    (void) self;
+
+    return NULL;
+}
+
 static void
 gsignond_auth_service_iface_default_init (
                                         GSignondAuthServiceIfaceInterface *self)
@@ -92,6 +100,7 @@ gsignond_auth_service_iface_default_init (
     self->query_mechanisms = _dummy_query_mechanisms;
     self->query_identities = _dummy_query_identities;
     self->clear = _dummy_clear;
+    self->get_acm = _dummy_get_acm;
 }
 
 /**
@@ -197,3 +206,8 @@ gsignond_auth_service_iface_clear (GSignondAuthServiceIface *self)
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->clear(self);
 }
 
+GSignondAccessControlManager *
+gsignond_auth_service_iface_get_acm (GSignondAuthServiceIface *self)
+{
+    return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->get_acm (self);
+}

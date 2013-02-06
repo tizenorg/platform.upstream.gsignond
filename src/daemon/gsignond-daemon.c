@@ -510,6 +510,16 @@ _clear (GSignondAuthServiceIface *self)
     return FALSE;
 }
 
+static GSignondAccessControlManager *
+_get_acm (GSignondAuthServiceIface *iface)
+{
+    GSignondDaemon *self = GSIGNOND_DAEMON (iface);
+
+    g_return_val_if_fail (self != NULL, NULL);
+
+    return self->priv->acm;
+}
+
 static void
 gsignond_daemon_auth_service_iface_init (gpointer g_iface, gpointer iface_data)
 {
@@ -524,6 +534,7 @@ gsignond_daemon_auth_service_iface_init (gpointer g_iface, gpointer iface_data)
     auth_service_iface->query_methods = _query_methods;
     auth_service_iface->query_mechanisms = _query_mechanisms;
     auth_service_iface->clear = _clear;
+    auth_service_iface->get_acm = _get_acm;
 }
 
 /**

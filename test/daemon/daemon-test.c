@@ -76,7 +76,7 @@ Suite* daemon_suite (void)
 {
     Suite *s = suite_create ("Gsignon daemon");
     
-    TCase *tc = tcase_create ("Tests");
+    TCase *tc = tcase_create ("Identity");
     tcase_add_test (tc, test_register_new_identity);
 
     suite_add_tcase (s, tc);

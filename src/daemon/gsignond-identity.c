@@ -24,6 +24,8 @@
  * 02110-1301 USA
  */
 
+#include <string.h>
+
 #include "gsignond/gsignond-log.h"
 
 #include "gsignond-identity-iface.h"
@@ -41,7 +43,6 @@ enum
 };
 
 enum {
-    SIG_REQUEST_CREDENTIALS_UPDATE,
     SIG_STORE,
     SIG_REMOVE,
     SIG_VERIFY_USER,
@@ -58,7 +59,6 @@ static guint signals[SIG_MAX];
 struct _GSignondIdentityPrivate
 {
     GSignondIdentityInfo *info;
-    gchar *app_context;
     GSignondAuthServiceIface *owner;
     GSignondDbusIdentityAdapter *identity_adapter;
     GHashTable *auth_sessions; /* "object_path":auth_session_object_path */
@@ -74,6 +74,31 @@ G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT, 0,
 
 #define GSIGNOND_IDENTITY_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_IDENTITY, GSignondIdentityPrivate)
 
+#define VALIDATE_IDENTITY_READ_ACCESS(identity, ctx, ret) \
+{ \
+    GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (identity->priv->owner); \
+    GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (identity->priv->info); \
+    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
+    gsignond_security_context_list_free (acl); \
+    if (!valid) { \
+        /* TODO: throw access error */ \
+        return ret; \
+    } \
+}
+
+#define VALIDATE_IDENTITY_WRITE_ACCESS(identity, ctx, ret) \
+{ \
+    GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (identity->priv->owner); \
+    GSignondSecurityContextList *owners = gsignond_identity_info_get_access_control_list (identity->priv->info); \
+    const GSignondSecurityContext *owner = (const GSignondSecurityContext *)g_list_first (owners); \
+    gboolean valid = gsignond_access_control_manager_peer_is_owner_of_identity (acm, ctx, owner); \
+    gsignond_security_context_list_free (owners); \
+    if (!valid) { \
+        /* TODO: throw access error */ \
+        return ret; \
+    } \
+}
+
 static void
 _get_property (GObject *object, guint property_id, GValue *value,
                GParamSpec *pspec)
@@ -86,7 +111,7 @@ _get_property (GObject *object, guint property_id, GValue *value,
             g_value_set_boxed (value, self->priv->info);
             break;
         case PROP_APP_CONTEXT:
-            g_value_set_string (value, self->priv->app_context);
+            g_object_get_property (G_OBJECT (self->priv->identity_adapter), "app-context", value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -106,7 +131,7 @@ _set_property (GObject *object, guint property_id, const GValue *value,
                 GSIGNOND_IDENTITY_INFO (g_value_get_boxed (value));
             break;
         case PROP_APP_CONTEXT:
-            self->priv->app_context = g_value_dup_string (value);
+            g_object_set_property (G_OBJECT (self->priv->identity_adapter), "app-context", value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -139,12 +164,6 @@ _dispose (GObject *object)
 static void
 _finalize (GObject *object)
 {
-    GSignondIdentity *self = GSIGNOND_IDENTITY (object);
-
-    if (self->priv->app_context) {
-        g_free (self->priv->app_context);
-        self->priv->app_context = NULL;
-    }
 }
 
 static void
@@ -178,24 +197,16 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                             "IdentityInfo structure",
                             GSIGNOND_TYPE_IDENTITY_INFO,
                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    
+    properties[PROP_APP_CONTEXT] = g_param_spec_string (
+                "app-context",
+                "application security context",
+                "Application security context of the identity object creater",
+                NULL,
+                G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    
 
-    properties[PROP_APP_CONTEXT] =
-       g_param_spec_string ("app-context",
-                            "application security context",
-                            "Application security context of the identity object creater",
-                            NULL,
-                            G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
-
-    signals[SIG_REQUEST_CREDENTIALS_UPDATE] = g_signal_new ("request-credentials-update",
-                  GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST| G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                  0,
-                  NULL, NULL,
-                  NULL,
-                  G_TYPE_UINT,
-                  1,
-                  G_TYPE_STRING);
 
     signals[SIG_REMOVE] = g_signal_new ("remove",
                   GSIGNOND_TYPE_IDENTITY,
@@ -233,24 +244,6 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                   G_TYPE_INT,
                   1,
                   G_TYPE_STRING);
-    signals[SIG_VERIFY_USER] = g_signal_new ("verify-user",
-                  GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                  0,
-                  NULL, NULL,
-                  NULL,
-                  G_TYPE_BOOLEAN,
-                  1,
-                  G_TYPE_VARIANT);
-    signals[SIG_VERIFY_SECRET] = g_signal_new ("verify-secret",
-                  GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                  0,
-                  NULL, NULL,
-                  NULL,
-                  G_TYPE_BOOLEAN,
-                  1,
-                  G_TYPE_STRING);
     signals[SIG_SIGNOUT] = g_signal_new ("signout",
                   GSIGNOND_TYPE_IDENTITY,
                   G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
@@ -262,27 +255,82 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                   G_TYPE_NONE);
 }
 
-static guint32
-_request_credentials_update (GSignondIdentityIface *self, const gchar *message) 
+static gboolean
+_request_credentials_update (GSignondIdentityIface *iface, const gchar *message, const GSignondSecurityContext *ctx) 
 {
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     guint32 id = 0;
 
-    g_signal_emit (self, 
-                   signals[SIG_REQUEST_CREDENTIALS_UPDATE],
-                   0,
-                   message,
-                   &id);
+    if (!identity || !identity->priv->info) {
+        /*
+         * TODO: throw error
+         */
+        return FALSE;
+    }
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
 
-    return id;
+    if (!gsignond_identity_info_get_store_secret (identity->priv->info)) {
+        /*
+         * TODO: throw error
+         */
+        return FALSE;
+    }
+
+    /*
+     * TODO: Call UI to request credentials
+     * and when ready, emit signal "store" to save the new credentials info
+     * to database(which is handled by Daemon object).
+     * On success, call 
+     *      gsignond_identity_iface_notify_credentials_updated(self, id, NULL);
+     * otherwise, calls
+     *      gsignond_identity_iface_notify_credentials_updated(self, 0, error);
+     */
+
+     /*
+      * emit "identity-data-updated"
+      */
+
+    return TRUE;
 }
 
 static GVariant * 
-_get_info (GSignondIdentityIface *self)
+_get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
 {
-    GSignondIdentity *identity = GSIGNOND_IDENTITY (self);
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     GVariant *info = NULL;
 
-    info = gsignond_dictionary_to_variant (identity->priv->info);
+    if (identity->priv->info) {
+        gchar *secret = 0;
+        gchar *username = 0;
+
+        VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
+
+        secret = g_strdup (gsignond_identity_info_get_secret (identity->priv->info));
+
+        /* unset password */
+        gsignond_identity_info_set_secret (identity->priv->info, "");
+
+        /* unset username if its secret */
+        if (gsignond_identity_info_get_is_username_secret (identity->priv->info)) {
+            username = g_strdup (gsignond_identity_info_get_username (identity->priv->info));
+            gsignond_identity_info_set_username (identity->priv->info, "");
+        }
+
+        /* prepare identity info, excluding password and username if secret */
+        info = gsignond_dictionary_to_variant (identity->priv->info);
+
+        /* reset password back */
+        if (secret) {
+            gsignond_identity_info_set_secret (identity->priv->info, secret);
+            g_free (secret);
+        }
+
+        /* reset username back */
+        if (username) {
+            gsignond_identity_info_set_username (identity->priv->info, username);
+            g_free (username);
+        }
+    }
 
     return info;
 }
@@ -300,26 +348,27 @@ _on_session_close (gpointer data, GObject *session)
 }
 
 static const gchar *
-_get_auth_session (GSignondIdentityIface *self, const gchar *method)
+_get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSignondSecurityContext *ctx)
 {
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     GSignondAuthSession *session = NULL;
     const gchar *object_path = NULL;
 
-    g_value_return_if_fail (self, NULL);
+    g_value_return_if_fail (iface, NULL);
     g_value_return_if_fail (method, NULL);
-
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
     /*
      * FIXME: check if given method is supported
      */
-    
-    session = gsignond_auth_session_new (self, method);
+
+    session = gsignond_auth_session_new (iface, method);
 
     if (!session)
         return NULL;
 
     object_path = gsignond_auth_session_get_object_path (session);
 
-    g_hash_table_insert (GSIGNOND_IDENTITY(self)->priv->auth_sessions, 
+    g_hash_table_insert (identity->priv->auth_sessions, 
                          (gpointer)object_path, 
                          (gpointer)session);
 
@@ -327,37 +376,62 @@ _get_auth_session (GSignondIdentityIface *self, const gchar *method)
 }
 
 static gboolean 
-_verify_user (GSignondIdentityIface *iface, const GVariant *params)
+_verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSignondSecurityContext *ctx)
 {
-    gboolean success = FALSE;
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
+    guint32 id = 0;
+    const gchar *passwd = 0;
 
-    g_signal_emit (iface,
-                   signals[SIG_VERIFY_USER],
-                   0,
-                   params, 
-                   &success);
+    if (!identity || !identity->priv->info) {
+        /*
+         * TODO: throw error
+         */
+        return FALSE;
+    }
 
-    return success;
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+
+    if (!gsignond_identity_info_get_store_secret (identity->priv->info) ||
+        !(passwd = gsignond_identity_info_get_secret (identity->priv->info)) ||
+        !strlen (passwd)) {
+        /*
+         * TODO: password not stored to verify credentials, throw error
+         */
+        return FALSE;
+    }
+
+    /*
+     * TODO: Call UI to request credentials
+     * and when ready, emit signal "store" to save the new credentials info
+     * to database(which is handled by Daemon object).
+     * On success, call 
+     *      gsignond_identity_iface_notify_credentials_updated(self, id, NULL);
+     */    
+
+    return TRUE;
 }
 
 static gboolean
-_verify_secret (GSignondIdentityIface *iface, const gchar *secret)
+_verify_secret (GSignondIdentityIface *iface, const gchar *secret, const GSignondSecurityContext *ctx)
 {
-    gboolean success = FALSE;
+    GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
 
-    g_signal_emit (iface,
-                   signals[SIG_VERIFY_SECRET],
-                   0,
-                   secret, 
-                   &success);
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
 
-    return success;
+    return FALSE;
 }
 
 static gboolean 
-_sign_out (GSignondIdentityIface *iface)
+_sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
 {
+    GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
     gboolean success = FALSE;
+
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+
+    /*
+     * TODO: close all auth_sessions and emit "identity-signed-out"
+     */
 
     g_signal_emit (iface,
                    signals[SIG_SIGNOUT],
@@ -368,53 +442,98 @@ _sign_out (GSignondIdentityIface *iface)
 }
 
 static guint32
-_store (GSignondIdentityIface *iface, const GVariant *info)
+_store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecurityContext *ctx)
 {
-    GSignondIdentity *self = GSIGNOND_IDENTITY(iface);
+    GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
     GSignondIdentityInfo *identity_info = NULL;
-    guint32 id;
     gboolean was_new_identity = FALSE;
+    GSignondSecurityContextList *contexts = NULL;
+    guint32 id;
+
+    VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, 0);
 
     identity_info = gsignond_dictionary_new_from_variant ((GVariant *)info);
     /* dont trust 'identity id' passed via 'info' */
-    id = gsignond_identity_info_get_id (self->priv->info);
+    id = gsignond_identity_info_get_id (identity->priv->info);
     gsignond_identity_info_set_id (identity_info, id);
 
     was_new_identity = gsignond_identity_info_get_is_identity_new (identity_info);
 
-    /* update local cache */
-    if (self->priv->info) gsignond_identity_info_free (self->priv->info);
-    self->priv->info = identity_info;
+    contexts = gsignond_identity_info_get_access_control_list (identity->priv->info);
+    if (contexts) {
+        GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (identity->priv->owner);
+        gboolean valid = gsignond_access_control_manager_acl_is_valid (acm, ctx, contexts);
+        gsignond_security_context_list_free (contexts);
 
-    g_signal_emit_by_name (self,
-                           "store",
-                           identity_info, 
-                           &id);
+        if (!valid) {
+            /*
+             * FIXME: throw error
+             */
+
+            return 0;
+        }
+    }
+
+    /* Add creater to owner list */
+    contexts = gsignond_identity_info_get_owner_list (identity_info);
+    if (!contexts) {
+        ctx = ctx ? gsignond_security_context_copy (ctx)
+                  : gsignond_security_context_new_from_values ("*", NULL);
+
+        contexts = g_list_append (contexts, (gpointer)ctx);
+
+        gsignond_identity_info_set_owner_list (identity_info, contexts);
+    }
+
+    gsignond_security_context_list_free (contexts);
+
+    /* update object cache */
+    if (identity->priv->info) gsignond_identity_info_free (identity->priv->info);
+    identity->priv->info = identity_info;
+
+    /* Ask daemon to store identity info to db */
+    g_signal_emit (identity,
+                   signals[SIG_STORE],
+                   0,
+                   identity_info, 
+                   &id);
 
     if (was_new_identity) 
-        gsignond_identity_set_id (GSIGNOND_IDENTITY(self), id);
-    
+        gsignond_identity_set_id (identity, id);
+
+    gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_DATA_UPDATED);
+ 
     return id;
 }
 
 static void
-_remove (GSignondIdentityIface *iface)
+_remove (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
 {
-    GSignondIdentity *self = GSIGNOND_IDENTITY(iface);
+    GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
+    
+    VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, );
 
-    g_signal_emit (self,
+    g_signal_emit (identity,
                    signals[SIG_REMOVE],
                    0,
-                   self->priv->info,
+                   identity->priv->info,
                    NULL);
+
+    /*
+     * TODO: emit "identity-removed"
+     */
+    gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_REMOVED);
 }
 
 static gint32
-_add_reference (GSignondIdentityIface *self, const gchar *reference)
+_add_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx)
 {
+    GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
     gint32 res;
+    
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
 
-    g_signal_emit (self,
+    g_signal_emit (iface,
                    signals[SIG_ADD_REFERENCE],
                    0,
                    reference,
@@ -424,17 +543,30 @@ _add_reference (GSignondIdentityIface *self, const gchar *reference)
 }
 
 static gint32
-_remove_reference (GSignondIdentityIface *self, const gchar *reference)
+_remove_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx)
 {
+    GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
     gint32 res;
 
-    g_signal_emit (self,
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
+
+    g_signal_emit (iface,
                    signals[SIG_REMOVE_REFERENCE],
                    0,
                    reference,
                    &res);
 
     return res;
+}
+
+static GSignondAccessControlManager *
+_get_acm (GSignondIdentityIface *iface)
+{
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
+
+    g_return_val_if_fail (identity, NULL);
+
+    return gsignond_auth_service_iface_get_acm (identity->priv->owner);
 }
 
 static void
@@ -454,6 +586,7 @@ gsignond_identity_iface_init (gpointer g_iface, gpointer iface_data)
     identity_iface->store = _store;
     identity_iface->add_reference = _add_reference;
     identity_iface->remove_reference = _remove_reference;
+    identity_iface->get_acm = _get_acm;
 }
 
 /**
@@ -512,7 +645,7 @@ gsignond_identity_get_object_path (GSignondIdentity *identity)
  *
  * Returns[transfer full]: new instance of #GSignondIdentity
  */
-GSignondIdentity * gsignond_identity_new ( GSignondAuthServiceIface *owner,
+GSignondIdentity * gsignond_identity_new (GSignondAuthServiceIface *owner,
                                           GSignondIdentityInfo *info,
                                           const gchar *app_context)
 {

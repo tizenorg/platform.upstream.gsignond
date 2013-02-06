@@ -28,6 +28,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gsignond/gsignond-access-control-manager.h>
 
 G_BEGIN_DECLS
 
@@ -112,6 +113,15 @@ struct _GSignondAuthServiceIfaceInterface {
      */
     gboolean (*clear) (GSignondAuthServiceIface *auth_service);
 
+    /**
+     * get_acm
+     * @auth_service: An instance of #GSignondAuthServiceIface
+     *
+     * Retrives access control manager used by #auth_service.
+     *
+     * Returns: (transfers none): access control manager
+     */
+    GSignondAccessControlManager * (*get_acm) (GSignondAuthServiceIface *auth_service);
 };
 
 GType gsignond_auth_service_iface_get_type (void);
@@ -135,6 +145,9 @@ gsignond_auth_service_iface_query_identities (GSignondAuthServiceIface *self,
                                               const GVariant *filter);
 gboolean
 gsignond_auth_service_iface_clear (GSignondAuthServiceIface *self);
+
+GSignondAccessControlManager *
+gsignond_auth_service_iface_get_acm (GSignondAuthServiceIface *self);
 
 G_END_DECLS
 
