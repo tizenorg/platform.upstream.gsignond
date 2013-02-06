@@ -192,6 +192,7 @@ gsignond_auth_session_iface_init (gpointer g_iface, gpointer iface_data)
     (void) iface_data;
 
     auth_session_iface->process = _process;
+    auth_session_iface->query_available_mechanisms = _query_available_mechanisms;
 }
 
 /**

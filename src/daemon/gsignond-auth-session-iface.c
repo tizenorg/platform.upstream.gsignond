@@ -62,20 +62,12 @@ _dummy_cancel (GSignondAuthSessionIface *self)
 }
 
 static void
-_dummy_set_id (GSignondAuthSessionIface *self, guint32 id)
-{
-    (void) self;
-    (void) id;
-}
-
-static void
 gsignond_auth_session_iface_default_init (
                                         GSignondAuthSessionIfaceInterface *self)
 {
     self->query_available_mechanisms = _dummy_query_available_mechanisms;
     self->process = _dummy_process;
     self->cancel = _dummy_cancel;
-    self->set_id = _dummy_set_id;
 
     /**
      * GSignondAuthSessionIfaceInterface::process:
@@ -130,12 +122,6 @@ void
 gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self)
 {
     return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->cancel (self);
-}
-
-void
-gsignond_auth_session_iface_set_id (GSignondAuthSessionIface *self, guint32 id)
-{
-    return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->set_id (self, id);
 }
 
 void

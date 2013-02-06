@@ -78,14 +78,6 @@ struct _GSignondAuthSessionIfaceInterface {
      *
      */
     void       (*cancel) (GSignondAuthSessionIface *session);
-    
-    /**
-     * cancel:
-     * @session: instance of #GSignondAuthSessionIface
-     *
-     */
-    void       (*set_id) (GSignondAuthSessionIface *session,
-                          guint32 id);
 
     /* handlers */
     /**

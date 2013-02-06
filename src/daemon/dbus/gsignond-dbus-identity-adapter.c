@@ -436,7 +436,7 @@ _emit_info_updated (GSignondIdentityIface *identity,
                    GSignondIdentityChangeType change,
                    gpointer userdata)
 {
-    GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (userdata);
+    GSignondDbusIdentity *self = GSIGNOND_DBUS_IDENTITY (userdata);
 
     gsignond_dbus_identity_emit_info_updated (self, change);
 }
