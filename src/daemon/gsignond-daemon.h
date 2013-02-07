@@ -28,6 +28,9 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include <gsignond/gsignond-access-control-manager.h>
+#include "plugins/gsignond-plugin-proxy-factory.h"
+
 G_BEGIN_DECLS
 
 #define GSIGNOND_TYPE_DAEMON            (gsignond_daemon_get_type())
@@ -61,6 +64,24 @@ GSignondDaemon * gsignond_daemon_new ();
 guint gsignond_daemon_identity_timeout (GSignondDaemon *self);
 
 guint gsignond_daemon_auth_session_timeout (GSignondDaemon *self);
+
+GSignondAccessControlManager *
+gsignond_daemon_get_access_control_manager (GSignondDaemon *self);
+
+GSignondPluginProxyFactory *
+gsignond_daemon_get_plugin_proxy_factory (GSignondDaemon *self);
+
+GSignondConfig *
+gsignond_daemon_get_config (GSignondDaemon *self);
+
+GSignondAccessControlManager *
+gsignond_get_access_control_manager ();
+
+GSignondPluginProxyFactory *
+gsignond_get_plugin_proxy_factory ();
+
+GSignondConfig *
+gsignond_get_config ();
 
 G_END_DECLS
 

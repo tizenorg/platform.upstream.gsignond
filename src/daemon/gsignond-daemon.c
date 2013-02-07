@@ -56,6 +56,7 @@ struct _GSignondDaemonPrivate
     GSignondDbCredentialsDatabase *db;
     GSignondAccessControlManager *acm;
     GSignondDbusAuthServiceAdapter *auth_service;
+    GSignondPluginProxyFactory *plugin_proxy_factory;
 };
 
 static void gsignond_daemon_auth_service_iface_init (gpointer g_iface,
@@ -69,6 +70,8 @@ G_DEFINE_TYPE_EXTENDED (GSignondDaemon, gsignond_daemon, G_TYPE_OBJECT, 0,
 #define GSIGNOND_DAEMON_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DAEMON, GSignondDaemonPrivate)
 
 static sig_fd[2];
+static GObject *self = 0;
+
 
 static gboolean 
 _handle_unix_signal (GIOChannel *channel,
@@ -134,7 +137,6 @@ _constructor (GType type,
     /*
      * Signleton daemon
      */
-    static GObject *self = 0;
 
     if (!self) {
         self = G_OBJECT_CLASS (gsignond_daemon_parent_class)->constructor (
@@ -171,6 +173,11 @@ _dispose (GObject *object)
     if (self->priv->sig_channel) {
         g_io_channel_unref (self->priv->sig_channel);
         self->priv->sig_channel = NULL;
+    }
+
+    if (self->priv->plugin_proxy_factory) {
+        g_object_unref (self->priv->plugin_proxy_factory);
+        self->priv->plugin_proxy_factory = NULL;
     }
 
     if (self->priv->config) {
@@ -362,7 +369,9 @@ gsignond_daemon_init (GSignondDaemon *self)
                                                     g_str_equal, 
                                                     NULL, 
                                                     g_object_unref);
-
+    self->priv->plugin_proxy_factory = gsignond_plugin_proxy_factory_new(
+        self->priv->config);
+    
     if (!_init_extensions (self))
         ERR("gsignond_daemon_init_extensions() failed");
 
@@ -571,3 +580,38 @@ gsignond_daemon_get_access_control_manager (GSignondDaemon *self)
     return self->priv->acm;
 }
 
+GSignondPluginProxyFactory *
+gsignond_daemon_get_plugin_proxy_factory (GSignondDaemon *self)
+{
+    g_assert (self != NULL);
+    g_assert (self->priv != NULL);
+
+    return self->priv->plugin_proxy_factory;
+}
+
+GSignondConfig *
+gsignond_daemon_get_config (GSignondDaemon *self)
+{
+    g_assert (self != NULL);
+    g_assert (self->priv != NULL);
+
+    return self->priv->config;
+}
+
+GSignondAccessControlManager *
+gsignond_get_access_control_manager ()
+{
+    gsignond_daemon_get_access_control_manager(GSIGNOND_DAEMON(self));
+}
+
+GSignondPluginProxyFactory *
+gsignond_get_plugin_proxy_factory ()
+{
+    gsignond_daemon_get_plugin_proxy_factory(GSIGNOND_DAEMON(self));
+}
+
+GSignondConfig *
+gsignond_get_config ()
+{
+    gsignond_daemon_get_config(GSIGNOND_DAEMON(self));
+}
