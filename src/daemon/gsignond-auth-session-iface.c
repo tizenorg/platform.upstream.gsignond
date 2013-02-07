@@ -25,50 +25,25 @@
 
 #include "gsignond-auth-session-iface.h"
 
-G_DEFINE_INTERFACE (GSignondAuthSessionIface, gsignond_auth_session_iface, G_TYPE_OBJECT)
+G_DEFINE_INTERFACE (GSignondAuthSessionIface, gsignond_auth_session_iface, 0)
 
 enum {
     SIG_PROCESS_RESULT,
     SIG_PROCESS_ERROR,
+    SIG_PROCESS_STORE,
+    SIG_PROCESS_USER_ACTION_REQUIRED,
+    SIG_PROCESS_REFRESHED,
+    SIG_PROCESS_STATUS_CHANGED,
+    
     SIG_MAX
 };
 
-guint signals[SIG_MAX];
-
-static gchar **
-_dummy_query_available_mechanisms (GSignondAuthSessionIface *self,
-                                   const gchar **wanted_mechanisms)
-{
-    (void) self;
-    (void) wanted_mechanisms;
-    return NULL;
-}
-
-static gboolean 
-_dummy_process (GSignondAuthSessionIface *self, const GVariant *session_data,
-                const gchar *mechanism)
-{
-    (void) self;
-    (void) session_data;
-    (void) mechanism;
-
-    return FALSE;
-}
-
-static void
-_dummy_cancel (GSignondAuthSessionIface *self)
-{
-    (void) self;
-}
+guint signals[SIG_MAX] = { 0 };
 
 static void
 gsignond_auth_session_iface_default_init (
                                         GSignondAuthSessionIfaceInterface *self)
 {
-    self->query_available_mechanisms = _dummy_query_available_mechanisms;
-    self->process = _dummy_process;
-    self->cancel = _dummy_cancel;
-
     /**
      * GSignondAuthSessionIfaceInterface::process:
      * @object: A #GSignondAuthServiceIface.
@@ -86,7 +61,7 @@ gsignond_auth_session_iface_default_init (
             NULL,
             G_TYPE_NONE,
             1,
-            G_TYPE_VARIANT);
+            GSIGNOND_TYPE_SESSION_DATA);
 
     signals[SIG_PROCESS_ERROR] = g_signal_new ("process-error",
             G_TYPE_FROM_INTERFACE (self),
@@ -98,6 +73,53 @@ gsignond_auth_session_iface_default_init (
             G_TYPE_NONE,
             1,
             G_TYPE_ERROR);
+
+    signals[SIG_PROCESS_STORE] =  g_signal_new ("process-store",
+            G_TYPE_FROM_INTERFACE (self),
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            GSIGNOND_TYPE_SESSION_DATA);
+    
+    signals[SIG_PROCESS_USER_ACTION_REQUIRED] =  g_signal_new (
+            "process-user-action-required",
+            G_TYPE_FROM_INTERFACE (self),
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            GSIGNOND_TYPE_SESSION_DATA);
+
+    signals[SIG_PROCESS_REFRESHED] =  g_signal_new (
+            "process-refreshed",
+            G_TYPE_FROM_INTERFACE (self),
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            GSIGNOND_TYPE_SESSION_DATA);
+
+    signals[SIG_PROCESS_STATUS_CHANGED] =  g_signal_new (
+            "status-changed",
+            G_TYPE_FROM_INTERFACE (self),
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            2,
+            G_TYPE_STRING, G_TYPE_STRING);
 }
 
 gchar **
@@ -111,7 +133,7 @@ gsignond_auth_session_iface_query_available_mechanisms (
 
 gboolean
 gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
-                                     const GVariant *session_data,
+                                     GSignondSessionData *session_data,
                                      const gchar *mechanism)
 {
     return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
@@ -124,10 +146,26 @@ gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self)
     return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->cancel (self);
 }
 
+void 
+gsignond_auth_session_iface_user_action_finished (GSignondAuthSessionIface *self, 
+                                           GSignondSessionData *session_data)
+{
+    return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
+        user_action_finished (self, session_data);
+}
+
+void 
+gsignond_auth_session_iface_refresh (GSignondAuthSessionIface *self, 
+                              GSignondSessionData *session_data)
+{
+    return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
+        refresh (self, session_data);
+}
+
 void
 gsignond_auth_session_iface_notify_process_result (
                                                 GSignondAuthSessionIface *iface,
-                                                const GVariant *result)
+                                                GSignondSessionData *result)
 {
     g_signal_emit (iface, signals[SIG_PROCESS_RESULT], 0, result);
 }
@@ -138,4 +176,35 @@ gsignond_auth_session_iface_notify_process_error (
                                                 const GError *error)
 {
     g_signal_emit (iface, signals[SIG_PROCESS_ERROR], 0, error);
+}
+
+void 
+gsignond_auth_session_iface_notify_store (GSignondAuthSessionIface *self, 
+                            GSignondSessionData *session_data)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_STORE], 0, session_data);
+}
+
+void 
+gsignond_auth_session_iface_notify_user_action_required (GSignondAuthSessionIface *self, 
+                                           GSignondSessionData *session_data)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_USER_ACTION_REQUIRED], 0, 
+                   session_data);
+}
+
+void 
+gsignond_auth_session_iface_notify_refreshed (GSignondAuthSessionIface *self, 
+                                GSignondSessionData *session_data)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_REFRESHED], 0, session_data);
+}
+
+void 
+gsignond_auth_session_iface_notify_status_changed (GSignondAuthSessionIface *self, 
+                                     const gchar *status, 
+                                     const gchar *message)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_STATUS_CHANGED], 0, status,
+        message);
 }

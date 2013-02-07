@@ -206,8 +206,9 @@ typedef struct {
     gpointer user_data;
 } _AuthSessionDbusInfo;
 
+//FIXME: needs to take GSignondSessionData instead of GVariant
 static void
-_on_process_result (GSignondAuthSessionIface *auth_session, const GVariant *result, gpointer user_data)
+_on_process_result (GSignondAuthSessionIface *auth_session, GVariant *result, gpointer user_data)
 {
     _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo *) info;
     GSignondDbusAuthSession *iface = GSIGNOND_DBUS_AUTH_SESSION (info->adapter);
@@ -217,6 +218,7 @@ _on_process_result (GSignondAuthSessionIface *auth_session, const GVariant *resu
     g_free (info);
 }
 
+//FIXME: needs to take GError instead of guint
 static void
 _on_process_error (GSignondAuthSessionIface *auth_session, guint error, gpointer user_data)
 {
@@ -237,14 +239,15 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
 {
     _AuthSessionDbusInfo *info = 0;
 
-    gsignond_auth_session_iface_process (self->priv->parent, session_data, mechanisms);
+//FIXME: need to convert GVariant to GSignondSessionData
+/*    gsignond_auth_session_iface_process (self->priv->parent, session_data, mechanisms);
 
     info = g_new0 (_AuthSessionDbusInfo, 1);
     info->adapter = self;
     info->invocation = invocation;
 
     g_signal_connect (self->priv->parent, "process-error", G_CALLBACK(_on_process_error), self);
-    g_signal_connect (self->priv->parent, "process-result", G_CALLBACK (_on_process_result), self);
+    g_signal_connect (self->priv->parent, "process-result", G_CALLBACK (_on_process_result), self);*/
 }
 
 static void

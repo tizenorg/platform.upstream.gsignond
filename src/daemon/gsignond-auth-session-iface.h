@@ -28,6 +28,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gsignond/gsignond-session-data.h>
 
 G_BEGIN_DECLS
 
@@ -63,13 +64,13 @@ struct _GSignondAuthSessionIfaceInterface {
      * @session_data: authentication session data to use
      * @mechansims: authentication mechanism to use
      *
-     * Initiates authentication process on #session, On successful authentication #process_reply will be called.
-     * In case failure occured in authentication process, the error is informed via #process_error.
+     * Initiates authentication process on #session, On successful authentication #gsignond_auth_session_iface_notify_process_result will be called.
+     * In case failure occured in authentication process, the error is informed via #gsignond_auth_session_iface_notify_process_error.
 
      * Returns: @TRUE if authentication process was started successfully, @FALSE otherwise
      */
     gboolean   (*process) (GSignondAuthSessionIface *session,
-                           const GVariant *session_data,
+                           GSignondSessionData *session_data,
                            const gchar *mechanism);
 
     /**
@@ -79,48 +80,72 @@ struct _GSignondAuthSessionIfaceInterface {
      */
     void       (*cancel) (GSignondAuthSessionIface *session);
 
-    /* handlers */
-    /**
-     * process_reply:
-     * @session: instance of #GSignondAuthSessionIface
-     * @results: authentication process results
-     *
-     * Function to be called with #results on authentication process success.
-     */
-    void       (*process_reply) (GSignondAuthSessionIface *session,
-                                 const GVariant *results);
-    
-    /**
-     * process_error:
-     * @session: instance of #GSignondAuthSessionIface
-     * @error: error of type #GError, occured during authentication process
-     *
-     * Function to be called with #error on authentication process failure.
-     */
-    void       (*process_error) (GSignondAuthSessionIface *session,
-                                 const GError *error);
+    void (*user_action_finished) (GSignondAuthSessionIface *session, 
+                                  GSignondSessionData *session_data);
+
+    void (*refresh) (GSignondAuthSessionIface *session, 
+                     GSignondSessionData *session_data);
+
 };
 
 GType gsignond_auth_session_iface_get_type (void);
 
-gchar ** gsignond_auth_session_iface_query_available_mechanisms (
+gchar ** 
+gsignond_auth_session_iface_query_available_mechanisms (
                                             GSignondAuthSessionIface *self,
                                             const gchar **wanted_mechanisms);
-gboolean gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
-                                              const GVariant *session_data,
+gboolean 
+gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
+                                              GSignondSessionData *session_data,
                                               const gchar *mechanism);
-void gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self);
-void gsignond_auth_session_iface_set_id (GSignondAuthSessionIface *self,
-                                         guint32 id);
+void 
+gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self);
+void 
+gsignond_auth_session_iface_user_action_finished (GSignondAuthSessionIface *self, 
+                                           GSignondSessionData *session_data);
+void 
+gsignond_auth_session_iface_refresh (GSignondAuthSessionIface *self, 
+                              GSignondSessionData *session_data);
 
+
+/* handlers */
+/**
+  * process_reply:
+  * @session: instance of #GSignondAuthSessionIface
+  * @results: authentication process results
+  *
+  * Function to be called with #results on authentication process success.
+  */
 void
 gsignond_auth_session_iface_notify_process_result (
                                                 GSignondAuthSessionIface *iface,
-                                                const GVariant *result);
+                                                GSignondSessionData *result);
+
+/**
+  * process_error:
+  * @session: instance of #GSignondAuthSessionIface
+  * @error: error of type #GError, occured during authentication process
+  *
+  * Function to be called with #error on authentication process failure.
+  */
 void
 gsignond_auth_session_iface_notify_process_error (
                                                 GSignondAuthSessionIface *iface,
                                                 const GError *error);
+
+void 
+gsignond_auth_session_iface_notify_store (GSignondAuthSessionIface *self, 
+                            GSignondSessionData *session_data);
+void 
+gsignond_auth_session_iface_notify_user_action_required (GSignondAuthSessionIface *self, 
+                                           GSignondSessionData *session_data);
+void 
+gsignond_auth_session_iface_notify_refreshed (GSignondAuthSessionIface *self, 
+                                GSignondSessionData *session_data);
+void 
+gsignond_auth_session_iface_notify_status_changed (GSignondAuthSessionIface *self, 
+                                     const gchar *status, 
+                                     const gchar *message);
 
 G_END_DECLS
 

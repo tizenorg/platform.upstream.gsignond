@@ -64,7 +64,7 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
 }
 
 static gboolean
-_process (GSignondAuthSessionIface *iface, const GVariant *session_data,
+_process (GSignondAuthSessionIface *iface, GSignondSessionData *session_data,
           const gchar *mechanism)
 {
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
@@ -79,12 +79,6 @@ _process (GSignondAuthSessionIface *iface, const GVariant *session_data,
      */
 
      return TRUE;
-}
-
-static void
-_process_response (GSignondAuthSessionIface *iface, GVariant *response_data)
-{
-    gsignond_auth_session_iface_notify_process_result (iface, response_data);
 }
 
 static void
