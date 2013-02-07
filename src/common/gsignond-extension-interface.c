@@ -160,7 +160,7 @@ gsignond_extension_get_version (GSignondExtension *self)
  *
  * Factory method to get a singleton storage manager object.
  *
- * Returns: storage manager object instance.
+ * Returns: (transfer none) storage manager object instance.
  */
 GSignondStorageManager *
 gsignond_extension_get_storage_manager (GSignondExtension *self,
@@ -177,7 +177,7 @@ gsignond_extension_get_storage_manager (GSignondExtension *self,
  *
  * Factory method to get a singleton secret storage object.
  *
- * Returns: secret storage object instance.
+ * Returns: (transfer none) secret storage object instance.
  */
 GSignondSecretStorage *
 gsignond_extension_get_secret_storage (GSignondExtension *self,
@@ -194,7 +194,7 @@ gsignond_extension_get_secret_storage (GSignondExtension *self,
  *
  * Factory method to get a singleton access control manager object.
  *
- * Returns: access control manager object instance.
+ * Returns: (transfer none) access control manager object instance.
  */
 GSignondAccessControlManager *
 gsignond_extension_get_access_control_manager (GSignondExtension *self,
@@ -203,3 +203,4 @@ gsignond_extension_get_access_control_manager (GSignondExtension *self,
     return GSIGNOND_EXTENSION_GET_CLASS (self)->
         get_access_control_manager (self, config);
 }
+
