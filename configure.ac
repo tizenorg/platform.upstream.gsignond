@@ -33,6 +33,9 @@ PKG_CHECK_MODULES([CHECK], [check >= 0.9.4], [have_check=yes], [have_check=no])
 AC_SUBST(CHECK_CFLAGS)
 AC_SUBST(CHECK_LIBS)
 
+PKG_CHECK_MODULES(GTestDBus, glib-2.0 >= 2.34, [gtestdbus=yes], [gtestdbus=no])
+AM_CONDITIONAL(HAVE_GTESTDBUS, [test x$gtestdbus = xyes])
+
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
 DBUS_SERVICES_DIR="`pkg-config --variable session_bus_services_dir dbus-1`"

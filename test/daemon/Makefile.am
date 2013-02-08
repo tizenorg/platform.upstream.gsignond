@@ -1,6 +1,6 @@
+if HAVE_GTESTDBUS
 TESTS = daemontest
 check_PROGRAMS = $(TESTS)
-noinst_PROGRAMS = $(TESTS)
 
 daemontest_SOURCES = daemon-test.c
 
@@ -17,5 +17,7 @@ daemontest_LDADD = \
     $(top_builddir)/src/daemon/dbus/libgsignond-dbus-glue.la \
     $(GSIGNOND_LIBS) \
     $(CHECK_LIBS)
+
+endif
 
 EXTRA_DIST = "$(top_builddir)/test/daemon/services/com.google.code.AccountsSSO.SingleSignOn.service.in"
