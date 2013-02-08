@@ -51,7 +51,8 @@ static gboolean gsignond_config_load_environment (GSignondConfig *config);
 gint
 gsignond_config_get_integer (GSignondConfig *config, const gchar *key)
 {
-    return (guint) atoi (gsignond_config_get_string(config, key));
+    const gchar *str_value = gsignond_config_get_string(config, key);
+    return (gint) (str_value ? atoi (str_value) : 0);
 }
 
 void
@@ -75,7 +76,7 @@ gsignond_config_set_integer (GSignondConfig *config, const gchar *key,
 const gchar*
 gsignond_config_get_string (GSignondConfig *config, const gchar *key)
 {
-    g_return_val_if_fail (config && GSIGNOND_IS_CONFIG(config), FALSE);
+    g_return_val_if_fail (config && GSIGNOND_IS_CONFIG(config), NULL);
 
     GVariant* value = gsignond_dictionary_get (config->priv->config_table, (gpointer)key);
     if (!value) return NULL;
