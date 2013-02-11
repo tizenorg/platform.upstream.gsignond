@@ -47,6 +47,9 @@ AC_SUBST(DBUS_SERVICES_DIR)
 DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
 AC_SUBST(DBUS_INTERFACES_DIR)
 
+# gtk-doc
+GTK_DOC_CHECK
+
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
 
