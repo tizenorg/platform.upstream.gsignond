@@ -27,6 +27,8 @@
 #include "dbus/gsignond-dbus.h"
 #include "dbus/gsignond-dbus-auth-session-adapter.h"
 #include "gsignond-auth-session.h"
+#include "plugins/gsignond-plugin-proxy-factory.h"
+#include "gsignond-daemon.h"
 
 enum
 {
@@ -40,16 +42,15 @@ static GParamSpec *properties[N_PROPERTIES];
 struct _GSignondAuthSessionPrivate
 {
     gchar *method;
-    GSignondIdentityIface *owner;
     GSignondDbusAuthSessionAdapter *session_adapter;
+    GSignondPluginProxy *proxy;
 };
 
-static void gsignond_auth_session_iface_init (gpointer g_iface,
-                                              gpointer iface_data);
+static void gsignond_auth_session_iface_init (gpointer g_iface);
 
-G_DEFINE_TYPE_EXTENDED (GSignondAuthSession, gsignond_auth_session,
-                        G_TYPE_OBJECT, 0,
-                        G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_AUTH_SESSION,
+G_DEFINE_TYPE_WITH_CODE (GSignondAuthSession, gsignond_auth_session,
+                        G_TYPE_OBJECT,
+                        G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_AUTH_SESSION_IFACE,
                                                gsignond_auth_session_iface_init));
 
 #define GSIGNOND_AUTH_SESSION_PRIV(obj) \
@@ -60,7 +61,16 @@ static gchar **
 _query_available_mechanisms (GSignondAuthSessionIface *iface,
                              const gchar **wanted_mechanisms)
 {
-    return NULL;
+    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+    gchar** available_mechanisms;
+    g_object_get(self->priv->proxy, 
+                 "mechanisms", &available_mechanisms, NULL);
+
+    //FIXME: need to return an intersection of wanted mechanisms and 
+    //available mechanisms here:
+    // ...
+    //g_strfreev(available_mechanisms);
+    return available_mechanisms;
 }
 
 static gboolean
@@ -69,16 +79,36 @@ _process (GSignondAuthSessionIface *iface, GSignondSessionData *session_data,
 {
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
-    (void) self;
-    (void) session_data;
-    (void) mechanism;
-    /*
-     * TODO: Implement process() when results ready
-     * call gsignond_auth_session_iface_notify_process_result (iface, results);
-     *
-     */
+    gsignond_plugin_proxy_process(self->priv->proxy, iface, session_data,
+                                  mechanism);
 
      return TRUE;
+}
+
+static void 
+_cancel (GSignondAuthSessionIface *iface)
+{
+    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+
+    gsignond_plugin_proxy_cancel(self->priv->proxy, iface);
+}
+
+void 
+_user_action_finished (GSignondAuthSessionIface *iface, 
+                       GSignondSessionData *session_data)
+{
+    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+
+    gsignond_plugin_proxy_user_action_finished(self->priv->proxy, session_data);
+}
+
+void 
+_refresh (GSignondAuthSessionIface *iface, 
+                              GSignondSessionData *session_data)
+{
+    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+
+    gsignond_plugin_proxy_refresh(self->priv->proxy, session_data);
 }
 
 static void
@@ -124,9 +154,9 @@ _dispose (GObject *object)
         self->priv->session_adapter = NULL;
     }
 
-    if (self->priv->owner) {
-        g_object_unref (self->priv->owner);
-        self->priv->owner = NULL;
+    if (self->priv->proxy) {
+        g_object_unref (self->priv->proxy);
+        self->priv->proxy = NULL;
     }
 
     G_OBJECT_CLASS (gsignond_auth_session_parent_class)->dispose (object);
@@ -178,15 +208,16 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
 }
 
 static void
-gsignond_auth_session_iface_init (gpointer g_iface, gpointer iface_data)
+gsignond_auth_session_iface_init (gpointer g_iface)
 {
     GSignondAuthSessionIfaceInterface *auth_session_iface =
         (GSignondAuthSessionIfaceInterface *) g_iface;
 
-    (void) iface_data;
-
     auth_session_iface->process = _process;
     auth_session_iface->query_available_mechanisms = _query_available_mechanisms;
+    auth_session_iface->cancel = _cancel;
+    auth_session_iface->user_action_finished = _user_action_finished;
+    auth_session_iface->refresh = _refresh;
 }
 
 /**
@@ -222,6 +253,13 @@ gsignond_auth_session_get_object_path (GSignondAuthSession *session)
         session->priv->session_adapter);
 }
 
+gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id)
+{
+    return gsignond_plugin_proxy_factory_add_plugin(
+        gsignond_get_plugin_proxy_factory(), id, session->priv->proxy);
+}
+
+
 /**
  * gsignond_auth_session_new:
  * @owner: instance of #GSignondIdentityIface
@@ -232,10 +270,23 @@ gsignond_auth_session_get_object_path (GSignondAuthSession *session)
  * Returns: (transfer full) newly created object 
  */
 GSignondAuthSession * 
-gsignond_auth_session_new (GSignondIdentityIface *owner, const gchar *method)
+gsignond_auth_session_new (gint id, const gchar *method)
 {
+    GSignondPluginProxy* proxy;
+    
+    if (id == 0) {
+        proxy = gsignond_plugin_proxy_new(gsignond_get_config(), method);
+        if (!proxy) return NULL;
+    } else {
+        proxy = gsignond_plugin_proxy_factory_get_plugin(
+            gsignond_get_plugin_proxy_factory(), id, method);
+        if (!proxy) return NULL;
+        g_object_ref(proxy);
+    }
+    
     GSignondAuthSession *auth_session =
         g_object_new (GSIGNOND_TYPE_AUTH_SESSION, "method", method, NULL);
+    auth_session->priv->proxy = proxy;
 
     return auth_session;
 }

@@ -73,8 +73,10 @@ gsignond_auth_session_get_method (GSignondAuthSession *session);
 const gchar *
 gsignond_auth_session_get_object_path (GSignondAuthSession *session);
 
+gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id);
+
 GSignondAuthSession * 
-gsignond_auth_session_new (GSignondIdentityIface *owner,
+gsignond_auth_session_new (gint id,
                            const gchar *method);
 
 G_END_DECLS

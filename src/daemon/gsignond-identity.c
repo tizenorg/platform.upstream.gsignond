@@ -357,11 +357,9 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
     g_value_return_if_fail (iface, NULL);
     g_value_return_if_fail (method, NULL);
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
-    /*
-     * FIXME: check if given method is supported
-     */
 
-    session = gsignond_auth_session_new (iface, method);
+    session = gsignond_auth_session_new (gsignond_identity_info_get_id(
+        identity->priv->info), method);
 
     if (!session)
         return NULL;
