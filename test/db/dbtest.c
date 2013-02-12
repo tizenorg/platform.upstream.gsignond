@@ -872,19 +872,13 @@ START_TEST (test_metadata_database)
 
     identity = _get_filled_identity_info_2 (&identity,
             FALSE, FALSE, TRUE, FALSE, FALSE);
-    identity_id = gsignond_db_metadata_database_update_identity (
-                    metadata_db, identity);
-    fail_unless (identity_id != 0);
-    gsignond_db_metadata_database_remove_identity (
-                metadata_db, identity_id);
+    fail_unless (gsignond_db_metadata_database_update_identity (
+            metadata_db, identity) == 0);
 
     identity = _get_filled_identity_info_2 (&identity,
             FALSE, FALSE, FALSE, TRUE, FALSE);
-    identity_id = gsignond_db_metadata_database_update_identity (
-                    metadata_db, identity);
-    fail_unless (identity_id != 0);
-    gsignond_db_metadata_database_remove_identity (
-                metadata_db, identity_id);
+    fail_unless (gsignond_db_metadata_database_update_identity (
+            metadata_db, identity) == 0);
 
     identity = _get_filled_identity_info_2 (&identity,
            FALSE, FALSE, FALSE, FALSE, TRUE);

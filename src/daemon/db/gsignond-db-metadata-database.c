@@ -248,25 +248,22 @@ _gsignond_db_metadata_database_update_credentials (
         flags |= GSignondIdentityFlag_RememberSecret;
     if (gsignond_identity_info_get_is_username_secret (identity) ) {
         flags |= GSignondIdentityFlag_UserNameIsSecret;
-        username = "";
     } else {
         username = gsignond_identity_info_get_username (identity);
     }
     caption = gsignond_identity_info_get_caption (identity);
-    if (!caption || !username)
-        return FALSE;
 
     id = gsignond_identity_info_get_id (identity);
     type = gsignond_identity_info_get_identity_type (identity);
     if (!gsignond_identity_info_get_is_identity_new (identity)) {
         query = sqlite3_mprintf ("UPDATE CREDENTIALS SET caption = %Q, "
                 "username = %Q, flags = %u, type = %u WHERE id = %u;",
-                caption, username, flags, type, id);
+                caption ?caption : "",username? username : "", flags, type, id);
     } else {
         query = sqlite3_mprintf ("INSERT INTO CREDENTIALS "
                 "(caption, username, flags, type) "
                 "VALUES(%Q, %Q, %u, %u);",
-                 caption, username, flags, type);
+                caption ?caption : "",username? username : "", flags, type);
     }
     ret = gsignond_db_sql_database_exec (
                 GSIGNOND_DB_SQL_DATABASE (self),
@@ -295,30 +292,30 @@ _gsignond_db_metadata_database_update_realms (
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (identity != NULL, FALSE);
 
-    if (!realms) {
-        DBG ("NULL realms cannot be updated");
-        return FALSE;
-    }
+    if (realms && g_sequence_get_length (realms) > 0) {
 
-    if (!gsignond_identity_info_get_is_identity_new (identity)) {
-        /* remove realms list */
-        DBG ("Remove old realms from DB as identity is not new");
-        _gsignond_db_metadata_database_exec (self,
-                "DELETE FROM REALMS WHERE identity_id = %u;", id);
-    }
-
-    /* realms insert */
-    iter = g_sequence_get_begin_iter (realms);
-    while (!g_sequence_iter_is_end (iter)) {
-        if (!_gsignond_db_metadata_database_exec (self,
-                "INSERT OR IGNORE INTO REALMS (identity_id, realm) "
-                "VALUES (%u, %Q);", id, (const gchar *)g_sequence_get (iter))) {
-            DBG ("Insert realms to DB failed");
-            return FALSE;
+        if (!gsignond_identity_info_get_is_identity_new (identity)) {
+            /* remove realms list */
+            DBG ("Remove old realms from DB as identity is not new");
+            _gsignond_db_metadata_database_exec (self,
+                    "DELETE FROM REALMS WHERE identity_id = %u;", id);
         }
-        iter = g_sequence_iter_next (iter);
-    }
 
+        /* realms insert */
+        iter = g_sequence_get_begin_iter (realms);
+        while (!g_sequence_iter_is_end (iter)) {
+            if (!_gsignond_db_metadata_database_exec (self,
+                    "INSERT OR IGNORE INTO REALMS (identity_id, realm) "
+                    "VALUES (%u, %Q);",
+                    id, (const gchar *)g_sequence_get (iter))) {
+                DBG ("Insert realms to DB failed");
+                return FALSE;
+            }
+            iter = g_sequence_iter_next (iter);
+        }
+    } else {
+        DBG ("NULL realms or no realms to be added");
+    }
     return TRUE;
 }
 
@@ -387,6 +384,11 @@ _gsignond_db_metadata_database_update_acl (
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (identity != NULL, FALSE);
 
+    if (!acl || g_list_length (acl) <= 0) {
+        DBG ("NULL acl or no acl to be added to DB");
+        return FALSE;
+    }
+
     for (list = acl;  list != NULL; list = g_list_next (list)) {
         ctx = (GSignondSecurityContext *) list->data;
         _gsignond_db_metadata_database_exec (self,
@@ -410,6 +412,11 @@ _gsignond_db_metadata_database_update_owners (
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (identity != NULL, FALSE);
+
+    if (!owners || g_list_length (owners) <= 0) {
+        DBG ("NULL owners or no owners to be added to DB");
+        return FALSE;
+    }
 
     for (list = owners;  list != NULL; list = g_list_next (list)) {
         ctx = (GSignondSecurityContext *) list->data;
