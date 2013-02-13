@@ -48,6 +48,20 @@ static GParamSpec *properties[N_PROPERTIES] = { NULL, };
 G_DEFINE_TYPE (GSignondStorageManager, gsignond_storage_manager, G_TYPE_OBJECT);
 
 static void
+_set_config (GSignondStorageManager *self, GSignondConfig *config)
+{
+    g_assert (self->config == NULL);
+    self->config = config;
+
+    self->location = gsignond_config_get_string (
+                                            self->config,
+                                            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+    if (!self->location)
+        self->location = g_build_filename (g_get_user_data_dir (),
+                                           "gsignond", NULL);
+}
+
+static void
 _set_property (GObject *object, guint prop_id, const GValue *value,
                GParamSpec *pspec)
 {
@@ -57,7 +71,7 @@ _set_property (GObject *object, guint prop_id, const GValue *value,
     switch (prop_id) {
         case PROP_CONFIG:
             g_assert (self->config == NULL);
-            self->config = g_value_dup_object (value);
+            _set_config (self, GSIGNOND_CONFIG (g_value_dup_object (value)));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -153,9 +167,6 @@ _mount_filesystem (GSignondStorageManager *self)
 {
     g_return_val_if_fail (self != NULL, NULL);
 
-    if (g_mkdir_with_parents (self->location, S_IRWXU))
-        return NULL;
-
     return self->location;
 }
 
@@ -204,9 +215,7 @@ gsignond_storage_manager_init (GSignondStorageManager *self)
 {
     /*self->priv = GSIGNOND_STORAGE_MANAGER_GET_PRIVATE (self);*/
 
-    self->location =
-        g_build_filename (g_get_user_data_dir (), "gsignond", NULL);
-
+    self->location = NULL;
     self->config = NULL;
 }
 

@@ -262,55 +262,57 @@ gsignond_config_load_environment (GSignondConfig *config)
     e_val = g_getenv ("SSO_DAEMON_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT,
-                             (gpointer) e_val);
+                                    GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT,
+                                    (gpointer) e_val);
 
     e_val = g_getenv ("SSO_IDENTITY_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT,
-                             (gpointer) e_val);
+                                    GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT,
+                                    (gpointer) e_val);
 
     e_val = g_getenv ("SSO_AUTHSESSION_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT,
-                             (gpointer) e_val);
+                                    GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT,
+                                    (gpointer) e_val);
 
     e_val = g_getenv ("SSO_LOGGING_LEVEL");
     if (e_val && (level = atoi(e_val)))
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_GENERAL_LOG_LEVEL,
-                             (gpointer) e_val);
+                                    GSIGNOND_CONFIG_GENERAL_LOG_LEVEL,
+                                    (gpointer) e_val);
         //set_logging_level (level);
     
     e_val = g_getenv ("SSO_PLUGINS_DIR");
     if (e_val) 
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR,
-                             (gpointer) e_val);
+                                    GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR,
+                                    (gpointer) e_val);
 
     e_val = g_getenv ("SSO_EXTENSIONS_DIR");
     if (e_val) 
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
-                             (gpointer) e_val);
+                                    GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
+                                    (gpointer) e_val);
 
     e_val = g_getenv ("SSO_EXTENSION");
     if (e_val)
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_GENERAL_EXTENSION,
-                             (gpointer) e_val);
+                                    GSIGNOND_CONFIG_GENERAL_EXTENSION,
+                                    (gpointer) e_val);
 
     e_val = g_getenv ("SSO_STORAGE_PATH");
-    if (e_val) {
+    if (e_val)
         gsignond_config_set_string (config,
-                             GSIGNOND_CONFIG_GENERAL_STORAGE_PATH,
-                             (gpointer) e_val);
-        /* cam_config_set_storage_path (e_val); */
-    }
+                                    GSIGNOND_CONFIG_GENERAL_STORAGE_PATH,
+                                    (gpointer) e_val);
 
-    return TRUE;
+    e_val = g_getenv ("SSO_SECRET_PATH");
+    if (e_val)
+        gsignond_config_set_string (config,
+                                    GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
+                                    (gpointer) e_val);
 }
 
 GSignondConfig *
