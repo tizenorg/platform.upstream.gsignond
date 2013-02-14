@@ -509,16 +509,23 @@ _gsignond_db_metadata_database_open (
     gchar *db_filename = NULL;
     gboolean ret = FALSE;
     gint dir_created = 0;
+    GSignondDbMetadataDatabase *self = NULL;
 
-    g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
+    self = GSIGNOND_DB_METADATA_DATABASE (obj);
+
+    g_return_val_if_fail (self, FALSE);
 
     if (!filename || strlen (filename) <= 0) {
         filename = GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME;
     }
-    dir = g_get_user_data_dir ();
+    dir = gsignond_config_get_string (self->config,
+            GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
     if (!dir) {
-        DBG ("Invalid Metadata DB directory");
-        return FALSE;
+        dir = g_get_user_data_dir ();
+        if (!dir) {
+            DBG ("Invalid Metadata DB directory");
+            return FALSE;
+        }
     }
     db_filename = g_build_filename (dir, "gsignond", filename, NULL);
     if (!db_filename) {
