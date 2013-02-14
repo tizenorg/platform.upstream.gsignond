@@ -89,10 +89,22 @@ G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT, 0,
 #define VALIDATE_IDENTITY_WRITE_ACCESS(identity, ctx, ret) \
 { \
     GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (identity->priv->owner); \
-    GSignondSecurityContextList *owners = gsignond_identity_info_get_access_control_list (identity->priv->info); \
+    GSignondSecurityContextList *owners = gsignond_identity_info_get_owner_list (identity->priv->info); \
     const GSignondSecurityContext *owner = (const GSignondSecurityContext *)g_list_first (owners); \
     gboolean valid = gsignond_access_control_manager_peer_is_owner_of_identity (acm, ctx, owner); \
     gsignond_security_context_list_free (owners); \
+    if (!valid) { \
+        /* TODO: throw access error */ \
+        return ret; \
+    } \
+}
+
+#define VALIDATE_IDENTITY_WRITE_ACL(identity, ctx, ret) \
+{ \
+    GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (identity->priv->owner); \
+    GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (identity->priv->info); \
+    gboolean valid = gsignond_access_control_manager_acl_is_valid (acm, ctx, acl); \
+    gsignond_security_context_list_free (acl); \
     if (!valid) { \
         /* TODO: throw access error */ \
         return ret; \
@@ -128,7 +140,7 @@ _set_property (GObject *object, guint property_id, const GValue *value,
     {
         case PROP_INFO:
             self->priv->info =
-                GSIGNOND_IDENTITY_INFO (g_value_get_boxed (value));
+               (GSignondIdentityInfo *)g_value_get_boxed (value);
             break;
         case PROP_APP_CONTEXT:
             g_object_set_property (G_OBJECT (self->priv->identity_adapter), "app-context", value);
@@ -164,6 +176,7 @@ _dispose (GObject *object)
 static void
 _finalize (GObject *object)
 {
+    G_OBJECT_CLASS (gsignond_identity_parent_class)->finalize (object);
 }
 
 static void
@@ -204,7 +217,7 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                 "Application security context of the identity object creater",
                 NULL,
                 G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-    
+
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
@@ -457,28 +470,20 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
 
     was_new_identity = gsignond_identity_info_get_is_identity_new (identity_info);
 
-    contexts = gsignond_identity_info_get_access_control_list (identity->priv->info);
-    if (contexts) {
-        GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (identity->priv->owner);
-        gboolean valid = gsignond_access_control_manager_acl_is_valid (acm, ctx, contexts);
+    contexts = gsignond_identity_info_get_access_control_list (identity_info);
+    if (!contexts) {
+        contexts = gsignond_identity_info_get_access_control_list (identity->priv->info);
+        gsignond_identity_info_set_access_control_list (identity_info, contexts);
         gsignond_security_context_list_free (contexts);
-
-        if (!valid) {
-            /*
-             * FIXME: throw error
-             */
-
-            return 0;
-        }
     }
-
+    else {
+        VALIDATE_IDENTITY_WRITE_ACL (identity, ctx, 0);
+    }
+   
     /* Add creater to owner list */
     contexts = gsignond_identity_info_get_owner_list (identity_info);
     if (!contexts) {
-        ctx = ctx ? gsignond_security_context_copy (ctx)
-                  : gsignond_security_context_new_from_values ("*", NULL);
-
-        contexts = g_list_append (contexts, (gpointer)ctx);
+        contexts = gsignond_identity_info_get_owner_list (identity->priv->info);
 
         gsignond_identity_info_set_owner_list (identity_info, contexts);
     }
@@ -645,12 +650,14 @@ gsignond_identity_get_object_path (GSignondIdentity *identity)
  */
 GSignondIdentity * gsignond_identity_new (GSignondAuthServiceIface *owner,
                                           GSignondIdentityInfo *info,
-                                          const gchar *app_context)
+                                          const gchar *app_context,
+                                          gint timeout)
 {
     GSignondIdentity *identity =
         GSIGNOND_IDENTITY(g_object_new (GSIGNOND_TYPE_IDENTITY,
                                         "info", info,
                                         "app-context", app_context,
+                                        "timeout", timeout,
                                         NULL));
 
     identity->priv->owner = g_object_ref (owner);

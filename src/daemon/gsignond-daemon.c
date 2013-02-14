@@ -434,13 +434,26 @@ _catch_identity (GSignondDaemon *daemon, GSignondIdentity *identity)
 
 static const gchar * 
 _register_new_identity (GSignondAuthServiceIface *self,
-                        const gchar *app_context) 
+                        const GSignondSecurityContext *ctx) 
 {
     GSignondDaemon *daemon = GSIGNOND_DAEMON (self);
-    GSignondIdentity *identity = gsignond_identity_new (self, 0, app_context);
+    const gchar *app_context = ctx ? gsignond_security_context_get_application_context (ctx) : "";
+    gint timeout = gsignond_config_get_integer (daemon->priv->config, GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT);
+    GSignondIdentityInfo *info = gsignond_dictionary_new ();
+    GSignondIdentity *identity = NULL;
+    GSignondSecurityContextList *owners = NULL;
+
+    owners = g_list_append (NULL, (gpointer) ctx ? gsignond_security_context_copy (ctx)
+                                                 : gsignond_security_context_new_from_values ("*", NULL));
+
+    gsignond_identity_info_set_owner_list (info, owners);
+    gsignond_identity_info_set_access_control_list (info, owners);
+    gsignond_security_context_list_free (owners);
+
+    identity = gsignond_identity_new (self, info, app_context, timeout);
 
     if (identity == NULL) {
-        ERR("Unable to register ni");
+        ERR("Unable to register new identity");
         return NULL;
     }
 
@@ -452,12 +465,27 @@ _register_new_identity (GSignondAuthServiceIface *self,
 static const gchar *
 _get_identity (GSignondAuthServiceIface *iface,
                const guint32 id,
-               const gchar *app_context,
+               const GSignondSecurityContext *ctx,
                GVariant **identity_data)
 {
     GSignondDaemon *self = GSIGNOND_DAEMON (iface);
     GSignondIdentity *identity = NULL;
     GSignondIdentityInfo *identity_info = NULL;
+    const gchar *app_context = ctx ? gsignond_security_context_get_application_context (ctx) : "" ;
+    gint timeout = 0;
+
+#define VALIDATE_IDENTITY_READ_ACCESS(info, ctx, ret) \
+{ \
+    GSignondAccessControlManager *acm = self->priv->acm; \
+    GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (info); \
+    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
+    gsignond_security_context_list_free (acl); \
+    if (!valid) { \
+        gsignond_dictionary_free (info); \
+        /* TODO: throw access error */ \
+        return ret; \
+    } \
+}
 
     if (identity_data) *identity_data = NULL;
 
@@ -467,7 +495,10 @@ _get_identity (GSignondAuthServiceIface *iface,
                         self->priv->db, id, TRUE);
     if (!identity_info) return NULL;
 
-    identity = gsignond_identity_new (GSIGNOND_AUTH_SERVICE_IFACE (self), identity_info, app_context);
+    VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
+
+    timeout = gsignond_config_get_integer (self->priv->config, GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT);
+    identity = gsignond_identity_new (iface, identity_info, app_context, timeout);
     if (!identity) {
         gsignond_identity_info_free (identity_info);
         return NULL;
@@ -478,6 +509,8 @@ _get_identity (GSignondAuthServiceIface *iface,
     _catch_identity (self, identity);
 
     return gsignond_identity_get_object_path (identity);
+
+#undef VALIDATE_IDENTITY_READ_ACCESS
 }
 
 static gchar ** 

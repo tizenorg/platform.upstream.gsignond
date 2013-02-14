@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-access-control-manager.h>
+#include <gsignond/gsignond-security-context.h>
 
 G_BEGIN_DECLS
 
@@ -46,20 +47,20 @@ struct _GSignondAuthServiceIfaceInterface {
     /**
      * register_new_identity:
      * @auth_service: An instance of #GSignondAuthServiceIface
-     * @app_context: application context
+     * @ctx: Security context
      *
      * Creates new identity object and registers it on the DBus. Returns the
      * dbus object of the newly created identity.
      *
      * Returns: (transfer null) object of the newly created identity if success, @NULL otherwise.
      */
-    const gchar * (*register_new_identity) (GSignondAuthServiceIface *auth_service, const gchar *app_context);
+    const gchar * (*register_new_identity) (GSignondAuthServiceIface *auth_service, const GSignondSecurityContext *ctx);
 
     /**
      * get_identity:
      * @auth_service: An instance of #GSignondAuthServiceIface
      * @id: id to query
-     * @app_context: application context
+     * @ctx: Security context
      * @object_path: (transfers full) holds the object path of the identity
      * @identity_data: (transfers full) holds the identity data
      *
@@ -67,7 +68,7 @@ struct _GSignondAuthServiceIfaceInterface {
      *
      * Returns: (transfer null) object of the newly created identity if success, @NULL otherwise.
      */
-    const gchar* (*get_identity) (GSignondAuthServiceIface *auth_service, guint32 id, const gchar *app_context, GVariant **identity_data);
+    const gchar* (*get_identity) (GSignondAuthServiceIface *auth_service, guint32 id, const GSignondSecurityContext *ctx, GVariant **identity_data);
 
     /**
      * query_methods:
@@ -129,11 +130,11 @@ GType gsignond_auth_service_iface_get_type (void);
 const gchar * 
 gsignond_auth_service_iface_register_new_identity (
                                                 GSignondAuthServiceIface *self,
-                                                const gchar *app_context);
+                                                const GSignondSecurityContext *ctx);
 const gchar *
 gsignond_auth_service_iface_get_identity (GSignondAuthServiceIface *self,
                                           guint32 id,
-                                          const gchar *app_context, 
+                                          const GSignondSecurityContext *ctx,
                                           GVariant **identity_data);
 char **
 gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self);

@@ -63,7 +63,8 @@ GType gsignond_identity_get_type (void) G_GNUC_CONST;
 
 GSignondIdentity * gsignond_identity_new (GSignondAuthServiceIface *owner,
                                           GSignondIdentityInfo *info,
-                                          const gchar *app_context);
+                                          const gchar *app_context,
+                                          gint timeout);
 
 guint32 gsignond_identity_get_id (GSignondIdentity *identity);
 

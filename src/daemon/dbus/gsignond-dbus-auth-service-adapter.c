@@ -116,6 +116,8 @@ gsignond_dbus_auth_service_adapter_dispose (GObject *object)
         g_object_unref (self->priv->connection);
         self->priv->connection = NULL;
     }
+
+    G_OBJECT_CLASS (gsignond_dbus_auth_service_adapter_parent_class)->dispose (object);
 }
 
 static void
@@ -201,12 +203,23 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
                                gpointer user_data)
 {
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
-    const gchar *object_path = gsignond_auth_service_iface_register_new_identity (self->priv->parent, app_context);
-
     GDBusConnection *connection = g_dbus_method_invocation_get_connection (invocation);
-    const gchar *sender =  g_dbus_method_invocation_get_sender (invocation);
+    const gchar *sender = g_dbus_method_invocation_get_sender (invocation); 
+    GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (self->priv->parent); 
+    GSignondSecurityContext sec_context = {0, 0};
+    const gchar *object_path = NULL;
 
-    g_bus_watch_name_on_connection (connection, 
+    gsignond_access_control_manager_security_context_of_peer(
+            acm,
+            &sec_context,
+            -1,
+            sender,
+            app_context);
+
+    object_path = gsignond_auth_service_iface_register_new_identity (self->priv->parent, &sec_context);
+
+    if (object_path) {
+        g_bus_watch_name_on_connection (connection, 
                                     sender, 
                                     G_BUS_NAME_WATCHER_FLAGS_NONE, 
                                     NULL, 
@@ -214,7 +227,6 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
                                     iface,
                                     NULL);
 
-    if (object_path) {
         gsignond_dbus_auth_service_complete_register_new_identity (iface, invocation, object_path);
     }
     else {
@@ -236,13 +248,22 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
                       const gchar *app_context,
                       gpointer user_data)
 {
-    const gchar *object_path = 0;
     GVariant *identity_data = 0;
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
     GDBusConnection *connection = g_dbus_method_invocation_get_connection (invocation);
     const gchar *sender =  g_dbus_method_invocation_get_sender (invocation);
+    GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (self->priv->parent); 
+    GSignondSecurityContext sec_context = {0, 0};
+    const gchar *object_path = NULL;
 
-    object_path = gsignond_auth_service_iface_get_identity (self->priv->parent, id, app_context, &identity_data);
+    gsignond_access_control_manager_security_context_of_peer(
+            acm,
+            &sec_context,
+            -1,
+            sender,
+            app_context);
+
+    object_path = gsignond_auth_service_iface_get_identity (self->priv->parent, id, &sec_context, &identity_data);
 
     if (object_path) {
         g_bus_watch_name_on_connection (connection, 
@@ -252,7 +273,6 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
                                     _on_connnection_lost, 
                                     iface,
                                     NULL);
-
 
         gsignond_dbus_auth_service_complete_get_identity (iface, invocation, object_path, identity_data);
         g_variant_unref (identity_data);

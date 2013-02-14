@@ -132,6 +132,8 @@ gsignond_dbus_identity_adapter_dispose (GObject *object)
 {
     GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (object);
 
+    gsignond_dbus_identity_emit_unregistered (GSIGNOND_DBUS_IDENTITY (object));
+
     if (self->priv->identity) {
         g_object_unref (self->priv->identity);
         self->priv->identity = NULL;
@@ -141,6 +143,8 @@ gsignond_dbus_identity_adapter_dispose (GObject *object)
         g_object_unref (self->priv->connection);
         self->priv->connection = NULL;
     }
+
+    G_OBJECT_CLASS (gsignond_dbus_identity_adapter_parent_class)->dispose (object);
 }
 
 static void
@@ -160,7 +164,6 @@ gsignond_dbus_identity_adapter_finalize (GObject *object)
         self->priv->app_context = NULL;
     }
 
-    gsignond_dbus_auth_session_emit_unregistered (GSIGNOND_DBUS_IDENTITY (object));
 
     G_OBJECT_CLASS (gsignond_dbus_identity_adapter_parent_class)->finalize (object);
 }

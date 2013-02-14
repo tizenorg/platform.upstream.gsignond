@@ -29,24 +29,24 @@ G_DEFINE_INTERFACE (GSignondAuthServiceIface, gsignond_auth_service_iface, G_TYP
 
 static const gchar * 
 _dummy_register_new_identity (GSignondAuthServiceIface *self,
-                              const gchar *app_context)
+                              const GSignondSecurityContext *ctx)
 {
     (void) self;
-    (void) app_context;
-    return 0;
+    (void) ctx;
+    return NULL;
 }
 
 static const gchar *
 _dummy_get_identity (GSignondAuthServiceIface *self, 
                      guint32 id,
-                     const gchar *app_context, 
+                     const GSignondSecurityContext *ctx, 
                      GVariant **identity_data)
 {
     (void) self;
     (void) id;
-    (void) app_context;
+    (void) ctx;
     (void) identity_data;
-    return FALSE;
+    return NULL;
 }
 
 static gchar **
@@ -106,7 +106,7 @@ gsignond_auth_service_iface_default_init (
 /**
  * gsignond_auth_service_iface_register_new_identity:
  * @self: instance of #GSignondAuthServiceIfacea
- * @app_context: application security context
+ * @ctx: security context
  *
  *
  * Returns: (transfer none) object path of newly created identity.
@@ -114,17 +114,17 @@ gsignond_auth_service_iface_default_init (
 const gchar *
 gsignond_auth_service_iface_register_new_identity (
                                                  GSignondAuthServiceIface *self,
-                                                 const gchar *app_context)
+                                                 const GSignondSecurityContext *ctx)
 {
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->
-        register_new_identity (self, app_context);
+        register_new_identity (self, ctx);
 }
 
 /**
  * gsignond_auth_service_iface_get_identity:
  * @self: instance of #GSignondAuthServiceIface
  * @id: id of the identity to lookup
- * @app_context: application security context
+ * @ctx: security context
  * @object_path:  return location for object path of the identity
  * @identity_data: return location for identity data
  *
@@ -135,11 +135,11 @@ gsignond_auth_service_iface_register_new_identity (
 const gchar *
 gsignond_auth_service_iface_get_identity (GSignondAuthServiceIface *self,
                                           guint32 id,
-                                          const gchar *app_context,
+                                          const GSignondSecurityContext *ctx,
                                           GVariant **identity_data)
 {
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE(self)->
-        get_identity (self, id, app_context, identity_data);
+        get_identity (self, id, ctx, identity_data);
 }
 
 /**
