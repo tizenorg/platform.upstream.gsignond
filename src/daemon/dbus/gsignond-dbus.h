@@ -31,7 +31,7 @@
  */
 #define GSIGNOND_SERVICE_PREFIX          "com.google.code.AccountsSSO.gSingleSignOn"
 #define GSIGNOND_SERVICE                 GSIGNOND_SERVICE_PREFIX
-#define GSIGNOND_DAEMON_OBJECTPATH       "/com/google/code/AccountsSSO/SingleSignOn"
+#define GSIGNOND_DAEMON_OBJECTPATH       "/com/google/code/AccountsSSO/gSingleSignOn"
 #define GSIGNOND_DAEMON_INTERFACE        GSIGNOND_SERVICE_PREFIX ".AuthService"
 #define GSIGNOND_IDENTITY_INTERFACE      GSIGNOND_SERVICE_PREFIX ".Identity"
 #define GSIGNOND_AUTH_SESSION_INTERFACE  GSIGNOND_SERVICE_PREFIX ".AuthSession"

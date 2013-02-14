@@ -11,13 +11,13 @@ DBUS_BUILT_SOURCES = \
     $(NULL)
 
 DBUS_BUILT_DOCS = \
-    gsignond-dbus-auth-service-doc-gen-com.google.code.AccountsSSO.SingleSignOn.AuthService.xml \
-    gsignond-dbus-auth-session-doc-gen-com.google.code.AccountsSSO.SingleSignOn.AuthSession.xml \
-    gsignond-dbus-identity-doc-gen-com.google.code.AccountsSSO.SingleSignOn.Identity.xml \
+    gsignond-dbus-auth-service-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
+    gsignond-dbus-auth-session-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
+    gsignond-dbus-identity-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.Identity.xml \
     $(NULL)
 
-DBUS_INTERFACE_PREFIX="com.google.code.AccountsSSO.SingleSignOn."
-gsignond-dbus-auth-service-gen.c gsignond-dbus-auth-service-gen.h : $(INTERFACES_DIR)/com.google.code.AccountsSSO.SingleSignOn.AuthService.xml
+DBUS_INTERFACE_PREFIX="com.google.code.AccountsSSO.gSingleSignOn."
+gsignond-dbus-auth-service-gen.c gsignond-dbus-auth-service-gen.h : $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml
 	gdbus-codegen                                       \
        --interface-prefix $(DBUS_INTERFACE_PREFIX)      \
        --c-namespace GSignondDbus                       \
@@ -25,7 +25,7 @@ gsignond-dbus-auth-service-gen.c gsignond-dbus-auth-service-gen.h : $(INTERFACES
        --generate-docbook gsignond-dbus-auth-service-doc-gen \
        $<
 
-gsignond-dbus-auth-session-gen.c gsignond-dbus-auth-session-gen.h : $(INTERFACES_DIR)/com.google.code.AccountsSSO.SingleSignOn.AuthSession.xml
+gsignond-dbus-auth-session-gen.c gsignond-dbus-auth-session-gen.h : $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml
 	gdbus-codegen                                       \
        --interface-prefix $(DBUS_INTERFACE_PREFIX)      \
        --c-namespace GSignondDbus                           \
@@ -33,7 +33,7 @@ gsignond-dbus-auth-session-gen.c gsignond-dbus-auth-session-gen.h : $(INTERFACES
        --generate-docbook gsignond-dbus-auth-session-doc-gen \
        $<
 
-gsignond-dbus-identity-gen.c gsignond-dbus-identity-gen.h : $(INTERFACES_DIR)/com.google.code.AccountsSSO.SingleSignOn.Identity.xml
+gsignond-dbus-identity-gen.c gsignond-dbus-identity-gen.h : $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.Identity.xml
 	gdbus-codegen                                       \
        --interface-prefix $(DBUS_INTERFACE_PREFIX)      \
        --c-namespace GSignondDbus                           \
@@ -80,13 +80,13 @@ libgsignond_dbus_la_SOURCES = \
    $(NULL)
 
 dbusservicedir = $(DBUS_SERVICES_DIR)
-dbusservice_DATA = $(SERVCIES_DIR)/com.google.code.AccountsSSO.SingleSignOn.service
+dbusservice_DATA = $(SERVCIES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.service
 
 dbusinterfacesdir = $(DBUS_INTERFACES_DIR)
 dbusinterfaces_DATA = \
-    $(INTERFACES_DIR)/com.google.code.AccountsSSO.SingleSignOn.AuthService.xml \
-    $(INTERFACES_DIR)/com.google.code.AccountsSSO.SingleSignOn.AuthSession.xml \
-    $(INTERFACES_DIR)/com.google.code.AccountsSSO.SingleSignOn.Identity.xml 
+    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
+    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
+    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.Identity.xml 
 
 EXTRA_DIST = dbusservice
 
