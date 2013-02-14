@@ -28,6 +28,7 @@ PKG_CHECK_MODULES([GSIGNOND],
 AC_SUBST(GSIGNOND_CFLAGS)
 AC_SUBST(GSIGNOND_LIBS)
 
+
 # AM_PATH_CHECK() is deprecated, but check documentation fails to tell that :-/
 PKG_CHECK_MODULES([CHECK], [check >= 0.9.4], [have_check=yes], [have_check=no])
 AC_SUBST(CHECK_CFLAGS)
@@ -47,6 +48,7 @@ AC_SUBST(DBUS_INTERFACES_DIR)
 AC_CHECK_HEADERS([string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall"
 
 # Checks for library functions.
 
