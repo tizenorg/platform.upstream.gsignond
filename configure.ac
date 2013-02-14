@@ -36,6 +36,9 @@ AC_SUBST(CHECK_LIBS)
 
 PKG_CHECK_MODULES(GTestDBus, glib-2.0 >= 2.34, [gtestdbus=yes], [gtestdbus=no])
 AM_CONDITIONAL(HAVE_GTESTDBUS, [test x$gtestdbus = xyes])
+if test "x$gtestdbus" = xyes; then
+    AC_DEFINE(HAVE_GTESTDBUS, [1], [Define if GTestDBus exists.])
+fi
 
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
