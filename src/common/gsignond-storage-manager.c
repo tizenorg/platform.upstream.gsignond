@@ -25,6 +25,8 @@
 
 #include <sys/stat.h>
 
+#include <glib/gstdio.h>
+
 #include "gsignond/gsignond-storage-manager.h"
 
 #define GSIGNOND_STORAGE_MANAGER_GET_PRIVATE(obj) \
@@ -53,9 +55,9 @@ _set_config (GSignondStorageManager *self, GSignondConfig *config)
     g_assert (self->config == NULL);
     self->config = config;
 
-    self->location = gsignond_config_get_string (
-                                            self->config,
-                                            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+    self->location = g_strdup (gsignond_config_get_string (
+                                           self->config,
+                                           GSIGNOND_CONFIG_GENERAL_SECURE_DIR));
     if (!self->location)
         self->location = g_build_filename (g_get_user_data_dir (),
                                            "gsignond", NULL);
