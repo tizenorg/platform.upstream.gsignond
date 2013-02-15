@@ -266,7 +266,7 @@ gsignond_plugin_proxy_new(GSignondConfig *config, const gchar* plugin_type)
                                               NULL);
     if (proxy->plugin != NULL) {
         gchar *type;
-        g_object_get(proxy->plugin, "type", &type);
+        g_object_get(proxy->plugin, "type", &type, NULL);
         if (g_strcmp0(type, plugin_type) == 0) {
             g_free(type);
             return proxy;
@@ -277,7 +277,7 @@ gsignond_plugin_proxy_new(GSignondConfig *config, const gchar* plugin_type)
     return NULL;
 }
 
-static 
+static void
 gsignond_plugin_proxy_process_queue(GSignondPluginProxy *self)
 {
     GSignondProcessData* next_data = g_queue_pop_head(self->session_queue);

@@ -54,6 +54,8 @@ gsignond_plugin_proxy_factory_constructor (GType                  gtype,
   
   /* update the object state depending on constructor properties */
   GSignondPluginProxyFactory* self = GSIGNOND_PLUGIN_PROXY_FACTORY(obj);
+  
+  (void) self;
 
   return obj;
 }

@@ -162,6 +162,7 @@ gsignond_password_plugin_get_property (GObject    *object,
                                        GParamSpec *pspec)
 {
     GSignondPasswordPlugin *password_plugin = GSIGNOND_PASSWORD_PLUGIN (object);
+    (void) password_plugin;
     gchar *mechanisms[] = { "password", NULL };
     
     switch (prop_id)
