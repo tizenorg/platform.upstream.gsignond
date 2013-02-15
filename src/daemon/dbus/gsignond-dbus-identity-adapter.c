@@ -326,7 +326,7 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
 
     gsignond_dbus_identity_complete_verify_user (iface, invocation, res);
 
-    return;
+    return TRUE;
 }
 
 static gboolean
@@ -344,7 +344,7 @@ _handle_verify_secret (GSignondDbusIdentityAdapter *self,
 
     gsignond_dbus_identity_complete_verify_secret (iface, invocation, res);
 
-    return;
+    return TRUE;
 }
 
 static gboolean 
@@ -395,7 +395,7 @@ _handle_store (GSignondDbusIdentityAdapter *self,
 
     gsignond_dbus_identity_complete_store (iface, invocation, id);
 
-    return;
+    return TRUE;
 }
 
 static gboolean

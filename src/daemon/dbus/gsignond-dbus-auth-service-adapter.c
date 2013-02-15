@@ -275,7 +275,6 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
                                     NULL);
 
         gsignond_dbus_auth_service_complete_get_identity (iface, invocation, object_path, identity_data);
-        g_variant_unref (identity_data);
     }
     else {
         /*

@@ -182,7 +182,6 @@ _finalize (GObject *object)
 static void
 gsignond_identity_init (GSignondIdentity *self)
 {
-    GError *err = NULL;
     self->priv = GSIGNOND_IDENTITY_PRIV(self);
 
     self->priv->identity_adapter =
@@ -272,7 +271,6 @@ static gboolean
 _request_credentials_update (GSignondIdentityIface *iface, const gchar *message, const GSignondSecurityContext *ctx) 
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
-    guint32 id = 0;
 
     if (!identity || !identity->priv->info) {
         /*
@@ -367,8 +365,8 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
     GSignondAuthSession *session = NULL;
     const gchar *object_path = NULL;
 
-    g_value_return_if_fail (iface, NULL);
-    g_value_return_if_fail (method, NULL);
+    g_return_val_if_fail (iface, NULL);
+    g_return_val_if_fail (method, NULL);
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
 
     session = gsignond_auth_session_new (gsignond_identity_info_get_id(
@@ -383,6 +381,8 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
                          (gpointer)object_path, 
                          (gpointer)session);
 
+    g_object_weak_ref (G_OBJECT (session), _on_session_close, identity);
+
     return object_path;
 }
 
@@ -390,7 +390,6 @@ static gboolean
 _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSignondSecurityContext *ctx)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
-    guint32 id = 0;
     const gchar *passwd = 0;
 
     if (!identity || !identity->priv->info) {
@@ -582,6 +581,7 @@ gsignond_identity_iface_init (gpointer g_iface, gpointer iface_data)
 
     identity_iface->request_credentials_update = _request_credentials_update;
     identity_iface->get_info = _get_info;
+    identity_iface->get_auth_session = _get_auth_session;
     identity_iface->verify_user = _verify_user;
     identity_iface->verify_secret = _verify_secret;
     identity_iface->remove = _remove;

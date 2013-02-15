@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <glib/gstdio.h>
 
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-config-general.h"
@@ -308,6 +309,8 @@ gsignond_config_load_environment (GSignondConfig *config)
                              (gpointer) e_val);
         /* cam_config_set_storage_path (e_val); */
     }
+
+    return TRUE;
 }
 
 GSignondConfig *

@@ -23,9 +23,6 @@
  * 02110-1301 USA
  */
 
-#include <sys/socket.h>
-#include <gio/gio.h>
-
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-extension-interface.h"
@@ -36,17 +33,8 @@
 #include "gsignond-auth-service-iface.h"
 #include "gsignond-daemon.h"
 
-enum 
-{
-    PROP_0,
-    N_PROPERTIES
-};
-
-static GParamSpec *properties[N_PROPERTIES];
-
 struct _GSignondDaemonPrivate
 {
-    GIOChannel          *sig_channel;
     GSignondConfig      *config;
     GHashTable          *identities;
     GModule             *extension_module;
@@ -69,65 +57,7 @@ G_DEFINE_TYPE_EXTENDED (GSignondDaemon, gsignond_daemon, G_TYPE_OBJECT, 0,
 
 #define GSIGNOND_DAEMON_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DAEMON, GSignondDaemonPrivate)
 
-static sig_fd[2];
 static GObject *self = 0;
-
-
-static gboolean 
-_handle_unix_signal (GIOChannel *channel,
-                     GIOCondition condition,
-                     gpointer data)
-{
-    GSignondDaemon *self = GSIGNOND_DAEMON (data);
-
-    int signal;
-    int ret = read (sig_fd[1], &signal, sizeof(signal));
-
-    switch (signal) {
-        case SIGHUP: {
-            DBG ("Received SIGHUP");
-            //TODO: restart daemon
-            break;
-        }
-        case SIGTERM: {
-            DBG ("Received SIGTERM");
-            //TODO: stop daemon
-            break;
-        }
-        case SIGINT:  {
-            DBG ("Received SIGINT");
-            //TODO: stop daemon
-            break;
-        }
-        default: break;
-    }
-
-    return TRUE;
-}
-
-static void
-_setup_signal_handlers (GSignondDaemon *self)
-{
-    g_return_if_fail (self);
-
-    if (socketpair (AF_UNIX, SOCK_STREAM, 0, sig_fd) != 0) {
-        ERR( "Couldn't create HUP socketpair");
-        return;
-    }
-
-    self->priv->sig_channel = g_io_channel_unix_new (sig_fd[0]);
-    g_io_add_watch (self->priv->sig_channel, 
-                    G_IO_IN, 
-                    _handle_unix_signal, 
-                    self);
-
-}
-
-static void 
-_signal_handler (int signal)
-{
-    write(sig_fd[0], &signal, sizeof(signal));
-}
 
 static GObject*
 _constructor (GType type,
@@ -170,11 +100,6 @@ _dispose (GObject *object)
 {
     GSignondDaemon *self = GSIGNOND_DAEMON(object);
 
-    if (self->priv->sig_channel) {
-        g_io_channel_unref (self->priv->sig_channel);
-        self->priv->sig_channel = NULL;
-    }
-
     if (self->priv->plugin_proxy_factory) {
         g_object_unref (self->priv->plugin_proxy_factory);
         self->priv->plugin_proxy_factory = NULL;
@@ -215,9 +140,6 @@ static void
 _finalize (GObject *object)
 {
     GSignondDaemon *self = GSIGNOND_DAEMON(object);
-
-    close(sig_fd[0]);
-    close(sig_fd[1]);
 
     if (self->priv->identities) {
         g_hash_table_unref (self->priv->identities);
@@ -275,7 +197,6 @@ _init_extensions (GSignondDaemon *self)
 {
     gboolean res = TRUE;
     gboolean symfound;
-    GError *err = 0;
     const gchar *ext_path;
     const gchar *ext_name;
     gchar *mod_filename;
@@ -323,7 +244,6 @@ static gboolean
 _init_storage (GSignondDaemon *self)
 {
     const gchar *storage_location;
-    GHashTable *config_table;
 
     DBG("Initializing storage");
 
@@ -359,10 +279,7 @@ _open_database (GSignondDaemon *self)
 static void
 gsignond_daemon_init (GSignondDaemon *self)
 {
-    GError *err = NULL;
     self->priv = GSIGNOND_DAEMON_PRIV(self);
-
-    _setup_signal_handlers (self);
 
     self->priv->config = gsignond_config_new ();
     self->priv->identities = g_hash_table_new_full (g_str_hash, 
@@ -397,10 +314,6 @@ gsignond_daemon_class_init (GSignondDaemonClass *klass)
     object_class->set_property = _set_property;
     object_class->dispose = _dispose;
     object_class->finalize = _finalize;
-
-    //g_object_class_install_properties (object_class,
-    //                                   N_PROPERTIES,
-    //                                   properties);
 }
 
 static void
@@ -634,17 +547,17 @@ gsignond_daemon_get_config (GSignondDaemon *self)
 GSignondAccessControlManager *
 gsignond_get_access_control_manager ()
 {
-    gsignond_daemon_get_access_control_manager(GSIGNOND_DAEMON(self));
+    return gsignond_daemon_get_access_control_manager(GSIGNOND_DAEMON(self));
 }
 
 GSignondPluginProxyFactory *
 gsignond_get_plugin_proxy_factory ()
 {
-    gsignond_daemon_get_plugin_proxy_factory(GSIGNOND_DAEMON(self));
+    return gsignond_daemon_get_plugin_proxy_factory(GSIGNOND_DAEMON(self));
 }
 
 GSignondConfig *
 gsignond_get_config ()
 {
-    gsignond_daemon_get_config(GSIGNOND_DAEMON(self));
+    return gsignond_daemon_get_config(GSIGNOND_DAEMON(self));
 }

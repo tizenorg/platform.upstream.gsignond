@@ -113,8 +113,6 @@ gsignond_dbus_auth_session_adapter_dispose (GObject *object)
 static void
 gsignond_dbus_auth_session_adapter_finalize (GObject *object)
 {
-    GSignondDbusAuthSessionAdapter *self = GSIGNOND_DBUS_AUTH_SESSION_ADAPTER (object);
-
     g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
 
     G_OBJECT_CLASS (gsignond_dbus_auth_session_adapter_parent_class)->finalize (object);

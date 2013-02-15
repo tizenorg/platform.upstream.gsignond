@@ -23,7 +23,10 @@
  * 02110-1301 USA
  */
 
+#include <errno.h>
 #include <signal.h>
+#include <string.h>
+#include <sys/socket.h>
 #include <glib.h>
 #include <gio/gio.h>
 
@@ -31,16 +34,86 @@
 #include "daemon/gsignond-daemon.h"
 #include "daemon/dbus/gsignond-dbus.h"
 
-GSignondDaemon *_daemon;
+static GSignondDaemon *_daemon;
+static GIOChannel     *_sig_channel;
+static int             _sig_fd[2];
 
-static void _signal_handler (int sig)
+static gboolean 
+_handle_unix_signal (GIOChannel *channel,
+                     GIOCondition condition,
+                     gpointer data)
 {
-    (void) sig;
+    int signal = 0;
+    int ret = read (_sig_fd[1], &signal, sizeof(signal));
+
+    if (ret == -1) {
+        ERR ("failed to read signal value: %s", strerror(errno));
+        return FALSE;
+    }
+
+    switch (signal) {
+        case SIGHUP: {
+            DBG ("Received SIGHUP");
+            //TODO: restart daemon
+            break;
+        }
+        case SIGTERM: {
+            DBG ("Received SIGTERM");
+            //TODO: stop daemon
+            break;
+        }
+        case SIGINT:  {
+            DBG ("Received SIGINT");
+            //TODO: stop daemon
+            break;
+        }
+        default: break;
+    }
+
+    return TRUE;
 }
 
-static void _install_sighandlers()
+static void
+_setup_signal_handlers ()
+{
+    if (socketpair (AF_UNIX, SOCK_STREAM, 0, _sig_fd) != 0) {
+        ERR( "Couldn't create HUP socketpair");
+        return;
+    }
+
+    _sig_channel = g_io_channel_unix_new (_sig_fd[0]);
+    g_io_add_watch (_sig_channel, 
+                    G_IO_IN, 
+                    _handle_unix_signal,
+                    NULL);
+}
+
+static void
+_unset_signal_handlers ()
+{
+    if (_sig_channel) {
+        g_io_channel_unref (_sig_channel);
+        _sig_channel = 0;
+    }
+
+    close (_sig_fd[0]);
+    close (_sig_fd[1]);
+}
+
+static void 
+_signal_handler (int signal)
+{
+    int ret = write (_sig_fd[0], &signal, sizeof(signal));
+
+    (void) ret;
+}
+
+static void 
+_install_sighandlers ()
 {
     struct sigaction act;
+
+    _setup_signal_handlers();
 
     act.sa_handler = _signal_handler;
     sigemptyset (&act.sa_mask);
@@ -79,14 +152,11 @@ _on_name_acquired (GDBusConnection *connection,
     INFO ("Acquired the name %s on the session message bus", name);
 }
 
-
 int main (int argc, char **argv)
 {
     GError *error = NULL;
     GOptionContext *opt_context = NULL;
-    gint ret = 0;
     guint name_owner_id = 0;
-    guint sigint_id =  0;
     GOptionEntry opt_entries[] = {
         {NULL }
     };
@@ -102,7 +172,7 @@ int main (int argc, char **argv)
         return -1;
     }
 
-    //_install_sighandlers();
+    _install_sighandlers();
 
     loop = g_main_loop_new (NULL, FALSE);
 
@@ -118,6 +188,9 @@ int main (int argc, char **argv)
     INFO ("Entering main event loop");
 
     g_main_loop_run (loop);
+
+    _unset_signal_handlers ();
+    g_bus_unown_name (name_owner_id);
 
     if (_daemon) g_object_unref (_daemon);
 

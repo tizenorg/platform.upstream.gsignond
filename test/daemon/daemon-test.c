@@ -95,7 +95,6 @@ gboolean validate_identity_info (GVariant *identity_info)
 
 START_TEST (test_register_new_identity)
 {
-    GVariant *reply = 0;
     GError *error = 0;
     gboolean res;
     GSignondDbusAuthService *auth_service = 0;
@@ -127,7 +126,6 @@ END_TEST
 
 START_TEST (test_register_new_identity_with_no_app_context)
 {
-    GVariant *reply = 0;
     GError *error = 0;
     gboolean res;
     GSignondDbusAuthService *auth_service = 0;
@@ -144,7 +142,7 @@ START_TEST (test_register_new_identity_with_no_app_context)
 
     res = gsignond_dbus_auth_service_call_register_new_identity_sync (
         auth_service,
-        NULL,
+        "",
         &identity_path,
         NULL,
         &error);
@@ -162,7 +160,7 @@ START_TEST (test_identity_store)
     GError *error = NULL; gboolean res = FALSE;
     GSignondDbusAuthService *auth_service = 0;
     GSignondDbusIdentity *identity = 0;
-    gint id;
+    guint id;
     GVariant *identity_info = NULL;
     gchar *identity_path = NULL;
     GVariantBuilder builder, method_builder, mechansisms_builder;
@@ -179,7 +177,7 @@ START_TEST (test_identity_store)
  
     res = gsignond_dbus_auth_service_call_register_new_identity_sync (
         auth_service,
-        NULL,
+        "",
         &identity_path,
         NULL,
         &error);
@@ -231,12 +229,9 @@ START_TEST(test_identity_get_identity)
 {
     GError *error = NULL; gboolean res = FALSE;
     GSignondDbusAuthService *auth_service = 0;
-    GSignondDbusIdentity *identity = 0;
     gint id = 1 ; /* identity id created in test_identity_store */
     GVariant *identity_info = NULL;
     gchar *identity_path = 0;
-    GVariantBuilder builder, method_builder, mechansisms_builder;
-    int i;
 
     auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
         G_BUS_TYPE_SESSION,
