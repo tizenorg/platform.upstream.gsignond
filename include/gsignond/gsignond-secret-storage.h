@@ -233,6 +233,10 @@ gsignond_secret_storage_remove_data (
         const guint32 id,
         const guint32 method);
 
+void
+gsignond_secret_storage_set_last_error (GSignondSecretStorage *self,
+                                        GError *error);
+
 const GError*
 gsignond_secret_storage_get_last_error (GSignondSecretStorage *self);
 

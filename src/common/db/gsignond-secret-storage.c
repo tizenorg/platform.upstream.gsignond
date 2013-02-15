@@ -44,11 +44,6 @@ struct _GSignondSecretStoragePrivate
 G_DEFINE_TYPE (GSignondSecretStorage, gsignond_secret_storage,
         G_TYPE_OBJECT);
 
-static void
-gsignond_secret_storage_set_last_error (
-        GSignondSecretStorage *self,
-        GError* error);
-
 enum
 {
     PROP_0,
@@ -168,7 +163,6 @@ gsignond_secret_storage_init (GSignondSecretStorage *self)
 gboolean
 gsignond_secret_storage_open_db (GSignondSecretStorage *self)
 {
-    GHashTable *config_table = NULL;
     const gchar *dir = NULL;
     const gchar *filename = NULL;
     gchar *db_filename = NULL;

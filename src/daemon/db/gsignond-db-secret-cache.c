@@ -95,8 +95,6 @@ _gsignond_db_secret_cache_dispose (
 static void
 _gsignond_db_secret_cache_finalize (GObject *gobject)
 {
-    GSignondDbSecretCache *self = GSIGNOND_DB_SECRET_CACHE (gobject);
-
     /* Chain up to the parent class */
     G_OBJECT_CLASS (gsignond_db_secret_cache_parent_class)->finalize (
             gobject);
@@ -265,7 +263,6 @@ gsignond_db_secret_cache_update_data (
         GHashTable *data)
 {
     AuthCache *value = NULL;
-    GHashTable *blob = NULL;
     guint32 *methodid = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_CACHE (self), FALSE);

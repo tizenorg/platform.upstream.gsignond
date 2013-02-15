@@ -56,6 +56,13 @@ _gsignond_db_sql_database_finalize_db (GSignondDbSqlDatabase *self)
 }
 
 gboolean
+_gsignond_db_sql_database_is_open (GSignondDbSqlDatabase *self)
+{
+    g_return_val_if_fail (GSIGNOND_DB_IS_SQL_DATABASE (self), FALSE);
+    return self->priv->db != NULL;
+}
+
+gboolean
 _gsignond_db_sql_database_open (
         GSignondDbSqlDatabase *self,
         const gchar *filename,
@@ -103,13 +110,6 @@ _gsignond_db_sql_database_close (GSignondDbSqlDatabase *self)
     self->priv->db = NULL;
 
     return TRUE;
-}
-
-gboolean
-_gsignond_db_sql_database_is_open (GSignondDbSqlDatabase *self)
-{
-    g_return_val_if_fail (GSIGNOND_DB_IS_SQL_DATABASE (self), FALSE);
-    return self->priv->db != NULL;
 }
 
 static int
@@ -408,7 +408,6 @@ gsignond_db_sql_database_query_exec (
         GSignondDbSqlDatabaseQueryCallback callback,
         gpointer userdata)
 {
-    int ret;
     sqlite3_stmt *sql_stmt;
     gint rows = 0;
 

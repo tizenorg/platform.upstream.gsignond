@@ -325,8 +325,6 @@ _gsignond_db_metadata_database_insert_methods (
         GSignondIdentityInfo *identity,
         GHashTable *methods)
 {
-    gchar *query = NULL;
-    gboolean ret = FALSE;
     GSequenceIter *mech_iter = NULL;
     GHashTableIter method_iter;
     const gchar *method = NULL;
@@ -376,8 +374,6 @@ _gsignond_db_metadata_database_update_acl (
         GSignondIdentityInfo *identity,
         GSignondSecurityContextList *acl)
 {
-    gchar *query = NULL;
-    gboolean ret = FALSE;
     GSignondSecurityContextList *list = NULL;
     GSignondSecurityContext *ctx = NULL;
 
@@ -405,8 +401,6 @@ _gsignond_db_metadata_database_update_owners (
         GSignondIdentityInfo *identity,
         GSignondSecurityContextList *owners)
 {
-    gchar *query = NULL;
-    gboolean ret = FALSE;
     GSignondSecurityContextList *list = NULL;
     GSignondSecurityContext *ctx = NULL;
 
@@ -614,7 +608,7 @@ _gsignond_db_metadata_database_create (
 
             /*
              * triggers generated with
-             * http:/*www.rcs-comp.com/site/index.php/view/Utilities-
+             * http://www.rcs-comp.com/site/index.php/view/Utilities-
              * SQLite_foreign_key_trigger_generator
              */
             /* insert triggers to force foreign keys support */
@@ -948,8 +942,7 @@ gsignond_db_metadata_database_get_method_id (
         const gchar *method)
 {
     gchar *query = NULL;
-    gboolean ret = FALSE;
-    guint32 method_id = 0;
+    gint method_id = 0;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (method != NULL, FALSE);
@@ -958,13 +951,13 @@ gsignond_db_metadata_database_get_method_id (
     query = sqlite3_mprintf ("SELECT id FROM METHODS "
                              "WHERE method = %Q;",
                              method);
-    ret = gsignond_db_sql_database_query_exec_int (
+    gsignond_db_sql_database_query_exec_int (
                 GSIGNOND_DB_SQL_DATABASE (self),
                 query,
                 &method_id);
     sqlite3_free (query);
 
-    return method_id;
+    return (guint32) method_id;
 }
 
 /**
@@ -1032,7 +1025,6 @@ gsignond_db_metadata_database_update_identity (
     GSignondDbSqlDatabase *sql = NULL;
     guint32 id = 0;
     guint32 ret = 0;
-    gchar * query = NULL;
     GHashTable *methods = NULL;
     GSequence *realms = NULL;
     GSignondSecurityContextList *acl = NULL, *owners = NULL, *list = NULL;
@@ -1221,7 +1213,7 @@ gsignond_db_metadata_database_get_identity (
 {
     GSignondIdentityInfo *identity = NULL;
     gchar *query = NULL;
-    gint rows = 0, i;
+    gint rows = 0;
     GSequence *realms = NULL, *mechanisms = NULL;
     GHashTable *methods = NULL, *tuples = NULL;
     GHashTableIter iter;
@@ -1325,7 +1317,7 @@ gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
     GSignondIdentityInfoList *identities = NULL;
     gchar *query = NULL;
     GArray *ids = NULL;
-    gint rows = 0, i;
+    gint i;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);

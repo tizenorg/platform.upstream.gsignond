@@ -47,7 +47,7 @@ G_DEFINE_TYPE (GSignondConfig, gsignond_config, G_TYPE_OBJECT);
 
 
 static gboolean gsignond_config_load (GSignondConfig *config);
-static gboolean gsignond_config_load_environment (GSignondConfig *config);
+static void gsignond_config_load_environment (GSignondConfig *config);
 
 gint
 gsignond_config_get_integer (GSignondConfig *config, const gchar *key)
@@ -252,7 +252,7 @@ gsignond_config_load (GSignondConfig *self)
     return TRUE;
 }
 
-static gboolean
+static void
 gsignond_config_load_environment (GSignondConfig *config)
 {
     const char *e_val = 0;

@@ -94,8 +94,6 @@ _gsignond_db_read_key_value (
 static void
 _gsignond_db_secret_database_finalize (GObject *gobject)
 {
-    GSignondDbSecretDatabase *self = GSIGNOND_DB_SECRET_DATABASE (gobject);
-
     /* Chain up to the parent class */
     G_OBJECT_CLASS (gsignond_db_secret_database_parent_class)->finalize (
             gobject);
