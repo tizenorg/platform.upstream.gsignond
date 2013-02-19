@@ -36,7 +36,7 @@
 struct _GSignondDaemonPrivate
 {
     GSignondConfig      *config;
-    GHashTable          *identities;
+    GList               *identities;
     GModule             *extension_module;
     GSignondExtension   *extension;
     GSignondStorageManager *storage_manager;
@@ -50,7 +50,7 @@ struct _GSignondDaemonPrivate
 static void gsignond_daemon_auth_service_iface_init (gpointer g_iface,
                                                      gpointer iface_data);
 
-G_DEFINE_TYPE_EXTENDED (GSignondDaemon, gsignond_daemon, G_TYPE_OBJECT, 0,
+G_DEFINE_TYPE_EXTENDED (GSignondDaemon, gsignond_daemon, GSIGNOND_TYPE_DISPOSABLE, 0,
                         G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_AUTH_SERVICE_IFACE, 
                                                gsignond_daemon_auth_service_iface_init));
 
@@ -95,6 +95,15 @@ _set_property (GObject *object, guint property_id, const GValue *value,
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 }
 
+void
+_free_identity (gpointer data, gpointer user_data)
+{
+    (void) user_data;
+    GObject *identity = G_OBJECT (data);
+
+    g_object_unref (identity);
+}
+
 static void
 _dispose (GObject *object)
 {
@@ -133,6 +142,10 @@ _dispose (GObject *object)
         self->priv->extension_module = NULL;
     }
 
+    if (self->priv->identities) {
+        g_list_foreach (self->priv->identities, _free_identity, NULL);
+    }
+
     G_OBJECT_CLASS (gsignond_daemon_parent_class)->dispose (object);
 }
 
@@ -142,7 +155,7 @@ _finalize (GObject *object)
     GSignondDaemon *self = GSIGNOND_DAEMON(object);
 
     if (self->priv->identities) {
-        g_hash_table_unref (self->priv->identities);
+        g_list_free (self->priv->identities);
         self->priv->identities = NULL;
     }
 
@@ -282,10 +295,7 @@ gsignond_daemon_init (GSignondDaemon *self)
     self->priv = GSIGNOND_DAEMON_PRIV(self);
 
     self->priv->config = gsignond_config_new ();
-    self->priv->identities = g_hash_table_new_full (g_str_hash, 
-                                                    g_str_equal, 
-                                                    NULL, 
-                                                    g_object_unref);
+    self->priv->identities = NULL;
     self->priv->plugin_proxy_factory = gsignond_plugin_proxy_factory_new(
         self->priv->config);
     
@@ -324,19 +334,33 @@ _on_remove_identity (GSignondIdentity *identity, gpointer data)
     if (gsignond_db_credentials_database_remove_identity (daemon->priv->db, 
           gsignond_identity_get_id (identity)) == TRUE) {
 
-        g_hash_table_remove (daemon->priv->identities, 
-                             gsignond_identity_get_object_path (identity));
+        g_object_unref (G_OBJECT (identity));
+    }
+}
+
+static void
+_on_identity_disposed (gpointer data, GObject *object)
+{
+    GSignondDaemon *daemon = GSIGNOND_DAEMON (data);
+
+    daemon->priv->identities = g_list_remove (daemon->priv->identities, object);
+
+    if (g_list_length (daemon->priv->identities) == 0) {
+        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (daemon));
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (daemon), TRUE);
     }
 }
 
 static void
 _catch_identity (GSignondDaemon *daemon, GSignondIdentity *identity)
 {
-    const char *object_path = gsignond_identity_get_object_path (identity);
+    daemon->priv->identities = g_list_append (daemon->priv->identities, 
+                                              (gpointer) identity);
 
-    g_hash_table_insert (daemon->priv->identities, 
-                         (gpointer) object_path,
-                         (gpointer) identity);
+    g_object_weak_ref (G_OBJECT (identity), _on_identity_disposed, daemon); 
+
+    /* keep alive till this identity object gets disposed */
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
 
     g_signal_connect_swapped (identity, "store", 
         G_CALLBACK (gsignond_db_credentials_database_update_identity), daemon->priv->db);
@@ -371,6 +395,8 @@ _register_new_identity (GSignondAuthServiceIface *self,
     }
 
     _catch_identity (daemon, identity);
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
 
     return gsignond_identity_get_object_path (identity);
 }
@@ -421,6 +447,8 @@ _get_identity (GSignondAuthServiceIface *iface,
 
     _catch_identity (self, identity);
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+
     return gsignond_identity_get_object_path (identity);
 
 #undef VALIDATE_IDENTITY_READ_ACCESS
@@ -436,6 +464,8 @@ _query_methods (GSignondAuthServiceIface *self)
      */
     gchar **methods = g_strsplit ("test_method_1:test_method_2", ":" ,2);
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+
     return methods;
 }
 
@@ -444,6 +474,8 @@ _query_mechanisms (GSignondAuthServiceIface *self, const gchar *method)
 {
     (void)self;
     (void)method;
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
 
     return NULL;
 }
@@ -454,6 +486,8 @@ _query_identities (GSignondAuthServiceIface *self, const GVariant *filter)
     (void)self;
     (void)filter;
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+
     return NULL;
 }
 
@@ -461,6 +495,8 @@ static gboolean
 _clear (GSignondAuthServiceIface *self)
 {
     (void)self;
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
 
     return FALSE;
 }
@@ -500,7 +536,13 @@ gsignond_daemon_auth_service_iface_init (gpointer g_iface, gpointer iface_data)
 GSignondDaemon *
 gsignond_daemon_new ()
 {
-    return GSIGNOND_DAEMON(g_object_new (GSIGNOND_TYPE_DAEMON, NULL));
+    GSignondDaemon *self = GSIGNOND_DAEMON(g_object_new (GSIGNOND_TYPE_DAEMON, NULL));
+    guint timeout = gsignond_config_get_integer (self->priv->config, GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT);
+    if (timeout) {
+        gsignond_disposable_set_timeout (GSIGNOND_DISPOSABLE (self), timeout);
+    }
+
+    return self;
 }
 
 guint

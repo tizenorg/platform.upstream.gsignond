@@ -29,6 +29,7 @@
 #include <glib-object.h>
 
 #include <gsignond/gsignond-access-control-manager.h>
+#include "gsignond-disposable.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 
 G_BEGIN_DECLS
@@ -46,7 +47,7 @@ typedef struct _GSignondDaemonPrivate GSignondDaemonPrivate;
 
 struct _GSignondDaemon
 {
-    GObject parent;
+    GSignondDisposable parent;
 
     /* priv */
     GSignondDaemonPrivate *priv;
@@ -54,7 +55,7 @@ struct _GSignondDaemon
 
 struct _GSignondDaemonClass
 {
-    GObjectClass parent_class;
+    GSignondDisposableClass parent_class;
 };
 
 GType gsignond_daemon_get_type (void) G_GNUC_CONST;

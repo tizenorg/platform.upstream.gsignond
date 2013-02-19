@@ -89,9 +89,8 @@ gsignond_dbus_identity_adapter_set_property (GObject *object,
             if (iface) {
                 if (self->priv->identity) {
                     g_signal_handlers_disconnect_by_func (self->priv->identity, _emit_info_updated, self);
-                    g_object_unref (self->priv->identity);
                 }
-                self->priv->identity = GSIGNOND_IDENTITY_IFACE (g_object_ref (iface));
+                self->priv->identity = GSIGNOND_IDENTITY_IFACE (iface);
                 g_signal_connect (self->priv->identity, "info-updated", G_CALLBACK (_emit_info_updated), self);
             }
             break;
@@ -116,7 +115,7 @@ gsignond_dbus_identity_adapter_get_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            g_value_set_instance (value, g_object_ref (self->priv->identity));
+            g_value_set_instance (value, self->priv->identity);
             break;
         }
         case PROP_APP_CONTEXT:
@@ -133,11 +132,6 @@ gsignond_dbus_identity_adapter_dispose (GObject *object)
     GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (object);
 
     gsignond_dbus_identity_emit_unregistered (GSIGNOND_DBUS_IDENTITY (object));
-
-    if (self->priv->identity) {
-        g_object_unref (self->priv->identity);
-        self->priv->identity = NULL;
-    }
 
     if (self->priv->connection) {
         g_object_unref (self->priv->connection);
@@ -164,6 +158,9 @@ gsignond_dbus_identity_adapter_finalize (GObject *object)
         self->priv->app_context = NULL;
     }
 
+    if (self->priv->identity) {
+        self->priv->identity = NULL;
+    }
 
     G_OBJECT_CLASS (gsignond_dbus_identity_adapter_parent_class)->finalize (object);
 }

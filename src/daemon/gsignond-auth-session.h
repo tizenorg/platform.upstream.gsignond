@@ -29,6 +29,7 @@
 #include <glib-object.h>
 
 #include "gsignond-identity-iface.h"
+#include "gsignond-disposable.h"
 
 G_BEGIN_DECLS
 
@@ -54,7 +55,7 @@ typedef struct _GSignondAuthSessionPrivate GSignondAuthSessionPrivate;
 
 struct _GSignondAuthSession
 {
-    GObject parent;
+    GSignondDisposable parent;
 
     /* private */
     GSignondAuthSessionPrivate *priv;
@@ -62,7 +63,7 @@ struct _GSignondAuthSession
 
 struct _GSignondAuthSessionClass
 {
-    GObjectClass parent_class;
+    GSignondDisposableClass parent_class;
 };
 
 GType gsignond_auth_session_get_type (void);

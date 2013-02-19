@@ -74,8 +74,7 @@ gsignond_dbus_auth_service_adapter_set_property (GObject *object,
         case PROP_IMPL: {
             gpointer iface = g_value_peek_pointer (value);
             if (iface) {
-                if (self->priv->parent) g_object_unref (self->priv->parent);
-                self->priv->parent = GSIGNOND_AUTH_SERVICE_IFACE (g_object_ref (iface));
+                self->priv->parent = GSIGNOND_AUTH_SERVICE_IFACE (iface);
             }
             break;
         }
@@ -94,7 +93,7 @@ gsignond_dbus_auth_service_adapter_get_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            g_value_set_instance (value, g_object_ref (self->priv->parent));
+            g_value_set_instance (value, self->priv->parent);
             break;
         }
         default:
@@ -107,11 +106,6 @@ gsignond_dbus_auth_service_adapter_dispose (GObject *object)
 {
     GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (object);
 
-    if (self->priv->parent) {
-        g_object_unref (self->priv->parent);
-        self->priv->parent = NULL;
-    }
-
     if (self->priv->connection) {
         g_object_unref (self->priv->connection);
         self->priv->connection = NULL;
@@ -123,7 +117,13 @@ gsignond_dbus_auth_service_adapter_dispose (GObject *object)
 static void
 gsignond_dbus_auth_service_adapter_finalize (GObject *object)
 {
+    GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (object);
+
     g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
+
+    if (self->priv->parent) {
+        self->priv->parent = NULL;
+    }
 
     G_OBJECT_CLASS (gsignond_dbus_auth_service_adapter_parent_class)->finalize (object);
 }

@@ -61,13 +61,13 @@ struct _GSignondIdentityPrivate
     GSignondIdentityInfo *info;
     GSignondAuthServiceIface *owner;
     GSignondDbusIdentityAdapter *identity_adapter;
-    GHashTable *auth_sessions; /* "object_path":auth_session_object_path */
+    GList *auth_sessions;
 };
 
 static void
 gsignond_identity_iface_init (gpointer g_iface, gpointer iface_data);
 
-G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT, 0,
+G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, GSIGNOND_TYPE_DISPOSABLE, 0,
                         G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_IDENTITY_IFACE, 
                                                gsignond_identity_iface_init));
 
@@ -151,6 +151,14 @@ _set_property (GObject *object, guint property_id, const GValue *value,
 }
 
 static void
+_finalize_session (gpointer data, gpointer user_data)
+{
+    (void) user_data;
+
+    g_object_unref (G_OBJECT (data));
+}
+
+static void
 _dispose (GObject *object)
 {
     GSignondIdentity *self = GSIGNOND_IDENTITY(object);
@@ -169,13 +177,24 @@ _dispose (GObject *object)
         gsignond_identity_info_free (self->priv->info);
         self->priv->info = NULL;
     }
-   
+
+    if (self->priv->auth_sessions) {
+        g_list_foreach (self->priv->auth_sessions, _finalize_session, NULL);
+    }
+
     G_OBJECT_CLASS (gsignond_identity_parent_class)->dispose (object);
 }
 
 static void
 _finalize (GObject *object)
 {
+    GSignondIdentity *self = GSIGNOND_IDENTITY(object);
+
+    if (self->priv->auth_sessions) {
+        g_list_free (self->priv->auth_sessions);
+        self->priv->auth_sessions = NULL;
+    }
+
     G_OBJECT_CLASS (gsignond_identity_parent_class)->finalize (object);
 }
 
@@ -186,9 +205,7 @@ gsignond_identity_init (GSignondIdentity *self)
 
     self->priv->identity_adapter =
         gsignond_dbus_identity_adapter_new (GSIGNOND_IDENTITY_IFACE (self));
-    self->priv->auth_sessions = 
-        g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
-
+    self->priv->auth_sessions = NULL;
 }
 
 static void
@@ -301,6 +318,8 @@ _request_credentials_update (GSignondIdentityIface *iface, const gchar *message,
       * emit "identity-data-updated"
       */
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+
     return TRUE;
 }
 
@@ -343,6 +362,8 @@ _get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
         }
     }
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+
     return info;
 }
 
@@ -353,9 +374,12 @@ _on_session_close (gpointer data, GObject *session)
 
     g_object_weak_unref (session, _on_session_close, data);
 
-    g_hash_table_remove (identity->priv->auth_sessions, 
-                         (gpointer)gsignond_auth_session_get_object_path (
-                            GSIGNOND_AUTH_SESSION (session)));
+    identity->priv->auth_sessions = g_list_remove (identity->priv->auth_sessions, session);
+    
+    if (g_list_length (identity->priv->auth_sessions) == 0) {
+        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (identity), TRUE);
+    }
 }
 
 static const gchar *
@@ -377,11 +401,12 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
 
     object_path = gsignond_auth_session_get_object_path (session);
 
-    g_hash_table_insert (identity->priv->auth_sessions, 
-                         (gpointer)object_path, 
-                         (gpointer)session);
+    identity->priv->auth_sessions = g_list_append (identity->priv->auth_sessions, session);
 
     g_object_weak_ref (G_OBJECT (session), _on_session_close, identity);
+
+    /* Keep live till all active sessions closes */
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (identity), FALSE);
 
     return object_path;
 }
@@ -418,6 +443,8 @@ _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSigno
      *      gsignond_identity_iface_notify_credentials_updated(self, id, NULL);
      */    
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+
     return TRUE;
 }
 
@@ -427,6 +454,8 @@ _verify_secret (GSignondIdentityIface *iface, const gchar *secret, const GSignon
     GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
     return FALSE;
 }
@@ -447,6 +476,8 @@ _sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
                    signals[SIG_SIGNOUT],
                    0,
                    &success);
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
     return success;
 }
@@ -505,6 +536,8 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
 
     gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_DATA_UPDATED);
  
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+
     return id;
 }
 
@@ -521,10 +554,9 @@ _remove (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
                    identity->priv->info,
                    NULL);
 
-    /*
-     * TODO: emit "identity-removed"
-     */
     gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_REMOVED);
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 }
 
 static gint32
@@ -540,6 +572,8 @@ _add_reference (GSignondIdentityIface *iface, const gchar *reference, const GSig
                    0,
                    reference,
                    &res);
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
     return res;
 }
@@ -557,6 +591,8 @@ _remove_reference (GSignondIdentityIface *iface, const gchar *reference, const G
                    0,
                    reference,
                    &res);
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
     return res;
 }

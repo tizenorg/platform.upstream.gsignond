@@ -1,7 +1,7 @@
 #Environment variables for the test application
 #export GSIGNOND_CONFIG=../../test/daemon/test-daemon.conf
 export G_MESSAGES_DEBUG=all
-export SSO_IDENTITY_TIMEOUT=3
+export SSO_IDENTITY_TIMEOUT=5
 export SSO_STORAGE_PATH=/tmp/gsignond
 
 rm -rf "$SSO_STORAGE_PATH"

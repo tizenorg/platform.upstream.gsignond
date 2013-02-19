@@ -35,6 +35,8 @@ gsignond_SOURCES = \
     gsignond-identity-iface.h \
     gsignond-identity.c \
     gsignond-identity.h \
+    gsignond-disposable.c \
+    gsignond-disposable.h \
     $(BUILT_SOURCES) \
     $(NULL)
 

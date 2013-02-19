@@ -49,7 +49,7 @@ struct _GSignondAuthSessionPrivate
 static void gsignond_auth_session_iface_init (gpointer g_iface);
 
 G_DEFINE_TYPE_WITH_CODE (GSignondAuthSession, gsignond_auth_session,
-                        G_TYPE_OBJECT,
+                        GSIGNOND_TYPE_DISPOSABLE,
                         G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_AUTH_SESSION_IFACE,
                                                gsignond_auth_session_iface_init));
 

@@ -32,6 +32,7 @@
 #include <gsignond/gsignond-identity-info.h>
 
 #include "gsignond-auth-service-iface.h"
+#include "gsignond-disposable.h"
 
 G_BEGIN_DECLS
 
@@ -48,7 +49,7 @@ typedef struct _GSignondIdentityPrivate GSignondIdentityPrivate;
 
 struct _GSignondIdentity
 {
-    GObject parent;
+    GSignondDisposable parent;
 
     /* priv */
     GSignondIdentityPrivate *priv;
@@ -56,7 +57,7 @@ struct _GSignondIdentity
 
 struct _GSignondIdentityClass
 {
-    GObjectClass parent_class;
+    GSignondDisposableClass parent_class;
 };
 
 GType gsignond_identity_get_type (void) G_GNUC_CONST;
