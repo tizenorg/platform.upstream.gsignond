@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
  *
@@ -65,6 +65,37 @@ gsignond_dictionary_get (GSignondDictionary *dict, const gchar *key);
 gboolean
 gsignond_dictionary_set (GSignondDictionary *dict, 
     const gchar *key, GVariant *value);
+
+gboolean
+gsignond_dictionary_get_boolean (GSignondDictionary *dict, const gchar *key,
+                                 gboolean *value);
+
+gboolean
+gsignond_dictionary_set_boolean (GSignondDictionary *dict, const gchar *key,
+                                 gboolean value);
+
+gboolean
+gsignond_dictionary_get_int32 (GSignondDictionary *dict, const gchar *key,
+                               gint *value);
+
+gboolean
+gsignond_dictionary_set_int32 (GSignondDictionary *dict, const gchar *key,
+                               gint value);
+
+gboolean
+gsignond_dictionary_get_uint32 (GSignondDictionary *dict, const gchar *key,
+                                guint *value);
+
+gboolean
+gsignond_dictionary_set_uint32 (GSignondDictionary *dict, const gchar *key,
+                                guint32 value);
+
+const gchar *
+gsignond_dictionary_get_string (GSignondDictionary *dict, const gchar *key);
+
+gboolean
+gsignond_dictionary_set_string (GSignondDictionary *dict, const gchar *key,
+                                const gchar *value);
 
 gboolean
 gsignond_dictionary_remove (GSignondDictionary *dict, const gchar *key);

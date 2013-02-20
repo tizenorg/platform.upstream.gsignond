@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
  *
@@ -161,6 +161,116 @@ gsignond_dictionary_set (GSignondDictionary *dict,
             value);
 
     return TRUE;
+}
+
+/**
+ * gsignond_dictionary_get_boolean:
+ *
+ * Overload, see #gsignond_dictionary_get for details.
+ */
+gboolean
+gsignond_dictionary_get_boolean (GSignondDictionary *dict, const gchar *key,
+                                 gboolean *value)
+{
+    GVariant *variant = gsignond_dictionary_get (dict, key);
+
+    g_return_val_if_fail (variant != NULL, FALSE);
+    *value = g_variant_get_boolean (variant);
+    return TRUE;
+}
+
+/**
+ * gsignon_dictionary_set_boolean:
+ *
+ * Overload, see #gsignond_dictionary_set for details.
+ */
+gboolean
+gsignond_dictionary_set_boolean (GSignondDictionary *dict, const gchar *key,
+                                 gboolean value)
+{
+    return gsignond_dictionary_set (dict, key, g_variant_new_boolean (value));
+}
+
+/**
+ * gsignond_dictionary_get_int32:
+ *
+ * Overload, see #gsignond_dictionary_get for details.
+ */
+gboolean
+gsignond_dictionary_get_int32 (GSignondDictionary *dict, const gchar *key,
+                               gint32 *value)
+{
+    GVariant *variant = gsignond_dictionary_get (dict, key);
+
+    g_return_val_if_fail (variant != NULL, FALSE);
+    *value = g_variant_get_int32 (variant);
+    return TRUE;
+}
+
+/**
+ * gsignon_dictionary_set_int32:
+ *
+ * Overload, see #gsignond_dictionary_set for details.
+ */
+gboolean
+gsignond_dictionary_set_int32 (GSignondDictionary *dict, const gchar *key,
+                               gint32 value)
+{
+    return gsignond_dictionary_set (dict, key, g_variant_new_int32 (value));
+}
+
+/**
+ * gsignond_dictionary_get_guint32:
+ *
+ * Overload, see #gsignond_dictionary_get for details.
+ */
+gboolean
+gsignond_dictionary_get_uint32 (GSignondDictionary *dict, const gchar *key,
+                                guint32 *value)
+{
+    GVariant *variant = gsignond_dictionary_get (dict, key);
+
+    g_return_val_if_fail (variant != NULL, FALSE);
+    *value = g_variant_get_boolean (variant);
+    return TRUE;
+}
+
+/**
+ * gsignon_dictionary_set_guint32:
+ *
+ * Overload, see #gsignond_dictionary_set for details.
+ */
+gboolean
+gsignond_dictionary_set_uint32 (GSignondDictionary *dict, const gchar *key,
+                                guint32 value)
+{
+    return gsignond_dictionary_set (dict, key, g_variant_new_uint32 (value));
+}
+
+/**
+ * gsignond_dictionary_get_string:
+ *
+ * Overload, see #gsignond_dictionary_get for details.
+ */
+const gchar *
+gsignond_dictionary_get_string (GSignondDictionary *dict, const gchar *key)
+{
+    GVariant *variant = gsignond_dictionary_get (dict, key);
+
+    g_return_val_if_fail (variant != NULL, NULL);
+    return g_variant_get_string (variant, NULL);
+}
+
+/**
+ * gsignon_dictionary_set_string:
+ *
+ * Overload, see #gsignond_dictionary_set for details.
+ */
+gboolean
+gsignond_dictionary_set_string (GSignondDictionary *dict, const gchar *key,
+                                const gchar *value)
+{
+    return gsignond_dictionary_set (dict, key, g_variant_new_string (value));
 }
 
 /**

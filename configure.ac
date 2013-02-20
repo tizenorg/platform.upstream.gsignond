@@ -74,6 +74,7 @@ src/extensions/Makefile
 src/extensions/test/Makefile
 src/plugins/Makefile
 src/plugins/password/Makefile
+src/plugins/ssotest/Makefile
 test/Makefile
 test/db/Makefile
 test/daemon/Makefile
