@@ -48,6 +48,9 @@ struct _GSignondPluginProxyFactory
     /* Private */
     GSignondConfig *config;
     GHashTable* plugins;
+    
+    gchar** methods;
+    GHashTable* mechanisms;
 };
 
 struct _GSignondPluginProxyFactoryClass
@@ -69,5 +72,14 @@ gboolean gsignond_plugin_proxy_factory_add_plugin(
     GSignondPluginProxyFactory* factory,
     guint32 identity_id,
     GSignondPluginProxy* proxy);
+    
+const gchar** 
+gsignond_plugin_proxy_factory_get_plugin_types(
+   GSignondPluginProxyFactory* factory);
+   
+const gchar**
+gsignond_plugin_proxy_factory_get_plugin_mechanisms(
+   GSignondPluginProxyFactory* factory, const gchar* plugin_type);
+   
 
 #endif /* __GSIGNOND_PLUGIN_PROXY_FACTORY_H__ */

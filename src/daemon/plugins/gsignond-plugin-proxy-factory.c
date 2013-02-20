@@ -24,6 +24,8 @@
  */
 
 #include "gsignond-plugin-proxy-factory.h"
+#include <string.h>
+#include <gsignond/gsignond-plugin-loader.h>
 
 G_DEFINE_TYPE (GSignondPluginProxyFactory, gsignond_plugin_proxy_factory, G_TYPE_OBJECT);
 
@@ -38,6 +40,62 @@ enum
 };
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static void _enumerate_plugins(GSignondPluginProxyFactory* self)
+{
+    self->methods = g_malloc0(sizeof(gchar*));
+    self->mechanisms = g_hash_table_new_full ((GHashFunc)g_str_hash,
+                            (GEqualFunc)g_str_equal,
+                            (GDestroyNotify)g_free,
+                            (GDestroyNotify)g_strfreev);
+
+    GDir* plugin_dir = g_dir_open(gsignond_config_get_string (self->config, 
+        GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), 0, NULL);
+    if (plugin_dir == NULL)
+        return;
+        
+    int n_plugins = 0;
+    while (g_dir_read_name(plugin_dir) != NULL)
+        n_plugins++;
+    g_dir_rewind(plugin_dir);
+    
+    g_free(self->methods);
+    self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
+
+    int i = 0;
+    while (1) {
+        const gchar* plugin_soname = g_dir_read_name(plugin_dir);
+        if (plugin_soname == NULL)
+            break;
+        if (g_str_has_prefix(plugin_soname, "lib") && 
+            g_str_has_suffix(plugin_soname, ".so")) {
+            gchar* plugin_name = g_strndup(plugin_soname+3, 
+                strlen(plugin_soname) - 6);
+            GSignondPlugin* plugin = gsignond_load_plugin(
+                self->config, plugin_name);
+            if (plugin != NULL) {
+                gchar* plugin_type;
+                gchar** mechanisms;
+                g_object_get(plugin, 
+                    "type", &plugin_type, 
+                    "mechanisms", &mechanisms, 
+                    NULL);
+                if (g_strcmp0 (plugin_type, plugin_name) == 0) {
+                    self->methods[i] = plugin_type;
+                    g_hash_table_insert(self->mechanisms,
+                        plugin_type, mechanisms);
+                    i++;
+                } else {
+                    g_free(plugin_type);
+                    g_strfreev(mechanisms);
+                }
+                g_object_unref(plugin);
+            }
+            g_free(plugin_name);
+        }
+    }
+    g_dir_close(plugin_dir);
+}
 
 static GObject *
 gsignond_plugin_proxy_factory_constructor (GType                  gtype,
@@ -55,7 +113,7 @@ gsignond_plugin_proxy_factory_constructor (GType                  gtype,
   /* update the object state depending on constructor properties */
   GSignondPluginProxyFactory* self = GSIGNOND_PLUGIN_PROXY_FACTORY(obj);
   
-  (void) self;
+  _enumerate_plugins(self);
 
   return obj;
 }
@@ -118,6 +176,8 @@ gsignond_plugin_proxy_factory_finalize (GObject *gobject)
     GSignondPluginProxyFactory *self = GSIGNOND_PLUGIN_PROXY_FACTORY (gobject);
 
     g_hash_table_destroy (self->plugins);
+    g_hash_table_destroy (self->mechanisms);
+    g_strfreev(self->methods);
 
     /* Chain up to the parent class */
     G_OBJECT_CLASS (gsignond_plugin_proxy_factory_parent_class)->finalize (gobject);
@@ -156,7 +216,6 @@ gsignond_plugin_proxy_factory_init (GSignondPluginProxyFactory *self)
                             (GEqualFunc)g_str_equal,
                             (GDestroyNotify)g_free,
                             (GDestroyNotify)g_object_unref);
-    
 }
 
 GSignondPluginProxyFactory* 
@@ -216,6 +275,18 @@ gboolean gsignond_plugin_proxy_factory_add_plugin(
     g_hash_table_insert(factory->plugins, key, proxy);
 
     return TRUE;
-        
-    
+}
+
+const gchar** 
+gsignond_plugin_proxy_factory_get_plugin_types(
+   GSignondPluginProxyFactory* factory)
+{
+    return (gpointer)factory->methods;
+}
+   
+const gchar**
+gsignond_plugin_proxy_factory_get_plugin_mechanisms(
+   GSignondPluginProxyFactory* factory, const gchar* plugin_type)
+{
+    return g_hash_table_lookup(factory->mechanisms, plugin_type);
 }
