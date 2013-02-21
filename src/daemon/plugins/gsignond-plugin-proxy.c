@@ -89,7 +89,7 @@ static void gsignond_plugin_proxy_error_callback(GSignondPlugin* plugin,
                                                  GError* error,
                                                  gpointer user_data);
 static void gsignond_plugin_proxy_status_changed_callback(GSignondPlugin* plugin, 
-                                                  const gchar* status,
+                                                  GSignondPluginState status,
                                                   const gchar* message,
                                                   gpointer user_data);
 
@@ -446,17 +446,17 @@ static void gsignond_plugin_proxy_error_callback(GSignondPlugin* plugin,
 }
 
 static void gsignond_plugin_proxy_status_changed_callback(GSignondPlugin* plugin, 
-                                                  const gchar* status,
+                                                  GSignondPluginState state,
                                                   const gchar* message,
                                                   gpointer user_data)
 {
     GSignondPluginProxy* self = GSIGNOND_PLUGIN_PROXY(user_data);
     if (self->active_session == NULL) {
-        ERR("Error: plugin %s reported change in status %s with message %s, \
-            but no active session in plugin proxy", self->plugin_type, status,
+        ERR("Error: plugin %s reported change in state %d with message %s, \
+            but no active session in plugin proxy", self->plugin_type, state,
             message);
         return;
     }
-    gsignond_auth_session_iface_notify_status_changed(self->active_session,
-                                                      status, message);
+    gsignond_auth_session_iface_notify_state_changed(self->active_session,
+                                                      (gint)state, message);
 }

@@ -143,8 +143,8 @@ void
 gsignond_auth_session_iface_notify_refreshed (GSignondAuthSessionIface *self, 
                                 GSignondSessionData *session_data);
 void 
-gsignond_auth_session_iface_notify_status_changed (GSignondAuthSessionIface *self, 
-                                     const gchar *status, 
+gsignond_auth_session_iface_notify_state_changed (GSignondAuthSessionIface *self, 
+                                     gint state,
                                      const gchar *message);
 
 G_END_DECLS

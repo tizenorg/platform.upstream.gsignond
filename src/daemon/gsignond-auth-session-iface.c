@@ -33,7 +33,7 @@ enum {
     SIG_PROCESS_STORE,
     SIG_PROCESS_USER_ACTION_REQUIRED,
     SIG_PROCESS_REFRESHED,
-    SIG_PROCESS_STATUS_CHANGED,
+    SIG_PROCESS_STATE_CHANGED,
     
     SIG_MAX
 };
@@ -109,8 +109,8 @@ gsignond_auth_session_iface_default_init (
             1,
             GSIGNOND_TYPE_SESSION_DATA);
 
-    signals[SIG_PROCESS_STATUS_CHANGED] =  g_signal_new (
-            "status-changed",
+    signals[SIG_PROCESS_STATE_CHANGED] =  g_signal_new (
+            "state-changed",
             G_TYPE_FROM_INTERFACE (self),
             G_SIGNAL_RUN_LAST,
             0,
@@ -119,7 +119,7 @@ gsignond_auth_session_iface_default_init (
             NULL,
             G_TYPE_NONE,
             2,
-            G_TYPE_STRING, G_TYPE_STRING);
+            G_TYPE_INT, G_TYPE_STRING);
 }
 
 gchar **
@@ -201,10 +201,10 @@ gsignond_auth_session_iface_notify_refreshed (GSignondAuthSessionIface *self,
 }
 
 void 
-gsignond_auth_session_iface_notify_status_changed (GSignondAuthSessionIface *self, 
-                                     const gchar *status, 
+gsignond_auth_session_iface_notify_state_changed (GSignondAuthSessionIface *self,
+                                     gint state,
                                      const gchar *message)
 {
-    g_signal_emit (self, signals[SIG_PROCESS_STATUS_CHANGED], 0, status,
+    g_signal_emit (self, signals[SIG_PROCESS_STATE_CHANGED], 0, state,
         message);
 }

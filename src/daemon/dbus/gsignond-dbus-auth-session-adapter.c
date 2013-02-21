@@ -40,6 +40,7 @@ struct _GSignondDbusAuthSessionAdapterPrivate
 {
     GDBusConnection     *connection;
     GSignondAuthSessionIface *parent;
+    guint state_changed_handler_id;
 };
 
 G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapter, GSIGNOND_DBUS_TYPE_AUTH_SESSION_SKELETON)
@@ -50,6 +51,9 @@ G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapte
 static void _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const gchar **, gpointer);
 static void _handle_process (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const GVariant *, const gchar *, gpointer);
 static void _handle_cancel (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, gpointer);
+
+/* signals */
+static void _emit_state_changed (GSignondAuthSessionIface *session, gint state, const gchar *message, gpointer user_data);
 
 static void
 gsignond_dbus_auth_session_adapter_set_property (GObject *object,
@@ -62,8 +66,14 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
         case PROP_IMPL: {
             gpointer iface = g_value_peek_pointer (value);
             if (iface) {
-                if (self->priv->parent) g_object_unref (self->priv->parent);
+                if (self->priv->parent) {
+                    g_signal_handler_disconnect (self->priv->parent, self->priv->state_changed_handler_id);
+                    g_object_unref (self->priv->parent);
+                }
                 self->priv->parent = GSIGNOND_AUTH_SESSION_IFACE (g_object_ref (iface));
+                self->priv->state_changed_handler_id = 
+                       g_signal_connect (self->priv->parent, "state-changed", 
+                                         G_CALLBACK (_emit_state_changed), self);
             }
             break;
         }
@@ -98,6 +108,7 @@ gsignond_dbus_auth_session_adapter_dispose (GObject *object)
     gsignond_dbus_auth_session_emit_unregistered (GSIGNOND_DBUS_AUTH_SESSION (object));
 
     if (self->priv->parent) {
+        g_signal_handler_disconnect (self->priv->parent, self->priv->state_changed_handler_id);
         g_object_unref (self->priv->parent);
         self->priv->parent = NULL;
     }
@@ -262,6 +273,16 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
     gsignond_auth_session_iface_cancel (self->priv->parent);
 
     gsignond_dbus_auth_session_complete_cancel (iface, invocation);
+}
+
+static void
+_emit_state_changed (GSignondAuthSessionIface *session, gint state, const gchar *message, gpointer user_data)
+{
+    g_return_if_fail (user_data && GSIGNOND_DBUS_IS_AUTH_SESSION (user_data));
+
+    GSignondDbusAuthSession *self = GSIGNOND_DBUS_AUTH_SESSION (user_data);
+
+    gsignond_dbus_auth_session_emit_state_changed (self, state, message);
 }
 
 GSignondDbusAuthSessionAdapter *

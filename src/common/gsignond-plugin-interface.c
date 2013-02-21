@@ -25,6 +25,7 @@
 
 
 #include "gsignond/gsignond-plugin-interface.h"
+#include "gsignond-plugin-enum-types.h"
 
 G_DEFINE_INTERFACE (GSignondPlugin, gsignond_plugin, 0)
 
@@ -68,7 +69,7 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
     signals[STATUS_CHANGED] = g_signal_new ("status-changed", 
         G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        2, G_TYPE_STRING, G_TYPE_STRING);
+        2, GSIGNOND_TYPE_PLUGIN_STATE, G_TYPE_STRING);
 
     g_object_interface_install_property (g_class,
 	g_param_spec_string ("type", "Type", "Plugin type", "none", 
@@ -150,9 +151,9 @@ void gsignond_plugin_refreshed (GSignondPlugin *self,
     g_signal_emit (self, signals[REFRESHED], 0, session_data);
 }
 
-void gsignond_plugin_status_changed (GSignondPlugin *self, const gchar *status, 
+void gsignond_plugin_status_changed (GSignondPlugin *self, GSignondPluginState state, 
                                      const gchar *message)
 {
-    g_signal_emit (self, signals[STATUS_CHANGED], 0, status, message);
+    g_signal_emit (self, signals[STATUS_CHANGED], 0, state, message);
 }
 
