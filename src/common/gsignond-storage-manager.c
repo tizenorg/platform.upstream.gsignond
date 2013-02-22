@@ -110,12 +110,22 @@ _dispose (GObject *object)
         g_object_unref (self->config);
         self->config = NULL;
     }
+
+    G_OBJECT_CLASS (gsignond_storage_manager_parent_class)->dispose (object);
+}
+
+static void
+_finalize (GObject *object)
+{
+    GSignondStorageManager *self = 
+        GSIGNOND_STORAGE_MANAGER (object);
+
     if (self->location) {
         g_free (self->location);
         self->location = NULL;
     }
 
-    G_OBJECT_GET_CLASS (object)->dispose (object);
+    G_OBJECT_CLASS (gsignond_storage_manager_parent_class)->finalize (object);
 }
 
 static gboolean
@@ -194,6 +204,7 @@ gsignond_storage_manager_class_init (GSignondStorageManagerClass *klass)
     base->set_property = _set_property;
     base->get_property = _get_property;
     base->dispose = _dispose;
+    base->finalize = _finalize;
     properties[PROP_CONFIG] = g_param_spec_object ("config",
                                                    "config",
                                                    "Configuration object",

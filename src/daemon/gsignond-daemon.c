@@ -125,11 +125,24 @@ _dispose (GObject *object)
     }
 
     if (self->priv->db) {
+ 
+        if (!gsignond_db_credentials_database_close_secret_storage (
+                    self->priv->db)) {
+            WARN("gsignond_db_credentials_database_close_secret_storage() failed");
+        }   
         g_object_unref (self->priv->db);
         self->priv->db = NULL;
     }
 
     if (self->priv->extension) {
+        if (gsignond_storage_manager_filesystem_is_mounted (
+                    self->priv->storage_manager)) {
+            if (!gsignond_storage_manager_unmount_filesystem (
+                        self->priv->storage_manager)) {
+                WARN("gsignond_storage_manager_unmount_filesystem() failed");
+            }
+        }
+
         self->priv->storage_manager = NULL;
         self->priv->secret_storage = NULL;
         self->priv->acm = NULL;
@@ -157,19 +170,6 @@ _finalize (GObject *object)
     if (self->priv->identities) {
         g_list_free (self->priv->identities);
         self->priv->identities = NULL;
-    }
-
-    if (!gsignond_db_credentials_database_close_secret_storage (
-                                                  self->priv->db)) {
-        WARN("gsignond_db_credentials_database_close_secret_storage() failed");
-    }
-
-    if (gsignond_storage_manager_filesystem_is_mounted (
-                                                 self->priv->storage_manager)) {
-        if (!gsignond_storage_manager_unmount_filesystem (
-                                                 self->priv->storage_manager)) {
-            WARN("gsignond_storage_manager_unmount_filesystem() failed");
-        }
     }
 
     G_OBJECT_CLASS (gsignond_daemon_parent_class)->finalize (object);

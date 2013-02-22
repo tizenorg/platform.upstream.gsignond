@@ -89,7 +89,7 @@ _dispose (GObject *object)
         self->config = NULL;
     }
 
-    G_OBJECT_GET_CLASS (object)->dispose (object);
+    G_OBJECT_CLASS (gsignond_access_control_manager_parent_class)->dispose (object);
 }
 
 static void

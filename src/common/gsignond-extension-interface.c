@@ -39,7 +39,7 @@ _dispose (GObject *object)
     g_clear_object (&secret_storage_inst);
     g_clear_object (&access_control_manager_inst);
 
-    G_OBJECT_GET_CLASS (object)->dispose (object);
+    G_OBJECT_CLASS (gsignond_extension_parent_class)->dispose (object);
 
     default_extension = NULL;
 }
@@ -105,6 +105,7 @@ _get_access_control_manager (GSignondExtension *self, GSignondConfig *config)
 static void
 gsignond_extension_class_init (GSignondExtensionClass *klass)
 {
+    G_OBJECT_CLASS (klass)->dispose = _dispose;
     klass->get_extension_name = _get_extension_name;
     klass->get_extension_version = _get_extension_version;
     klass->get_storage_manager = _get_storage_manager;
