@@ -33,12 +33,6 @@ _security_context_free (gpointer ptr)
     gsignond_security_context_free (ctx);
 }
 
-static GSignondSecurityContext *
-_security_context_alloc ()
-{
-    return g_new0 (GSignondSecurityContext, 1);
-}
-
 /**
  * gsignond_security_context_new:
  *
@@ -51,7 +45,7 @@ gsignond_security_context_new ()
 {
     GSignondSecurityContext *ctx;
 
-    ctx = _security_context_alloc ();
+    ctx = g_slice_new0 (GSignondSecurityContext);
     ctx->sys_ctx = g_strdup ("");
     ctx->app_ctx = g_strdup ("");
 
@@ -75,7 +69,7 @@ gsignond_security_context_new_from_values (const gchar *system_context,
 
     g_return_val_if_fail (system_context != NULL, NULL);
 
-    ctx = _security_context_alloc ();
+    ctx = g_slice_new0 (GSignondSecurityContext);
     ctx->sys_ctx = g_strdup (system_context);
     if (application_context)
         ctx->app_ctx = g_strdup (application_context);
@@ -111,11 +105,11 @@ gsignond_security_context_copy (const GSignondSecurityContext *src_ctx)
 void
 gsignond_security_context_free (GSignondSecurityContext *ctx)
 {
-    g_return_if_fail (ctx != NULL);
+    if (ctx == NULL) return;
 
     g_free (ctx->sys_ctx);
     g_free (ctx->app_ctx);
-    g_free (ctx);
+    g_slice_free (GSignondSecurityContext, ctx);
 }
 
 /**
