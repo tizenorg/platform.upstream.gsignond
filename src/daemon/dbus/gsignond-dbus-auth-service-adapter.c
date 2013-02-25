@@ -294,10 +294,9 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
                        gpointer               user_data)
 {
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
-    gchar **methods = gsignond_auth_service_iface_query_methods (self->priv->parent);
+    const gchar **methods = gsignond_auth_service_iface_query_methods (self->priv->parent);
 
     gsignond_dbus_auth_service_complete_query_methods (iface, invocation, (const gchar * const*)methods);
-    if (methods) g_strfreev(methods);
 
     return TRUE;
 }
@@ -308,14 +307,12 @@ _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
                           const gchar *method,
                           gpointer user_data)
 {
-    gchar **mechanisms = 0;
+    const gchar **mechanisms = 0;
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
 
     mechanisms = gsignond_auth_service_iface_query_mechanisms (self->priv->parent, method);
 
     gsignond_dbus_auth_service_complete_query_mechanisms (iface, invocation, (const gchar* const*)mechanisms);
-
-    if (mechanisms) g_strfreev(mechanisms);
 
     return TRUE;
 }

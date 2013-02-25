@@ -76,10 +76,9 @@ struct _GSignondAuthServiceIfaceInterface {
      *
      * Retrieves the supported authentication methods on this service object.
      *
-     * Returns: (transfer full): list of authentication methods. Caller should call g_strfreev()
-     * once done with results.
+     * Returns: (transfer none): list of authentication methods. 
      */
-    gchar ** (*query_methods) (GSignondAuthServiceIface *auth_service);
+    const gchar ** (*query_methods) (GSignondAuthServiceIface *auth_service);
 
     /**
      * query_mechanisms:
@@ -88,10 +87,9 @@ struct _GSignondAuthServiceIfaceInterface {
      *
      * Retrieves the supported authentication mechanisms for given @method on this service object.
      *
-     * Returns: (transfer full): list of authentication mechanisms. Caller should call g_strfreev()
-     * once done with results.
+     * Returns: (transfer full): list of authentication mechanisms.
      */
-    gchar ** (*query_mechanisms) (GSignondAuthServiceIface *auth_service, const gchar *method);
+    const gchar ** (*query_mechanisms) (GSignondAuthServiceIface *auth_service, const gchar *method);
 
     /**
      * query_identities:
@@ -136,9 +134,9 @@ gsignond_auth_service_iface_get_identity (GSignondAuthServiceIface *self,
                                           guint32 id,
                                           const GSignondSecurityContext *ctx,
                                           GVariant **identity_data);
-char **
+const gchar **
 gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self);
-gchar **
+const gchar **
 gsignond_auth_service_iface_query_mechanisms (GSignondAuthServiceIface *self,
                                               const gchar *method);
 GVariant *

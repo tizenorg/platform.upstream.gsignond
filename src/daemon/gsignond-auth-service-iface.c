@@ -49,14 +49,14 @@ _dummy_get_identity (GSignondAuthServiceIface *self,
     return NULL;
 }
 
-static gchar **
+static const gchar **
 _dummy_query_methods (GSignondAuthServiceIface *self)
 {
     (void) self;
     return NULL;
 }
 
-static gchar **
+static const gchar **
 _dummy_query_mechanisms (GSignondAuthServiceIface *self, 
                          const gchar *method)
 {
@@ -146,12 +146,11 @@ gsignond_auth_service_iface_get_identity (GSignondAuthServiceIface *self,
  * gsignond_auth_service_iface_query_methods:
  * @self: instance of #GSignondAuthServiceIface
  *
- * Retrieves the available authentication methods. Caller should free the return value
- * with #g_strfreev() when done with it.
+ * Retrieves the available authentication methods. 
  *
- * Returns: (transfer full): list of methods
+ * Returns: (transfer none): list of methods
  */
-gchar **
+const gchar **
 gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self)
 {
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->query_methods (self);
@@ -162,12 +161,11 @@ gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self)
  * @self: instance of #GSignondAuthServiceIface
  * @method: method to query
  *
- * Retrieves the available mechanisms for authentication method @method. Caller should free the return value
- * with #g_strfreev() when done with it.
+ * Retrieves the available mechanisms for authentication method @method.
  *
- * Returns: (transfer full): list of mechanisms
+ * Returns: (transfer none): list of mechanisms
  */
-gchar **
+const gchar **
 gsignond_auth_service_iface_query_mechanisms (GSignondAuthServiceIface *self,
                                               const gchar *method)
 {

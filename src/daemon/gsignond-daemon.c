@@ -454,30 +454,24 @@ _get_identity (GSignondAuthServiceIface *iface,
 #undef VALIDATE_IDENTITY_READ_ACCESS
 }
 
-static gchar ** 
+static const gchar ** 
 _query_methods (GSignondAuthServiceIface *self)
 {
-    (void) self;
+    g_return_val_if_fail (self && GSIGNOND_IS_DAEMON (self), NULL);
+    GSignondDaemon *daemon = GSIGNOND_DAEMON (self);
 
-    /*
-     * returning test methods 
-     */
-    gchar **methods = g_strsplit ("test_method_1:test_method_2", ":" ,2);
-
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
-
-    return methods;
+    return gsignond_plugin_proxy_factory_get_plugin_types (
+            daemon->priv->plugin_proxy_factory);
 }
 
-static gchar ** 
+static const gchar ** 
 _query_mechanisms (GSignondAuthServiceIface *self, const gchar *method) 
 {
-    (void)self;
-    (void)method;
+    g_return_val_if_fail (self && GSIGNOND_IS_DAEMON (self), NULL);
+    GSignondDaemon *daemon = GSIGNOND_DAEMON (self);
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
-
-    return NULL;
+    return gsignond_plugin_proxy_factory_get_plugin_mechanisms (
+            daemon->priv->plugin_proxy_factory, method);
 }
 
 static GVariant * 
