@@ -305,6 +305,30 @@ START_TEST (test_pluginproxy_process_queue_cancel)
 }
 END_TEST
 
+START_TEST (test_pluginproxyfactory_methods_and_mechanisms)
+{
+    GSignondConfig* config = gsignond_config_new();
+    fail_if(config == NULL);
+    
+    GSignondPluginProxyFactory* factory = gsignond_plugin_proxy_factory_new(config);
+    fail_if(factory == NULL);
+    
+    const gchar** methods = gsignond_plugin_proxy_factory_get_plugin_types(factory);
+    fail_if(methods == NULL);
+    fail_if(strcmp(methods[0], "password") != 0);
+    fail_if(methods[1] != NULL);
+    
+    const gchar** mechanisms = gsignond_plugin_proxy_factory_get_plugin_mechanisms(factory, methods[0]);
+    fail_if(mechanisms == NULL);
+    fail_if(strcmp(mechanisms[0], "password") != 0);
+    fail_if(mechanisms[1] != NULL);
+    
+
+    g_object_unref(factory);
+    g_object_unref(config);
+}
+END_TEST
+
 START_TEST (test_pluginproxyfactory_get)
 {
     GSignondConfig* config = gsignond_config_new();
@@ -366,6 +390,7 @@ Suite* pluginproxy_suite (void)
     // cancellation and queueuing. Password plugin is totally synchronous.
     tcase_add_test (tc_core, test_pluginproxy_process_queue);
     tcase_add_test (tc_core, test_pluginproxy_process_queue_cancel);
+    tcase_add_test (tc_core, test_pluginproxyfactory_methods_and_mechanisms);
     tcase_add_test (tc_core, test_pluginproxyfactory_get);
     tcase_add_test (tc_core, test_pluginproxyfactory_add);
     suite_add_tcase (s, tc_core);
