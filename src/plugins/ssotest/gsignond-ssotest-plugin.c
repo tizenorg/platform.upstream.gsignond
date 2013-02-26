@@ -73,7 +73,7 @@ static void gsignond_ssotest_plugin_process (
 
     self->priv->is_canceled = FALSE;
 
-    GSignondSessionData *response = gsignond_dictionary_new ();
+    GSignondSessionData *response = gsignond_dictionary_copy (session_data);
     // TODO: fix once proper property accessor exists
     gsignond_dictionary_set_string (response, "Realm", "testRealm_after_test");
 
@@ -85,6 +85,7 @@ static void gsignond_ssotest_plugin_process (
                                             "hello from the test plugin");
             INFO ("Signal is sent");
             g_usleep (1000 * 1000 / 10);
+            g_main_context_iteration (NULL, FALSE);
         }
     }
     if (self->priv->is_canceled) {
