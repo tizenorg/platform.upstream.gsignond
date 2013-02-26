@@ -32,7 +32,8 @@ G_DEFINE_INTERFACE (GSignondPlugin, gsignond_plugin, 0)
 /* signals */
 enum
 {
-    RESULT,
+    RESPONSE,
+    RESPONSE_FINAL,
     STORE,
     ERROR,
     USER_ACTION_REQUIRED,
@@ -45,7 +46,11 @@ static guint signals[LAST_SIGNAL] = { 0 };
 
 static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
 {
-    signals[RESULT] = g_signal_new ("result", G_TYPE_FROM_CLASS (g_class),
+    signals[RESPONSE] = g_signal_new ("response", G_TYPE_FROM_CLASS (g_class),
+        G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
+        1, GSIGNOND_TYPE_SESSION_DATA);
+
+    signals[RESPONSE_FINAL] = g_signal_new ("response-final", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
         1, GSIGNOND_TYPE_SESSION_DATA);
 
@@ -96,13 +101,21 @@ void gsignond_plugin_abort (GSignondPlugin *self)
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->abort (self);
 }
 
-void gsignond_plugin_process (GSignondPlugin *self, 
+void gsignond_plugin_request_initial (GSignondPlugin *self, 
                               GSignondSessionData *session_data, 
                               const gchar *mechanism)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
-    GSIGNOND_PLUGIN_GET_INTERFACE (self)->process (self, session_data, mechanism);
+    GSIGNOND_PLUGIN_GET_INTERFACE (self)->request_initial (self, session_data, mechanism);
+}
+
+void gsignond_plugin_request (GSignondPlugin *self, 
+                              GSignondSessionData *session_data)
+{
+    g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
+    
+    GSIGNOND_PLUGIN_GET_INTERFACE (self)->request (self, session_data);
 }
 
 void gsignond_plugin_user_action_finished (GSignondPlugin *self, 
@@ -122,10 +135,16 @@ void gsignond_plugin_refresh (GSignondPlugin *self,
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->refresh (self, session_data);
 }
 
-void gsignond_plugin_result (GSignondPlugin *self, 
+void gsignond_plugin_response (GSignondPlugin *self, 
                              GSignondSessionData *session_data)
 {
-    g_signal_emit (self, signals[RESULT], 0, session_data);
+    g_signal_emit (self, signals[RESPONSE], 0, session_data);
+}
+
+void gsignond_plugin_response_final (GSignondPlugin *self, 
+                             GSignondSessionData *session_data)
+{
+    g_signal_emit (self, signals[RESPONSE_FINAL], 0, session_data);
 }
 
 void gsignond_plugin_store (GSignondPlugin *self, 

@@ -48,7 +48,13 @@ static void gsignond_password_plugin_abort (GSignondPlugin *self)
     
 }
 
-static void gsignond_password_plugin_process (
+static void gsignond_password_plugin_request (
+    GSignondPlugin *self, GSignondSessionData *session_data)
+{
+
+}
+
+static void gsignond_password_plugin_request_initial (
     GSignondPlugin *self, GSignondSessionData *session_data, 
     const gchar *mechanism)
 {
@@ -60,7 +66,7 @@ static void gsignond_password_plugin_process (
         if (username != NULL)
             gsignond_session_data_set_username(response, username);
         gsignond_session_data_set_secret(response, secret);
-        gsignond_plugin_result(self, response);
+        gsignond_plugin_response_final(self, response);
         gsignond_dictionary_free(response);
         return;
     }
@@ -90,7 +96,7 @@ static void gsignond_password_plugin_user_action_finished (
         GSignondSessionData *response = gsignond_dictionary_new();
         gsignond_session_data_set_username(response, username);
         gsignond_session_data_set_secret(response, secret);
-        gsignond_plugin_result(self, response);
+        gsignond_plugin_response_final(self, response);
         gsignond_dictionary_free(response);
         return;
     } else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
@@ -121,7 +127,8 @@ gsignond_plugin_interface_init (GSignondPluginInterface *iface)
 {
     iface->cancel = gsignond_password_plugin_cancel;
     iface->abort = gsignond_password_plugin_abort;
-    iface->process = gsignond_password_plugin_process;
+    iface->request_initial = gsignond_password_plugin_request_initial;
+    iface->request = gsignond_password_plugin_request;
     iface->user_action_finished = gsignond_password_plugin_user_action_finished;
     iface->refresh = gsignond_password_plugin_refresh;
 }

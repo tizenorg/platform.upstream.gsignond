@@ -72,7 +72,10 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-static void gsignond_plugin_proxy_result_callback(GSignondPlugin* plugin, 
+static void gsignond_plugin_proxy_response_final_callback(GSignondPlugin* plugin, 
+                                                  GSignondSessionData* result,
+                                                  gpointer user_data);
+static void gsignond_plugin_proxy_response_callback(GSignondPlugin* plugin, 
                                                   GSignondSessionData* result,
                                                   gpointer user_data);
 static void gsignond_plugin_proxy_store_callback(GSignondPlugin* plugin, 
@@ -111,8 +114,10 @@ gsignond_plugin_proxy_constructor (GType                  gtype,
     self->plugin = gsignond_load_plugin(self->config, self->plugin_type);
 
     if (self->plugin != NULL) {
-        g_signal_connect(self->plugin, "result", G_CALLBACK(
-            gsignond_plugin_proxy_result_callback), self);
+        g_signal_connect(self->plugin, "response", G_CALLBACK(
+            gsignond_plugin_proxy_response_callback), self);
+        g_signal_connect(self->plugin, "response-final", G_CALLBACK(
+            gsignond_plugin_proxy_response_final_callback), self);
         g_signal_connect(self->plugin, "user-action-required", G_CALLBACK(
             gsignond_plugin_proxy_user_action_required_callback), self);
         g_signal_connect(self->plugin, "error", G_CALLBACK(
@@ -282,9 +287,10 @@ gsignond_plugin_proxy_process_queue(GSignondPluginProxy *self)
 {
     GSignondProcessData* next_data = g_queue_pop_head(self->session_queue);
     if (next_data) {
+        self->expecting_request = FALSE;
         self->active_session = next_data->auth_session;
         g_object_ref(self->active_session);
-        gsignond_plugin_process(self->plugin, next_data->session_data, 
+        gsignond_plugin_request_initial(self->plugin, next_data->session_data, 
                                 next_data->mechanism);
         gsignond_process_data_free(next_data);
     }
@@ -295,6 +301,13 @@ void gsignond_plugin_proxy_process (GSignondPluginProxy *self,
                               GSignondSessionData *session_data, 
                               const gchar *mechanism)
 {
+    if (session == self->active_session && self->expecting_request == TRUE) {
+        self->expecting_request = FALSE;
+        // mechanism is discarded if this is not an initial request
+        gsignond_plugin_request(self->plugin, session_data);
+        return;
+    }
+
     g_queue_push_tail(self->session_queue, gsignond_process_data_new(session, 
                                                                      session_data, 
                                                                      mechanism));
@@ -368,13 +381,13 @@ void gsignond_plugin_proxy_refresh (GSignondPluginProxy *self,
     gsignond_plugin_refresh(self->plugin, session_data);
 }
 
-static void gsignond_plugin_proxy_result_callback(GSignondPlugin* plugin, 
+static void gsignond_plugin_proxy_response_final_callback(GSignondPlugin* plugin, 
                                                   GSignondSessionData* result,
                                                   gpointer user_data)
 {
     GSignondPluginProxy* self = GSIGNOND_PLUGIN_PROXY(user_data);
     if (self->active_session == NULL) {
-        ERR("Error: plugin %s reported 'result', but no active session \
+        ERR("Error: plugin %s reported 'response_final', but no active session \
             in plugin proxy", self->plugin_type);
         return;
     }
@@ -384,6 +397,20 @@ static void gsignond_plugin_proxy_result_callback(GSignondPlugin* plugin,
     gsignond_auth_session_iface_notify_process_result(active_session, result);
     g_object_unref(active_session);
     gsignond_plugin_proxy_process_queue(self);
+}
+
+static void gsignond_plugin_proxy_response_callback(GSignondPlugin* plugin, 
+                                                  GSignondSessionData* result,
+                                                  gpointer user_data)
+{
+    GSignondPluginProxy* self = GSIGNOND_PLUGIN_PROXY(user_data);
+    if (self->active_session == NULL) {
+        ERR("Error: plugin %s reported 'response', but no active session \
+            in plugin proxy", self->plugin_type);
+        return;
+    }
+    self->expecting_request = TRUE;
+    gsignond_auth_session_iface_notify_process_result(self->active_session, result);
 }
 
 static void gsignond_plugin_proxy_store_callback(GSignondPlugin* plugin, 

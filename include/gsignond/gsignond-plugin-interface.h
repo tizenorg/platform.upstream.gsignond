@@ -72,9 +72,11 @@ struct _GSignondPluginInterface {
 
     void (*cancel) (GSignondPlugin *self);
     void (*abort) (GSignondPlugin *self);
-    void (*process) (GSignondPlugin *self, 
+    void (*request_initial) (GSignondPlugin *self, 
                      GSignondSessionData *session_data, 
                      const gchar *mechanism);
+    void (*request) (GSignondPlugin *self, 
+                     GSignondSessionData *session_data);
     void (*user_action_finished) (GSignondPlugin *self, 
                                   GSignondSessionData *session_data);
     void (*refresh) (GSignondPlugin *self, 
@@ -89,9 +91,12 @@ gsignond_plugin_cancel (GSignondPlugin *self);
 void 
 gsignond_plugin_abort (GSignondPlugin *self);
 void 
-gsignond_plugin_process (GSignondPlugin *self, 
+gsignond_plugin_request_initial (GSignondPlugin *self, 
                               GSignondSessionData *session_data, 
                               const gchar *mechanism);
+void 
+gsignond_plugin_request (GSignondPlugin *self, 
+                              GSignondSessionData *session_data);
 void 
 gsignond_plugin_user_action_finished (GSignondPlugin *self, 
                                            GSignondSessionData *session_data);
@@ -101,7 +106,10 @@ gsignond_plugin_refresh (GSignondPlugin *self,
 
 /* Signals */
 void 
-gsignond_plugin_result (GSignondPlugin *self, 
+gsignond_plugin_response (GSignondPlugin *self, 
+                             GSignondSessionData *session_data);
+void 
+gsignond_plugin_response_final (GSignondPlugin *self, 
                              GSignondSessionData *session_data);
 void 
 gsignond_plugin_store (GSignondPlugin *self, 

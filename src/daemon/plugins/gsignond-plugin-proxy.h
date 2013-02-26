@@ -52,6 +52,7 @@ struct _GSignondPluginProxy
     GSignondPlugin* plugin;
     GQueue* session_queue;
     GSignondAuthSessionIface* active_session;
+    gboolean expecting_request;
 };
 
 struct _GSignondPluginProxyClass

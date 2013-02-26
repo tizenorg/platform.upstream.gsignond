@@ -119,7 +119,7 @@ START_TEST (test_passwordplugin_create)
 }
 END_TEST
 
-static void result_callback(GSignondPlugin* plugin, GSignondSessionData* result,
+static void response_callback(GSignondPlugin* plugin, GSignondSessionData* result,
                      gpointer user_data)
 {
     GSignondSessionData** user_data_p = user_data;
@@ -142,7 +142,7 @@ static void error_callback(GSignondPlugin* plugin, GError* error,
 }
 
 
-START_TEST (test_passwordplugin_process)
+START_TEST (test_passwordplugin_request)
 {
     gpointer plugin;
     
@@ -153,7 +153,7 @@ START_TEST (test_passwordplugin_process)
     GSignondSessionData* ui_action = NULL;
     GError* error = NULL;
 
-    g_signal_connect(plugin, "result", G_CALLBACK(result_callback), &result);
+    g_signal_connect(plugin, "response-final", G_CALLBACK(response_callback), &result);
     g_signal_connect(plugin, "user-action-required", 
                      G_CALLBACK(user_action_required_callback), &ui_action);
     g_signal_connect(plugin, "error", G_CALLBACK(error_callback), &error);
@@ -162,7 +162,7 @@ START_TEST (test_passwordplugin_process)
 
     // username empty, password not empty
     gsignond_session_data_set_secret(data, "megapassword");
-    gsignond_plugin_process(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, "password");
     fail_if(result == NULL);    
     fail_if(ui_action != NULL);
     fail_if(error != NULL);
@@ -174,7 +174,7 @@ START_TEST (test_passwordplugin_process)
     
     // username and password not empty
     gsignond_session_data_set_username(data, "megauser");
-    gsignond_plugin_process(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, "password");
     fail_if(result == NULL);    
     fail_if(ui_action != NULL);
     fail_if(error != NULL);
@@ -188,7 +188,7 @@ START_TEST (test_passwordplugin_process)
     //username and password empty
     gsignond_dictionary_free(data);
     data = gsignond_dictionary_new();
-    gsignond_plugin_process(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, "password");
     fail_if(result != NULL);    
     fail_if(ui_action == NULL);
     fail_if(error != NULL);
@@ -199,7 +199,7 @@ START_TEST (test_passwordplugin_process)
     
     //username not empty, password empty
     gsignond_session_data_set_username(data, "megauser");
-    gsignond_plugin_process(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, "password");
     fail_if(result != NULL);    
     fail_if(ui_action == NULL);
     fail_if(error != NULL);
@@ -224,7 +224,7 @@ START_TEST (test_passwordplugin_user_action_finished)
     GSignondSessionData* ui_action = NULL;
     GError* error = NULL;
 
-    g_signal_connect(plugin, "result", G_CALLBACK(result_callback), &result);
+    g_signal_connect(plugin, "response-final", G_CALLBACK(response_callback), &result);
     g_signal_connect(plugin, "user-action-required", 
                      G_CALLBACK(user_action_required_callback), &ui_action);
     g_signal_connect(plugin, "error", G_CALLBACK(error_callback), &error);
@@ -293,7 +293,7 @@ START_TEST (test_passwordplugin_refresh)
     GSignondSessionData* result = NULL;
     GError* error = NULL;
 
-    g_signal_connect(plugin, "refreshed", G_CALLBACK(result_callback), &result);
+    g_signal_connect(plugin, "refreshed", G_CALLBACK(response_callback), &result);
     g_signal_connect(plugin, "error", G_CALLBACK(error_callback), &error);
 
     GSignondSessionData* data = gsignond_dictionary_new();
@@ -316,7 +316,7 @@ Suite* passwordplugin_suite (void)
     TCase *tc_core = tcase_create ("Tests");
     tcase_add_test (tc_core, test_session_data);
     tcase_add_test (tc_core, test_passwordplugin_create);
-    tcase_add_test (tc_core, test_passwordplugin_process);
+    tcase_add_test (tc_core, test_passwordplugin_request);
     tcase_add_test (tc_core, test_passwordplugin_user_action_finished);
     tcase_add_test (tc_core, test_passwordplugin_refresh);
     suite_add_tcase (s, tc_core);
