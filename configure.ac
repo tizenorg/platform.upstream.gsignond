@@ -54,7 +54,7 @@ GTK_DOC_CHECK
 AC_CHECK_HEADERS([string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall"
+GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall -DG_LOG_DOMAIN=\\\"gsignond\\\""
 
 # Checks for library functions.
 

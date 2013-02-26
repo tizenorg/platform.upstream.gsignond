@@ -27,12 +27,9 @@
 
 #include <glib.h>
 
-/*
- * TODO: Currently logging is directed to stdio, should resolve this properly
- */
-#define INFO(frmt, args...) g_print("[I] %s:%d  " frmt "\n", __func__, __LINE__, ##args)
-#define ERR(frmt, args...)  g_error("[E] %s:%d  " frmt , __func__, __LINE__, ##args)
-#define WARN(frmt, args...)  g_warning("[W] %s:%d  " frmt , __func__, __LINE__, ##args)
-#define DBG(frmt, args...)  g_debug("[D] %s:%d  " frmt , __func__, __LINE__, ##args)
+#define INFO(frmt, args...) g_message("%s:%d  " frmt , __FILE__, __LINE__, ##args)
+#define ERR(frmt, args...)  g_error("%s:%d  " frmt , __FILE__, __LINE__, ##args)
+#define WARN(frmt, args...)  g_warning("%s:%d  " frmt , __FILE__, __LINE__, ##args)
+#define DBG(frmt, args...)  g_debug("%s:%d  " frmt , __FILE__, __LINE__, ##args)
 
 #endif /* __GSIGNOND_LOG_H_ */

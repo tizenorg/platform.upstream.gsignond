@@ -10,6 +10,7 @@ daemontest_SOURCES = daemon-test.c
 daemontest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
+    -U G_LOG_DOMAIN \
     -DG_LOG_DOMAIN=\"gsignond-test-server\" \
     -DGSIGNOND_TEST_DBUS_SERVICE_DIR=\""$(abs_top_builddir)/test/daemon/services"\" \
     -I$(top_srcdir) \
