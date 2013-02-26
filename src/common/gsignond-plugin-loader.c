@@ -40,7 +40,7 @@ gsignond_load_plugin(GSignondConfig* config, gchar* plugin_type)
         G_MODULE_BIND_LOCAL);
     g_free(plugin_filename);
     if (plugin_module == NULL) {
-        DBG("Plugin couldn't be opened");
+        DBG("Plugin couldn't be opened: %s", g_module_error());
         return NULL;
     }
     

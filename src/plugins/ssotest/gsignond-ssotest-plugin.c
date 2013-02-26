@@ -80,7 +80,7 @@ static void gsignond_ssotest_plugin_process (
     int i;
     for (i = 0; i < 10; i++) {
         if (!self->priv->is_canceled) {
-            gsignond_plugin_status_changed (self,
+            gsignond_plugin_status_changed (GSIGNOND_PLUGIN (self),
                                             GSIGNOND_PLUGIN_STATE_WAITING,
                                             "hello from the test plugin");
             INFO("Signal is sent");

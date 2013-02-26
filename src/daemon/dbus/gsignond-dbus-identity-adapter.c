@@ -24,6 +24,7 @@
  */
 
 #include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-error.h"
 #include "gsignond-dbus-identity-adapter.h"
 #include "gsignond-dbus.h"
 
@@ -301,9 +302,17 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
+    DBG ("get auth session for method : %s", method);
     object_path = gsignond_identity_iface_get_auth_session (self->priv->identity, method, &self->priv->sec_context);
 
-    gsignond_dbus_identity_complete_get_auth_session (iface, invocation, object_path);
+    if (!object_path) {
+        g_dbus_method_invocation_return_error (invocation, 
+                                               GSIGNOND_ERROR,
+                                               GSIGNOND_ERROR_METHOD_NOT_KNOWN,
+                                               "'%s' method not supported", method);
+    }
+    else
+        gsignond_dbus_identity_complete_get_auth_session (iface, invocation, object_path);
 
     return TRUE;
 }

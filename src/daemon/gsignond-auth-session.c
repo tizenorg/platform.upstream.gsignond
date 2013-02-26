@@ -202,7 +202,7 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
                              "authentication method",
                              "Authentication method used",
                              NULL,
-                             G_PARAM_READABLE | G_PARAM_CONSTRUCT_ONLY);
+                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }

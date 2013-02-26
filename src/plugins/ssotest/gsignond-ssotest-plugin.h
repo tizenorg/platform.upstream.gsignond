@@ -29,7 +29,7 @@
 #include <glib-object.h>
 
 #define GSIGNOND_TYPE_SSOTEST_PLUGIN \
-    (gsignond_password_plugin_get_type ())
+    (gsignond_ssotest_plugin_get_type ())
 #define GSIGNOND_SSOTEST_PLUGIN(obj) \
     (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
                                  GSIGNOND_TYPE_SSOTEST_PLUGIN, \
@@ -65,6 +65,6 @@ struct _GSignondSsoTestPluginClass
     GObjectClass parent_class;
 };
 
-GType gsignond_password_plugin_get_type (void);
+GType gsignond_ssotest_plugin_get_type (void);
 
 #endif /* __GSIGNOND_SSOTEST_PLUGIN_H__ */

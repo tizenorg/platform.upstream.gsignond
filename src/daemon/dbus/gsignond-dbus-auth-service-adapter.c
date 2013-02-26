@@ -24,6 +24,7 @@
  */
 
 #include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-error.h"
 #include "gsignond-dbus-auth-service-adapter.h"
 #include "gsignond-dbus.h"
 
@@ -296,7 +297,15 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
     const gchar **methods = gsignond_auth_service_iface_query_methods (self->priv->parent);
 
-    gsignond_dbus_auth_service_complete_query_methods (iface, invocation, (const gchar * const*)methods);
+    if (methods)
+        gsignond_dbus_auth_service_complete_query_methods (iface, invocation, (const gchar * const*)methods);
+    else {
+        g_dbus_method_invocation_return_error (invocation,
+                                               GSIGNOND_ERROR,
+                                               GSIGNOND_ERROR_METHOD_NOT_AVAILABLE,
+                                               "no authentication methods available");
+
+    }
 
     return TRUE;
 }
@@ -312,7 +321,13 @@ _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
 
     mechanisms = gsignond_auth_service_iface_query_mechanisms (self->priv->parent, method);
 
-    gsignond_dbus_auth_service_complete_query_mechanisms (iface, invocation, (const gchar* const*)mechanisms);
+    if (mechanisms)
+        gsignond_dbus_auth_service_complete_query_mechanisms (iface, invocation, (const gchar* const*)mechanisms);
+    else {
+        g_dbus_method_invocation_return_error (invocation, GSIGNOND_ERROR,
+                    GSIGNOND_ERROR_MECHANISM_NOT_AVAILABLE,
+                    "no mechanisms available");
+    }
 
     return TRUE;
 }
