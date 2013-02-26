@@ -83,12 +83,12 @@ static void gsignond_ssotest_plugin_process (
             gsignond_plugin_status_changed (GSIGNOND_PLUGIN (self),
                                             GSIGNOND_PLUGIN_STATE_WAITING,
                                             "hello from the test plugin");
-            INFO("Signal is sent");
+            INFO ("Signal is sent");
             g_usleep (1000 * 1000 / 10);
         }
     }
     if (self->priv->is_canceled) {
-        INFO("Operation is canceled");
+        INFO ("Operation is canceled");
         GError* error = g_error_new (GSIGNOND_ERROR, 
                                      GSIGNOND_ERROR_SESSION_CANCELED,
                                      "Session canceled");
@@ -100,6 +100,7 @@ static void gsignond_ssotest_plugin_process (
     if (g_strcmp0 (mechanism, "BLOB") == 0) {
         gsignond_plugin_result (plugin, response);
         gsignond_dictionary_free (response);
+        INFO ("mechanism 'BLOB' responded");
         return;
     }
 
@@ -109,11 +110,12 @@ static void gsignond_ssotest_plugin_process (
     g_hash_table_iter_init (&iter, session_data);
     while (g_hash_table_iter_next (&iter,
                                    (gpointer *) &key, (gpointer *) &value))
-        INFO("Key: %s", key);
+        INFO ("Key: %s", key);
 
     if (g_strcmp0 (mechanism, "mech1") == 0) {
         gsignond_plugin_result (plugin, response);
         gsignond_dictionary_free (response);
+        INFO ("mechanism 'mech1' responded");
         return;
     }
 
@@ -129,9 +131,11 @@ static void gsignond_ssotest_plugin_process (
         gsignond_plugin_user_action_required (plugin, user_action_data);
         gsignond_dictionary_free (user_action_data);
         gsignond_dictionary_free (response);
+        INFO ("mechanism 'mech2' responded'");
         return;
     }
 
+    INFO ("no response from plugin");
     gsignond_dictionary_free (response);
 }
 
