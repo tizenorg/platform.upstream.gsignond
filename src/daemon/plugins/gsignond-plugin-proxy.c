@@ -311,6 +311,10 @@ void gsignond_plugin_proxy_process (GSignondPluginProxy *self,
     g_queue_push_tail(self->session_queue, gsignond_process_data_new(session, 
                                                                      session_data, 
                                                                      mechanism));
+    gsignond_auth_session_iface_notify_state_changed(
+                                                self->active_session,
+                                                GSIGNOND_PLUGIN_STATE_PENDING,
+                                                "The request has been queued.");
     if (self->active_session == NULL) {
         gsignond_plugin_proxy_process_queue(self);
     }
