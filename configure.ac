@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([gsignond], [0.1], [])
+AC_INIT([gsignond], [0.1],[],[],[http://code.google.com/p/accounts-sso/])
 AC_CONFIG_SRCDIR([src/daemon/main.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -60,6 +60,8 @@ GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall -DG_LOG_DOMAIN=\\\"gsignond\\\""
 
 AC_OUTPUT([
 Makefile
+${PACKAGE_NAME}.pc
+${PACKAGE_NAME}-uninstalled.pc
 src/Makefile
 src/common/Makefile
 src/common/db/Makefile
