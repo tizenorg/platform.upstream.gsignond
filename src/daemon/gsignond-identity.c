@@ -247,8 +247,8 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                   NULL, NULL,
                   NULL,
                   G_TYPE_BOOLEAN,
-                  1,
-                  GSIGNOND_TYPE_IDENTITY_INFO);
+                  0,
+                  G_TYPE_NONE);
     signals[SIG_STORE] = g_signal_new ("store",
                   GSIGNOND_TYPE_IDENTITY,
                   G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,

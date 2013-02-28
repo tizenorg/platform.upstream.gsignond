@@ -24,7 +24,6 @@
  */
 
 #include "gsignond/gsignond-log.h"
-#include "gsignond/gsignond-error.h"
 #include "gsignond-dbus-identity-adapter.h"
 #include "gsignond-dbus.h"
 
@@ -39,6 +38,12 @@ enum
 
 static GParamSpec *properties[N_PROPERTIES];
 
+typedef struct {
+    GSignondDbusIdentityAdapter *adapter;
+    GDBusMethodInvocation *invocation;
+    gpointer user_data;
+} _IdentityDbusInfo;
+
 struct _GSignondDbusIdentityAdapterPrivate
 {
     GDBusConnection       *connection;
@@ -46,6 +51,10 @@ struct _GSignondDbusIdentityAdapterPrivate
     gchar *object_path;
     gchar *app_context;
     GSignondSecurityContext sec_context;
+    /* signal handler ids */
+    guint info_updated_handler_id;
+    guint verify_user_handler_id;
+    guint verify_secret_handler_id;
 };
 
 G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIGNOND_DBUS_TYPE_IDENTITY_SKELETON)
@@ -89,10 +98,22 @@ gsignond_dbus_identity_adapter_set_property (GObject *object,
             gpointer iface = g_value_peek_pointer (value);
             if (iface) {
                 if (self->priv->identity) {
-                    g_signal_handlers_disconnect_by_func (self->priv->identity, _emit_info_updated, self);
+                    if (self->priv->info_updated_handler_id) {
+                        g_signal_handler_disconnect (self->priv->identity, self->priv->info_updated_handler_id);
+                        self->priv->info_updated_handler_id = 0;
+                    }
+                    if (self->priv->verify_user_handler_id) {
+                        g_signal_handler_disconnect (self->priv->identity, self->priv->verify_user_handler_id);
+                        self->priv->verify_user_handler_id = 0;
+                    }
+                    if (self->priv->verify_secret_handler_id) {
+                        g_signal_handler_disconnect (self->priv->identity, self->priv->verify_secret_handler_id);
+                        self->priv->verify_secret_handler_id = 0;
+                    }
                 }
                 self->priv->identity = GSIGNOND_IDENTITY_IFACE (iface);
-                g_signal_connect (self->priv->identity, "info-updated", G_CALLBACK (_emit_info_updated), self);
+                self->priv->info_updated_handler_id = g_signal_connect (
+                        self->priv->identity, "info-updated", G_CALLBACK (_emit_info_updated), self);
             }
             break;
         }
@@ -137,6 +158,21 @@ gsignond_dbus_identity_adapter_dispose (GObject *object)
     if (self->priv->connection) {
         g_object_unref (self->priv->connection);
         self->priv->connection = NULL;
+    }
+    
+    if (self->priv->identity) {
+        if (self->priv->info_updated_handler_id) {
+            g_signal_handler_disconnect (self->priv->identity, self->priv->info_updated_handler_id);
+            self->priv->info_updated_handler_id = 0;
+        }
+        if (self->priv->verify_user_handler_id) {
+            g_signal_handler_disconnect (self->priv->identity, self->priv->verify_user_handler_id);
+            self->priv->verify_user_handler_id = 0;
+        }
+        if (self->priv->verify_secret_handler_id) {
+            g_signal_handler_disconnect (self->priv->identity, self->priv->verify_secret_handler_id);
+            self->priv->verify_secret_handler_id = 0;
+        }
     }
 
     G_OBJECT_CLASS (gsignond_dbus_identity_adapter_parent_class)->dispose (object);
@@ -246,20 +282,17 @@ _handle_request_credentials_update (GSignondDbusIdentityAdapter *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     guint32 id;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
     
-    id = gsignond_identity_iface_request_credentials_update (self->priv->identity, message, &self->priv->sec_context);
+    id = gsignond_identity_iface_request_credentials_update (self->priv->identity, message, &self->priv->sec_context, &error);
     if (id) {
         gsignond_dbus_identity_complete_request_credentials_update (iface, invocation, id);
     }
     else {
-        /* 
-         * TODO: Prepare error
-         * GError *err = g_error_new ();
-         * g_dbus_method_invocation_return_gerror (invocation, err);
-         * g_error_free (err);
-         */
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
     }
 
     return TRUE;
@@ -272,20 +305,17 @@ _handle_get_info (GSignondDbusIdentityAdapter *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     GVariant *identity_data = 0;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
-    identity_data = gsignond_identity_iface_get_info (self->priv->identity, &self->priv->sec_context);
+    identity_data = gsignond_identity_iface_get_info (self->priv->identity, &self->priv->sec_context, &error);
 
     if (identity_data) {
         gsignond_dbus_identity_complete_get_info (iface, invocation, identity_data);
     }
     else {
-        /*
-         * TODO: Prepare error
-         * GError *err = g_error_new ();
-         * g_dbus_method_invocation_return_gerror (invocation, err);
-         * g_error_free (err);
-         */
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
     }
 
     return TRUE;
@@ -299,22 +329,45 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     const gchar *object_path = NULL;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    DBG ("get auth session for method : %s", method);
-    object_path = gsignond_identity_iface_get_auth_session (self->priv->identity, method, &self->priv->sec_context);
+    object_path = gsignond_identity_iface_get_auth_session (self->priv->identity, method, &self->priv->sec_context, &error);
 
-    if (!object_path) {
-        g_dbus_method_invocation_return_error (invocation, 
-                                               GSIGNOND_ERROR,
-                                               GSIGNOND_ERROR_METHOD_NOT_KNOWN,
-                                               "'%s' method not supported", method);
-    }
-    else
+    if (object_path) {
         gsignond_dbus_identity_complete_get_auth_session (iface, invocation, object_path);
+    }
+    else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 
     return TRUE;
+}
+
+static void
+_on_user_verfied (GSignondIdentityIface *identity, gboolean res, const GError *error, gpointer user_data)
+{
+    _IdentityDbusInfo *info = (_IdentityDbusInfo *)user_data;
+   
+    if (G_UNLIKELY (info)) {
+        WARN ("assertion G_UNLIKELY (info) fialed");
+        return ;
+    }
+
+    g_signal_handler_disconnect (identity, info->adapter->priv->verify_user_handler_id);
+    info->adapter->priv->verify_user_handler_id = 0;
+
+    if (error) {
+        g_dbus_method_invocation_return_gerror (info->invocation, error);
+    }
+    else {
+        gsignond_dbus_identity_complete_verify_user (
+            GSIGNOND_DBUS_IDENTITY (info->adapter), info->invocation, res);
+    }
+
+    g_free (info);
 }
 
 static gboolean
@@ -323,16 +376,53 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
                      const GVariant *params,
                      gpointer user_data)
 {
-    GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     gboolean res = FALSE;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    res = gsignond_identity_iface_verify_user (self->priv->identity, params, &self->priv->sec_context);
+    res = gsignond_identity_iface_verify_user (self->priv->identity, params, &self->priv->sec_context, &error);
 
-    gsignond_dbus_identity_complete_verify_user (iface, invocation, res);
+    if (!res) {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
+    else {
+        _IdentityDbusInfo *info = g_new0(_IdentityDbusInfo, 1);
+
+        info->adapter = self;
+        info->invocation = invocation;
+        info->user_data = NULL;
+
+        /* FIXME: Do we allow multiple calls at a given point of time */
+        self->priv->verify_user_handler_id = g_signal_connect (self->priv->identity, 
+                    "user-verified", G_CALLBACK (_on_user_verfied), (gpointer)info);
+    }
 
     return TRUE;
+}
+
+static void
+_on_secret_verfied (GSignondIdentityIface *identity, gboolean res, const GError *error, gpointer user_data)
+{
+    _IdentityDbusInfo *info = (_IdentityDbusInfo *)user_data;
+
+    g_signal_handler_disconnect (identity, info->adapter->priv->verify_secret_handler_id);
+    info->adapter->priv->verify_secret_handler_id = 0;
+
+    if (G_UNLIKELY (info)) {
+        WARN ("assertion G_UNLIKELY (info) fialed");
+        return ;
+    }
+    if (error) {
+        g_dbus_method_invocation_return_gerror (info->invocation, error);
+    }
+    else {
+        gsignond_dbus_identity_complete_verify_secret (
+            GSIGNOND_DBUS_IDENTITY (info->adapter), info->invocation, res);
+    }
+
+    g_free (info);
 }
 
 static gboolean
@@ -341,14 +431,28 @@ _handle_verify_secret (GSignondDbusIdentityAdapter *self,
                       const gchar *secret,
                       gpointer user_data)
 {
-    GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     gboolean res = FALSE;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
     
-    res = gsignond_identity_iface_verify_secret (self->priv->identity, secret, &self->priv->sec_context);
+    res = gsignond_identity_iface_verify_secret (self->priv->identity, secret, &self->priv->sec_context, &error);
 
-    gsignond_dbus_identity_complete_verify_secret (iface, invocation, res);
+    if (!res) {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
+    else {
+        _IdentityDbusInfo *info = g_new0(_IdentityDbusInfo, 1);
+
+        info->adapter = self;
+        info->invocation = invocation;
+        info->user_data = NULL;
+
+        /* FIXME: Do we allow multiple calls at a given point of time */
+        self->priv->verify_secret_handler_id = g_signal_connect (self->priv->identity, 
+                "secret-verified", G_CALLBACK (_on_secret_verfied), (gpointer)info);
+    }
 
     return TRUE;
 }
@@ -359,12 +463,17 @@ _handle_remove (GSignondDbusIdentityAdapter   *self,
                 gpointer               user_data)
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
+    GError *error = NULL;
     
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    gsignond_identity_iface_remove (self->priv->identity, &self->priv->sec_context);
-
-    gsignond_dbus_identity_complete_remove (iface, invocation);
+    if (!gsignond_identity_iface_remove (self->priv->identity, &self->priv->sec_context, &error)) {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
+    else {
+        gsignond_dbus_identity_complete_remove (iface, invocation);
+    }
 
     return TRUE;
 }
@@ -376,12 +485,19 @@ _handle_sign_out (GSignondDbusIdentityAdapter *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     gboolean res = FALSE;
+    GError *error = NULL;
     
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    res = gsignond_identity_iface_sign_out (self->priv->identity, &self->priv->sec_context);
+    res = gsignond_identity_iface_sign_out (self->priv->identity, &self->priv->sec_context, &error);
 
-    gsignond_dbus_identity_complete_sign_out (iface, invocation, res);
+    if (res) {
+        gsignond_dbus_identity_complete_sign_out (iface, invocation, res);
+    }
+    else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 
     return TRUE;
 }
@@ -394,12 +510,18 @@ _handle_store (GSignondDbusIdentityAdapter *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     guint id = 0;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    id = gsignond_identity_iface_store (self->priv->identity, info, &self->priv->sec_context);
+    id = gsignond_identity_iface_store (self->priv->identity, info, &self->priv->sec_context, &error);
 
-    gsignond_dbus_identity_complete_store (iface, invocation, id);
+    if (id) {
+        gsignond_dbus_identity_complete_store (iface, invocation, id);
+    } else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 
     return TRUE;
 }
@@ -412,12 +534,19 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     gint32 id = 0;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    id = gsignond_identity_iface_add_reference (self->priv->identity, reference, &self->priv->sec_context);
+    id = gsignond_identity_iface_add_reference (self->priv->identity, reference, &self->priv->sec_context, &error);
 
-    gsignond_dbus_identity_complete_add_reference (iface, invocation, id);
+    if (id) {
+        gsignond_dbus_identity_complete_add_reference (iface, invocation, id);
+    }
+    else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 
     return TRUE;
 }
@@ -430,12 +559,18 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
 {
     GSignondDbusIdentity *iface = GSIGNOND_DBUS_IDENTITY (self);
     gint32 id = 0;
+    GError *error = NULL;
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    id = gsignond_identity_iface_remove_reference (self->priv->identity, reference, &self->priv->sec_context);
+    id = gsignond_identity_iface_remove_reference (self->priv->identity, reference, &self->priv->sec_context, &error);
 
-    gsignond_dbus_identity_complete_remove_reference (iface, invocation, id);
+    if (id) {
+        gsignond_dbus_identity_complete_remove_reference (iface, invocation, id);
+    } else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 
     return TRUE;
 }

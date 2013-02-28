@@ -206,19 +206,18 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
                                     gpointer user_data)
 {
     GSignondDbusAuthSession *iface = GSIGNOND_DBUS_AUTH_SESSION (self);
-    gchar **mechanisms = gsignond_auth_session_iface_query_available_mechanisms (self->priv->parent, wanted_mechanisms);
+    gchar **mechanisms = NULL;
+    GError *error = NULL;
+    
+    mechanisms = gsignond_auth_session_iface_query_available_mechanisms (self->priv->parent, wanted_mechanisms, &error);
 
     if (mechanisms) {
         gsignond_dbus_auth_session_complete_query_available_mechanisms (iface, invocation, (const gchar * const *)mechanisms);
         g_strfreev (mechanisms);
     }
     else {
-        /* 
-         * TODO: Prepare error
-         * GError *err = g_error_new ();
-         * g_dbus_method_invocation_return_gerror (invocation, err);
-         * g_error_free (err);
-         */
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
     }
 }
 
@@ -232,10 +231,13 @@ static void
 _on_process_result (GSignondAuthSessionIface *auth_session, const GSignondSessionData *data, gpointer user_data)
 {
     _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo *) user_data;
-    g_assert (info && info->adapter);
-    GSignondDbusAuthSessionAdapter *self = info->adapter;
+    GSignondDbusAuthSessionAdapter *self = NULL;
+    GVariant *result = NULL;
+    
+    if (!info) return ;
 
-    GVariant *result = gsignond_dictionary_to_variant ((GSignondDictionary *)data);
+    self = info->adapter;
+    result = gsignond_dictionary_to_variant ((GSignondDictionary *)data);
 
     gsignond_dbus_auth_session_complete_process (
         GSIGNOND_DBUS_AUTH_SESSION(self),
@@ -251,7 +253,11 @@ static void
 _on_process_error (GSignondAuthSessionIface *auth_session, const GError *error, gpointer user_data)
 {
     _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo *) user_data;
-    GSignondDbusAuthSessionAdapter *self = info->adapter;
+    GSignondDbusAuthSessionAdapter *self = NULL;
+
+    if (!info) return ;
+
+    self = info->adapter;
 
     g_dbus_method_invocation_return_gerror (info->invocation, error);
 
@@ -269,7 +275,7 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
                  gpointer user_data)
 {
     _AuthSessionDbusInfo *info = 0;
-
+    GError *error = NULL;
     GSignondSessionData *data = (GSignondSessionData *)gsignond_dictionary_new_from_variant ((GVariant *)session_data);
 
     info = g_new0 (_AuthSessionDbusInfo, 1);
@@ -281,7 +287,15 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
     self->priv->process_result_handler_id = 
         g_signal_connect (self->priv->parent, "process-result", G_CALLBACK (_on_process_result), info);
 
-    gsignond_auth_session_iface_process (self->priv->parent, data, mechanisms);
+    if (!gsignond_auth_session_iface_process (self->priv->parent, data, mechanisms, &error)) {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    
+        g_signal_handler_disconnect (self->priv->parent, self->priv->process_error_handler_id);
+        g_signal_handler_disconnect (self->priv->parent, self->priv->process_result_handler_id);
+
+        self->priv->process_error_handler_id = self->priv->process_result_handler_id = 0;
+    }
 
     gsignond_dictionary_free (data);
 }
@@ -292,10 +306,14 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
                 gpointer user_data)
 {
     GSignondDbusAuthSession *iface = GSIGNOND_DBUS_AUTH_SESSION (self);
+    GError *error = NULL;
     
-    gsignond_auth_session_iface_cancel (self->priv->parent);
-
-    gsignond_dbus_auth_session_complete_cancel (iface, invocation);
+    if (gsignond_auth_session_iface_cancel (self->priv->parent, &error))
+        gsignond_dbus_auth_session_complete_cancel (iface, invocation);
+    else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 }
 
 static void

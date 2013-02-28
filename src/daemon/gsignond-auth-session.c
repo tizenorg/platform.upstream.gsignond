@@ -24,6 +24,8 @@
  */
 
 #include "gsignond-auth-session-iface.h"
+#include "gsignond/gsignond-error.h"
+#include "gsignond/gsignond-log.h"
 #include "dbus/gsignond-dbus.h"
 #include "dbus/gsignond-dbus-auth-session-adapter.h"
 #include "gsignond-auth-session.h"
@@ -59,8 +61,14 @@ G_DEFINE_TYPE_WITH_CODE (GSignondAuthSession, gsignond_auth_session,
 
 static gchar **
 _query_available_mechanisms (GSignondAuthSessionIface *iface,
-                             const gchar **wanted_mechanisms)
+                             const gchar **wanted_mechanisms,
+                             GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
+        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return NULL;
+    }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
     gchar** available_mechanisms;
     g_object_get(self->priv->proxy, 
@@ -75,22 +83,35 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
 
 static gboolean
 _process (GSignondAuthSessionIface *iface, GSignondSessionData *session_data,
-          const gchar *mechanism)
+          const gchar *mechanism,
+          GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
+        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
     gsignond_plugin_proxy_process(self->priv->proxy, iface, session_data,
                                   mechanism);
 
-     return TRUE;
+    return TRUE;
 }
 
-static void 
-_cancel (GSignondAuthSessionIface *iface)
+static gboolean
+_cancel (GSignondAuthSessionIface *iface, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
+        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
     gsignond_plugin_proxy_cancel(self->priv->proxy, iface);
+
+    return TRUE;
 }
 
 void 
@@ -126,7 +147,6 @@ _get_property (GObject *object, guint property_id, GValue *value,
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
 }
-
 
 static void
 _set_property (GObject *object, guint property_id, const GValue *value,
@@ -259,7 +279,6 @@ gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id)
         gsignond_get_plugin_proxy_factory(), id, session->priv->proxy);
 }
 
-
 /**
  * gsignond_auth_session_new:
  * @owner: instance of #GSignondIdentityIface
@@ -290,4 +309,3 @@ gsignond_auth_session_new (gint id, const gchar *method)
 
     return auth_session;
 }
-

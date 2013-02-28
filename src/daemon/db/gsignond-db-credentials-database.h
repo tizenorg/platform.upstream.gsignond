@@ -187,6 +187,10 @@ gsignond_db_credentials_database_get_identity_owner (
         GSignondDbCredentialsDatabase *self,
         const guint32 identity_id);
 
+const GError *
+gsignond_db_credentials_database_get_last_error (
+        GSignondDbCredentialsDatabase *self);
+
 G_END_DECLS
 
 #endif /* __GSIGNOND_DB_CREDENTIALS_DATABASE_H__ */

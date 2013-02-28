@@ -47,6 +47,7 @@ struct _GSignondAuthSessionIfaceInterface {
      * query_available_mechanisms:
      * @session: instance of #GSignondAuthSessionIface
      * @desired_mechanisms: desired authentication mechanisms
+     * @error: return location for error
      *
      * Checks for support of desired authentication mechanisms #desired_mechanisms for this
      * authentication session, The result will be interseciton of desired authenticaiton mechansims 
@@ -56,13 +57,15 @@ struct _GSignondAuthSessionIfaceInterface {
      * Caller should use g_strfreev() when done with return value.
      */
     gchar **   (*query_available_mechanisms) (GSignondAuthSessionIface *session,
-                                              const gchar **desired_mechanisms);
+                                              const gchar **desired_mechanisms,
+                                              GError **error);
 
     /**
      * process:
      * @session: instance of #GSignondAuthSessionIface
      * @session_data: authentication session data to use
      * @mechansims: authentication mechanism to use
+     * @error: return location for error
      *
      * Initiates authentication process on #session, On successful authentication #gsignond_auth_session_iface_notify_process_result will be called.
      * In case failure occured in authentication process, the error is informed via #gsignond_auth_session_iface_notify_process_error.
@@ -71,14 +74,17 @@ struct _GSignondAuthSessionIfaceInterface {
      */
     gboolean   (*process) (GSignondAuthSessionIface *session,
                            GSignondSessionData *session_data,
-                           const gchar *mechanism);
+                           const gchar *mechanism,
+                           GError **error);
 
     /**
      * cancel:
      * @session: instance of #GSignondAuthSessionIface
+     * @error: return location for error
      *
      */
-    void       (*cancel) (GSignondAuthSessionIface *session);
+    gboolean   (*cancel) (GSignondAuthSessionIface *session,
+                          GError **error);
 
     void (*user_action_finished) (GSignondAuthSessionIface *session, 
                                   GSignondSessionData *session_data);
@@ -91,21 +97,23 @@ struct _GSignondAuthSessionIfaceInterface {
 GType gsignond_auth_session_iface_get_type (void);
 
 gchar ** 
-gsignond_auth_session_iface_query_available_mechanisms (
-                                            GSignondAuthSessionIface *self,
-                                            const gchar **wanted_mechanisms);
+gsignond_auth_session_iface_query_available_mechanisms (GSignondAuthSessionIface *self,
+                                                        const gchar **wanted_mechanisms,
+                                                        GError **error);
 gboolean 
 gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
-                                              GSignondSessionData *session_data,
-                                              const gchar *mechanism);
-void 
-gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self);
+                                     GSignondSessionData *session_data,
+                                     const gchar *mechanism,
+                                     GError **error);
+gboolean
+gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self,
+                                    GError **error);
 void 
 gsignond_auth_session_iface_user_action_finished (GSignondAuthSessionIface *self, 
-                                           GSignondSessionData *session_data);
+                                                  GSignondSessionData *session_data);
 void 
 gsignond_auth_session_iface_refresh (GSignondAuthSessionIface *self, 
-                              GSignondSessionData *session_data);
+                                     GSignondSessionData *session_data);
 
 
 /* handlers */
@@ -117,9 +125,8 @@ gsignond_auth_session_iface_refresh (GSignondAuthSessionIface *self,
   * Function to be called with #results on authentication process success.
   */
 void
-gsignond_auth_session_iface_notify_process_result (
-                                                GSignondAuthSessionIface *iface,
-                                                GSignondSessionData *result);
+gsignond_auth_session_iface_notify_process_result (GSignondAuthSessionIface *iface,
+                                                   GSignondSessionData *result);
 
 /**
   * process_error:
@@ -129,23 +136,22 @@ gsignond_auth_session_iface_notify_process_result (
   * Function to be called with #error on authentication process failure.
   */
 void
-gsignond_auth_session_iface_notify_process_error (
-                                                GSignondAuthSessionIface *iface,
-                                                const GError *error);
+gsignond_auth_session_iface_notify_process_error (GSignondAuthSessionIface *iface,
+                                                  const GError *error);
 
 void 
 gsignond_auth_session_iface_notify_store (GSignondAuthSessionIface *self, 
-                            GSignondSessionData *session_data);
+                                          GSignondSessionData *session_data);
 void 
 gsignond_auth_session_iface_notify_user_action_required (GSignondAuthSessionIface *self, 
-                                           GSignondSessionData *session_data);
+                                                         GSignondSessionData *session_data);
 void 
 gsignond_auth_session_iface_notify_refreshed (GSignondAuthSessionIface *self, 
-                                GSignondSessionData *session_data);
+                                              GSignondSessionData *session_data);
 void 
 gsignond_auth_session_iface_notify_state_changed (GSignondAuthSessionIface *self, 
-                                     gint state,
-                                     const gchar *message);
+                                                  gint state,
+                                                  const gchar *message);
 
 G_END_DECLS
 

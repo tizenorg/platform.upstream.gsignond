@@ -29,10 +29,12 @@ G_DEFINE_INTERFACE (GSignondAuthServiceIface, gsignond_auth_service_iface, G_TYP
 
 static const gchar * 
 _dummy_register_new_identity (GSignondAuthServiceIface *self,
-                              const GSignondSecurityContext *ctx)
+                              const GSignondSecurityContext *ctx,
+                              GError **error)
 {
     (void) self;
     (void) ctx;
+    (void) error;
     return NULL;
 }
 
@@ -40,45 +42,54 @@ static const gchar *
 _dummy_get_identity (GSignondAuthServiceIface *self, 
                      guint32 id,
                      const GSignondSecurityContext *ctx, 
-                     GVariant **identity_data)
+                     GVariant **identity_data,
+                     GError **error)
 {
     (void) self;
     (void) id;
     (void) ctx;
     (void) identity_data;
+    (void) error;
     return NULL;
 }
 
 static const gchar **
-_dummy_query_methods (GSignondAuthServiceIface *self)
+_dummy_query_methods (GSignondAuthServiceIface *self,
+                      GError **error)
 {
     (void) self;
+    (void) error;
     return NULL;
 }
 
 static const gchar **
 _dummy_query_mechanisms (GSignondAuthServiceIface *self, 
-                         const gchar *method)
+                         const gchar *method,
+                         GError **error)
 {
     (void) self;
     (void) method;
+    (void) error;
     return NULL;
 }
 
 static GVariant *
 _dummy_query_identities (GSignondAuthServiceIface *self, 
-                         const GVariant *filter)
+                         const GVariant *filter,
+                         GError **error)
 {
     (void) self;
     (void) filter;
+    (void) error;
     return NULL;
 }
 
 static gboolean
-_dummy_clear (GSignondAuthServiceIface *self)
+_dummy_clear (GSignondAuthServiceIface *self,
+              GError **error)
 {
     (void) self;
-
+    (void) error;
     return FALSE;
 }
 
@@ -107,6 +118,7 @@ gsignond_auth_service_iface_default_init (
  * gsignond_auth_service_iface_register_new_identity:
  * @self: instance of #GSignondAuthServiceIfacea
  * @ctx: security context
+ * @error: return location for error
  *
  *
  * Returns: (transfer none) object path of newly created identity.
@@ -114,10 +126,11 @@ gsignond_auth_service_iface_default_init (
 const gchar *
 gsignond_auth_service_iface_register_new_identity (
                                                  GSignondAuthServiceIface *self,
-                                                 const GSignondSecurityContext *ctx)
+                                                 const GSignondSecurityContext *ctx,
+                                                 GError **error)
 {
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->
-        register_new_identity (self, ctx);
+        register_new_identity (self, ctx, error);
 }
 
 /**
@@ -127,6 +140,7 @@ gsignond_auth_service_iface_register_new_identity (
  * @ctx: security context
  * @object_path:  return location for object path of the identity
  * @identity_data: return location for identity data
+ * @error: return location for error
  *
  * Retrives object path and identity info stored for the given @id.
  *
@@ -136,30 +150,34 @@ const gchar *
 gsignond_auth_service_iface_get_identity (GSignondAuthServiceIface *self,
                                           guint32 id,
                                           const GSignondSecurityContext *ctx,
-                                          GVariant **identity_data)
+                                          GVariant **identity_data,
+                                          GError **error)
 {
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE(self)->
-        get_identity (self, id, ctx, identity_data);
+        get_identity (self, id, ctx, identity_data, error);
 }
 
 /**
  * gsignond_auth_service_iface_query_methods:
  * @self: instance of #GSignondAuthServiceIface
+ * @error: return location for error
  *
  * Retrieves the available authentication methods. 
  *
  * Returns: (transfer none): list of methods
  */
 const gchar **
-gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self)
+gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self,
+                                           GError **error)
 {
-    return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->query_methods (self);
+    return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->query_methods (self, error);
 }
 
 /**
  * gsignond_auth_service_iface_query_mechanisms:
  * @self: instance of #GSignondAuthServiceIface
  * @method: method to query
+ * @error: return location for error
  *
  * Retrieves the available mechanisms for authentication method @method.
  *
@@ -167,16 +185,18 @@ gsignond_auth_service_iface_query_methods (GSignondAuthServiceIface *self)
  */
 const gchar **
 gsignond_auth_service_iface_query_mechanisms (GSignondAuthServiceIface *self,
-                                              const gchar *method)
+                                              const gchar *method,
+                                              GError **error)
 {
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->
-        query_mechanisms (self, method);
+        query_mechanisms (self, method, error);
 }
 
 /**
  * gsignond_auth_service_iface_query_identities:
  * @self: instance of #GSignondAuthServiceIface
  * @filter: filter should be applited
+ * @error: return location for error
  *
  * Retrieves the identities that satisifies the filter @filter.
  *
@@ -184,24 +204,27 @@ gsignond_auth_service_iface_query_mechanisms (GSignondAuthServiceIface *self,
  */
 GVariant *
 gsignond_auth_service_iface_query_identities (GSignondAuthServiceIface *self,
-                                              const GVariant *filter)
+                                              const GVariant *filter,
+                                              GError **error)
 {
     return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->
-        query_identities (self, filter);
+        query_identities (self, filter, error);
 }
 
 /**
  * gsignond_auth_service_iface_clear:
  * @self: instance of #GSignondAuthServiceIface
+ * @error: return location for error
  *  
  * Clears the cache.
  *
  * Returns: TRUE on successful, FALSE otherwise
  */
 gboolean
-gsignond_auth_service_iface_clear (GSignondAuthServiceIface *self)
+gsignond_auth_service_iface_clear (GSignondAuthServiceIface *self,
+                                   GError **error)
 {
-    return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->clear(self);
+    return GSIGNOND_AUTH_SERVICE_GET_INTERFACE (self)->clear(self, error);
 }
 
 GSignondAccessControlManager *

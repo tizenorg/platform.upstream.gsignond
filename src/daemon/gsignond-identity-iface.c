@@ -42,96 +42,109 @@ G_DEFINE_INTERFACE (GSignondIdentityIface, gsignond_identity_iface, G_TYPE_OBJEC
 static gboolean
 _dummy_request_credentials_update (GSignondIdentityIface *self,
                                    const gchar *message,
-                                   const GSignondSecurityContext *ctx)
+                                   const GSignondSecurityContext *ctx,
+                                   GError **error)
 {
     (void) self;
     (void) message;
     (void) ctx;
+    (void) error;
 
     return FALSE;
 }
 
 static GVariant *
-_dummy_get_info (GSignondIdentityIface *self, const GSignondSecurityContext *ctx)
+_dummy_get_info (GSignondIdentityIface *self, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) ctx;
+    (void) error;
 
     return 0;
 }
 
 static const gchar *
-_dummy_get_auth_session (GSignondIdentityIface *self, const gchar *method, const GSignondSecurityContext *ctx)
+_dummy_get_auth_session (GSignondIdentityIface *self, const gchar *method, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) method;
     (void) ctx;
+    (void) error;
 
     return NULL;
 }
 
 static gboolean
-_dummy_verify_user (GSignondIdentityIface *self, const GVariant *params, const GSignondSecurityContext *ctx)
+_dummy_verify_user (GSignondIdentityIface *self, const GVariant *params, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) params;
     (void) ctx;
+    (void) error;
 
     return FALSE;
 }
 
 static gboolean
-_dummy_verify_secret (GSignondIdentityIface *self, const gchar *secret, const GSignondSecurityContext *ctx)
+_dummy_verify_secret (GSignondIdentityIface *self, const gchar *secret, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) secret;
     (void) ctx;
+    (void) error;
 
     return FALSE;
 }
 
-static void
-_dummy_remove (GSignondIdentityIface *self, const GSignondSecurityContext *ctx)
+static gboolean
+_dummy_remove (GSignondIdentityIface *self, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) ctx;
+    (void) error;
+
+    return FALSE;
 }
 
 static gboolean
-_dummy_sign_out (GSignondIdentityIface *self, const GSignondSecurityContext *ctx)
+_dummy_sign_out (GSignondIdentityIface *self, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) ctx;
+    (void) error;
 
     return FALSE;
 }
 
 static guint32
-_dummy_store (GSignondIdentityIface *self, const GVariant *info, const GSignondSecurityContext *ctx)
+_dummy_store (GSignondIdentityIface *self, const GVariant *info, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) info;
     (void) ctx;
+    (void) error;
 
     return 0;
 }
 
 static gint32
-_dummy_add_reference (GSignondIdentityIface *self, const gchar *reference, const GSignondSecurityContext *ctx)
+_dummy_add_reference (GSignondIdentityIface *self, const gchar *reference, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) reference;
     (void) ctx;
+    (void) error;
 
     return 0;
 }
 
 static gint32
-_dummy_remove_reference (GSignondIdentityIface *self, const gchar *reference, const GSignondSecurityContext *ctx)
+_dummy_remove_reference (GSignondIdentityIface *self, const gchar *reference, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) reference;
     (void) ctx;
+    (void) error;
 
     return 0;
 }
@@ -201,6 +214,7 @@ gsignond_identity_iface_default_init (GSignondIdentityIfaceInterface *self)
  * @self: instance of #GSignondIdentityIface
  * @message: message to be shown to user
  * @ctx: security context of the caller
+ * @error: return location for error or @NULL.
  *
  * Requests user to update username and password for this identity @identity.
  * Once the process is done, emits "credentials-updated" signal
@@ -210,10 +224,11 @@ gsignond_identity_iface_default_init (GSignondIdentityIfaceInterface *self)
 gboolean
 gsignond_identity_iface_request_credentials_update (GSignondIdentityIface *self,
                                                     const gchar *message,
-                                                    const GSignondSecurityContext *ctx)
+                                                    const GSignondSecurityContext *ctx,
+                                                    GError **error)
 {
     return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->
-        request_credentials_update (self, message, ctx);
+        request_credentials_update (self, message, ctx, error);
 }
 
 /**
@@ -221,15 +236,16 @@ gsignond_identity_iface_request_credentials_update (GSignondIdentityIface *self,
  * @self: instance of #GSignondIdentityIface
  * @message: message to be shown to user
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Retrieves the identity information for this identity, in the form of key, value pairs.
  *
  * Returns: (transfers full): identity info
  */
 GVariant *
-gsignond_identity_iface_get_info (GSignondIdentityIface *self, const GSignondSecurityContext *ctx)
+gsignond_identity_iface_get_info (GSignondIdentityIface *self, const GSignondSecurityContext *ctx, GError **error)
 {
-    return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->get_info (self, ctx);
+    return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->get_info (self, ctx, error);
 }
 
 /**
@@ -237,6 +253,7 @@ gsignond_identity_iface_get_info (GSignondIdentityIface *self, const GSignondSec
  * @self: instance of #GSignondIdentityIface
  * @method: authentication method to use
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Creates new authentication process on #identity using #method, and returns
  * dbus object path for newly created object.
@@ -246,10 +263,11 @@ gsignond_identity_iface_get_info (GSignondIdentityIface *self, const GSignondSec
 const gchar *
 gsignond_identity_iface_get_auth_session (GSignondIdentityIface *self,
                                           const gchar *method,
-                                          const GSignondSecurityContext *ctx)
+                                          const GSignondSecurityContext *ctx,
+                                          GError **error)
 {
     return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->
-        get_auth_session (self, method, ctx);
+        get_auth_session (self, method, ctx, error);
 }
 
 /**
@@ -257,6 +275,7 @@ gsignond_identity_iface_get_auth_session (GSignondIdentityIface *self,
  * @self: instance of #GSignondIdentityIface
  * @params: authentication parameters to be verified
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Initiates user verification process.
  *
@@ -265,10 +284,11 @@ gsignond_identity_iface_get_auth_session (GSignondIdentityIface *self,
 gboolean
 gsignond_identity_iface_verify_user (GSignondIdentityIface *self,
                                      const GVariant *params,
-                                     const GSignondSecurityContext *ctx)
+                                     const GSignondSecurityContext *ctx,
+                                     GError **error)
 {
     return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->
-        verify_user (self, params, ctx);
+        verify_user (self, params, ctx, error);
 }
 
 /**
@@ -276,6 +296,7 @@ gsignond_identity_iface_verify_user (GSignondIdentityIface *self,
  * @self: instance of #GSignondIdentityIface
  * @secret: secret to be verified
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Initiates secret verification process.
  *
@@ -284,30 +305,36 @@ gsignond_identity_iface_verify_user (GSignondIdentityIface *self,
 gboolean
 gsignond_identity_iface_verify_secret (GSignondIdentityIface *self,
                                        const gchar *secret,
-                                       const GSignondSecurityContext *ctx)
+                                       const GSignondSecurityContext *ctx,
+                                       GError **error)
 {
     return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->
-        verify_secret (self, secret, ctx);
+        verify_secret (self, secret, ctx, error);
 }
 
 /**
  * gsignond_identity_iface_remove:
  * @self: instance of #GSignondIdentityIface
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Removes identity information from underlined database
+ *
+ * Returns: @TRUE if success, @FALSE otherwise
  */
-void
+gboolean
 gsignond_identity_iface_remove (GSignondIdentityIface *self,
-                                const GSignondSecurityContext *ctx)
+                                const GSignondSecurityContext *ctx,
+                                GError **error)
 {
-    GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->remove (self, ctx);
+    return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->remove (self, ctx, error);
 }
 
 /**
  * gsignond_identity_iface_sign_out:
  * @self: instance of #GSignondIdentityIface
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * TODO: add description
  *
@@ -315,9 +342,10 @@ gsignond_identity_iface_remove (GSignondIdentityIface *self,
  */
 gboolean
 gsignond_identity_iface_sign_out (GSignondIdentityIface *self,
-                                  const GSignondSecurityContext *ctx)
+                                  const GSignondSecurityContext *ctx,
+                                  GError **error)
 {
-    return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->sign_out (self, ctx);
+    return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->sign_out (self, ctx, error);
 }
 
 /**
@@ -325,6 +353,7 @@ gsignond_identity_iface_sign_out (GSignondIdentityIface *self,
  * @self: instance of #GSignondIdentityIface
  * @info: identity information to store
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Saves given identity information #info to database
  *
@@ -333,9 +362,10 @@ gsignond_identity_iface_sign_out (GSignondIdentityIface *self,
 guint32
 gsignond_identity_iface_store (GSignondIdentityIface *self,
                                const GVariant *info,
-                               const GSignondSecurityContext *ctx)
+                               const GSignondSecurityContext *ctx,
+                               GError **error)
 {
-    return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->store (self, info, ctx);
+    return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->store (self, info, ctx, error);
 }
 
 /**
@@ -343,6 +373,7 @@ gsignond_identity_iface_store (GSignondIdentityIface *self,
  * @self: instance of #GSignondIdentityIface
  * @reference: reference name
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Adds a named reference #reference to identity
  *
@@ -351,10 +382,11 @@ gsignond_identity_iface_store (GSignondIdentityIface *self,
 gint32
 gsignond_identity_iface_add_reference (GSignondIdentityIface *self,
                                        const gchar *reference,
-                                       const GSignondSecurityContext *ctx)
+                                       const GSignondSecurityContext *ctx,
+                                       GError **error)
 {
     return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->
-        add_reference (self, reference, ctx);
+        add_reference (self, reference, ctx, error);
 }
 
 /**
@@ -362,6 +394,7 @@ gsignond_identity_iface_add_reference (GSignondIdentityIface *self,
  * @self: instance of #GSignondIdentityIface
  * @reference: reference name
  * @ctx: security context of the caller
+ * @error: Return location for error or @NULL.
  *
  * Removes a named reference #reference to identity
  *
@@ -370,10 +403,11 @@ gsignond_identity_iface_add_reference (GSignondIdentityIface *self,
 gint32
 gsignond_identity_iface_remove_reference (GSignondIdentityIface *self,
                                           const gchar *reference,
-                                          const GSignondSecurityContext *ctx)
+                                          const GSignondSecurityContext *ctx,
+                                          GError **error)
 {
     return GSIGNOND_IDENTITY_IFACE_GET_INTERFACE (self)->
-        add_reference (self, reference, ctx);
+        add_reference (self, reference, ctx, error);
 }
 
 GSignondAccessControlManager *
@@ -441,4 +475,3 @@ gsignond_identity_iface_notify_info_updated (GSignondIdentityIface *self,
 {
     g_signal_emit (self, signals[SIG_INFO_UPDATED], 0, change);
 }
-

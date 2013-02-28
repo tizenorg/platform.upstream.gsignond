@@ -333,9 +333,8 @@ _gsignond_db_metadata_database_insert_methods (
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (identity != NULL, FALSE);
 
-    methods = gsignond_identity_info_get_methods (identity);
-
     if (!methods || g_hash_table_size (methods) <=0) {
+        DBG ("no authentication methods found to store identity");
         return FALSE;
     }
 
@@ -1049,8 +1048,6 @@ gsignond_db_metadata_database_update_identity (
     if (!_gsignond_db_metadata_database_insert_methods (self, identity,
             methods)) {
         DBG ("Update methods failed");
-        gsignond_db_sql_database_rollback_transaction (sql);
-        goto finished;
     }
 
     /* realms */

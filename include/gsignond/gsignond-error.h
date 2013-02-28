@@ -42,68 +42,49 @@ G_BEGIN_DECLS
 typedef enum {
     GSIGNOND_ERROR_NONE,
 
-    GSIGNOND_ERROR_UNKNOWN = 1,               /**< Catch-all for errors not distinguished
-                                        by another code. */
+    GSIGNOND_ERROR_UNKNOWN = 1,                /**< Catch-all for errors not distinguished by another code. */
     GSIGNOND_ERROR_INTERNAL_SERVER = 2,        /**< Signon Daemon internal error. */
-    GSIGNOND_ERROR_INTERNAL_COMMUNICATION = 3, /**< Communication with Signon Daemon
-                                     error. */
-    GSIGNOND_ERROR_PERMISSION_DENIED = 4,      /**< The operation cannot be performed due to
-                                        insufficient client permissions. */
-    GSIGNOND_ERROR_ENCRYPTION_FAILURE,         /**< Failure during data
-                                     encryption/decryption. */
-    GSIGNOND_ERROR_AUTH_SERVICE_ERR = 100,           /* Placeholder to rearrange enumeration
-                                         - AuthService specific */
-    GSIGNOND_ERROR_METHOD_NOT_KNOWN,            /**< The method with this name is not
-                                     found. */
-    GSIGNOND_ERROR_SERVICE_NOT_AVAILABLE,       /**< The service is temporarily
-                                     unavailable. */
-    GSIGNOND_ERROR_INVALID_QUERY,              /**< Parameters for the query are invalid. */
-    GSIGNOND_ERROR_IDENTITY_ERR = 200,              /* Placeholder to rearrange enumeration
-                                         - Identity specific */
+    GSIGNOND_ERROR_INTERNAL_COMMUNICATION = 3, /**< Communication with Signon Daemon error. */
+    GSIGNOND_ERROR_PERMISSION_DENIED = 4,      /**< The operation cannot be performed due to insufficient client permissions. */
+    GSIGNOND_ERROR_ENCRYPTION_FAILURE,         /**< Failure during data encryption/decryption. */
+
+    GSIGNOND_ERROR_AUTH_SERVICE_ERR = 100,      /* Placeholder to rearrange enumeration - AuthService specific */
+    GSIGNOND_ERROR_METHOD_NOT_KNOWN,            /**< The method with this name is not found. */
+    GSIGNOND_ERROR_SERVICE_NOT_AVAILABLE,       /**< The service is temporarily unavailable. */
+    GSIGNOND_ERROR_INVALID_QUERY,               /**< Parameters for the query are invalid. */
+
+    GSIGNOND_ERROR_IDENTITY_ERR = 200,          /* Placeholder to rearrange enumeration - Identity specific */
     GSIGNOND_ERROR_METHOD_NOT_AVAILABLE,        /**< The requested method is not available. */
-    GSIGNOND_ERROR_IDENTITY_NOT_FOUND,          /**< The identity matching this Identity
-                                     object was not found on the service. */
-    GSIGNOND_ERROR_STORE_FAILED,               /**< Storing credentials failed. */
-    GSIGNOND_ERROR_REMOVE_FAILED,              /**< Removing credentials failed. */
+    GSIGNOND_ERROR_IDENTITY_NOT_FOUND,          /**< The identity matching this Identity object was not found on the service. */
+    GSIGNOND_ERROR_STORE_FAILED,                /**< Storing credentials failed. */
+    GSIGNOND_ERROR_REMOVE_FAILED,               /**< Removing credentials failed. */
     GSIGNOND_ERROR_SIGN_OUT_FAILED,             /**< SignOut failed. */
-    GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, /**< Identity operation was canceled by
-                                     user. */
+    GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, /**< Identity operation was canceled by user. */
     GSIGNOND_ERROR_CREDENTIALS_NOT_AVAILABLE,   /**< Query failed. */
-    GSIGNOND_ERROR_REFERENCE_NOT_FOUND,         /**< Trying to remove nonexistent
-                                     reference. */
-    GSIGNOND_ERROR_AUTH_SESSION_ERR = 300,      /* Placeholder to rearrange enumeration
-                                     - AuthSession/AuthPluginInterface
-                                     specific */
-    GSIGNOND_ERROR_MECHANISM_NOT_AVAILABLE,     /**< The requested mechanism is not
-                                     available. */
-    GSIGNOND_ERROR_MISSING_DATA,               /**< The SessionData object does not contain
-                                        necessary information. */
-    GSIGNOND_ERROR_INVALID_CREDENTIALS,        /**< The supplied credentials are invalid for
-                                        the mechanism implementation. */
+    GSIGNOND_ERROR_REFERENCE_NOT_FOUND,         /**< Trying to remove nonexistent reference. */
+
+    GSIGNOND_ERROR_AUTH_SESSION_ERR = 300,     /* Placeholder to rearrange enumeration - AuthSession/PluginInterface specific */
+    GSIGNOND_ERROR_MECHANISM_NOT_AVAILABLE,    /**< The requested mechanism is not available. */
+    GSIGNOND_ERROR_MISSING_DATA,               /**< The SessionData object does not contain necessary information. */
+    GSIGNOND_ERROR_INVALID_CREDENTIALS,        /**< The supplied credentials are invalid for the mechanism implementation. */
     GSIGNOND_ERROR_NOT_AUTHORIZED,             /**< Authorization failed. */
-    GSIGNOND_ERROR_WRONG_STATE,                /**< An operation method has been called in
-                                        a wrong state. */
-    GSIGNOND_ERROR_OPERATION_NOT_SUPPORTED,     /**< The operation is not supported by the
-                                        mechanism implementation. */
+    GSIGNOND_ERROR_WRONG_STATE,                /**< An operation method has been called in a wrong state. */
+    GSIGNOND_ERROR_OPERATION_NOT_SUPPORTED,    /**< The operation is not supported by the mechanism implementation. */
     GSIGNOND_ERROR_NO_CONNECTION,              /**< No Network connetion. */
-    GSIGNOND_ERROR_NETWORK,                   /**< Network connetion failed. */
-    GSIGNOND_ERROR_SSL,                       /**< Ssl connection failed. */
-    GSIGNOND_ERROR_RUNTIME,                   /**< Casting SessionData into subclass
-                                     failed */
+    GSIGNOND_ERROR_NETWORK,                    /**< Network connetion failed. */
+    GSIGNOND_ERROR_SSL,                        /**< Ssl connection failed. */
+    GSIGNOND_ERROR_RUNTIME,                    /**< Casting SessionData into subclass failed */
     GSIGNOND_ERROR_SESSION_CANCELED,           /**< Challenge was cancelled. */
     GSIGNOND_ERROR_TIMED_OUT,                  /**< Challenge was timed out. */
     GSIGNOND_ERROR_USER_INTERACTION,           /**< User interaction dialog failed */
     GSIGNOND_ERROR_OPERATION_FAILED,           /**< Temporary failure in authentication. */
-    GSIGNOND_ERROR_ENCRYPTION_FAILED,          /**< @deprecated Failure during data
-                                     encryption/decryption. */
-    GSIGNOND_ERROR_TOS_NOT_ACCEPTED,            /**< User declined Terms of Service. */
-    GSIGNOND_ERROR_FORGOT_PASSWORD,            /**< User requested reset password
-                                     sequence. */
-    GSIGNOND_ERROR_METHOD_OR_MECHANISM_NOT_ALLOWED, /**< Method or mechanism not allowed for
-                                       this identity. */
+    GSIGNOND_ERROR_ENCRYPTION_FAILED,          /**< @deprecated Failure during data encryption/decryption. */
+    GSIGNOND_ERROR_TOS_NOT_ACCEPTED,           /**< User declined Terms of Service. */
+    GSIGNOND_ERROR_FORGOT_PASSWORD,            /**< User requested reset password sequence. */
+    GSIGNOND_ERROR_METHOD_OR_MECHANISM_NOT_ALLOWED, /**< Method or mechanism not allowed for this identity. */
     GSIGNOND_ERROR_INCORRECT_DATE,             /**< Date time incorrect on device. */
-    GSIGNOND_ERROR_USER_ERR = 400                   /* Placeholder to rearrange enumeration
-                                         - User space specific */
+
+    GSIGNOND_ERROR_USER_ERR = 400              /* Placeholder to rearrange enumeration - User space specific */
    
 } GSignondError;
 
@@ -134,6 +115,9 @@ gsignond_concat_domain_and_error (
 
 GString*
 gsignond_prepend_domain_to_error_msg (const GError *err);
+
+#define gsignond_get_gerror_for_id(err, message, args...) \
+    g_error_new (gsignond_error_quark(), err, message, ##args);
 
 G_END_DECLS
 

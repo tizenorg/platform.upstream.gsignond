@@ -768,3 +768,13 @@ gsignond_db_credentials_database_get_identity_owner (
     return ctx;
 }
 
+const GError *
+gsignond_db_credentials_database_get_last_error (
+    GSignondDbCredentialsDatabase *self)
+{
+    g_return_val_if_fail (self && GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
+
+    return gsignond_db_sql_database_get_last_error (
+        GSIGNOND_DB_SQL_DATABASE (self->priv->metadata_db));
+}
+

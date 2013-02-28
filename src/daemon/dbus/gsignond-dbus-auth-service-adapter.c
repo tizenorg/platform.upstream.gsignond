@@ -24,7 +24,6 @@
  */
 
 #include "gsignond/gsignond-log.h"
-#include "gsignond/gsignond-error.h"
 #include "gsignond-dbus-auth-service-adapter.h"
 #include "gsignond-dbus.h"
 
@@ -209,6 +208,7 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
     GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (self->priv->parent); 
     GSignondSecurityContext sec_context = {0, 0};
     const gchar *object_path = NULL;
+    GError *error = NULL;
 
     gsignond_access_control_manager_security_context_of_peer(
             acm,
@@ -217,7 +217,7 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
             sender,
             app_context);
 
-    object_path = gsignond_auth_service_iface_register_new_identity (self->priv->parent, &sec_context);
+    object_path = gsignond_auth_service_iface_register_new_identity (self->priv->parent, &sec_context, &error);
 
     if (object_path) {
         g_bus_watch_name_on_connection (connection, 
@@ -231,12 +231,8 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
         gsignond_dbus_auth_service_complete_register_new_identity (iface, invocation, object_path);
     }
     else {
-        /* 
-         * TODO: Prepare error
-         * GError *err = g_error_new ();
-         * g_dbus_method_invocation_return_gerror (invocation, err);
-         * g_error_free (err);
-         */
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
     }
 
     return TRUE;
@@ -256,6 +252,7 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
     GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (self->priv->parent); 
     GSignondSecurityContext sec_context = {0, 0};
     const gchar *object_path = NULL;
+    GError *error = NULL;
 
     gsignond_access_control_manager_security_context_of_peer(
             acm,
@@ -264,7 +261,7 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
             sender,
             app_context);
 
-    object_path = gsignond_auth_service_iface_get_identity (self->priv->parent, id, &sec_context, &identity_data);
+    object_path = gsignond_auth_service_iface_get_identity (self->priv->parent, id, &sec_context, &identity_data, &error);
 
     if (object_path) {
         g_bus_watch_name_on_connection (connection, 
@@ -278,12 +275,8 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
         gsignond_dbus_auth_service_complete_get_identity (iface, invocation, object_path, identity_data);
     }
     else {
-        /*
-         * TODO: Prepare error
-         * GError *err = g_error_new ();
-         * g_dbus_method_invocation_return_gerror (invocation, err);
-         * g_error_free (err);
-         */
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
     }
 
     return TRUE;
@@ -295,16 +288,16 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
                        gpointer               user_data)
 {
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
-    const gchar **methods = gsignond_auth_service_iface_query_methods (self->priv->parent);
+    const gchar **methods = NULL;
+    GError *error = NULL;
+    
+    methods = gsignond_auth_service_iface_query_methods (self->priv->parent, &error);
 
     if (methods)
         gsignond_dbus_auth_service_complete_query_methods (iface, invocation, (const gchar * const*)methods);
     else {
-        g_dbus_method_invocation_return_error (invocation,
-                                               GSIGNOND_ERROR,
-                                               GSIGNOND_ERROR_METHOD_NOT_AVAILABLE,
-                                               "no authentication methods available");
-
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
     }
 
     return TRUE;
@@ -316,17 +309,17 @@ _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
                           const gchar *method,
                           gpointer user_data)
 {
+    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);    
     const gchar **mechanisms = 0;
-    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
+    GError *error = NULL;
 
-    mechanisms = gsignond_auth_service_iface_query_mechanisms (self->priv->parent, method);
+    mechanisms = gsignond_auth_service_iface_query_mechanisms (self->priv->parent, method, &error);
 
     if (mechanisms)
         gsignond_dbus_auth_service_complete_query_mechanisms (iface, invocation, (const gchar* const*)mechanisms);
     else {
-        g_dbus_method_invocation_return_error (invocation, GSIGNOND_ERROR,
-                    GSIGNOND_ERROR_MECHANISM_NOT_AVAILABLE,
-                    "no mechanisms available");
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
     }
 
     return TRUE;
@@ -339,9 +332,16 @@ _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
                           gpointer user_data)
 {
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
-    GVariant *identities = gsignond_auth_service_iface_query_identities (self->priv->parent, filter);
+    GVariant *identities = NULL;
+    GError *error = NULL;
+    
+    identities = gsignond_auth_service_iface_query_identities (self->priv->parent, filter, &error);
 
-    gsignond_dbus_auth_service_complete_query_identities (iface, invocation, identities);
+    if (!error) gsignond_dbus_auth_service_complete_query_identities (iface, invocation, identities);
+    else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 
     return TRUE;
 }
@@ -351,12 +351,17 @@ _handle_clear (GSignondDbusAuthServiceAdapter *self,
                GDBusMethodInvocation *invocation,
                gpointer user_data)
 {
-    gboolean res ;
     GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
+    gboolean res ;
+    GError *error = NULL;
 
-    res = gsignond_auth_service_iface_clear (self->priv->parent);
+    res = gsignond_auth_service_iface_clear (self->priv->parent, &error);
 
-    gsignond_dbus_auth_service_complete_clear (iface, invocation, res);
+    if (!error) gsignond_dbus_auth_service_complete_clear (iface, invocation, res);
+    else {
+        g_dbus_method_invocation_return_gerror (invocation, error);
+        g_error_free (error);
+    }
 
     return TRUE;
 }
