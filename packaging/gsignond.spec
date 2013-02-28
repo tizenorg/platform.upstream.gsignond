@@ -1,7 +1,7 @@
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
 Version: 0.0.0
-Release: 3
+Release: 6
 Group: System/Daemons
 License: LGPL
 Source: %{name}-%{version}.tar.bz2
@@ -77,7 +77,7 @@ rm -rf %{buildroot}
 #%{_includedir}/%{name}/*.h
 %{_libdir}/lib%{name}-*.so
 %{_libdir}/lib%{name}-*.la
-#%{_libdir}/pkgconfig/%{name}.pc
+%{_libdir}/pkgconfig/%{name}.pc
 %{_datadir}/dbus-1/interfaces/*SingleSignOn*.xml
 
 
