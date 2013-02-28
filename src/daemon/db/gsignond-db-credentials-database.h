@@ -177,8 +177,8 @@ gsignond_db_credentials_database_get_accesscontrol_list(
         GSignondDbCredentialsDatabase *self,
         const guint32 identity_id);
 
-GSignondSecurityContextList *
-gsignond_db_credentials_database_get_owner_list(
+GSignondSecurityContext *
+gsignond_db_credentials_database_get_owner(
         GSignondDbCredentialsDatabase *self,
         const guint32 identity_id);
 

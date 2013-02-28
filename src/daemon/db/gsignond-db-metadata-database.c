@@ -396,31 +396,25 @@ _gsignond_db_metadata_database_update_acl (
 }
 
 gboolean
-_gsignond_db_metadata_database_update_owners (
+_gsignond_db_metadata_database_update_owner (
         GSignondDbMetadataDatabase *self,
         GSignondIdentityInfo *identity,
-        GSignondSecurityContextList *owners)
+        GSignondSecurityContext *owner)
 {
-    GSignondSecurityContextList *list = NULL;
-    GSignondSecurityContext *ctx = NULL;
-
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     g_return_val_if_fail (identity != NULL, FALSE);
 
-    if (!owners || g_list_length (owners) <= 0) {
-        DBG ("NULL owners or no owners to be added to DB");
+    if (!owner) {
+        DBG ("no owner to be added to DB");
         return FALSE;
     }
 
-    for (list = owners;  list != NULL; list = g_list_next (list)) {
-        ctx = (GSignondSecurityContext *) list->data;
-        if (ctx->sys_ctx && strlen (ctx->sys_ctx) > 0) {
-            _gsignond_db_metadata_database_exec (self,
+    if (owner->sys_ctx && strlen (owner->sys_ctx) > 0) {
+        _gsignond_db_metadata_database_exec (self,
                     "INSERT OR IGNORE INTO "
                     "SECCTX (sysctx, appctx) "
                     "VALUES (%Q, %Q);",
-                    ctx->sys_ctx, ctx->app_ctx);
-        }
+                    owner->sys_ctx, owner->app_ctx);
     }
 
     return TRUE;
@@ -1027,7 +1021,8 @@ gsignond_db_metadata_database_update_identity (
     guint32 ret = 0;
     GHashTable *methods = NULL;
     GSequence *realms = NULL;
-    GSignondSecurityContextList *acl = NULL, *owners = NULL, *list = NULL;
+    GSignondSecurityContextList *acl = NULL, *list = NULL;
+    GSignondSecurityContext *owner = NULL;
     GHashTableIter method_iter;
     const gchar *method = NULL;
     GSequence *mechanisms = NULL;
@@ -1075,10 +1070,10 @@ gsignond_db_metadata_database_update_identity (
         goto finished;
     }
 
-    /* owners */
-    owners = gsignond_identity_info_get_owner_list (identity);
-    if (!_gsignond_db_metadata_database_update_owners (self, identity, owners)){
-        DBG ("Update owner list failed");
+    /* owner */
+    owner = gsignond_identity_info_get_owner (identity);
+    if (!_gsignond_db_metadata_database_update_owner (self, identity, owner)){
+        DBG ("Update owner failed");
         gsignond_db_sql_database_rollback_transaction (sql);
         goto finished;
     }
@@ -1169,17 +1164,13 @@ gsignond_db_metadata_database_update_identity (
         }
     }
 
-    /* insert owner list */
-    for (list = owners;  list != NULL; list = g_list_next (list)) {
-        GSignondSecurityContext *ctx = NULL;
-        ctx = (GSignondSecurityContext *) list->data;
-        _gsignond_db_metadata_database_exec (self,
+    /* insert owner */
+    _gsignond_db_metadata_database_exec (self,
                 "INSERT OR REPLACE INTO OWNER "
                 "(identity_id, secctx_id) "
                 "VALUES ( %u, "
                 "( SELECT id FROM SECCTX WHERE sysctx = %Q AND appctx = %Q ));",
-                id, ctx->sys_ctx, ctx->app_ctx);
-    }
+                id, owner->sys_ctx, owner->app_ctx);
 
     if (gsignond_db_sql_database_commit_transaction (sql)) {
         DBG ("Identity updated");
@@ -1190,7 +1181,7 @@ finished:
     if (methods) g_hash_table_unref (methods);
     if (realms) g_sequence_free (realms);
     if (acl) gsignond_security_context_list_free (acl);
-    if (owners) gsignond_security_context_list_free (owners);
+    if (owner) gsignond_security_context_free (owner);
 
     return ret;
 }
@@ -1219,7 +1210,8 @@ gsignond_db_metadata_database_get_identity (
     GHashTableIter iter;
     gchar *method = NULL;
     gint method_id = 0;
-    GSignondSecurityContextList *acl = NULL, *owners = NULL;
+    GSignondSecurityContextList *acl = NULL;
+    GSignondSecurityContext *owner = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), NULL);
     RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
@@ -1258,12 +1250,12 @@ gsignond_db_metadata_database_get_identity (
         gsignond_security_context_list_free (acl);
     }
 
-    /*owners*/
-    owners = gsignond_db_metadata_database_get_owner_list (self,
+    /*owner*/
+    owner = gsignond_db_metadata_database_get_owner (self,
             identity_id);
-    if (owners) {
-        gsignond_identity_info_set_owner_list (identity, owners);
-        gsignond_security_context_list_free (owners);
+    if (owner) {
+        gsignond_identity_info_set_owner (identity, owner);
+        gsignond_security_context_free (owner);
     }
 
     /*methods*/
@@ -1597,27 +1589,24 @@ gsignond_db_metadata_database_get_accesscontrol_list(
 }
 
 /**
- * gsignond_db_metadata_database_get_owner_list:
+ * gsignond_db_metadata_database_get_owner:
  *
  * @self: instance of #GSignondDbMetadataDatabase
  * @identity_id: the id of the identity whose owner list is needed
  *
- * Gets all the onwer list from the database into a list.
+ * Gets the onwer of identity referred by @identity_id from the database.
  *
- * Returns: (transfer full) the list #GSignondSecurityContextList if successful,
+ * Returns: (transfer full) the  #GSignondSecurityContext if successful,
  * NULL otherwise. When done the list should be freed with
- * gsignond_identity_info_list_free
+ * gsignond_identity_info_free
  */
-GSignondSecurityContextList *
-gsignond_db_metadata_database_get_owner_list(
+GSignondSecurityContext *
+gsignond_db_metadata_database_get_owner(
         GSignondDbMetadataDatabase *self,
         const guint32 identity_id)
 {
-    GSignondSecurityContextList *list = NULL;
     GHashTable *tuples = NULL;
     gchar *query = NULL;
-    GHashTableIter iter;
-    const gchar *sysctx = NULL, *appctx = NULL;
     GSignondSecurityContext *ctx = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
@@ -1633,15 +1622,17 @@ gsignond_db_metadata_database_get_owner_list(
     sqlite3_free (query);
 
     if (tuples) {
+        GHashTableIter iter;
+        const gchar *sysctx = NULL, *appctx = NULL;
         g_hash_table_iter_init(&iter, tuples);
         while (g_hash_table_iter_next (&iter, (gpointer *)&sysctx,
                 (gpointer *)&appctx)) {
             ctx = gsignond_security_context_new_from_values (sysctx, appctx);
-            list = g_list_append (list, ctx);
+            break;
         }
         g_hash_table_unref (tuples);
     }
-    return list;
+    return ctx;
 }
 
 

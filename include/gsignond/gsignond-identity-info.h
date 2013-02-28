@@ -138,13 +138,13 @@ gsignond_identity_info_set_access_control_list (
         GSignondIdentityInfo *info,
         const GSignondSecurityContextList *acl);
 
-GSignondSecurityContextList *
-gsignond_identity_info_get_owner_list (GSignondIdentityInfo *info);
+GSignondSecurityContext *
+gsignond_identity_info_get_owner (GSignondIdentityInfo *info);
 
 gboolean
-gsignond_identity_info_set_owner_list (
+gsignond_identity_info_set_owner (
         GSignondIdentityInfo *info,
-        const GSignondSecurityContextList *owner);
+        const GSignondSecurityContext *owner);
 
 gboolean
 gsignond_identity_info_get_validated (GSignondIdentityInfo *info);

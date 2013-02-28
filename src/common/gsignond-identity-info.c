@@ -88,7 +88,6 @@ _gsignond_identity_info_sequence_to_variant (GSequence *seq)
     GSequenceIter * iter = NULL;
     GVariant *var = NULL;
     GVariantBuilder builder;
-    const gchar *item = NULL;
 
     if (!seq) return NULL;
 
@@ -738,46 +737,46 @@ gsignond_identity_info_set_access_control_list (
 }
 
 /**
- * gsignond_identity_info_get_owner_list:
+ * gsignond_identity_info_get_owner:
  * @info: instance of #GSignondIdentityInfo
  *
  * Retrieves the id from the info.
  *
- * Returns: (transfer full) the owner list if successful, NULL otherwise.
+ * Returns: (transfer full) the owner if successful, NULL otherwise.
  * when done, owner list should be freed using
- * gsignond_security_context_list_free.
+ * gsignond_security_context_free.
  */
-GSignondSecurityContextList *
-gsignond_identity_info_get_owner_list (GSignondIdentityInfo *info)
+GSignondSecurityContext *
+gsignond_identity_info_get_owner (GSignondIdentityInfo *info)
 {
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_OWNER);
     if (var != NULL) {
-        return gsignond_security_context_list_from_variant (var);
+        return gsignond_security_context_from_variant (var);
     }
     return NULL;
 }
 
 /**
- * gsignond_identity_info_set_owner_list:
+ * gsignond_identity_info_set_owner:
  * @info: instance of #GSignondIdentityInfo
  *
- * @owners: (transfer none) owner list to be set
+ * @owners: (transfer none) owner to be set
  *
- * Sets the owner list of the info.
+ * Sets the owner of the info.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
 gboolean
-gsignond_identity_info_set_owner_list (
+gsignond_identity_info_set_owner (
         GSignondIdentityInfo *info,
-        const GSignondSecurityContextList *owners)
+        const GSignondSecurityContext *owners)
 {
     g_return_val_if_fail (owners != NULL, FALSE);
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_OWNER,
-            gsignond_security_context_list_to_variant (owners));
+            gsignond_security_context_to_variant (owners));
 }
 
 /**
@@ -883,7 +882,6 @@ gsignond_identity_info_check_method_mechanism (
         gchar **allowed_mechanisms)
 {
     GSequence *mechanisms = NULL;
-    GSequenceIter *iter = NULL;
     gchar ** split_mechs = NULL;
     GString* allowed_mechs = NULL;
     gint i, j=0;
@@ -949,7 +947,7 @@ gsignond_identity_info_compare (
     GSequence *info_realms = NULL, *other_realms = NULL;
     GHashTable *info_methods = NULL, *other_methods = NULL;
     GSignondSecurityContextList *info_acl = NULL, *other_acl = NULL;
-    GSignondSecurityContextList *info_owners = NULL, *other_owners = NULL;
+    GSignondSecurityContext *info_owner = NULL, *other_owner = NULL;
     gboolean equal = FALSE;
 
     if (info == other)
@@ -1006,7 +1004,7 @@ gsignond_identity_info_compare (
         info_acl = g_list_sort (
                         info_acl,
                         (GCompareFunc)gsignond_security_context_compare);
-    other_acl = gsignond_identity_info_get_owner_list (other);
+    other_acl = gsignond_identity_info_get_access_control_list (other);
     if (other_acl)
         other_acl = g_list_sort (
                         other_acl,
@@ -1018,20 +1016,11 @@ gsignond_identity_info_compare (
         return FALSE;
     }
 
-    info_owners = gsignond_identity_info_get_owner_list (info);
-    if (info_owners)
-        info_owners = g_list_sort (
-                        info_owners,
-                        (GCompareFunc)gsignond_security_context_compare);
-    other_owners = gsignond_identity_info_get_owner_list (other);
-    if (other_owners)
-        other_owners = g_list_sort (
-                        other_owners,
-                        (GCompareFunc)gsignond_security_context_compare);
-    equal = _gsignond_identity_info_sec_context_list_cmp (info_owners,
-            other_owners);
-    if (info_owners) gsignond_security_context_list_free (info_owners);
-    if (other_owners) gsignond_security_context_list_free (other_owners);
+    info_owner = gsignond_identity_info_get_owner (info);
+    other_owner = gsignond_identity_info_get_owner (other);
+    equal = gsignond_security_context_match (info_owner, other_owner);
+    if (info_owner) gsignond_security_context_free (info_owner);
+    if (other_owner) gsignond_security_context_free (other_owner);
     if (!equal) {
         return FALSE;
     }

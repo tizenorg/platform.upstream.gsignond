@@ -40,11 +40,11 @@
 #include "daemon/db/gsignond-db-secret-cache.h"
 
 static GSequence*
-_sequence_new (guint8 *data)
+_sequence_new (gchar *data)
 {
     GSequence *value = NULL;
     value = g_sequence_new (NULL);
-    g_sequence_append (value, data);
+    g_sequence_append (value, (guint8 *)data);
     return value;
 }
 
@@ -106,17 +106,15 @@ _get_filled_identity_info_2 (
         gboolean add_methods,
         gboolean add_realms,
         gboolean add_acl,
-        gboolean add_owners)
+        gboolean add_owner)
 {
-    guint32 id = 0;
     guint32 type = 456;
     const gchar *username = "username1";
     const gchar *secret = "secret1";
     const gchar *caption = "caption1";
-    const gchar *method1 = "method1";
     GSignondIdentityInfo *identity = NULL;
-    GSignondSecurityContextList *ctx_list;
-    GSignondSecurityContext *ctx, *ctx1, *ctx2, *ctx3 ;
+    GSignondSecurityContextList *ctx_list = NULL;
+    GSignondSecurityContext *ctx1, *ctx2, *ctx3 ;
     GHashTable *methods = NULL;
     GSequence *seq1 = NULL, *seq_realms;
     identity = *identity_inp;
@@ -165,8 +163,8 @@ _get_filled_identity_info_2 (
     }
 
     /*owners*/
-    if (add_owners) {
-        gsignond_identity_info_set_owner_list (identity, ctx_list);
+    if (add_owner) {
+        gsignond_identity_info_set_owner (identity, ctx1);
     }
     gsignond_security_context_list_free (ctx_list);
 
@@ -190,10 +188,9 @@ START_TEST (test_identity_info)
     const gchar *username = "username1";
     const gchar *secret = "secret1";
     const gchar *caption = "caption1";
-    const gchar *method1 = "method1";
     GSignondIdentityInfo *identity = NULL;
     GSignondIdentityInfo *identity2 = NULL;
-    GSignondSecurityContextList *ctx_list, *list;
+    GSignondSecurityContextList *ctx_list = NULL, *list = NULL;
     GSignondSecurityContext *ctx, *ctx1, *ctx2, *ctx3 ;
     GHashTable *methods = NULL, *methods2;
     GSequence *seq1 = NULL, *seq_realms, *seq21, *mechs;
@@ -217,7 +214,7 @@ START_TEST (test_identity_info)
             identity, "testmech") == NULL);
     fail_unless (gsignond_identity_info_get_access_control_list (
             identity) == NULL);
-    fail_unless (gsignond_identity_info_get_owner_list (identity) == NULL);
+    fail_unless (gsignond_identity_info_get_owner (identity) == NULL);
     fail_unless (gsignond_identity_info_get_validated (identity) == FALSE);
     fail_unless (gsignond_identity_info_get_identity_type (identity) == -1);
 
@@ -362,21 +359,12 @@ START_TEST (test_identity_info)
     gsignond_security_context_list_free (list); list = NULL;
 
     /*owners*/
-    fail_unless (gsignond_identity_info_set_owner_list (
-            identity, ctx_list) == TRUE);
-    list = gsignond_identity_info_get_owner_list (identity);
-    fail_if (list == NULL);
-    list2 = g_list_nth (list, 0);
-    ctx = (GSignondSecurityContext *) list2->data;
+    fail_unless (gsignond_identity_info_set_owner (
+            identity, ctx1) == TRUE);
+    ctx = gsignond_identity_info_get_owner (identity);
+    fail_if (ctx == NULL);
     fail_unless (gsignond_security_context_compare (ctx, ctx1) == 0);
-    list2 = g_list_nth (list, 1);
-    ctx = (GSignondSecurityContext *) list2->data;
-    fail_unless (gsignond_security_context_compare (ctx, ctx2) == 0);
-    list2 = g_list_nth (list, 2);
-    ctx = (GSignondSecurityContext *) list2->data;
-    fail_unless (gsignond_security_context_compare (ctx, ctx3) == 0);
-    gsignond_security_context_list_free (list); list = NULL;
-    gsignond_security_context_list_free (ctx_list);
+    gsignond_security_context_free (ctx); ctx = NULL;
 
     fail_unless (gsignond_identity_info_set_validated (
             identity, FALSE) == TRUE);
@@ -487,18 +475,12 @@ START_TEST (test_secret_database)
 {
     GSignondDbSecretDatabase *database = NULL;
     GSignondConfig *config = NULL;
-    gchar *filename = NULL, *query;
+    gchar *filename = NULL;
     const gchar *dir = NULL;
-    GString *un = NULL;
-    GString *pass = NULL;
     GSignondCredentials *creds = NULL;
-    GSignondCredentials *creds1 = NULL;
     guint32 id = 1, method = 2;
     GHashTable *data = NULL;
     GHashTable *data2 = NULL;
-    GHashTableIter iter;
-    GString *key = NULL;
-    GByteArray *value = NULL;
     Data input;
     sqlite3_stmt *stmt = NULL;
     gint status=0;
@@ -696,16 +678,10 @@ START_TEST (test_secret_storage)
 {
     GSignondSecretStorage *storage = NULL;
     GSignondConfig *config = NULL;
-    GString *un = NULL;
-    GString *pass = NULL;
     GSignondCredentials *creds = NULL;
-    GSignondCredentials *creds1 = NULL;
     guint32 id = 1, method = 2;
     GHashTable *data = NULL;
     GHashTable *data2 = NULL;
-    GHashTableIter iter;
-    GString *key =NULL;
-    GByteArray *value =NULL;
     Data input;
 
     config = gsignond_config_new ();
@@ -802,7 +778,8 @@ START_TEST (test_metadata_database)
     GSignondIdentityInfoList *identities = NULL;
     GSignondSecurityContext *ctx1 = NULL;
     GList *methods = NULL, *reflist = NULL;
-    GSignondSecurityContextList *acl, *owners;
+    GSignondSecurityContextList *acl;
+    GSignondSecurityContext *owner = NULL;
 
     config = gsignond_config_new ();
     GSignondDbMetadataDatabase* metadata_db = NULL;
@@ -835,7 +812,7 @@ START_TEST (test_metadata_database)
             metadata_db, identity_id, ctx1) == NULL);
     fail_unless (gsignond_db_metadata_database_get_accesscontrol_list (
             metadata_db, identity_id) == NULL);
-    fail_unless (gsignond_db_metadata_database_get_owner_list (
+    fail_unless (gsignond_db_metadata_database_get_owner (
             metadata_db, identity_id) == NULL);
 
     fail_unless (gsignond_db_metadata_database_open (metadata_db) == TRUE);
@@ -848,7 +825,7 @@ START_TEST (test_metadata_database)
     fail_unless (gsignond_db_metadata_database_get_accesscontrol_list (
             metadata_db, identity_id) == NULL);
 
-    fail_unless (gsignond_db_metadata_database_get_owner_list (
+    fail_unless (gsignond_db_metadata_database_get_owner (
             metadata_db, identity_id) == NULL);
 
     fail_unless (gsignond_db_metadata_database_get_method_id (
@@ -857,7 +834,7 @@ START_TEST (test_metadata_database)
                         metadata_db, method1, &methodid) == TRUE);
 
     fail_unless (methodid == gsignond_db_metadata_database_get_method_id (
-            metadata_db, method1) == TRUE);
+            metadata_db, method1));
 
     /*update_identity*/
     identity = _get_filled_identity_info_2 (&identity,
@@ -935,11 +912,11 @@ START_TEST (test_metadata_database)
     fail_if (acl == NULL);
     gsignond_security_context_list_free (acl);
 
-    /*owners*/
-    owners = gsignond_db_metadata_database_get_owner_list (metadata_db,
+    /*owner*/
+    owner = gsignond_db_metadata_database_get_owner (metadata_db,
             identity_id);
-    fail_if (owners == NULL);
-    gsignond_security_context_list_free (owners);
+    fail_if (owner == NULL);
+    gsignond_security_context_free (owner);
 
     fail_unless (gsignond_db_metadata_database_remove_identity (
             metadata_db, identity_id) == TRUE);
@@ -957,15 +934,13 @@ END_TEST
 START_TEST (test_credentials_database)
 {
     GSignondConfig *config = NULL;
-    guint32 methodid = 0;
     guint32 identity_id = 5;
-    const gchar *method1 = "method1";
     GSignondIdentityInfo *identity = NULL, *identity2= NULL;
     GSignondIdentityInfoList *identities = NULL;
     GSignondSecurityContext *ctx1 = NULL;
     GList *methods = NULL, *reflist = NULL;
-    GSignondSecurityContextList *acl, *owners;
-    GSignondSecurityContext *owner;
+    GSignondSecurityContextList *acl = NULL ;
+    GSignondSecurityContext *owner = NULL;
     GSignondDbCredentialsDatabase *credentials_db = NULL;
     GSignondSecretStorage *storage =NULL;
     GHashTable *data = NULL;
@@ -1093,10 +1068,10 @@ START_TEST (test_credentials_database)
     fail_if (acl == NULL);
     gsignond_security_context_list_free (acl);
 
-    owners = gsignond_db_credentials_database_get_owner_list (
+    owner = gsignond_db_credentials_database_get_owner (
             credentials_db, identity_id);
-    fail_if (owners == NULL);
-    gsignond_security_context_list_free (owners);
+    fail_if (owner == NULL);
+    gsignond_security_context_free (owner);
 
     owner = gsignond_db_credentials_database_get_identity_owner (
             credentials_db, identity_id);

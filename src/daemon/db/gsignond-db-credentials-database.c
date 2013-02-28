@@ -720,25 +720,25 @@ gsignond_db_credentials_database_get_accesscontrol_list(
 }
 
 /**
- * gsignond_db_credentials_database_get_owner_list:
+ * gsignond_db_credentials_database_get_owner:
  *
  * @self: instance of #GSignondDbCredentialsDatabase
  * @identity_id: the id of the identity whose owner list is needed
  *
- * Gets all the onwer list from the database into a list.
+ * Gets the onwer of the identity referred by @identity_id from the database.
  *
- * Returns: (transfer full) the list #GSignondSecurityContextList if successful,
+ * Returns: (transfer full) the list #GSignondSecurityContext if successful,
  * NULL otherwise. When done the list should be freed with
- * gsignond_identity_info_list_free
+ * gsignond_identity_info_free
  */
-GSignondSecurityContextList *
-gsignond_db_credentials_database_get_owner_list(
+GSignondSecurityContext *
+gsignond_db_credentials_database_get_owner(
         GSignondDbCredentialsDatabase *self,
         const guint32 identity_id)
 {
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
 
-    return gsignond_db_metadata_database_get_owner_list (
+    return gsignond_db_metadata_database_get_owner (
     		self->priv->metadata_db, identity_id);
 }
 
@@ -759,16 +759,12 @@ gsignond_db_credentials_database_get_identity_owner (
 		GSignondDbCredentialsDatabase *self,
         const guint32 identity_id)
 {
-	GSignondSecurityContextList *list = NULL;
 	GSignondSecurityContext *ctx = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
 
-    list = gsignond_db_metadata_database_get_owner_list (
+    ctx = gsignond_db_metadata_database_get_owner (
         		self->priv->metadata_db, identity_id);
-    ctx = (GSignondSecurityContext *) g_list_first (list)->data;
-    list = g_list_remove (list, ctx);
-    gsignond_security_context_list_free (list);
     return ctx;
 }
 

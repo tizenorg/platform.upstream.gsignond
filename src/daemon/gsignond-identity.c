@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-error.h"
 
 #include "gsignond-identity-iface.h"
 #include "dbus/gsignond-dbus.h"
@@ -81,7 +82,8 @@ G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, GSIGNOND_TYPE_DISPO
     gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
     gsignond_security_context_list_free (acl); \
     if (!valid) { \
-        /* TODO: throw access error */ \
+        WARN ("cannot access identity."); \
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_PERMISSION_DENIED, "identity can not be accessed"); \
         return ret; \
     } \
 }
@@ -89,12 +91,12 @@ G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, GSIGNOND_TYPE_DISPO
 #define VALIDATE_IDENTITY_WRITE_ACCESS(identity, ctx, ret) \
 { \
     GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (identity->priv->owner); \
-    GSignondSecurityContextList *owners = gsignond_identity_info_get_owner_list (identity->priv->info); \
-    const GSignondSecurityContext *owner = (const GSignondSecurityContext *)g_list_first (owners); \
+    GSignondSecurityContext *owner = gsignond_identity_info_get_owner (identity->priv->info); \
     gboolean valid = gsignond_access_control_manager_peer_is_owner_of_identity (acm, ctx, owner); \
-    gsignond_security_context_list_free (owners); \
+    gsignond_security_context_free (owner); \
     if (!valid) { \
-        /* TODO: throw access error */ \
+        WARN ("is_owner_of_identity check failed."); \
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_PERMISSION_DENIED, "identity can not be accessed"); \
         return ret; \
     } \
 }
@@ -106,7 +108,8 @@ G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, GSIGNOND_TYPE_DISPO
     gboolean valid = gsignond_access_control_manager_acl_is_valid (acm, ctx, acl); \
     gsignond_security_context_list_free (acl); \
     if (!valid) { \
-        /* TODO: throw access error */ \
+        WARN ("acl validity check failed."); \
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_PERMISSION_DENIED, "invalid access control list"); \
         return ret; \
     } \
 }
@@ -285,22 +288,26 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
 }
 
 static gboolean
-_request_credentials_update (GSignondIdentityIface *iface, const gchar *message, const GSignondSecurityContext *ctx) 
+_request_credentials_update (GSignondIdentityIface *iface, const gchar *message, const GSignondSecurityContext *ctx, GError **error)
 {
-    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
-
-    if (!identity || !identity->priv->info) {
-        /*
-         * TODO: throw error
-         */
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
+        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
+
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
+
+    if (G_LIKELY ((identity && identity->priv->info) == 0)) {
+        WARN ("assertion G_LIKELTY ((identity && identity->priv->info) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
+        return FALSE;
+    }
+
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
 
     if (!gsignond_identity_info_get_store_secret (identity->priv->info)) {
-        /*
-         * TODO: throw error
-         */
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_CREDENTIALS_NOT_AVAILABLE, "Password can not be stored.");
         return FALSE;
     }
 
@@ -324,42 +331,55 @@ _request_credentials_update (GSignondIdentityIface *iface, const gchar *message,
 }
 
 static GVariant * 
-_get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
+_get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
+        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
+
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     GVariant *info = NULL;
+    gchar *secret = 0;
+    gchar *username = 0;
 
-    if (identity->priv->info) {
-        gchar *secret = 0;
-        gchar *username = 0;
+    if (G_UNLIKELY (identity->priv->info != 0)) {
+        WARN ("assertion G_UNLIKELTY (identity->priv->info != 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
+        return NULL;
+    }
 
-        VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
 
-        secret = g_strdup (gsignond_identity_info_get_secret (identity->priv->info));
+    secret = g_strdup (gsignond_identity_info_get_secret (identity->priv->info));
 
-        /* unset password */
-        gsignond_identity_info_set_secret (identity->priv->info, "");
+    /* unset password */
+    gsignond_identity_info_set_secret (identity->priv->info, "");
 
-        /* unset username if its secret */
-        if (gsignond_identity_info_get_is_username_secret (identity->priv->info)) {
-            username = g_strdup (gsignond_identity_info_get_username (identity->priv->info));
-            gsignond_identity_info_set_username (identity->priv->info, "");
-        }
+    /* unset username if its secret */
+    if (gsignond_identity_info_get_is_username_secret (identity->priv->info)) {
+        username = g_strdup (gsignond_identity_info_get_username (identity->priv->info));
+        gsignond_identity_info_set_username (identity->priv->info, "");
+    }
 
-        /* prepare identity info, excluding password and username if secret */
-        info = gsignond_dictionary_to_variant (identity->priv->info);
+    /* prepare identity info, excluding password and username if secret */
+    info = gsignond_dictionary_to_variant (identity->priv->info);
+    if (G_UNLIKELY (info != 0)) {
+        WARN ("identity info to variant convertion failed.");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity internal eror.");
+        return NULL;
+    }
+    /* reset password back */
+    if (secret) {
+        gsignond_identity_info_set_secret (identity->priv->info, secret);
+        g_free (secret);
+    }
 
-        /* reset password back */
-        if (secret) {
-            gsignond_identity_info_set_secret (identity->priv->info, secret);
-            g_free (secret);
-        }
-
-        /* reset username back */
-        if (username) {
-            gsignond_identity_info_set_username (identity->priv->info, username);
-            g_free (username);
-        }
+    /* reset username back */
+    if (username) {
+        gsignond_identity_info_set_username (identity->priv->info, username);
+        g_free (username);
     }
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
@@ -383,21 +403,49 @@ _on_session_close (gpointer data, GObject *session)
 }
 
 static const gchar *
-_get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSignondSecurityContext *ctx)
+_get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
+        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     GSignondAuthSession *session = NULL;
     const gchar *object_path = NULL;
+    GHashTable *supported_methods = NULL;
+    gboolean method_available = FALSE;
 
-    g_return_val_if_fail (iface, NULL);
-    g_return_val_if_fail (method, NULL);
+    if (G_LIKELY (method == 0)) {
+        WARN ("assertion G_LIKELY(method == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_METHOD_NOT_KNOWN,
+                      "authentication method not provided");
+        return NULL;
+    }
+
+    supported_methods = gsignond_identity_info_get_methods (identity->priv->info);
+
+    if (supported_methods) {
+        method_available = g_hash_table_contains (supported_methods, method);
+        g_hash_table_unref (supported_methods);
+    } else method_available = FALSE;
+
+    if (!method_available) {
+        WARN ("authentication method '%s' is not supported", method);
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_METHOD_NOT_AVAILABLE,
+                      "authentication method '%s' not supported for this identity", method);
+        return NULL;
+    }
+
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
 
     session = gsignond_auth_session_new (gsignond_identity_info_get_id(
         identity->priv->info), method);
 
-    if (!session)
+    if (!session) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
+    }
 
     object_path = gsignond_auth_session_get_object_path (session);
 
@@ -412,15 +460,18 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
 }
 
 static gboolean 
-_verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSignondSecurityContext *ctx)
+_verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
+        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     const gchar *passwd = 0;
-
-    if (!identity || !identity->priv->info) {
-        /*
-         * TODO: throw error
-         */
+    if (G_UNLIKELY (identity->priv->info != 0)) {
+        WARN ("assertion G_UNLIKELTY (identity->priv->info != 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
         return FALSE;
     }
 
@@ -429,9 +480,8 @@ _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSigno
     if (!gsignond_identity_info_get_store_secret (identity->priv->info) ||
         !(passwd = gsignond_identity_info_get_secret (identity->priv->info)) ||
         !strlen (passwd)) {
-        /*
-         * TODO: password not stored to verify credentials, throw error
-         */
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_CREDENTIALS_NOT_AVAILABLE,
+                                                        "user can not be verified as credentials are not stored");
         return FALSE;
     }
 
@@ -449,11 +499,18 @@ _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSigno
 }
 
 static gboolean
-_verify_secret (GSignondIdentityIface *iface, const gchar *secret, const GSignondSecurityContext *ctx)
+_verify_secret (GSignondIdentityIface *iface, const gchar *secret, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
+        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
     GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+
+    if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Not supported");
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
@@ -461,8 +518,13 @@ _verify_secret (GSignondIdentityIface *iface, const gchar *secret, const GSignon
 }
 
 static gboolean 
-_sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
+_sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface))) == 0) {
+        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
     GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
     gboolean success = FALSE;
 
@@ -471,11 +533,12 @@ _sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
     /*
      * TODO: close all auth_sessions and emit "identity-signed-out"
      */
-
     g_signal_emit (iface,
                    signals[SIG_SIGNOUT],
                    0,
                    &success);
+
+    if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Not supported");
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
@@ -483,12 +546,18 @@ _sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
 }
 
 static guint32
-_store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecurityContext *ctx)
+_store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
+        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return 0;
+    }
     GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
     GSignondIdentityInfo *identity_info = NULL;
     gboolean was_new_identity = FALSE;
     GSignondSecurityContextList *contexts = NULL;
+    GSignondSecurityContext *owner = NULL;
     guint32 id;
 
     VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, 0);
@@ -511,14 +580,12 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
     }
    
     /* Add creater to owner list */
-    contexts = gsignond_identity_info_get_owner_list (identity_info);
-    if (!contexts) {
-        contexts = gsignond_identity_info_get_owner_list (identity->priv->info);
+    owner = gsignond_identity_info_get_owner (identity_info);
+    if (!owner) {
+        owner = gsignond_identity_info_get_owner (identity->priv->info);
 
-        gsignond_identity_info_set_owner_list (identity_info, contexts);
+        gsignond_identity_info_set_owner (identity_info, owner);
     }
-
-    gsignond_security_context_list_free (contexts);
 
     /* update object cache */
     if (identity->priv->info) gsignond_identity_info_free (identity->priv->info);
@@ -531,39 +598,60 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
                    identity_info, 
                    &id);
 
-    if (was_new_identity) 
-        gsignond_identity_set_id (identity, id);
+    if (!id) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_STORE_FAILED,
+                                                        "Failed to store identity");
+    }
+    else {
+        if (was_new_identity) 
+            gsignond_identity_set_id (identity, id);
 
-    gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_DATA_UPDATED);
+        gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_DATA_UPDATED);
+    }
  
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
     return id;
 }
 
-static void
-_remove (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx)
+static gboolean
+_remove (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
+        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return 0;
+    }
     GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
+    gboolean is_removed = FALSE;
     
-    VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, );
+    VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, FALSE);
 
     g_signal_emit (identity,
                    signals[SIG_REMOVE],
                    0,
-                   identity->priv->info,
-                   NULL);
+                   &is_removed);
 
-    gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_REMOVED);
+    if (is_removed)
+        gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_REMOVED);
+    else if (error)
+        *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_REMOVE_FAILED, "failed to remove identity");
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+
+    return is_removed;
 }
 
 static gint32
-_add_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx)
+_add_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_UNLIKELY (iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion G_UNLIKELTY (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return 0;
+    }
     GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
-    gint32 res;
+    gint32 res = 0;
     
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
 
@@ -575,25 +663,39 @@ _add_reference (GSignondIdentityIface *iface, const gchar *reference, const GSig
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
+    if (res == 0) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+    }
+
     return res;
 }
 
 static gint32
-_remove_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx)
+_remove_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx, GError **error)
 {
+    if (G_UNLIKELY (iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion G_UNLIKELTY (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return 0;
+    }
+
     GSignondIdentity *identity = GSIGNOND_IDENTITY(iface);
-    gint32 res;
+    gint32 res = 0;
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
 
     g_signal_emit (iface,
-                   signals[SIG_REMOVE_REFERENCE],
-                   0,
-                   reference,
-                   &res);
+            signals[SIG_REMOVE_REFERENCE],
+            0,
+            reference,
+            &res);
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
+    if (res == 0) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_REFERENCE_NOT_FOUND,
+                                                        "reference '%s' not found", reference);
+    }
     return res;
 }
 
@@ -700,4 +802,3 @@ GSignondIdentity * gsignond_identity_new (GSignondAuthServiceIface *owner,
 
     return identity;
 }
-
