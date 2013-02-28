@@ -47,11 +47,14 @@ typedef struct _GSignondPluginInterface GSignondPluginInterface;
  * @GSIGNOND_PLUGIN_STATE_CONNECTING: Connecting to remote server
  * @GSIGNOND_PLUGIN_STATE_SENDING_DATA: Sending data to remote server
  * @GSIGNOND_PLUGIN_STATE_WAITING: Waiting for reply from remote server
- * @GSIGNOND_PLUGIN_STATE_PENDING: Waiting for response from user
+ * @GSIGNOND_PLUGIN_STATE_USER_PENDING: Waiting for response from user
  * @GSIGNOND_PLUGIN_STATE_REFRESHING: Refreshing ui request
+ * @GSIGNOND_PLUGIN_STATE_PROCESS_PENDING: Request has been queued
+ * @GSIGNOND_PLUGIN_STATE_STARTED: Request has been dequeued
  * @GSIGNOND_PLUGIN_STATE_CANCELING: Canceling current process
- * @GSIGNOND_PLUGIN_STATE_HOLDING: Holding long non-expired token. Process should be kept alive
- * @GSIGNOND_PLUGIN_STATE_DONE: Process is finished. Process can be terminated
+ * @GSIGNOND_PLUGIN_STATE_DONE: Process is finished
+ * @GSIGNOND_PLUGIN_STATE_HOLDING: Holding long non-expired token
+ * @GSIGNOND_PLUGIN_STATE_CUSTOM: Custom message
  */
 typedef enum {
     GSIGNOND_PLUGIN_STATE_NONE = 0,
@@ -59,11 +62,13 @@ typedef enum {
     GSIGNOND_PLUGIN_STATE_CONNECTING,
     GSIGNOND_PLUGIN_STATE_SENDING_DATA,
     GSIGNOND_PLUGIN_STATE_WAITING,
-    GSIGNOND_PLUGIN_STATE_PENDING,
+    GSIGNOND_PLUGIN_STATE_USER_PENDING,
     GSIGNOND_PLUGIN_STATE_REFRESHING,
+    GSIGNOND_PLUGIN_STATE_PROCESS_PENDING,
+    GSIGNOND_PLUGIN_STATE_STARTED,
     GSIGNOND_PLUGIN_STATE_CANCELING,
+    GSIGNOND_PLUGIN_STATE_DONE,
     GSIGNOND_PLUGIN_STATE_HOLDING,
-    GSIGNOND_PLUGIN_STATE_DONE
 } PluginState;
 typedef PluginState GSignondPluginState;
 

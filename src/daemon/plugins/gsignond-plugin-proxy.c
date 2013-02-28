@@ -290,8 +290,12 @@ gsignond_plugin_proxy_process_queue(GSignondPluginProxy *self)
         self->expecting_request = FALSE;
         self->active_session = next_data->auth_session;
         g_object_ref(self->active_session);
+        gsignond_auth_session_iface_notify_state_changed(
+                                               self->active_session,
+                                               GSIGNOND_PLUGIN_STATE_STARTED,
+                                               "The request has been queued.");
         gsignond_plugin_request_initial(self->plugin, next_data->session_data, 
-                                next_data->mechanism);
+                                        next_data->mechanism);
         gsignond_process_data_free(next_data);
     }
 }
@@ -312,9 +316,9 @@ void gsignond_plugin_proxy_process (GSignondPluginProxy *self,
                                                                      session_data, 
                                                                      mechanism));
     gsignond_auth_session_iface_notify_state_changed(
-                                                self->active_session,
-                                                GSIGNOND_PLUGIN_STATE_PENDING,
-                                                "The request has been queued.");
+                                         self->active_session,
+                                         GSIGNOND_PLUGIN_STATE_PROCESS_PENDING,
+                                         "The request has been queued.");
     if (self->active_session == NULL) {
         gsignond_plugin_proxy_process_queue(self);
     }
