@@ -65,7 +65,7 @@ static void gsignond_ssotest_plugin_abort (GSignondPlugin *plugin)
     g_return_if_fail (GSIGNOND_IS_SSOTEST_PLUGIN (plugin));
 }
 
-static void gsignond_ssotest_plugin_process (
+static void gsignond_ssotest_plugin_request_initial (
     GSignondPlugin *plugin, GSignondSessionData *session_data, 
     const gchar *mechanism)
 {
@@ -99,7 +99,7 @@ static void gsignond_ssotest_plugin_process (
     }
 
     if (g_strcmp0 (mechanism, "BLOB") == 0) {
-        gsignond_plugin_result (plugin, response);
+        gsignond_plugin_response_final (plugin, response);
         gsignond_dictionary_free (response);
         INFO ("mechanism 'BLOB' responded");
         return;
@@ -114,7 +114,7 @@ static void gsignond_ssotest_plugin_process (
         INFO ("Key: %s", key);
 
     if (g_strcmp0 (mechanism, "mech1") == 0) {
-        gsignond_plugin_result (plugin, response);
+        gsignond_plugin_response_final (plugin, response);
         gsignond_dictionary_free (response);
         INFO ("mechanism 'mech1' responded");
         return;
@@ -157,7 +157,7 @@ static void gsignond_ssotest_plugin_user_action_finished (
         GSignondSessionData *response = gsignond_dictionary_new ();
         gsignond_session_data_set_username (response, username);
         gsignond_session_data_set_secret (response, secret);
-        gsignond_plugin_result (plugin, response);
+        gsignond_plugin_response_final (plugin, response);
         gsignond_dictionary_free (response);
         return;
     } else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
@@ -194,7 +194,7 @@ gsignond_plugin_interface_init (GSignondPluginInterface *iface)
 {
     iface->cancel = gsignond_ssotest_plugin_cancel;
     iface->abort = gsignond_ssotest_plugin_abort;
-    iface->process = gsignond_ssotest_plugin_process;
+    iface->request_initial = gsignond_ssotest_plugin_request_initial;
     iface->user_action_finished = gsignond_ssotest_plugin_user_action_finished;
     iface->refresh = gsignond_ssotest_plugin_refresh;
 }

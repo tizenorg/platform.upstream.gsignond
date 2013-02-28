@@ -291,9 +291,9 @@ gsignond_plugin_proxy_process_queue(GSignondPluginProxy *self)
         self->active_session = next_data->auth_session;
         g_object_ref(self->active_session);
         gsignond_auth_session_iface_notify_state_changed(
-                                               self->active_session,
-                                               GSIGNOND_PLUGIN_STATE_STARTED,
-                                               "The request has been queued.");
+                                            self->active_session,
+                                            GSIGNOND_PLUGIN_STATE_STARTED,
+                                            "The request is being processed.");
         gsignond_plugin_request_initial(self->plugin, next_data->session_data, 
                                         next_data->mechanism);
         gsignond_process_data_free(next_data);
