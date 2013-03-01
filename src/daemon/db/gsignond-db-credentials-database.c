@@ -285,6 +285,8 @@ gsignond_db_credentials_database_load_identity (
         gboolean query_secret)
 {
 	GSignondIdentityInfo *identity = NULL;
+    gboolean is_un_sec = FALSE;
+    gboolean is_pwd_sec =  FALSE;
 
 	g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
 
@@ -293,17 +295,22 @@ gsignond_db_credentials_database_load_identity (
 
     if (identity && query_secret &&
     	!gsignond_identity_info_get_is_identity_new (identity) &&
-    	gsignond_db_credentials_database_is_open_secret_storage (self)) {
+    	gsignond_db_credentials_database_is_open_secret_storage (self)
+        && ((is_un_sec = gsignond_identity_info_get_is_username_secret (identity))
+            || (is_pwd_sec = gsignond_identity_info_get_store_secret (identity)))) {
     	GSignondCredentials * creds;
 
     	DBG ("Add credentials to identity as it is not new");
     	creds = gsignond_secret_storage_load_credentials (
     			self->secret_storage, identity_id);
     	if (creds) {
-    		gsignond_identity_info_set_username (identity,
-    				gsignond_credentials_get_username (creds));
-    		gsignond_identity_info_set_secret (identity,
+            if (is_un_sec)
+    		    gsignond_identity_info_set_username (identity,
+    				    gsignond_credentials_get_username (creds));
+            if (is_pwd_sec)
+    		    gsignond_identity_info_set_secret (identity,
     				gsignond_credentials_get_password (creds));
+            g_object_unref (creds);
     	}
     }
 
