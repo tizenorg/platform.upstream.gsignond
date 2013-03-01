@@ -265,3 +265,13 @@ gsignond_disposable_set_keep_in_use (GSignondDisposable *self)
                                                   _auto_dispose, self);
 }
 
+void
+gsignond_disposable_delete_later (GSignondDisposable *self)
+{
+    if (self->priv->timer_id)
+            g_source_remove (self->priv->timer_id);
+
+    INFO ("Object '%s' about to dispose...", G_OBJECT_TYPE_NAME (self));
+    self->priv->timer_id = g_idle_add (_auto_dispose, self);
+}
+

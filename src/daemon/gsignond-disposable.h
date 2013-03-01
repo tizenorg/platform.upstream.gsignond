@@ -68,6 +68,9 @@ void
 gsignond_disposable_set_timeout (GSignondDisposable *self,
                                  guint timeout);
 
+void
+gsignond_disposable_delete_later (GSignondDisposable *self);
+
 G_END_DECLS
 
 #endif /* __GSIGNOND_DISPOSABLE_H_ */

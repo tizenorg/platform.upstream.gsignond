@@ -641,7 +641,7 @@ _remove (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GErro
     else if (error)
         *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_REMOVE_FAILED, "failed to remove identity");
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+    gsignond_disposable_delete_later (GSIGNOND_DISPOSABLE (identity));
 
     return is_removed;
 }

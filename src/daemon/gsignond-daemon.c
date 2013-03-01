@@ -327,22 +327,6 @@ gsignond_daemon_class_init (GSignondDaemonClass *klass)
     object_class->finalize = _finalize;
 }
 
-static gboolean
-_on_remove_identity (GSignondIdentity *identity, gpointer data)
-{
-    GSignondDaemon *daemon = GSIGNOND_DAEMON (data);
-
-    if (gsignond_db_credentials_database_remove_identity (daemon->priv->db, 
-          gsignond_identity_get_id (identity)) == TRUE) {
-
-        g_object_unref (G_OBJECT (identity));
-
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
 static void
 _on_identity_disposed (gpointer data, GObject *object)
 {
@@ -369,9 +353,9 @@ _catch_identity (GSignondDaemon *daemon, GSignondIdentity *identity)
 
     g_signal_connect_swapped (identity, "store", 
         G_CALLBACK (gsignond_db_credentials_database_update_identity), daemon->priv->db);
+    g_signal_connect_swapped (identity, "remove", 
+        G_CALLBACK(gsignond_db_credentials_database_remove_identity), daemon->priv->db);
     
-    g_signal_connect (identity, "remove",
-         G_CALLBACK (_on_remove_identity), daemon);
 }
 
 static const gchar * 
