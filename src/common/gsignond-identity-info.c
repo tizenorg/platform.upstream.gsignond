@@ -571,7 +571,7 @@ gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
                                 (GDestroyNotify)g_sequence_free);
 
         g_variant_iter_init (&iter, var);
-        while (g_variant_iter_next (&iter, "{sv}", &vmethod, &vmechanisms))
+        while (g_variant_iter_next (&iter, "{s@as}", &vmethod, &vmechanisms))
         {
             seq = _gsignond_identity_info_variant_to_sequence (vmechanisms);
             /*vmethod ownership is transferred to methods*/

@@ -428,7 +428,11 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
     if (supported_methods) {
         method_available = g_hash_table_contains (supported_methods, method);
         g_hash_table_unref (supported_methods);
-    } else method_available = FALSE;
+    } else if (gsignond_identity_info_get_id (identity->priv->info) <= 0)
+        method_available = TRUE;
+    else
+        method_available = FALSE;
+
 
     if (!method_available) {
         WARN ("authentication method '%s' is not supported", method);
