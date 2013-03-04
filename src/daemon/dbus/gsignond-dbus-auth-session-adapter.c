@@ -213,7 +213,7 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
 
     if (mechanisms) {
         gsignond_dbus_auth_session_complete_query_available_mechanisms (iface, invocation, (const gchar * const *)mechanisms);
-        g_strfreev (mechanisms);
+        g_free (mechanisms);
     }
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);

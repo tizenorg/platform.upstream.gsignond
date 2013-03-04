@@ -46,6 +46,7 @@ struct _GSignondAuthSessionPrivate
     gchar *method;
     GSignondDbusAuthSessionAdapter *session_adapter;
     GSignondPluginProxy *proxy;
+    GSequence *plugin_mechanisms;
 };
 
 static void gsignond_auth_session_iface_init (gpointer g_iface);
@@ -59,6 +60,14 @@ G_DEFINE_TYPE_WITH_CODE (GSignondAuthSession, gsignond_auth_session,
     G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SESSION, \
                                  GSignondAuthSessionPrivate)
 
+static gint
+_sort_cmp (gconstpointer str1, gconstpointer str2, gpointer user_data)
+{
+    (void) user_data;
+
+    return g_strcmp0 ((const gchar *) str1, (const gchar *) str2);
+}
+
 static gchar **
 _query_available_mechanisms (GSignondAuthSessionIface *iface,
                              const gchar **wanted_mechanisms,
@@ -70,15 +79,39 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
         return NULL;
     }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
-    gchar** available_mechanisms;
-    g_object_get(self->priv->proxy, 
-                 "mechanisms", &available_mechanisms, NULL);
 
-    //FIXME: need to return an intersection of wanted mechanisms and 
-    //available mechanisms here:
-    // ...
-    //g_strfreev(available_mechanisms);
-    return available_mechanisms;
+    gchar **mechanisms, **iter;
+    const gchar **src_iter;
+
+    if (!self->priv->plugin_mechanisms) {
+        g_object_get(self->priv->proxy, 
+                     "mechanisms", &mechanisms,
+                     NULL);
+        self->priv->plugin_mechanisms = g_sequence_new (g_free);
+        for (iter = mechanisms; *iter != NULL; iter++)
+            g_sequence_insert_sorted (self->priv->plugin_mechanisms,
+                                      *iter,
+                                      _sort_cmp,
+                                      NULL);
+        g_free (mechanisms);
+    }
+    mechanisms = (gchar **)
+        g_malloc0 (g_sequence_get_length (
+                            self->priv->plugin_mechanisms) * sizeof(gchar *));
+    iter = mechanisms;
+    for (src_iter = wanted_mechanisms; *src_iter != NULL; src_iter++) {
+        GSequenceIter *pos = g_sequence_lookup (self->priv->plugin_mechanisms,
+                                                *src_iter,
+                                                _sort_cmp,
+                                                NULL);
+        if (pos) {
+            *iter = g_sequence_get (pos);
+            iter++;
+        }
+    }
+    *iter = NULL;
+
+    return mechanisms;
 }
 
 static gboolean
@@ -190,6 +223,11 @@ _finalize (GObject *object)
     if (self->priv->method) {
         g_free (self->priv->method);
         self->priv->method = NULL;
+    }
+
+    if (self->priv->plugin_mechanisms) {
+        g_sequence_free (self->priv->plugin_mechanisms);
+        self->priv->plugin_mechanisms = NULL;
     }
 
     G_OBJECT_CLASS (gsignond_auth_session_parent_class)->finalize (object);
