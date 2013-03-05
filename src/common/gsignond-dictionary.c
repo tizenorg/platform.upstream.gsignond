@@ -174,7 +174,8 @@ gsignond_dictionary_get_boolean (GSignondDictionary *dict, const gchar *key,
 {
     GVariant *variant = gsignond_dictionary_get (dict, key);
 
-    g_return_val_if_fail (variant != NULL, FALSE);
+    if (variant == NULL)
+        return FALSE;
     *value = g_variant_get_boolean (variant);
     return TRUE;
 }
@@ -202,7 +203,9 @@ gsignond_dictionary_get_int32 (GSignondDictionary *dict, const gchar *key,
 {
     GVariant *variant = gsignond_dictionary_get (dict, key);
 
-    g_return_val_if_fail (variant != NULL, FALSE);
+    if (variant == NULL)
+        return FALSE;
+
     *value = g_variant_get_int32 (variant);
     return TRUE;
 }
@@ -230,7 +233,9 @@ gsignond_dictionary_get_uint32 (GSignondDictionary *dict, const gchar *key,
 {
     GVariant *variant = gsignond_dictionary_get (dict, key);
 
-    g_return_val_if_fail (variant != NULL, FALSE);
+    if (variant == NULL)
+        return FALSE;
+
     *value = g_variant_get_boolean (variant);
     return TRUE;
 }
@@ -257,7 +262,9 @@ gsignond_dictionary_get_string (GSignondDictionary *dict, const gchar *key)
 {
     GVariant *variant = gsignond_dictionary_get (dict, key);
 
-    g_return_val_if_fail (variant != NULL, NULL);
+    if (variant == NULL)
+        return NULL;
+
     return g_variant_get_string (variant, NULL);
 }
 
