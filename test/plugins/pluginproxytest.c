@@ -30,6 +30,7 @@
 #include "gsignond-plugin-proxy-factory.h"
 #include <gsignond/gsignond-plugin-loader.h>
 #include <gsignond/gsignond-error.h>
+#include <gsignond/gsignond-log.h>
 
 
 static void check_plugin(GSignondPlugin* plugin)
@@ -206,7 +207,7 @@ gsignond_auth_session_iface_notify_state_changed (GSignondAuthSessionIface *self
                                      gint state, 
                                      const gchar *message)
 {
-    fail_if(TRUE);
+    INFO("AuthSession state changed %d %s", state, message);
 }
 
 START_TEST (test_pluginproxy_process)
