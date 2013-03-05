@@ -34,6 +34,8 @@
 #include "dbus/gsignond-dbus-identity-adapter.h"
 #include "gsignond-identity.h"
 #include "gsignond-auth-session.h"
+#include "plugins/gsignond-plugin-proxy-factory.h"
+#include "gsignond-daemon.h"
 
 enum 
 {
@@ -423,12 +425,23 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
         return NULL;
     }
 
+    if (!gsignond_plugin_proxy_factory_get_plugin_mechanisms (
+                                                              gsignond_get_plugin_proxy_factory (),
+                                                              method)) {
+        WARN ("method '%s' doesn't exist", method);
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_METHOD_NOT_KNOWN,
+                                                        "authentication method '%s' doesn't exist",
+                                                        method);
+        return NULL;
+    }
+
     supported_methods = gsignond_identity_info_get_methods (identity->priv->info);
 
     if (supported_methods) {
         method_available = g_hash_table_contains (supported_methods, method);
         g_hash_table_unref (supported_methods);
-    } else if (gsignond_identity_info_get_id (identity->priv->info) <= 0)
+    } else if (gsignond_identity_info_get_is_identity_new (
+                                                         identity->priv->info))
         method_available = TRUE;
     else
         method_available = FALSE;
