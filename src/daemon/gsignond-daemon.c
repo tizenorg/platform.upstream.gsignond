@@ -354,7 +354,7 @@ _catch_identity (GSignondDaemon *daemon, GSignondIdentity *identity)
     g_signal_connect_swapped (identity, "store", 
         G_CALLBACK (gsignond_db_credentials_database_update_identity), daemon->priv->db);
     g_signal_connect_swapped (identity, "remove", 
-        G_CALLBACK(gsignond_db_credentials_database_remove_identity), daemon->priv->db);
+        G_CALLBACK (gsignond_db_credentials_database_remove_identity), daemon->priv->db);
     
 }
 

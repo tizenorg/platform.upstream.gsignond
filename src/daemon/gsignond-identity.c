@@ -596,7 +596,6 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
         VALIDATE_IDENTITY_WRITE_ACL (identity, ctx, 0);
     }
    
-    /* Add creater to owner list */
     owner = gsignond_identity_info_get_owner (identity_info);
     if (!owner) {
         owner = gsignond_identity_info_get_owner (identity->priv->info);
