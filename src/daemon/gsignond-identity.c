@@ -292,16 +292,16 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
 static gboolean
 _request_credentials_update (GSignondIdentityIface *iface, const gchar *message, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
-        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
 
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
 
-    if (G_LIKELY ((identity && identity->priv->info) == 0)) {
-        WARN ("assertion G_LIKELTY ((identity && identity->priv->info) == 0) failed");
+    if (!(identity && identity->priv->info)) {
+        WARN ("assertion (identity && identity->priv->info) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
         return FALSE;
     }
@@ -335,58 +335,45 @@ _request_credentials_update (GSignondIdentityIface *iface, const gchar *message,
 static GVariant * 
 _get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
-        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
 
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
-    GVariant *info = NULL;
-    gchar *secret = 0;
-    gchar *username = 0;
+    GSignondIdentityInfo *info = NULL;
+    GVariant *vinfo = NULL;
 
-    if (G_UNLIKELY (identity->priv->info != 0)) {
-        WARN ("assertion G_UNLIKELTY (identity->priv->info != 0) failed");
+    if (!identity->priv->info) {
+        WARN ("assertion (identity->priv->info) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
         return NULL;
     }
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
 
-    secret = g_strdup (gsignond_identity_info_get_secret (identity->priv->info));
+    info = gsignond_identity_info_copy (identity->priv->info);
 
-    /* unset password */
-    gsignond_identity_info_set_secret (identity->priv->info, "");
+    /* remove password */
+    gsignond_identity_info_remove_secret (info);
 
-    /* unset username if its secret */
-    if (gsignond_identity_info_get_is_username_secret (identity->priv->info)) {
-        username = g_strdup (gsignond_identity_info_get_username (identity->priv->info));
-        gsignond_identity_info_set_username (identity->priv->info, "");
-    }
+    /* remove username if its secret */
+    if (gsignond_identity_info_get_is_username_secret (info))
+        gsignond_identity_info_remove_username (info);
 
     /* prepare identity info, excluding password and username if secret */
-    info = gsignond_dictionary_to_variant (identity->priv->info);
-    if (G_UNLIKELY (info != 0)) {
+    vinfo = gsignond_dictionary_to_variant (identity->priv->info);
+    gsignond_identity_info_free (info);
+    if (!vinfo) {
         WARN ("identity info to variant convertion failed.");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity internal eror.");
         return NULL;
     }
-    /* reset password back */
-    if (secret) {
-        gsignond_identity_info_set_secret (identity->priv->info, secret);
-        g_free (secret);
-    }
-
-    /* reset username back */
-    if (username) {
-        gsignond_identity_info_set_username (identity->priv->info, username);
-        g_free (username);
-    }
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
-    return info;
+    return vinfo;
 }
 
 static void
@@ -407,8 +394,8 @@ _on_session_close (gpointer data, GObject *session)
 static const gchar *
 _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
-        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
@@ -418,8 +405,8 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
     GHashTable *supported_methods = NULL;
     gboolean method_available = FALSE;
 
-    if (G_LIKELY (method == 0)) {
-        WARN ("assertion G_LIKELY(method == 0) failed");
+    if (!method) {
+        WARN ("assertion (method) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_METHOD_NOT_KNOWN,
                       "authentication method not provided");
         return NULL;
@@ -479,15 +466,15 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
 static gboolean 
 _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
-        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     const gchar *passwd = 0;
-    if (G_UNLIKELY (identity->priv->info != 0)) {
-        WARN ("assertion G_UNLIKELTY (identity->priv->info != 0) failed");
+    if (!identity->priv->info) {
+        WARN ("assertion (identity->priv->info) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
         return FALSE;
     }
@@ -518,8 +505,8 @@ _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSigno
 static gboolean
 _verify_secret (GSignondIdentityIface *iface, const gchar *secret, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
-        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
@@ -537,8 +524,8 @@ _verify_secret (GSignondIdentityIface *iface, const gchar *secret, const GSignon
 static gboolean 
 _sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface))) == 0) {
-        WARN ("assertion G_LIKELTY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
@@ -565,8 +552,8 @@ _sign_out (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GEr
 static guint32
 _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
-        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return 0;
     }
@@ -599,7 +586,6 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
     owner = gsignond_identity_info_get_owner (identity_info);
     if (!owner) {
         owner = gsignond_identity_info_get_owner (identity->priv->info);
-
         gsignond_identity_info_set_owner (identity_info, owner);
     }
 
@@ -633,8 +619,8 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
 static gboolean
 _remove (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_IDENTITY (iface)) == 0)) {
-        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return 0;
     }
@@ -661,8 +647,8 @@ _remove (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GErro
 static gint32
 _add_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_UNLIKELY (iface && GSIGNOND_IS_IDENTITY (iface))) {
-        WARN ("assertion G_UNLIKELTY (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return 0;
     }
@@ -689,8 +675,8 @@ _add_reference (GSignondIdentityIface *iface, const gchar *reference, const GSig
 static gint32
 _remove_reference (GSignondIdentityIface *iface, const gchar *reference, const GSignondSecurityContext *ctx, GError **error)
 {
-    if (G_UNLIKELY (iface && GSIGNOND_IS_IDENTITY (iface))) {
-        WARN ("assertion G_UNLIKELTY (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return 0;
     }

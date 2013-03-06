@@ -204,11 +204,24 @@ gsignond_identity_info_new (void)
 }
 
 /**
+ * gsignond_identity_info_copy:
+ * @info: instance of #GSignondIdentityInfo
+ *
+ * Creates a copy of info structure.
+ *
+ * Returns: copy of the info.
+ */
+GSignondIdentityInfo *
+gsignond_identity_info_copy (GSignondIdentityInfo *info)
+{
+    return gsignond_dictionary_copy (info);
+}
+
+/**
  * gsignond_identity_info_free:
  * @info: instance of #GSignondIdentityInfo
  *
  * Frees the memory allocated by info structure.
- *
  */
 void
 gsignond_identity_info_free (GSignondIdentityInfo *info)
@@ -224,13 +237,13 @@ gsignond_identity_info_free (GSignondIdentityInfo *info)
  *
  * Returns: the id; negative id is returned in case of failure.
  */
-gint
+guint32
 gsignond_identity_info_get_id (GSignondIdentityInfo *info)
 {
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_ID);
     if (var != NULL) {
-        return g_variant_get_int32 (var);
+        return g_variant_get_uint32 (var);
     }
     return -1;
 }
@@ -248,12 +261,12 @@ gsignond_identity_info_get_id (GSignondIdentityInfo *info)
 gboolean
 gsignond_identity_info_set_id (
         GSignondIdentityInfo *info,
-        gint id)
+        guint32 id)
 {
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_ID,
-            g_variant_new_int32 (id));
+            g_variant_new_uint32 (id));
 }
 
 /**
@@ -330,6 +343,18 @@ gsignond_identity_info_set_username (
                     info,
                     GSIGNOND_IDENTITY_INFO_USERNAME,
                     g_variant_new_string (username));
+}
+
+/**
+ * gsignond_identity_info_remove_username:
+ * @info: instance of #GSignondIdentityInfo
+ *
+ * Removes username from the info.
+ */
+void
+gsignond_identity_info_remove_username (GSignondIdentityInfo *info)
+{
+    gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_USERNAME);
 }
 
 /**
@@ -415,6 +440,18 @@ gsignond_identity_info_set_secret (
             info,
             GSIGNOND_IDENTITY_INFO_SECRET,
             g_variant_new_string (secret));
+}
+
+/**
+ * gsignond_identity_info_remove_secret:
+ * @info: instance of #GSignondIdentityInfo
+ *
+ * Removes secret from the info.
+ */
+void
+gsignond_identity_info_remove_secret (GSignondIdentityInfo *info)
+{
+    gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_SECRET);
 }
 
 /**

@@ -42,9 +42,9 @@ typedef struct _GSignondIdentityIface GSignondIdentityIface; /* dummy */
 typedef struct _GSignondIdentityIfaceInterface GSignondIdentityIfaceInterface;
 
 typedef enum {
-    GSIGNOND_IDENTITY_DATA_UPDATED = 1,
-    GSIGNOND_IDENTITY_SIGNED_OUT,
-    GSIGNOND_IDENTITY_REMOVED
+    GSIGNOND_IDENTITY_DATA_UPDATED = 0,
+    GSIGNOND_IDENTITY_REMOVED,
+    GSIGNOND_IDENTITY_SIGNED_OUT
 } IdentityChangeType;
 typedef IdentityChangeType GSignondIdentityChangeType;
 

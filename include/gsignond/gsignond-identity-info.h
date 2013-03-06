@@ -47,16 +47,19 @@ typedef GList GSignondIdentityInfoList;
 GSignondIdentityInfo *
 gsignond_identity_info_new (void);
 
+GSignondIdentityInfo *
+gsignond_identity_info_copy (GSignondIdentityInfo *info);
+
 void
 gsignond_identity_info_free (GSignondIdentityInfo *info);
 
-gint
+guint32
 gsignond_identity_info_get_id (GSignondIdentityInfo *info);
 
 gboolean
 gsignond_identity_info_set_id (
         GSignondIdentityInfo *info,
-        gint id);
+        guint32 id);
 
 gboolean
 gsignond_identity_info_get_is_identity_new (GSignondIdentityInfo *info);
@@ -71,6 +74,9 @@ gboolean
 gsignond_identity_info_set_username (
         GSignondIdentityInfo *info,
         const gchar *username);
+
+void
+gsignond_identity_info_remove_username (GSignondIdentityInfo *info);
 
 gboolean
 gsignond_identity_info_get_is_username_secret (GSignondIdentityInfo *info);
@@ -87,6 +93,9 @@ gboolean
 gsignond_identity_info_set_secret (
         GSignondIdentityInfo *info,
         const gchar *secret);
+
+void
+gsignond_identity_info_remove_secret (GSignondIdentityInfo *info);
 
 gboolean
 gsignond_identity_info_get_store_secret (GSignondIdentityInfo *info);
