@@ -31,6 +31,7 @@ enum
 {
     PROP_0,
     PROP_IMPL,
+    PROP_APP_CONTEXT,
     N_PROPERTIES
 };
 
@@ -39,7 +40,10 @@ static GParamSpec *properties[N_PROPERTIES];
 struct _GSignondDbusAuthSessionAdapterPrivate
 {
     GDBusConnection     *connection;
+    gchar *app_context;
+    GSignondSecurityContext ctx;
     GSignondAuthSessionIface *parent;
+    /* signal handlers */
     guint state_changed_handler_id;
     guint process_result_handler_id;
     guint process_error_handler_id;
@@ -50,6 +54,18 @@ G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapte
 
 #define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterPrivate)
 
+#define PREPARE_SECURITY_CONTEXT(dbus_object, invocation) \
+{ \
+    GSignondDbusAuthSessionAdapterPrivate *priv = dbus_object->priv; \
+    const gchar *sender = g_dbus_method_invocation_get_sender (invocation); \
+    GSignondAccessControlManager *acm = gsignond_auth_session_iface_get_acm (priv->parent); \
+    gsignond_access_control_manager_security_context_of_peer( \
+            acm, \
+            &priv->ctx, \
+            -1, \
+            sender, \
+            priv->app_context); \
+}
 static void _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const gchar **, gpointer);
 static void _handle_process (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const GVariant *, const gchar *, gpointer);
 static void _handle_cancel (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, gpointer);
@@ -78,6 +94,11 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
             }
             break;
         }
+        case PROP_APP_CONTEXT: {
+            if (self->priv->app_context) g_free (self->priv->app_context);
+            self->priv->app_context = g_strdup (g_value_get_string (value));
+            break;
+        }
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -96,6 +117,9 @@ gsignond_dbus_auth_session_adapter_get_property (GObject *object,
             g_value_set_pointer (value, self->priv->parent);
             break;
         }
+        case PROP_APP_CONTEXT:
+            g_value_set_string (value, self->priv->app_context);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -134,6 +158,11 @@ gsignond_dbus_auth_session_adapter_finalize (GObject *object)
         self->priv->parent = NULL;
     }
 
+    if (self->priv->app_context) {
+        g_free (self->priv->app_context);
+        self->priv->app_context = NULL;
+    }
+
     DBG("(-)'%s' object unexported", g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON(object)));
     g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
 
@@ -156,6 +185,12 @@ gsignond_dbus_auth_session_adapter_class_init (GSignondDbusAuthSessionAdapterCla
                                                   "Auth session impl",
                                                   "AuthSessionIface implementation object",
                                                   G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    properties[PROP_APP_CONTEXT] = g_param_spec_string (
+                "app-context",
+                "application security context",
+                "Application security context of the identity object creater",
+                NULL,
+                G_PARAM_READWRITE);
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }
 
@@ -207,7 +242,10 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
     gchar **mechanisms = NULL;
     GError *error = NULL;
     
-    mechanisms = gsignond_auth_session_iface_query_available_mechanisms (self->priv->parent, wanted_mechanisms, &error);
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    mechanisms = gsignond_auth_session_iface_query_available_mechanisms (
+        self->priv->parent, wanted_mechanisms, &self->priv->ctx, &error);
 
     if (mechanisms) {
         gsignond_dbus_auth_session_complete_query_available_mechanisms (iface, invocation, (const gchar * const *)mechanisms);
@@ -285,7 +323,9 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
     self->priv->process_result_handler_id = 
         g_signal_connect (self->priv->parent, "process-result", G_CALLBACK (_on_process_result), info);
 
-    if (!gsignond_auth_session_iface_process (self->priv->parent, data, mechanisms, &error)) {
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    if (!gsignond_auth_session_iface_process (self->priv->parent, data, mechanisms, &self->priv->ctx, &error)) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     
@@ -306,7 +346,9 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
     GSignondDbusAuthSession *iface = GSIGNOND_DBUS_AUTH_SESSION (self);
     GError *error = NULL;
     
-    if (gsignond_auth_session_iface_cancel (self->priv->parent, &error))
+    PREPARE_SECURITY_CONTEXT (self, invocation);
+
+    if (gsignond_auth_session_iface_cancel (self->priv->parent, &self->priv->ctx, &error))
         gsignond_dbus_auth_session_complete_cancel (iface, invocation);
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
@@ -329,4 +371,3 @@ gsignond_dbus_auth_session_adapter_new (GSignondAuthSessionIface *impl)
 {
     return g_object_new (GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, "auth-session-impl", impl, NULL);
 }
-

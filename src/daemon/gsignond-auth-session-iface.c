@@ -126,27 +126,36 @@ gchar **
 gsignond_auth_session_iface_query_available_mechanisms (
                                                 GSignondAuthSessionIface *self,
                                                 const gchar **wanted_mechanisms,
+                                                const GSignondSecurityContext *ctx,
                                                 GError **error)
 {
     return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
-        query_available_mechanisms (self, wanted_mechanisms, error);
+        query_available_mechanisms (self, wanted_mechanisms, ctx, error);
 }
 
 gboolean
 gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
                                      GSignondSessionData *session_data,
                                      const gchar *mechanism,
+                                     const GSignondSecurityContext *ctx,
                                      GError **error)
 {
     return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
-        process (self, session_data, mechanism, error);
+        process (self, session_data, mechanism, ctx, error);
 }
 
 gboolean
 gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self,
+                                    const GSignondSecurityContext *ctx,
                                     GError **error)
 {
-    return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->cancel (self, error);
+    return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->cancel (self, ctx, error);
+}
+
+GSignondAccessControlManager *
+gsignond_auth_session_iface_get_acm (GSignondAuthSessionIface *self)
+{
+    return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->get_acm (self);
 }
 
 void 
@@ -209,4 +218,3 @@ gsignond_auth_session_iface_notify_state_changed (GSignondAuthSessionIface *self
     g_signal_emit (self, signals[SIG_PROCESS_STATE_CHANGED], 0, state,
         message);
 }
-

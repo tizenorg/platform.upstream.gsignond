@@ -29,6 +29,8 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-session-data.h>
+#include <gsignond/gsignond-access-control-manager.h>
+#include <gsignond/gsignond-security-context.h>
 
 G_BEGIN_DECLS
 
@@ -47,6 +49,7 @@ struct _GSignondAuthSessionIfaceInterface {
      * query_available_mechanisms:
      * @session: instance of #GSignondAuthSessionIface
      * @desired_mechanisms: desired authentication mechanisms
+     * @ctx: security context of the caller
      * @error: return location for error
      *
      * Checks for support of desired authentication mechanisms #desired_mechanisms for this
@@ -58,6 +61,7 @@ struct _GSignondAuthSessionIfaceInterface {
      */
     gchar **   (*query_available_mechanisms) (GSignondAuthSessionIface *session,
                                               const gchar **desired_mechanisms,
+                                              const GSignondSecurityContext *ctx,
                                               GError **error);
 
     /**
@@ -65,6 +69,7 @@ struct _GSignondAuthSessionIfaceInterface {
      * @session: instance of #GSignondAuthSessionIface
      * @session_data: authentication session data to use
      * @mechansims: authentication mechanism to use
+     * @ctx: security context of the caller
      * @error: return location for error
      *
      * Initiates authentication process on #session, On successful authentication #gsignond_auth_session_iface_notify_process_result will be called.
@@ -75,16 +80,21 @@ struct _GSignondAuthSessionIfaceInterface {
     gboolean   (*process) (GSignondAuthSessionIface *session,
                            GSignondSessionData *session_data,
                            const gchar *mechanism,
+                           const GSignondSecurityContext *ctx,
                            GError **error);
 
     /**
      * cancel:
      * @session: instance of #GSignondAuthSessionIface
+     * @ctx: security context of the caller
      * @error: return location for error
      *
      */
     gboolean   (*cancel) (GSignondAuthSessionIface *session,
+                          const GSignondSecurityContext *ctx,
                           GError **error);
+
+    GSignondAccessControlManager * (*get_acm) (GSignondAuthSessionIface *session);
 
     void (*user_action_finished) (GSignondAuthSessionIface *session, 
                                   GSignondSessionData *session_data);
@@ -99,14 +109,17 @@ GType gsignond_auth_session_iface_get_type (void);
 gchar ** 
 gsignond_auth_session_iface_query_available_mechanisms (GSignondAuthSessionIface *self,
                                                         const gchar **wanted_mechanisms,
+                                                        const GSignondSecurityContext *ctx,
                                                         GError **error);
 gboolean 
 gsignond_auth_session_iface_process (GSignondAuthSessionIface *self,
                                      GSignondSessionData *session_data,
                                      const gchar *mechanism,
+                                     const GSignondSecurityContext *ctx,
                                      GError **error);
 gboolean
 gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self,
+                                    const GSignondSecurityContext *ctx,
                                     GError **error);
 void 
 gsignond_auth_session_iface_user_action_finished (GSignondAuthSessionIface *self, 
@@ -138,6 +151,9 @@ gsignond_auth_session_iface_notify_process_result (GSignondAuthSessionIface *ifa
 void
 gsignond_auth_session_iface_notify_process_error (GSignondAuthSessionIface *iface,
                                                   const GError *error);
+
+GSignondAccessControlManager *
+gsignond_auth_session_iface_get_acm (GSignondAuthSessionIface *self);
 
 void 
 gsignond_auth_session_iface_notify_store (GSignondAuthSessionIface *self, 

@@ -38,6 +38,7 @@ enum
 {
 	PROP_0,
 	PROP_METHOD,
+    PROP_APP_CONTEXT,
 	N_PROPERTIES
 };
 
@@ -63,6 +64,21 @@ G_DEFINE_TYPE_WITH_CODE (GSignondAuthSession, gsignond_auth_session,
     G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SESSION, \
                                  GSignondAuthSessionPrivate)
 
+#define VALIDATE_READ_ACCESS(info, ctx, ret) \
+{ \
+    GSignondAccessControlManager *acm = gsignond_get_access_control_manager(); \
+    GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (info); \
+    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
+    gsignond_security_context_list_free (acl); \
+    if (!valid) { \
+        WARN ("security check failed"); \
+        if (error) { \
+            *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_PERMISSION_DENIED, "Can not access identity"); \
+        } \
+        return ret; \
+    } \
+}
+
 static gint
 _sort_cmp (gconstpointer str1, gconstpointer str2, gpointer user_data)
 {
@@ -74,6 +90,7 @@ _sort_cmp (gconstpointer str1, gconstpointer str2, gpointer user_data)
 static gchar **
 _query_available_mechanisms (GSignondAuthSessionIface *iface,
                              const gchar **wanted_mechanisms,
+                             const GSignondSecurityContext *ctx,
                              GError **error)
 {
     if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
@@ -82,6 +99,8 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
         return NULL;
     }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+
+    VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, NULL);
 
     gchar **mechanisms, **iter;
     const gchar **src_iter;
@@ -118,8 +137,10 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
 }
 
 static gboolean
-_process (GSignondAuthSessionIface *iface, GSignondSessionData *session_data,
+_process (GSignondAuthSessionIface *iface, 
+          GSignondSessionData *session_data,
           const gchar *mechanism,
+          const GSignondSecurityContext *ctx,
           GError **error)
 {
     if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
@@ -128,6 +149,8 @@ _process (GSignondAuthSessionIface *iface, GSignondSessionData *session_data,
         return FALSE;
     }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+
+    VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
 
     if (session_data && 
         !gsignond_session_data_get_username (session_data) 
@@ -146,7 +169,9 @@ _process (GSignondAuthSessionIface *iface, GSignondSessionData *session_data,
 }
 
 static gboolean
-_cancel (GSignondAuthSessionIface *iface, GError **error)
+_cancel (GSignondAuthSessionIface *iface,
+         const GSignondSecurityContext *ctx,
+         GError **error)
 {
     if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
         WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
@@ -154,6 +179,8 @@ _cancel (GSignondAuthSessionIface *iface, GError **error)
         return FALSE;
     }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+
+    VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
 
     gsignond_plugin_proxy_cancel(self->priv->proxy, iface);
 
@@ -178,6 +205,12 @@ _refresh (GSignondAuthSessionIface *iface,
     gsignond_plugin_proxy_refresh(self->priv->proxy, session_data);
 }
 
+GSignondAccessControlManager *
+_get_acm (GSignondAuthSessionIface *iface)
+{
+    return gsignond_get_access_control_manager ();
+}
+
 static void
 _get_property (GObject *object, guint property_id, GValue *value,
                GParamSpec *pspec)
@@ -188,6 +221,9 @@ _get_property (GObject *object, guint property_id, GValue *value,
     {
         case PROP_METHOD:
             g_value_set_string (value, self->priv->method);
+            break;
+        case PROP_APP_CONTEXT:
+            g_object_get_property (G_OBJECT (self->priv->session_adapter), "app-context", value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -204,6 +240,9 @@ _set_property (GObject *object, guint property_id, const GValue *value,
     {
         case PROP_METHOD:
             self->priv->method = g_value_dup_string (value);
+            break;
+        case PROP_APP_CONTEXT:
+            g_object_set_property (G_OBJECT (self->priv->session_adapter), "app-context", value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -278,7 +317,16 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
                              "authentication method",
                              "Authentication method used",
                              NULL,
-                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY
+                              | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
+
+    properties[PROP_APP_CONTEXT] =
+        g_param_spec_string ("app-context",
+                             "application security context",
+                             "Application security context",
+                             NULL,
+                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY
+                              | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }
@@ -294,6 +342,7 @@ gsignond_auth_session_iface_init (gpointer g_iface)
     auth_session_iface->cancel = _cancel;
     auth_session_iface->user_action_finished = _user_action_finished;
     auth_session_iface->refresh = _refresh;
+    auth_session_iface->get_acm = _get_acm;
 }
 
 /**
@@ -364,7 +413,10 @@ gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context,
     }
 
     GSignondAuthSession *auth_session =
-        g_object_new (GSIGNOND_TYPE_AUTH_SESSION, "method", method, "timeout", timeout, NULL);
+        g_object_new (GSIGNOND_TYPE_AUTH_SESSION, "method", method,
+            "app-context", app_context,
+            "timeout", timeout, 
+            NULL);
     auth_session->priv->proxy = proxy;
     auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
 
