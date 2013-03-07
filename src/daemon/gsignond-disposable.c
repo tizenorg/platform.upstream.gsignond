@@ -139,14 +139,14 @@ gsignond_disposable_class_init (GSignondDisposableClass *klass)
                            0,
                            G_MAXINT,
                            0,
-                           G_PARAM_READWRITE /*| G_PARAM_CONSTRUCT_ONLY*/);
+                           G_PARAM_READWRITE | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
 
     properties[PROP_AUTO_DISPOSE] =
         g_param_spec_boolean ("auto-dispose",
                               "Auto dispose",
                               "auto dispose",
                               TRUE,
-                              G_PARAM_READWRITE/* | G_PARAM_CONSTRUCT*/);
+                              G_PARAM_READWRITE | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
 
     g_object_class_install_properties (object_class, PROP_MAX, properties);
 
