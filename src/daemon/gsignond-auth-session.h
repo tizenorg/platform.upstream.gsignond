@@ -28,7 +28,7 @@
 
 #include <glib-object.h>
 
-#include "gsignond-identity-iface.h"
+#include <gsignond/gsignond-identity-info.h>
 #include "gsignond-disposable.h"
 
 G_BEGIN_DECLS
@@ -77,8 +77,10 @@ gsignond_auth_session_get_object_path (GSignondAuthSession *session);
 gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id);
 
 GSignondAuthSession * 
-gsignond_auth_session_new (gint id,
-                           const gchar *method);
+gsignond_auth_session_new (GSignondIdentityInfo *info,
+                           const gchar *app_context,
+                           const gchar *method,
+                           gint timeout);
 
 G_END_DECLS
 

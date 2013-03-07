@@ -48,7 +48,6 @@ struct _GSignondDbusIdentityAdapterPrivate
 {
     GDBusConnection       *connection;
     GSignondIdentityIface *identity;
-    gchar *object_path;
     gchar *app_context;
     GSignondSecurityContext sec_context;
     /* signal handler ids */
@@ -183,13 +182,6 @@ gsignond_dbus_identity_adapter_finalize (GObject *object)
 {
     GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (object);
 
-    g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
-
-    if (self->priv->object_path) {
-        g_free (self->priv->object_path);
-        self->priv->object_path = NULL;
-    }
-
     if (self->priv->app_context) {
         g_free (self->priv->app_context);
         self->priv->app_context = NULL;
@@ -198,6 +190,9 @@ gsignond_dbus_identity_adapter_finalize (GObject *object)
     if (self->priv->identity) {
         self->priv->identity = NULL;
     }
+
+    DBG("(-)'%s' object unexported", g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON(object)));
+    g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
 
     G_OBJECT_CLASS (gsignond_dbus_identity_adapter_parent_class)->finalize (object);
 }
@@ -259,6 +254,7 @@ gsignond_dbus_identity_adapter_init (GSignondDbusIdentityAdapter *self)
         g_free (object_path);
         return ;
     }
+    DBG("(+)'%s' object exported", object_path);
     g_free (object_path);
 
     g_signal_connect (self, "handle-request-credentials-update", G_CALLBACK (_handle_request_credentials_update), NULL);

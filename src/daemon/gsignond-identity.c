@@ -36,6 +36,7 @@
 #include "gsignond-auth-session.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 #include "gsignond-daemon.h"
+#include "gsignond/gsignond-config-dbus.h"
 
 enum 
 {
@@ -381,8 +382,6 @@ _on_session_close (gpointer data, GObject *session)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (data);
 
-    g_object_weak_unref (session, _on_session_close, data);
-
     identity->priv->auth_sessions = g_list_remove (identity->priv->auth_sessions, session);
     
     if (g_list_length (identity->priv->auth_sessions) == 0) {
@@ -404,6 +403,8 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
     const gchar *object_path = NULL;
     GHashTable *supported_methods = NULL;
     gboolean method_available = FALSE;
+    gchar *app_context = NULL;
+    gint timeout = 0;
 
     if (!method) {
         WARN ("assertion (method) failed");
@@ -443,8 +444,13 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
 
-    session = gsignond_auth_session_new (gsignond_identity_info_get_id(
-        identity->priv->info), method);
+    timeout = gsignond_config_get_integer (gsignond_get_config(), GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT);
+    g_object_get (identity->priv->identity_adapter, "app-context", &app_context, NULL);
+    session = gsignond_auth_session_new (identity->priv->info,
+                                         app_context, 
+                                         method,
+                                         timeout);
+    g_free (app_context);
 
     if (!session) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");

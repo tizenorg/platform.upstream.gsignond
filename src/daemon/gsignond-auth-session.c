@@ -26,6 +26,8 @@
 #include "gsignond-auth-session-iface.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-session-data.h"
+#include "gsignond/gsignond-identity-info.h"
 #include "dbus/gsignond-dbus.h"
 #include "dbus/gsignond-dbus-auth-session-adapter.h"
 #include "gsignond-auth-session.h"
@@ -47,6 +49,7 @@ struct _GSignondAuthSessionPrivate
     GSignondDbusAuthSessionAdapter *session_adapter;
     GSignondPluginProxy *proxy;
     GSequence *plugin_mechanisms;
+    GSignondIdentityInfo *identity_info;
 };
 
 static void gsignond_auth_session_iface_init (gpointer g_iface);
@@ -73,7 +76,7 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
                              const gchar **wanted_mechanisms,
                              GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
+    if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
         WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
@@ -101,7 +104,7 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
     iter = mechanisms;
     for (src_iter = wanted_mechanisms; *src_iter != NULL; src_iter++) {
         GSequenceIter *pos = g_sequence_lookup (self->priv->plugin_mechanisms,
-                                                *src_iter,
+                                                (gpointer)*src_iter,
                                                 _sort_cmp,
                                                 NULL);
         if (pos) {
@@ -125,6 +128,16 @@ _process (GSignondAuthSessionIface *iface, GSignondSessionData *session_data,
         return FALSE;
     }
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+
+    if (session_data && 
+        !gsignond_session_data_get_username (session_data) 
+        && self->priv->identity_info) {
+        const gchar *username = gsignond_identity_info_get_username (self->priv->identity_info);
+
+        if (username) {
+            gsignond_session_data_set_username (session_data, username);
+        }
+    }
 
     gsignond_plugin_proxy_process(self->priv->proxy, iface, session_data,
                                   mechanism);
@@ -210,6 +223,11 @@ _dispose (GObject *object)
     if (self->priv->proxy) {
         g_object_unref (self->priv->proxy);
         self->priv->proxy = NULL;
+    }
+
+    if (self->priv->identity_info) {
+        g_hash_table_unref ((GHashTable *)self->priv->identity_info);
+        self->priv->identity_info = NULL;
     }
 
     G_OBJECT_CLASS (gsignond_auth_session_parent_class)->dispose (object);
@@ -319,7 +337,8 @@ gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id)
 
 /**
  * gsignond_auth_session_new:
- * @owner: instance of #GSignondIdentityIface
+ * @info: instance of #GSignondIdentityInfo
+ * @app_context: application security
  * @method: authentication method
  *
  * Creates instance of #GSignondAuthSession.
@@ -327,9 +346,12 @@ gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id)
  * Returns: (transfer full) newly created object 
  */
 GSignondAuthSession * 
-gsignond_auth_session_new (gint id, const gchar *method)
+gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context, const gchar *method, gint timeout)
 {
     GSignondPluginProxy* proxy;
+    guint id = 0;
+
+    if (info) id = gsignond_identity_info_get_id (info);
     
     if (id == 0) {
         proxy = gsignond_plugin_proxy_new(gsignond_get_config(), method);
@@ -340,10 +362,11 @@ gsignond_auth_session_new (gint id, const gchar *method)
         if (!proxy) return NULL;
         g_object_ref(proxy);
     }
-    
+
     GSignondAuthSession *auth_session =
-        g_object_new (GSIGNOND_TYPE_AUTH_SESSION, "method", method, NULL);
+        g_object_new (GSIGNOND_TYPE_AUTH_SESSION, "method", method, "timeout", timeout, NULL);
     auth_session->priv->proxy = proxy;
+    auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
 
     return auth_session;
 }

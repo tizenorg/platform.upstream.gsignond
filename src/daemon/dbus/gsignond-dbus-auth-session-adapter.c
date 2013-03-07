@@ -71,7 +71,7 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
                 if (self->priv->parent) {
                     g_signal_handler_disconnect (self->priv->parent, self->priv->state_changed_handler_id);
                 }
-                self->priv->parent = GSIGNOND_AUTH_SESSION_IFACE (g_object_ref (iface));
+                self->priv->parent = GSIGNOND_AUTH_SESSION_IFACE (iface);
                 self->priv->state_changed_handler_id = 
                        g_signal_connect (self->priv->parent, "state-changed", 
                                          G_CALLBACK (_emit_state_changed), self);
@@ -93,7 +93,7 @@ gsignond_dbus_auth_session_adapter_get_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            g_value_set_instance (value, self->priv->parent);
+            g_value_set_pointer (value, self->priv->parent);
             break;
         }
         default:
@@ -115,9 +115,6 @@ gsignond_dbus_auth_session_adapter_dispose (GObject *object)
             g_signal_handler_disconnect (self->priv->parent, self->priv->process_error_handler_id);
         if (self->priv->process_result_handler_id)
             g_signal_handler_disconnect (self->priv->parent, self->priv->process_result_handler_id);
-    
-        g_object_unref (self->priv->parent);
-        self->priv->parent = NULL;
     }
 
     if (self->priv->connection) {
@@ -133,11 +130,12 @@ gsignond_dbus_auth_session_adapter_finalize (GObject *object)
 {
     GSignondDbusAuthSessionAdapter *self = GSIGNOND_DBUS_AUTH_SESSION_ADAPTER (object);
 
-    g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
-
     if (self->priv->parent) {
         self->priv->parent = NULL;
     }
+
+    DBG("(-)'%s' object unexported", g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON(object)));
+    g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
 
     G_OBJECT_CLASS (gsignond_dbus_auth_session_adapter_parent_class)->finalize (object);
 }
@@ -191,7 +189,7 @@ gsignond_dbus_auth_session_adapter_init (GSignondDbusAuthSessionAdapter *self)
         g_free (object_path);
         return ;
     }
-
+    DBG("(+) '%s' object exported", object_path);
     g_free (object_path);
 
     g_signal_connect (self, "handle-query-available-mechanisms", G_CALLBACK (_handle_query_available_mechanisms), NULL);
