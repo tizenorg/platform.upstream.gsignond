@@ -41,18 +41,14 @@
 
 typedef struct _GSignondPluginProxy        GSignondPluginProxy;
 typedef struct _GSignondPluginProxyClass   GSignondPluginProxyClass;
+typedef struct _GSignondPluginProxyPrivate GSignondPluginProxyPrivate;
 
 struct _GSignondPluginProxy
 {
     GObject parent_instance;
     
     /* Private */
-    GSignondConfig *config;
-    gchar* plugin_type;
-    GSignondPlugin* plugin;
-    GQueue* session_queue;
-    GSignondAuthSessionIface* active_session;
-    gboolean expecting_request;
+    GSignondPluginProxyPrivate *priv;
 };
 
 struct _GSignondPluginProxyClass

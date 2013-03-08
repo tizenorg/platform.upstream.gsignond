@@ -25,6 +25,8 @@
 
 #include "gsignond-plugin-proxy-factory.h"
 #include <string.h>
+#include <stdio.h>
+#include <gsignond/gsignond-log.h>
 #include <gsignond/gsignond-plugin-loader.h>
 
 G_DEFINE_TYPE (GSignondPluginProxyFactory, gsignond_plugin_proxy_factory, G_TYPE_OBJECT);
@@ -43,12 +45,6 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 {
-    self->methods = g_malloc0(sizeof(gchar*));
-    self->mechanisms = g_hash_table_new_full ((GHashFunc)g_str_hash,
-                            (GEqualFunc)g_str_equal,
-                            (GDestroyNotify)g_free,
-                            (GDestroyNotify)g_strfreev);
-
     GDir* plugin_dir = g_dir_open(gsignond_config_get_string (self->config, 
         GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), 0, NULL);
     if (plugin_dir == NULL)
@@ -59,10 +55,14 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
         n_plugins++;
     g_dir_rewind(plugin_dir);
     
-    g_free(self->methods);
     self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
+    self->mechanisms = g_hash_table_new_full((GHashFunc)g_str_hash,
+                                             (GEqualFunc)g_str_equal,
+                                             (GDestroyNotify)g_free,
+                                             (GDestroyNotify)g_strfreev);
 
-    int i = 0;
+    DBG ("enumerate plugins in %s", plugin_dir);
+    gchar **method_iter = self->methods;
     while (1) {
         const gchar* plugin_soname = g_dir_read_name(plugin_dir);
         if (plugin_soname == NULL)
@@ -77,14 +77,18 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
                 gchar* plugin_type;
                 gchar** mechanisms;
                 g_object_get(plugin, 
-                    "type", &plugin_type, 
-                    "mechanisms", &mechanisms, 
-                    NULL);
+                            "type", &plugin_type, 
+                            "mechanisms", &mechanisms, 
+                             NULL);
                 if (g_strcmp0 (plugin_type, plugin_name) == 0) {
-                    self->methods[i] = plugin_type;
+                    *method_iter = plugin_type;
+                    method_iter++;
+                    DBG ("method %s (%p) mechanisms=%p",
+                         plugin_type,
+                         plugin_type,
+                         mechanisms);
                     g_hash_table_insert(self->mechanisms,
                         plugin_type, mechanisms);
-                    i++;
                 } else {
                     g_free(plugin_type);
                     g_strfreev(mechanisms);
@@ -175,9 +179,18 @@ gsignond_plugin_proxy_factory_finalize (GObject *gobject)
 {
     GSignondPluginProxyFactory *self = GSIGNOND_PLUGIN_PROXY_FACTORY (gobject);
 
-    g_hash_table_destroy (self->plugins);
-    g_hash_table_destroy (self->mechanisms);
-    g_free (self->methods);
+    if (self->plugins) {
+        g_hash_table_destroy (self->plugins);
+        self->plugins = NULL;
+    }
+    if (self->mechanisms) {
+        g_hash_table_destroy (self->mechanisms);
+        self->mechanisms = NULL;
+    }
+    if (self->methods) {
+        g_free (self->methods);
+        self->methods = NULL;
+    }
 
     /* Chain up to the parent class */
     G_OBJECT_CLASS (gsignond_plugin_proxy_factory_parent_class)->finalize (gobject);
@@ -196,12 +209,11 @@ gsignond_plugin_proxy_factory_class_init (GSignondPluginProxyFactoryClass *klass
     gobject_class->finalize = gsignond_plugin_proxy_factory_finalize;
 
     obj_properties[PROP_CONFIG] = g_param_spec_object ("config",
-                                                   "config",
-                                                   "Configuration object",
-                                                   GSIGNOND_TYPE_CONFIG,
-                                                   G_PARAM_CONSTRUCT_ONLY |
-                                                   G_PARAM_READWRITE |
-                                                   G_PARAM_STATIC_STRINGS);
+                                                       "config",
+                                                       "Configuration object",
+                                                       GSIGNOND_TYPE_CONFIG,
+                                                       G_PARAM_CONSTRUCT_ONLY |
+                                                       G_PARAM_READWRITE);
     
 
     g_object_class_install_properties (gobject_class,
@@ -213,9 +225,10 @@ static void
 gsignond_plugin_proxy_factory_init (GSignondPluginProxyFactory *self)
 {
     self->plugins = g_hash_table_new_full ((GHashFunc)g_str_hash,
-                            (GEqualFunc)g_str_equal,
-                            (GDestroyNotify)g_free,
-                            (GDestroyNotify)g_object_unref);
+                                           (GEqualFunc)g_str_equal,
+                                           (GDestroyNotify)g_free,
+                                           (GDestroyNotify)g_object_unref);
+
 }
 
 GSignondPluginProxyFactory* 
@@ -288,5 +301,7 @@ const gchar**
 gsignond_plugin_proxy_factory_get_plugin_mechanisms(
    GSignondPluginProxyFactory* factory, const gchar* plugin_type)
 {
+    g_return_val_if_fail(factory->mechanisms, NULL);
+
     return g_hash_table_lookup(factory->mechanisms, plugin_type);
 }

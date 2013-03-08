@@ -382,6 +382,7 @@ _on_session_close (gpointer data, GObject *session)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (data);
 
+    DBG ("session %p closed", session);
     identity->priv->auth_sessions = g_list_remove (identity->priv->auth_sessions, session);
     
     if (g_list_length (identity->priv->auth_sessions) == 0) {
@@ -412,6 +413,7 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
                       "authentication method not provided");
         return NULL;
     }
+    DBG ("create auth session for method %s", method);
 
     if (!gsignond_plugin_proxy_factory_get_plugin_mechanisms (
                                                               gsignond_get_plugin_proxy_factory (),
@@ -465,6 +467,8 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
 
     /* Keep live till all active sessions closes */
     gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (identity), FALSE);
+
+    DBG ("session %p creation for method %s complete", session, method);
 
     return object_path;
 }

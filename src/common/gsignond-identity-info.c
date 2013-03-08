@@ -114,10 +114,49 @@ _gsignond_identity_info_variant_to_sequence (GVariant *var)
 
     seq = g_sequence_new ((GDestroyNotify)g_free);
     g_variant_iter_init (&iter, var);
-    while (g_variant_iter_next (&iter, "s", &item))
-    {
-        g_sequence_insert_sorted (seq, item,
-                        (GCompareDataFunc)_compare_strings, NULL);
+    while (g_variant_iter_next (&iter, "s", &item)) {
+        g_sequence_insert_sorted (seq,
+                                  item,
+                                  (GCompareDataFunc) _compare_strings,
+                                  NULL);
+    }
+    return seq;
+}
+
+static gchar **
+_gsignond_identity_info_sequence_to_array (GSequence *seq)
+{
+    gchar **items, **temp;
+    GSequenceIter *iter;
+
+    if (!seq) return NULL;
+
+    items = g_malloc0 ((g_sequence_get_length (seq) + 1) * sizeof (gchar *));
+    temp = items;
+    for (iter = g_sequence_get_begin_iter (seq);
+         iter != g_sequence_get_end_iter (seq);
+         iter = g_sequence_iter_next (iter)) {
+        *temp = g_sequence_get (iter);
+        temp++;
+    }
+    return items;
+}
+
+static GSequence *
+_gsignond_identity_info_array_to_sequence (const gchar * const *items)
+
+{
+    GSequence *seq = NULL;
+
+    if (!items) return NULL;
+
+    seq = g_sequence_new ((GDestroyNotify) g_free);
+    while (*items) {
+        g_sequence_insert_sorted (seq,
+                                  *items,
+                                  (GCompareDataFunc) _compare_strings,
+                                  NULL);
+        items++;
     }
     return seq;
 }
@@ -599,21 +638,21 @@ gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
     if (var != NULL) {
         GVariantIter iter;
         gchar *vmethod;
-        GVariant *vmechanisms = NULL;
+        gchar **vmechanisms = NULL;
         GSequence *seq = NULL;
 
-        methods = g_hash_table_new_full ((GHashFunc)g_str_hash,
-                                (GEqualFunc)g_str_equal,
-                                (GDestroyNotify)g_free,
-                                (GDestroyNotify)g_sequence_free);
+        methods = g_hash_table_new_full ((GHashFunc) g_str_hash,
+                                         (GEqualFunc) g_str_equal,
+                                         (GDestroyNotify) g_free,
+                                         (GDestroyNotify) g_sequence_free);
 
         g_variant_iter_init (&iter, var);
-        while (g_variant_iter_next (&iter, "{s@as}", &vmethod, &vmechanisms))
+        while (g_variant_iter_next (&iter, "{s^as}", &vmethod, &vmechanisms))
         {
-            seq = _gsignond_identity_info_variant_to_sequence (vmechanisms);
-            /*vmethod ownership is transferred to methods*/
+            /* ownership of all content is transferred */
+            seq = _gsignond_identity_info_array_to_sequence (vmechanisms);
             g_hash_table_insert (methods, vmethod, seq);
-            g_variant_unref (vmechanisms);
+            g_free (vmechanisms);
         }
     }
     return methods;
@@ -635,7 +674,7 @@ gsignond_identity_info_set_methods (
         GSignondIdentityInfo *info,
         GHashTable *methods)
 {
-    GVariant *var = NULL;
+    gchar **items = NULL;
     GVariantBuilder builder;
 
     GHashTableIter iter;
@@ -645,14 +684,15 @@ gsignond_identity_info_set_methods (
     g_return_val_if_fail (info != NULL, FALSE);
     g_return_val_if_fail (methods != NULL, FALSE);
 
-    g_variant_builder_init (&builder, (const GVariantType *)"a{sv}");
+    g_variant_builder_init (&builder, (const GVariantType *)"a{sas}");
     g_hash_table_iter_init (&iter, methods);
     while (g_hash_table_iter_next (&iter,
                                    (gpointer)&method,
                                    (gpointer)&mechanisms))
     {
-        var = _gsignond_identity_info_sequence_to_variant (mechanisms);
-        g_variant_builder_add (&builder, "{sv}", method, var);
+        items = _gsignond_identity_info_sequence_to_array (mechanisms);
+        g_variant_builder_add (&builder, "{s^as}", method, items);
+        g_free (items);
     }
     return gsignond_dictionary_set (
             info,
@@ -686,20 +726,21 @@ gsignond_identity_info_get_mechanisms (
     if (var != NULL) {
         GVariantIter iter;
         gchar *vmethod;
-        GVariant *vmechanisms;
+        gchar **vmechanisms;
 
         g_variant_iter_init (&iter, var);
-        while (g_variant_iter_next (&iter, "{sv}", &vmethod, &vmechanisms))
+        while (g_variant_iter_next (&iter, "{s^as}", &vmethod, &vmechanisms))
         {
+            /* ownership of content is transferred */
             if (vmethod != NULL && g_strcmp0 (vmethod, method) == 0) {
-                mechanisms = _gsignond_identity_info_variant_to_sequence (
+                mechanisms = _gsignond_identity_info_array_to_sequence (
                                  vmechanisms);
                 g_free (vmethod);
-                g_variant_unref (vmechanisms);
+                g_free (vmechanisms);
                 break;
             }
             g_free (vmethod);
-            g_variant_unref (vmechanisms);
+            g_free (vmechanisms);
         }
     }
     return mechanisms;

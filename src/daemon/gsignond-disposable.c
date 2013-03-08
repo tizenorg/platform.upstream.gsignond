@@ -30,7 +30,6 @@ struct _GSignondDisposablePrivate
 {
     guint    timeout;       /* timeout in seconds */
     gboolean auto_dispose; /* auto dispose */
-    gint64   last_active_time; /* last active time */
     guint    timer_id;      /* timer source id */
 };
 
@@ -102,6 +101,15 @@ _dispose (GObject *object)
 {
     g_return_if_fail (object && GSIGNOND_IS_DISPOSABLE (object));
 
+    GSignondDisposable *self = GSIGNOND_DISPOSABLE (object);
+
+    DBG ("DISPOSE");
+    if (self->priv->timer_id) {
+        DBG (" - TIMER CLEAR");
+        g_source_remove (self->priv->timer_id);
+        self->priv->timer_id = 0;
+    }
+
     G_OBJECT_CLASS (gsignond_disposable_parent_class)->dispose (object);
 }
 
@@ -110,13 +118,7 @@ _finalize (GObject *object)
 {
     g_return_if_fail (object && GSIGNOND_IS_DISPOSABLE (object));
 
-    GSignondDisposable *self = GSIGNOND_DISPOSABLE (object);
-
-    if (self->priv->timer_id) {
-        g_source_remove (self->priv->timer_id);
-        self->priv->timer_id = 0;
-    }
-
+    DBG ("FINALIZE");
     G_OBJECT_CLASS (gsignond_disposable_parent_class)->finalize (object);
 }
 
@@ -167,11 +169,10 @@ gsignond_disposable_init (GSignondDisposable *self)
     self->priv = GSIGNOND_DISPOSABLE_PRIV (self);
 
     self->priv->timer_id = 0;
-    self->priv->last_active_time = 0l;
     self->priv->timeout = 0;
     self->priv->auto_dispose = TRUE;
 
-    gsignond_disposable_set_keep_in_use (self);
+    DBG ("INIT");
 }
 
 static gboolean
@@ -180,40 +181,39 @@ _auto_dispose (gpointer user_data)
     g_return_val_if_fail (user_data && GSIGNOND_IS_DISPOSABLE (user_data), FALSE);
 
     GSignondDisposable *self = GSIGNOND_DISPOSABLE (user_data);
-    gint64 current_time;
+    g_signal_emit (self, signals[SIG_DISPOSING], 0);
+    /* destroy object */
+    DBG ("AUTO DISPOSE");
+    g_object_unref (G_OBJECT (self));
+    return FALSE;
+}
 
-    current_time = g_get_monotonic_time ();
-    DBG("current time : %ld, last seen activity : %ld", 
-          current_time,
-          self->priv->last_active_time);
-    /* check if object idle timeout reached */
-    if ((current_time - self->priv->last_active_time)
-               > self->priv->timeout) {
-        DBG("Disposing object : %s(%d)", 
-            G_OBJECT_TYPE_NAME(self),
-            G_OBJECT(self)->ref_count);
-        g_signal_emit (self, signals[SIG_DISPOSING], 0);
-        /* destroy object */
-        g_object_unref (G_OBJECT (self));
-        return FALSE;
-    }
+static gboolean
+_timer_dispose (gpointer user_data)
+{
+    g_return_val_if_fail (user_data && GSIGNOND_IS_DISPOSABLE (user_data), FALSE);
+    GSignondDisposable *self = GSIGNOND_DISPOSABLE (user_data);
 
-    /* Try for next iteration, NOTE: This case shouldn't arise */
-    return TRUE;
+    DBG ("TIMER DISPOSE");
+    /* clear out timer since we are already inside timer cb */
+    self->priv->timer_id = 0;
+
+    return _auto_dispose (user_data);
 }
 
 static void
 _update_timer (GSignondDisposable *self)
 {
-    DBG("%s: auto_dispose : %d, timout : %d", 
+    DBG("%s (%p): auto_dispose : %d, timeout : %d", 
                   G_OBJECT_TYPE_NAME(self),
+                  self,
                   self->priv->auto_dispose, 
                   self->priv->timeout);
     if (self->priv->auto_dispose) {
         if (self->priv->timeout) {
             INFO("Setting object timeout to %d", self->priv->timeout);
             self->priv->timer_id = g_timeout_add_seconds (self->priv->timeout,
-                                                          _auto_dispose,
+                                                          _timer_dispose,
                                                           self);
         }
     }
@@ -252,17 +252,16 @@ gsignond_disposable_set_timeout (GSignondDisposable *self,
 void
 gsignond_disposable_set_keep_in_use (GSignondDisposable *self)
 {
-    self->priv->last_active_time = g_get_monotonic_time ();
-
     /* check if need to reset timer */
     if (!self->priv->auto_dispose || !self->priv->timeout) return ;
 
     if (self->priv->timer_id) 
         g_source_remove (self->priv->timer_id);
 
-    INFO ("Resetting timer for object '%s'.", G_OBJECT_TYPE_NAME (self));
+    INFO ("Resetting timer for object '%s' (%p).",
+          G_OBJECT_TYPE_NAME (self), self);
     self->priv->timer_id = g_timeout_add_seconds (self->priv->timeout, 
-                                                  _auto_dispose, self);
+                                                  _timer_dispose, self);
 }
 
 void
@@ -271,7 +270,8 @@ gsignond_disposable_delete_later (GSignondDisposable *self)
     if (self->priv->timer_id)
             g_source_remove (self->priv->timer_id);
 
-    INFO ("Object '%s' about to dispose...", G_OBJECT_TYPE_NAME (self));
+    INFO ("Object '%s' (%p) about to dispose...",
+          G_OBJECT_TYPE_NAME (self), self);
     self->priv->timer_id = g_idle_add (_auto_dispose, self);
 }
 

@@ -46,6 +46,9 @@ struct _GSignondSsoTestPluginPrivate
     gboolean is_canceled;
 };
 
+static const gchar *method = "ssotest";
+static const gchar *mechanisms[] = { "mech1", "mech2", "mech3", "BLOB", NULL };
+
 static void gsignond_plugin_interface_init (GSignondPluginInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (GSignondSsoTestPlugin, gsignond_ssotest_plugin, 
@@ -74,6 +77,7 @@ static void gsignond_ssotest_plugin_request_initial (
     self->priv->is_canceled = FALSE;
 
     GSignondSessionData *response = gsignond_dictionary_copy (session_data);
+    DBG ("response=%p", response);
     // TODO: fix once proper property accessor exists
     gsignond_dictionary_set_string (response, "Realm", "testRealm_after_test");
 
@@ -228,12 +232,11 @@ gsignond_ssotest_plugin_get_property (GObject    *object,
                                       GParamSpec *pspec)
 {
     g_return_if_fail (GSIGNOND_IS_SSOTEST_PLUGIN (object));
-    gchar *mechanisms[] = { "mech1", "mech2", "mech3", "BLOB", NULL };
     
     switch (prop_id)
     {
         case PROP_TYPE:
-            g_value_set_string (value, "ssotest");
+            g_value_set_string (value, method);
             break;
         case PROP_MECHANISMS:
             g_value_set_boxed (value, mechanisms);

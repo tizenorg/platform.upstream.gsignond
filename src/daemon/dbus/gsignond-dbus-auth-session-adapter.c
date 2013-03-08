@@ -241,7 +241,7 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
     GSignondDbusAuthSession *iface = GSIGNOND_DBUS_AUTH_SESSION (self);
     gchar **mechanisms = NULL;
     GError *error = NULL;
-    
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     mechanisms = gsignond_auth_session_iface_query_available_mechanisms (
@@ -273,6 +273,7 @@ _on_process_result (GSignondAuthSessionIface *auth_session, const GSignondSessio
     if (!info) return ;
 
     self = info->adapter;
+    DBG("response=%p", data);
     result = gsignond_dictionary_to_variant ((GSignondDictionary *)data);
 
     gsignond_dbus_auth_session_complete_process (

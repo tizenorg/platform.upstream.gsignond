@@ -106,9 +106,9 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
     const gchar **src_iter;
 
     if (!self->priv->plugin_mechanisms) {
-        g_object_get(self->priv->proxy, 
-                     "mechanisms", &mechanisms,
-                     NULL);
+        g_object_get (self->priv->proxy, 
+                      "mechanisms", &mechanisms,
+                      NULL);
         self->priv->plugin_mechanisms = g_sequence_new (g_free);
         for (iter = mechanisms; *iter != NULL; iter++)
             g_sequence_insert_sorted (self->priv->plugin_mechanisms,
@@ -118,12 +118,12 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
         g_free (mechanisms);
     }
     mechanisms = (gchar **)
-        g_malloc0 (g_sequence_get_length (
-                            self->priv->plugin_mechanisms) * sizeof(gchar *));
+        g_malloc0 ((g_sequence_get_length (self->priv->plugin_mechanisms) + 1) *
+                   sizeof(gchar *));
     iter = mechanisms;
     for (src_iter = wanted_mechanisms; *src_iter != NULL; src_iter++) {
         GSequenceIter *pos = g_sequence_lookup (self->priv->plugin_mechanisms,
-                                                (gpointer)*src_iter,
+                                                (gpointer) *src_iter,
                                                 _sort_cmp,
                                                 NULL);
         if (pos) {
@@ -413,10 +413,11 @@ gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context,
     }
 
     GSignondAuthSession *auth_session =
-        g_object_new (GSIGNOND_TYPE_AUTH_SESSION, "method", method,
-            "app-context", app_context,
-            "timeout", timeout, 
-            NULL);
+        g_object_new (GSIGNOND_TYPE_AUTH_SESSION,
+                      "method", method,
+                      "app-context", app_context,
+                      "timeout", timeout, 
+                      NULL);
     auth_session->priv->proxy = proxy;
     auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
 

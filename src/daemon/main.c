@@ -35,7 +35,7 @@
 #include "daemon/gsignond-daemon.h"
 #include "daemon/dbus/gsignond-dbus.h"
 
-static GSignondDaemon *_daemon;
+static GSignondDaemon *_daemon = NULL;
 static guint           _sig_source_id[3];
 
 static gboolean
