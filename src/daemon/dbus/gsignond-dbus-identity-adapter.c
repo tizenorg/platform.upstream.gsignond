@@ -94,7 +94,7 @@ gsignond_dbus_identity_adapter_set_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            gpointer iface = g_value_peek_pointer (value);
+            gpointer iface = g_value_get_pointer (value);
             if (iface) {
                 if (self->priv->identity) {
                     if (self->priv->info_updated_handler_id) {
@@ -136,7 +136,7 @@ gsignond_dbus_identity_adapter_get_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            g_value_set_instance (value, self->priv->identity);
+            g_value_set_pointer (value, self->priv->identity);
             break;
         }
         case PROP_APP_CONTEXT:
@@ -209,10 +209,9 @@ gsignond_dbus_identity_adapter_class_init (GSignondDbusIdentityAdapterClass *kla
     object_class->dispose = gsignond_dbus_identity_adapter_dispose;
     object_class->finalize = gsignond_dbus_identity_adapter_finalize;
 
-    properties[PROP_IMPL] = g_param_spec_object ("identity-impl",
+    properties[PROP_IMPL] = g_param_spec_pointer ("identity-impl",
                                                   "Identity Iface implementation",
                                                   "IdentityIface implementation object",
-                                                  GSIGNOND_TYPE_IDENTITY_IFACE,
                                                   G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     properties[PROP_APP_CONTEXT] = g_param_spec_string (
                 "app-context",

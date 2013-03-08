@@ -82,7 +82,7 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            gpointer iface = g_value_peek_pointer (value);
+            gpointer iface = g_value_get_pointer (value);
             if (iface) {
                 if (self->priv->parent) {
                     g_signal_handler_disconnect (self->priv->parent, self->priv->state_changed_handler_id);

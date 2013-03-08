@@ -35,7 +35,7 @@ enum
     SIG_MAX
 };
 
-guint signals[SIG_MAX];
+static guint signals[SIG_MAX];
 
 G_DEFINE_INTERFACE (GSignondIdentityIface, gsignond_identity_iface, G_TYPE_OBJECT)
 

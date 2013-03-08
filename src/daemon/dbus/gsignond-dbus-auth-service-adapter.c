@@ -72,7 +72,7 @@ gsignond_dbus_auth_service_adapter_set_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            gpointer iface = g_value_peek_pointer (value);
+            gpointer iface = g_value_get_pointer (value);
             if (iface) {
                 self->priv->parent = GSIGNOND_AUTH_SERVICE_IFACE (iface);
             }
@@ -93,7 +93,7 @@ gsignond_dbus_auth_service_adapter_get_property (GObject *object,
 
     switch (property_id) {
         case PROP_IMPL: {
-            g_value_set_instance (value, self->priv->parent);
+            g_value_set_pointer (value, self->priv->parent);
             break;
         }
         default:
@@ -140,10 +140,9 @@ gsignond_dbus_auth_service_adapter_class_init (GSignondDbusAuthServiceAdapterCla
     object_class->dispose = gsignond_dbus_auth_service_adapter_dispose;
     object_class->finalize = gsignond_dbus_auth_service_adapter_finalize;
 
-    properties[PROP_IMPL] = g_param_spec_object ("auth-session-impl",
+    properties[PROP_IMPL] = g_param_spec_pointer ("auth-session-impl",
                                                   "Auth session impl",
                                                   "AuthSessionIface implementation object",
-                                                  GSIGNOND_TYPE_AUTH_SERVICE_IFACE,
                                                   G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);

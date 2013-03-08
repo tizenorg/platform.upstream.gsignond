@@ -38,7 +38,7 @@ enum {
     SIG_MAX
 };
 
-guint signals[SIG_MAX] = { 0 };
+static guint signals[SIG_MAX] = { 0 };
 
 static void
 gsignond_auth_session_iface_default_init (
