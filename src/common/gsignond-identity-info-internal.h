@@ -31,7 +31,7 @@
 
 G_BEGIN_DECLS
 
-#define GSIGNOND_IDENTITY_INFO_NEW_IDENTITY         -1
+#define GSIGNOND_IDENTITY_INFO_NEW_IDENTITY         0
 
 /*
  * Identity info strings

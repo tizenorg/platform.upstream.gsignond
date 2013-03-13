@@ -27,17 +27,6 @@
 #include "gsignond-identity-info-internal.h"
 
 
-void
-_gsignond_identity_info_free_array (gchar ** array)
-{
-    gint i;
-    i = 0;
-    while (array[i]) {
-        g_free (array[i]);
-    }
-    g_free (array);
-}
-
 static gboolean
 _gsignond_identity_info_seq_cmp (
         GSequence *one,
@@ -143,7 +132,7 @@ _gsignond_identity_info_sequence_to_array (GSequence *seq)
 }
 
 static GSequence *
-_gsignond_identity_info_array_to_sequence (const gchar * const *items)
+_gsignond_identity_info_array_to_sequence (gchar **items)
 
 {
     GSequence *seq = NULL;
@@ -239,7 +228,12 @@ _gsignond_identity_info_methods_cmp (
 GSignondIdentityInfo *
 gsignond_identity_info_new (void)
 {
-    return gsignond_dictionary_new ();
+    GSignondIdentityInfo *info;
+
+    info = gsignond_dictionary_new ();
+    gsignond_identity_info_set_id (info, GSIGNOND_IDENTITY_INFO_NEW_IDENTITY);
+
+    return info;
 }
 
 /**
@@ -253,6 +247,9 @@ gsignond_identity_info_new (void)
 GSignondIdentityInfo *
 gsignond_identity_info_copy (GSignondIdentityInfo *info)
 {
+    if (!info)
+        return NULL;
+
     return gsignond_dictionary_copy (info);
 }
 
@@ -265,6 +262,9 @@ gsignond_identity_info_copy (GSignondIdentityInfo *info)
 void
 gsignond_identity_info_free (GSignondIdentityInfo *info)
 {
+    if (!info)
+        return;
+
     gsignond_dictionary_free (info);
 }
 
@@ -279,12 +279,14 @@ gsignond_identity_info_free (GSignondIdentityInfo *info)
 guint32
 gsignond_identity_info_get_id (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_ID);
-    if (var != NULL) {
-        return g_variant_get_uint32 (var);
-    }
-    return -1;
+
+    g_return_val_if_fail (var != NULL, -1);
+
+    return g_variant_get_uint32 (var);
 }
 
 /**
@@ -302,6 +304,8 @@ gsignond_identity_info_set_id (
         GSignondIdentityInfo *info,
         guint32 id)
 {
+    g_assert (info != NULL);
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_ID,
@@ -319,6 +323,8 @@ gsignond_identity_info_set_id (
 gboolean
 gsignond_identity_info_get_is_identity_new (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     return GSIGNOND_IDENTITY_INFO_NEW_IDENTITY ==
             gsignond_identity_info_get_id (info);
 }
@@ -335,6 +341,8 @@ gboolean
 gsignond_identity_info_set_identity_new (
         GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+    
     return gsignond_identity_info_set_id (
             info,
             GSIGNOND_IDENTITY_INFO_NEW_IDENTITY);
@@ -351,6 +359,8 @@ gsignond_identity_info_set_identity_new (
 const gchar *
 gsignond_identity_info_get_username (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+    
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_USERNAME);
     if (var != NULL) {
@@ -374,6 +384,8 @@ gsignond_identity_info_set_username (
         GSignondIdentityInfo *info,
         const gchar *username)
 {
+    g_assert (info != NULL);
+
     if (!username) {
         return gsignond_dictionary_remove (info,
                             GSIGNOND_IDENTITY_INFO_USERNAME);
@@ -393,6 +405,8 @@ gsignond_identity_info_set_username (
 void
 gsignond_identity_info_remove_username (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+    
     gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_USERNAME);
 }
 
@@ -407,6 +421,8 @@ gsignond_identity_info_remove_username (GSignondIdentityInfo *info)
 gboolean
 gsignond_identity_info_get_is_username_secret (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info,
             GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET);
@@ -431,6 +447,8 @@ gsignond_identity_info_set_username_secret (
         GSignondIdentityInfo *info,
         gboolean username_secret)
 {
+    g_assert (info != NULL);
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET,
@@ -448,6 +466,8 @@ gsignond_identity_info_set_username_secret (
 const gchar *
 gsignond_identity_info_get_secret (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_SECRET);
     if (var != NULL) {
@@ -471,6 +491,8 @@ gsignond_identity_info_set_secret (
         GSignondIdentityInfo *info,
         const gchar *secret)
 {
+    g_assert (info != NULL);
+
     if (!secret) {
         return gsignond_dictionary_remove (info,
                 GSIGNOND_IDENTITY_INFO_SECRET);
@@ -490,6 +512,8 @@ gsignond_identity_info_set_secret (
 void
 gsignond_identity_info_remove_secret (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_SECRET);
 }
 
@@ -504,6 +528,8 @@ gsignond_identity_info_remove_secret (GSignondIdentityInfo *info)
 gboolean
 gsignond_identity_info_get_store_secret (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_STORESECRET);
     if (var != NULL) {
@@ -527,6 +553,8 @@ gsignond_identity_info_set_store_secret (
         GSignondIdentityInfo *info,
         gboolean store_secret)
 {
+    g_assert (info != NULL);
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_STORESECRET,
@@ -544,6 +572,8 @@ gsignond_identity_info_set_store_secret (
 const gchar *
 gsignond_identity_info_get_caption (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_CAPTION);
     if (var != NULL) {
@@ -567,6 +597,8 @@ gsignond_identity_info_set_caption (
         GSignondIdentityInfo *info,
         const gchar *caption)
 {
+    g_assert (info != NULL);
+
     if (!caption) {
         return gsignond_dictionary_remove (info,
                 GSIGNOND_IDENTITY_INFO_CAPTION);
@@ -589,6 +621,8 @@ gsignond_identity_info_set_caption (
 GSequence *
 gsignond_identity_info_get_realms (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_REALMS);
     if (var != NULL) {
@@ -612,6 +646,8 @@ gsignond_identity_info_set_realms (
         GSignondIdentityInfo *info,
         GSequence *realms)
 {
+    g_assert (info != NULL);
+
     g_return_val_if_fail (realms != NULL, FALSE);
     return gsignond_dictionary_set (
             info,
@@ -632,6 +668,8 @@ gsignond_identity_info_set_realms (
 GHashTable *
 gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     GHashTable *methods = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_AUTHMETHODS);
@@ -674,6 +712,8 @@ gsignond_identity_info_set_methods (
         GSignondIdentityInfo *info,
         GHashTable *methods)
 {
+    g_assert (info != NULL);
+
     gchar **items = NULL;
     GVariantBuilder builder;
 
@@ -717,6 +757,8 @@ gsignond_identity_info_get_mechanisms (
         GSignondIdentityInfo *info,
         const gchar *method)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     GSequence *mechanisms = NULL;
 
@@ -759,6 +801,8 @@ gsignond_identity_info_remove_method (
         GSignondIdentityInfo *info,
         const gchar *method)
 {
+    g_assert (info != NULL);
+
     GHashTable *methods = NULL;
 
     g_return_val_if_fail (method != NULL, FALSE);
@@ -784,6 +828,8 @@ gsignond_identity_info_remove_method (
 GSignondSecurityContextList *
 gsignond_identity_info_get_access_control_list (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_ACL);
     if (var != NULL) {
@@ -807,6 +853,8 @@ gsignond_identity_info_set_access_control_list (
         GSignondIdentityInfo *info,
         const GSignondSecurityContextList *acl)
 {
+    g_assert (info != NULL);
+
     g_return_val_if_fail (acl != NULL, FALSE);
     return gsignond_dictionary_set (
             info,
@@ -827,6 +875,8 @@ gsignond_identity_info_set_access_control_list (
 GSignondSecurityContext *
 gsignond_identity_info_get_owner (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_OWNER);
     if (var != NULL) {
@@ -850,6 +900,8 @@ gsignond_identity_info_set_owner (
         GSignondIdentityInfo *info,
         const GSignondSecurityContext *owners)
 {
+    g_assert (info != NULL);
+
     g_return_val_if_fail (owners != NULL, FALSE);
     return gsignond_dictionary_set (
             info,
@@ -868,6 +920,8 @@ gsignond_identity_info_set_owner (
 gboolean
 gsignond_identity_info_get_validated (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_VALIDATED);
     if (var != NULL) {
@@ -891,6 +945,8 @@ gsignond_identity_info_set_validated (
         GSignondIdentityInfo *info,
         gboolean validated)
 {
+    g_assert (info != NULL);
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_VALIDATED,
@@ -908,6 +964,8 @@ gsignond_identity_info_set_validated (
 guint32
 gsignond_identity_info_get_identity_type (GSignondIdentityInfo *info)
 {
+    g_assert (info != NULL);
+
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_TYPE);
     if (var != NULL) {
@@ -931,6 +989,8 @@ gsignond_identity_info_set_identity_type (
         GSignondIdentityInfo *info,
         guint32 type)
 {
+    g_assert (info != NULL);
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_TYPE,
@@ -959,6 +1019,8 @@ gsignond_identity_info_check_method_mechanism (
         const gchar *mechanism,
         gchar **allowed_mechanisms)
 {
+    g_assert (info != NULL);
+
     GSequence *mechanisms = NULL;
     gchar ** split_mechs = NULL;
     GString* allowed_mechs = NULL;
@@ -1022,6 +1084,8 @@ gsignond_identity_info_compare (
         GSignondIdentityInfo *info,
         GSignondIdentityInfo *other)
 {
+    g_assert (info != NULL && other != NULL);
+
     GSequence *info_realms = NULL, *other_realms = NULL;
     GHashTable *info_methods = NULL, *other_methods = NULL;
     GSignondSecurityContextList *info_acl = NULL, *other_acl = NULL;

@@ -102,6 +102,7 @@ _free_identity (gpointer data, gpointer user_data)
     (void) user_data;
     GObject *identity = G_OBJECT (data);
 
+    DBG ("free identity %p", identity);
     g_object_unref (identity);
 }
 
@@ -372,7 +373,7 @@ _register_new_identity (GSignondAuthServiceIface *self,
     GSignondDaemon *daemon = GSIGNOND_DAEMON (self);
     const gchar *app_context = ctx ? gsignond_security_context_get_application_context (ctx) : "";
     gint timeout = gsignond_config_get_integer (daemon->priv->config, GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT);
-    GSignondIdentityInfo *info = gsignond_dictionary_new ();
+    GSignondIdentityInfo *info = gsignond_identity_info_new ();
     GSignondIdentity *identity = NULL;
     GSignondSecurityContext *owner = NULL;
     GSignondSecurityContextList *acl = NULL;

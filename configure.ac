@@ -55,7 +55,7 @@ AC_CHECK_HEADERS([string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall -DG_LOG_DOMAIN=\\\"gsignond\\\""
-#GSIGNOND_LIBS="$GSIGNOND_LIBS -lefence"
+#GSIGNOND_LIBS="$GSIGNOND_LIBS -lduma"
 
 # Checks for library functions.
 

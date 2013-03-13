@@ -161,6 +161,7 @@ _finalize_session (gpointer data, gpointer user_data)
 {
     (void) user_data;
 
+    DBG("finalize session %p", user_data);
     g_object_unref (G_OBJECT (data));
 }
 
@@ -170,11 +171,13 @@ _dispose (GObject *object)
     GSignondIdentity *self = GSIGNOND_IDENTITY(object);
 
     if (self->priv->identity_adapter) {
+        DBG("unref identity adapter %p", self->priv->identity_adapter);
         g_object_unref (self->priv->identity_adapter);
         self->priv->identity_adapter = NULL;
     }
 
     if (self->priv->owner) {
+        DBG("unref owner %p", self->priv->owner);
         g_object_unref (self->priv->owner);
         self->priv->owner = NULL;
     }

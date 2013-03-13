@@ -61,7 +61,9 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
                                              (GDestroyNotify)g_free,
                                              (GDestroyNotify)g_strfreev);
 
-    DBG ("enumerate plugins in %s", plugin_dir);
+    DBG ("enumerate plugins in %s (factory=%p)",
+         gsignond_config_get_string (self->config,
+                                     GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR));
     gchar **method_iter = self->methods;
     while (1) {
         const gchar* plugin_soname = g_dir_read_name(plugin_dir);
@@ -83,10 +85,7 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
                 if (g_strcmp0 (plugin_type, plugin_name) == 0) {
                     *method_iter = plugin_type;
                     method_iter++;
-                    DBG ("method %s (%p) mechanisms=%p",
-                         plugin_type,
-                         plugin_type,
-                         mechanisms);
+                    DBG ("method %s (%p)", plugin_type, plugin);
                     g_hash_table_insert(self->mechanisms,
                         plugin_type, mechanisms);
                 } else {
@@ -248,12 +247,19 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
 {
     g_return_val_if_fail (factory && GSIGNOND_IS_PLUGIN_PROXY_FACTORY(factory), NULL);
     g_return_val_if_fail (plugin_type, NULL);
-  
+
+    GSignondPluginProxy* proxy = NULL;
+
+    if (!identity_id) {
+        proxy = gsignond_plugin_proxy_new(factory->config, plugin_type);
+        DBG("get plugin for new identity %s -> %p", plugin_type, proxy);
+        return proxy;
+    }
+
     gchar* key = g_strdup_printf("%d %s", identity_id, plugin_type);
-    
-    GSignondPluginProxy* proxy = g_hash_table_lookup(factory->plugins, key);
-    
+    proxy = g_hash_table_lookup(factory->plugins, key);
     if (proxy != NULL) {
+        DBG("get existing plugin %s -> %p", key, proxy);
         g_free(key);
         return proxy;
     }
@@ -263,8 +269,8 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
         return NULL;
     }
     g_hash_table_insert(factory->plugins, key, proxy);
+    DBG("get new plugin %s -> %p", key, proxy);
     return proxy;
-    
 }
 
 gboolean gsignond_plugin_proxy_factory_add_plugin(
@@ -285,6 +291,7 @@ gboolean gsignond_plugin_proxy_factory_add_plugin(
         return FALSE;
     }
     g_object_ref(proxy);
+    DBG("add plugin %s -> %p", key, proxy);
     g_hash_table_insert(factory->plugins, key, proxy);
 
     return TRUE;
