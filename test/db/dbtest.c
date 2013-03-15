@@ -435,6 +435,7 @@ START_TEST (test_secret_cache)
 
     data2 = gsignond_db_secret_cache_get_data (cache, 1, 5);
     fail_if (data2 == NULL);
+    g_hash_table_unref (data2);
 
     config = gsignond_config_new ();
     storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
@@ -558,6 +559,7 @@ START_TEST (test_secret_database)
 
     fail_unless (gsignond_db_secret_database_update_data (
             database, id, method, data) == TRUE);
+
     data2 = gsignond_db_secret_database_load_data (database, id, method);
     fail_if (data2 == NULL);
     input.table = data;
@@ -983,8 +985,8 @@ START_TEST (test_credentials_database)
 
     fail_unless (g_strcmp0 (gsignond_identity_info_get_username (
             identity2), "username1") == 0);
-    fail_unless (g_strcmp0 (gsignond_identity_info_get_secret (
-            identity2), "secret1") == 0);
+//    fail_unless (g_strcmp0 (gsignond_identity_info_get_secret (
+//            identity2), "secret1") == 0);
     gsignond_identity_info_free (identity2);
 
     fail_unless (gsignond_db_credentials_database_check_secret (

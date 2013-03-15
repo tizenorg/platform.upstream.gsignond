@@ -365,14 +365,16 @@ gsignond_db_secret_database_update_data (
     while (g_hash_table_iter_next (&iter, (gpointer *)&key,
             (gpointer *) &value )) {
         gsize val_size;
+        gchar *value_data, *bytes_data;
+
+        bytes_data = (const gchar *)g_bytes_get_data (value, &val_size);
+        value_data = g_strndup (bytes_data, val_size);
         query = sqlite3_mprintf (
                 "INSERT OR REPLACE INTO STORE "
                 "(identity_id, method_id, key, value) "
                 "VALUES(%u, %u, %Q, %Q);",
-                id, method,
-                key,
-                (const gchar *)g_bytes_get_data (value, &val_size));
-
+                id, method, key, value_data);
+        g_free (value_data);
         ret = sqlite3_exec (parent->priv->db, query, NULL, NULL, NULL);
         sqlite3_free (query);
         if (G_UNLIKELY (ret != SQLITE_OK)) {
