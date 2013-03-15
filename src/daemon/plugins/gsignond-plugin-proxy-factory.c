@@ -250,6 +250,10 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
 
     GSignondPluginProxy* proxy = NULL;
 
+    if (identity_id == -1) {
+        DBG("invalid identity id");
+        return NULL;
+    }
     if (!identity_id) {
         proxy = gsignond_plugin_proxy_new(factory->config, plugin_type);
         DBG("get plugin for new identity %s -> %p", plugin_type, proxy);
@@ -261,6 +265,7 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
     if (proxy != NULL) {
         DBG("get existing plugin %s -> %p", key, proxy);
         g_free(key);
+        g_object_ref(proxy);
         return proxy;
     }
     proxy = gsignond_plugin_proxy_new(factory->config, plugin_type);
@@ -270,6 +275,7 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
     }
     g_hash_table_insert(factory->plugins, key, proxy);
     DBG("get new plugin %s -> %p", key, proxy);
+    g_object_ref(proxy);
     return proxy;
 }
 

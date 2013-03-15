@@ -155,7 +155,7 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
                              GError **error)
 {
     if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
-        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
+        WARN ("assertion (iface && GSIGNOND_IS_AUTH_SESSION (iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
@@ -194,11 +194,11 @@ _process (GSignondAuthSessionIface *iface,
           const GSignondSecurityContext *ctx,
           GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
-        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
+    /*if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
+        WARN ("assertion (iface && GSIGNOND_IS_AUTH_SESSION (iface))failed");*/
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
-    }
+    //}
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
     VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
@@ -233,8 +233,8 @@ _cancel (GSignondAuthSessionIface *iface,
          const GSignondSecurityContext *ctx,
          GError **error)
 {
-    if (G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0)) {
-        WARN ("assertion G_LIKELY ((iface && GSIGNOND_IS_AUTH_SESSION (iface)) == 0) failed");
+    if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
+        WARN ("assertion (iface && GSIGNOND_IS_AUTH_SESSION (iface)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
@@ -358,6 +358,7 @@ gsignond_auth_session_init (GSignondAuthSession *self)
     self->priv->session_adapter =
         gsignond_dbus_auth_session_adapter_new (
                                              GSIGNOND_AUTH_SESSION_IFACE(self));
+    DBG("session_adapter %p", self->priv->session_adapter);
 }
 
 static void
@@ -457,20 +458,19 @@ gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id)
 GSignondAuthSession * 
 gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context, const gchar *method, gint timeout)
 {
-    GSignondPluginProxy* proxy;
-    guint id = 0;
+    GSignondPluginProxy* proxy = NULL;
+    guint id;
 
-    if (info) id = gsignond_identity_info_get_id (info);
+    id = gsignond_identity_info_get_id (info);
     
-    if (id == 0) {
+    /*if (gsignond_identity_info_get_is_identity_new (info)) {
         proxy = gsignond_plugin_proxy_new(gsignond_get_config(), method);
         if (!proxy) return NULL;
     } else {
         proxy = gsignond_plugin_proxy_factory_get_plugin(
             gsignond_get_plugin_proxy_factory(), id, method);
         if (!proxy) return NULL;
-        g_object_ref(proxy);
-    }
+    }*/
 
     GSignondAuthSession *auth_session =
         g_object_new (GSIGNOND_TYPE_AUTH_SESSION,
