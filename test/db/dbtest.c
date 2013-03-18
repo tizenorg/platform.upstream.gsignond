@@ -200,7 +200,7 @@ START_TEST (test_identity_info)
     identity = gsignond_identity_info_new ();
     fail_if (identity == NULL);
 
-    fail_unless (gsignond_identity_info_get_id (identity) == -1);
+    fail_unless (gsignond_identity_info_get_id (identity) == 0);
     fail_unless (gsignond_identity_info_get_is_identity_new (identity)== TRUE);
     fail_unless (gsignond_identity_info_get_username (identity) == NULL);
     fail_unless (gsignond_identity_info_get_is_username_secret (
@@ -381,9 +381,6 @@ START_TEST (test_identity_info)
     fail_if (identity2 == NULL);
     fail_unless (gsignond_identity_info_compare (identity, identity2) == TRUE);
     gsignond_identity_info_free (identity2);
-    fail_unless (gsignond_identity_info_compare (identity, NULL) == FALSE);
-    fail_unless (gsignond_identity_info_compare (NULL, identity) == FALSE);
-    fail_unless (gsignond_identity_info_compare (NULL, NULL) == TRUE);
     fail_unless (gsignond_identity_info_compare (identity, identity) == TRUE);
 
     gsignond_identity_info_free (identity);
@@ -985,8 +982,8 @@ START_TEST (test_credentials_database)
 
     fail_unless (g_strcmp0 (gsignond_identity_info_get_username (
             identity2), "username1") == 0);
-//    fail_unless (g_strcmp0 (gsignond_identity_info_get_secret (
-//            identity2), "secret1") == 0);
+    fail_unless (g_strcmp0 (gsignond_identity_info_get_secret (
+            identity2), "secret1") == 0);
     gsignond_identity_info_free (identity2);
 
     fail_unless (gsignond_db_credentials_database_check_secret (
