@@ -66,9 +66,9 @@ G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapte
             sender, \
             priv->app_context); \
 }
-static void _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const gchar **, gpointer);
-static void _handle_process (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const GVariant *, const gchar *, gpointer);
-static void _handle_cancel (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, gpointer);
+static gboolean _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const gchar **, gpointer);
+static gboolean _handle_process (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const GVariant *, const gchar *, gpointer);
+static gboolean _handle_cancel (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, gpointer);
 
 /* signals */
 static void _emit_state_changed (GSignondAuthSessionIface *session, gint state, const gchar *message, gpointer user_data);
@@ -232,7 +232,7 @@ gsignond_dbus_auth_session_adapter_init (GSignondDbusAuthSessionAdapter *self)
     g_signal_connect (self, "handle-cancel", G_CALLBACK(_handle_cancel), NULL);
 }
 
-static void
+static gboolean
 _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
                                     GDBusMethodInvocation *invocation,
                                     const gchar **wanted_mechanisms,
@@ -255,6 +255,7 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     }
+    return TRUE;
 }
 
 typedef struct {
@@ -304,7 +305,7 @@ _on_process_error (GSignondAuthSessionIface *auth_session, const GError *error, 
     g_free (info);
 }
 
-static void
+static gboolean
 _handle_process (GSignondDbusAuthSessionAdapter *self,
                  GDBusMethodInvocation *invocation,
                  const GVariant *session_data,
@@ -337,9 +338,11 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
     }
 
     gsignond_dictionary_free (data);
+
+    return TRUE;
 }
 
-static void
+static gboolean
 _handle_cancel (GSignondDbusAuthSessionAdapter *self,
                 GDBusMethodInvocation *invocation,
                 gpointer user_data)
@@ -355,6 +358,8 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     }
+
+    return TRUE;
 }
 
 static void
@@ -372,3 +377,4 @@ gsignond_dbus_auth_session_adapter_new (GSignondAuthSessionIface *impl)
 {
     return g_object_new (GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, "auth-session-impl", impl, NULL);
 }
+
