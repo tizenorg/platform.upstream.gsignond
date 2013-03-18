@@ -274,7 +274,6 @@ _on_process_result (GSignondAuthSessionIface *auth_session, const GSignondSessio
     if (!info) return ;
 
     self = info->adapter;
-    DBG("response=%p", data);
     result = gsignond_dictionary_to_variant ((GSignondDictionary *)data);
 
     gsignond_dbus_auth_session_complete_process (

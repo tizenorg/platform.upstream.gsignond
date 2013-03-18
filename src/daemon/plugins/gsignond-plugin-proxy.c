@@ -410,6 +410,7 @@ gsignond_plugin_proxy_cancel (GSignondPluginProxy *self,
                               GSignondAuthSessionIface *session)
 {
     g_assert (GSIGNOND_IS_PLUGIN_PROXY (self));
+    g_assert (GSIGNOND_IS_AUTH_SESSION_IFACE (session));
 
     GSignondPluginProxyPrivate *priv = self->priv;
 

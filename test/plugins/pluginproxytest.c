@@ -33,15 +33,6 @@
 #include <gsignond/gsignond-log.h>
 
 
-G_DEFINE_INTERFACE (GSignondAuthSessionIface, gsignond_auth_session_iface, 0)
-
-
-static void
-gsignond_auth_session_iface_default_init (
-                                        GSignondAuthSessionIfaceInterface *self)
-{
-}
-
 static void check_plugin(GSignondPlugin* plugin)
 {
     gchar* type;
