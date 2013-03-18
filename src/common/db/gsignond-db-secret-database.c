@@ -361,22 +361,41 @@ gsignond_db_secret_database_update_data (
     }
 
     /* Insert data to db */
+    const char* statement = "INSERT OR REPLACE INTO STORE "
+                            "(identity_id, method_id, key, value) "
+                            "VALUES(?, ?, ?, ?)";
     g_hash_table_iter_init (&iter, data);
     while (g_hash_table_iter_next (&iter, (gpointer *)&key,
             (gpointer *) &value )) {
         gsize val_size;
-        gchar *value_data, *bytes_data;
+        const gchar *value_data;
+        sqlite3_stmt *sql_stmt;
 
-        bytes_data = (const gchar *)g_bytes_get_data (value, &val_size);
-        value_data = g_strndup (bytes_data, val_size);
-        query = sqlite3_mprintf (
-                "INSERT OR REPLACE INTO STORE "
-                "(identity_id, method_id, key, value) "
-                "VALUES(%u, %u, %Q, %Q);",
-                id, method, key, value_data);
-        g_free (value_data);
-        ret = sqlite3_exec (parent->priv->db, query, NULL, NULL, NULL);
-        sqlite3_free (query);
+        ret = sqlite3_prepare_v2 (parent->priv->db, statement, -1,
+                &sql_stmt, NULL);
+        if (G_UNLIKELY (ret != SQLITE_OK)) {
+            DBG ("Data Insertion to DB Failed");
+            gsignond_db_sql_database_update_error_from_db (parent);
+            gsignond_db_sql_database_rollback_transaction (parent);
+            return FALSE;
+        }
+        value_data = (const gchar *)g_bytes_get_data (value, &val_size);
+
+        sqlite3_bind_int(sql_stmt, 1, (int)id);
+        sqlite3_bind_int(sql_stmt, 2, (int)method);
+        sqlite3_bind_text(sql_stmt, 3, key, -1, SQLITE_STATIC);
+        sqlite3_bind_blob(sql_stmt, 4, (const void*)value_data, (int)val_size,
+                SQLITE_STATIC);
+
+        ret = sqlite3_step (sql_stmt);
+        if (G_UNLIKELY (ret != SQLITE_DONE)) {
+            DBG ("Data Insertion to DB Failed");
+            gsignond_db_sql_database_update_error_from_db (parent);
+            gsignond_db_sql_database_rollback_transaction (parent);
+            return FALSE;
+        }
+
+        ret = sqlite3_finalize (sql_stmt);
         if (G_UNLIKELY (ret != SQLITE_OK)) {
             DBG ("Data Insertion to DB Failed");
             gsignond_db_sql_database_update_error_from_db (parent);
