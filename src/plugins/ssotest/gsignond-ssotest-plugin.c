@@ -104,7 +104,7 @@ static void gsignond_ssotest_plugin_request_initial (
 
     if (g_strcmp0 (mechanism, "BLOB") == 0) {
         gsignond_plugin_response_final (plugin, response);
-        gsignond_dictionary_free (response);
+        gsignond_dictionary_unref (response);
         INFO ("mechanism 'BLOB' responded");
         return;
     }
@@ -119,7 +119,7 @@ static void gsignond_ssotest_plugin_request_initial (
 
     if (g_strcmp0 (mechanism, "mech1") == 0) {
         gsignond_plugin_response_final (plugin, response);
-        gsignond_dictionary_free (response);
+        gsignond_dictionary_unref (response);
         INFO ("mechanism 'mech1' responded");
         return;
     }
@@ -134,14 +134,14 @@ static void gsignond_ssotest_plugin_request_initial (
             gsignond_session_data_set_username (user_action_data, username);
         gsignond_session_data_set_query_password (user_action_data, TRUE);
         gsignond_plugin_user_action_required (plugin, user_action_data);
-        gsignond_dictionary_free (user_action_data);
-        gsignond_dictionary_free (response);
+        gsignond_dictionary_unref (user_action_data);
+        gsignond_dictionary_unref (response);
         INFO ("mechanism 'mech2' responded'");
         return;
     }
 
     INFO ("no response from plugin");
-    gsignond_dictionary_free (response);
+    gsignond_dictionary_unref (response);
 }
 
 static void gsignond_ssotest_plugin_user_action_finished (
@@ -162,7 +162,7 @@ static void gsignond_ssotest_plugin_user_action_finished (
         gsignond_session_data_set_username (response, username);
         gsignond_session_data_set_secret (response, secret);
         gsignond_plugin_response_final (plugin, response);
-        gsignond_dictionary_free (response);
+        gsignond_dictionary_unref (response);
         return;
     } else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
         GError* error = g_error_new (GSIGNOND_ERROR, 

@@ -104,16 +104,32 @@ gsignond_dictionary_new (void)
 }
 
 /**
- * gsignond_dictionary_free:
+ * gsignond_dictionary_ref:
  * @dict: instance of #GSignondDictionary
  *
- * Frees the memory allocated by dict structure.
+ * Increment reference count of the dictionary structure.
+ */
+void
+gsignond_dictionary_ref (GSignondDictionary *dict)
+{
+    g_return_if_fail (dict != NULL);
+
+    g_hash_table_ref (dict);
+}
+
+/**
+ * gsignond_dictionary_unref:
+ * @dict: instance of #GSignondDictionary
+ *
+ * Decrement reference count of the dictionary structure.
  *
  */
 void
-gsignond_dictionary_free (GSignondDictionary *dict)
+gsignond_dictionary_unref (GSignondDictionary *dict)
 {
-    g_return_if_fail (dict != NULL);
+    if (!dict)
+        return;
+
     g_hash_table_unref (dict);
 }
 

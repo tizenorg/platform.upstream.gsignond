@@ -380,10 +380,10 @@ START_TEST (test_identity_info)
     identity2 = gsignond_dictionary_copy (identity);
     fail_if (identity2 == NULL);
     fail_unless (gsignond_identity_info_compare (identity, identity2) == TRUE);
-    gsignond_identity_info_free (identity2);
+    gsignond_identity_info_unref (identity2);
     fail_unless (gsignond_identity_info_compare (identity, identity) == TRUE);
 
-    gsignond_identity_info_free (identity);
+    gsignond_identity_info_unref (identity);
 }
 END_TEST
 
@@ -866,7 +866,7 @@ START_TEST (test_metadata_database)
     identity2 = gsignond_db_metadata_database_get_identity (
             metadata_db, identity_id);
     fail_if (identity2 == NULL);
-    gsignond_identity_info_free (identity2);
+    gsignond_identity_info_unref (identity2);
 
     /*get_identity/identities*/
     fail_unless (gsignond_db_metadata_database_get_identity (
@@ -922,7 +922,7 @@ START_TEST (test_metadata_database)
     fail_unless (gsignond_db_metadata_database_get_identities (
             metadata_db) == NULL);
 
-    gsignond_identity_info_free (identity);
+    gsignond_identity_info_unref (identity);
 
     fail_unless (gsignond_db_sql_database_close (
             GSIGNOND_DB_SQL_DATABASE (metadata_db)) == TRUE);
@@ -974,7 +974,7 @@ START_TEST (test_credentials_database)
     identity2 = gsignond_db_credentials_database_load_identity (
             credentials_db, identity_id, FALSE);
     fail_if (identity2 == NULL);
-    gsignond_identity_info_free (identity2);
+    gsignond_identity_info_unref (identity2);
 
     identity2 = gsignond_db_credentials_database_load_identity (
             credentials_db, identity_id, TRUE);
@@ -984,7 +984,7 @@ START_TEST (test_credentials_database)
             identity2), "username1") == 0);
     fail_unless (g_strcmp0 (gsignond_identity_info_get_secret (
             identity2), "secret1") == 0);
-    gsignond_identity_info_free (identity2);
+    gsignond_identity_info_unref (identity2);
 
     fail_unless (gsignond_db_credentials_database_check_secret (
             credentials_db, identity_id, "username2", "secret1") == FALSE);
@@ -1085,7 +1085,7 @@ START_TEST (test_credentials_database)
 
     fail_unless (gsignond_db_credentials_database_remove_identity (
             credentials_db, identity_id) == TRUE);
-    gsignond_identity_info_free (identity);
+    gsignond_identity_info_unref (identity);
 
     g_object_unref(credentials_db);
 }

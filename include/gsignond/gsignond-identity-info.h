@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@linux.intel.com>
  *
@@ -51,7 +51,10 @@ GSignondIdentityInfo *
 gsignond_identity_info_copy (GSignondIdentityInfo *info);
 
 void
-gsignond_identity_info_free (GSignondIdentityInfo *info);
+gsignond_identity_info_ref (GSignondIdentityInfo *info);
+
+void
+gsignond_identity_info_unref (GSignondIdentityInfo *info);
 
 guint32
 gsignond_identity_info_get_id (GSignondIdentityInfo *info);

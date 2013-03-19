@@ -336,7 +336,7 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
         self->priv->process_error_handler_id = self->priv->process_result_handler_id = 0;
     }
 
-    gsignond_dictionary_free (data);
+    gsignond_dictionary_unref (data);
 
     return TRUE;
 }

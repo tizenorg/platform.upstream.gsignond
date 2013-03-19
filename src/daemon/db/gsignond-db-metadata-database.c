@@ -1224,7 +1224,7 @@ gsignond_db_metadata_database_get_identity (
     sqlite3_free (query);
     if (G_UNLIKELY (rows <= 0)) {
         DBG ("Fetch credentials failed");
-        gsignond_identity_info_free (identity);
+        gsignond_identity_info_unref (identity);
         return NULL;
     }
     gsignond_identity_info_set_id (identity, identity_id);
@@ -1595,7 +1595,7 @@ gsignond_db_metadata_database_get_accesscontrol_list(
  *
  * Returns: (transfer full) the  #GSignondSecurityContext if successful,
  * NULL otherwise. When done the list should be freed with
- * gsignond_identity_info_free
+ * gsignond_identity_info_unref
  */
 GSignondSecurityContext *
 gsignond_db_metadata_database_get_owner(

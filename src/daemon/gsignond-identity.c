@@ -117,6 +117,15 @@ G_DEFINE_TYPE_EXTENDED (GSignondIdentity, gsignond_identity, GSIGNOND_TYPE_DISPO
     } \
 }
 
+static gboolean 
+_set_id (GSignondIdentity *identity, guint32 id)
+{
+    gsignond_identity_info_set_id (identity->priv->info, id);
+    g_object_notify_by_pspec (G_OBJECT(identity), properties[PROP_INFO]);
+
+    return TRUE;
+}
+
 static void
 _get_property (GObject *object, guint property_id, GValue *value,
                GParamSpec *pspec)
@@ -171,7 +180,6 @@ _dispose (GObject *object)
     GSignondIdentity *self = GSIGNOND_IDENTITY(object);
 
     if (self->priv->identity_adapter) {
-        DBG("unref identity adapter %p", self->priv->identity_adapter);
         g_object_unref (self->priv->identity_adapter);
         self->priv->identity_adapter = NULL;
     }
@@ -183,7 +191,7 @@ _dispose (GObject *object)
     }
 
     if (self->priv->info) {
-        gsignond_identity_info_free (self->priv->info);
+        gsignond_identity_info_unref (self->priv->info);
         self->priv->info = NULL;
     }
 
@@ -368,7 +376,7 @@ _get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GEr
 
     /* prepare identity info, excluding password and username if secret */
     vinfo = gsignond_dictionary_to_variant (identity->priv->info);
-    gsignond_identity_info_free (info);
+    gsignond_identity_info_unref (info);
     if (!vinfo) {
         WARN ("identity info to variant convertion failed.");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity internal eror.");
@@ -603,7 +611,8 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
     }
 
     /* update object cache */
-    if (identity->priv->info) gsignond_identity_info_free (identity->priv->info);
+    if (identity->priv->info)
+        gsignond_identity_info_unref (identity->priv->info);
     identity->priv->info = identity_info;
 
     /* Ask daemon to store identity info to db */
@@ -619,7 +628,7 @@ _store (GSignondIdentityIface *iface, const GVariant *info, const GSignondSecuri
     }
     else {
         if (was_new_identity) 
-            gsignond_identity_set_id (identity, id);
+            _set_id (identity, id);
 
         gsignond_identity_iface_notify_info_updated (iface, GSIGNOND_IDENTITY_DATA_UPDATED);
     }
@@ -756,25 +765,26 @@ gsignond_identity_iface_init (gpointer g_iface, gpointer iface_data)
 guint32 
 gsignond_identity_get_id (GSignondIdentity *identity)
 {
+    g_assert (GSIGNOND_IS_IDENTITY (identity));
+
     return gsignond_identity_info_get_id (identity->priv->info);
 }
 
 /**
- * gsignond_identity_set_id:
+ * gsignond_identity_get_identity_info:
  * @identity: instance of #GSignondIdentity
- * @id: unique identifier
- * 
- * Sets the #identity id to #id.
  *
- * Returns[transfer null]: Dbus object path used by this identity.
+ * Retrieves identity's #GSignondIdentityInfo.
+ *
+ * Returns: (transfer none) #GSignondIdentityInfo
  */
-gboolean 
-gsignond_identity_set_id (GSignondIdentity *identity, guint32 id)
+GSignondIdentityInfo *
+gsignond_identity_get_identity_info (GSignondIdentity *identity)
 {
-    gsignond_identity_info_set_id (identity->priv->info, id);
-    g_object_notify_by_pspec (G_OBJECT(identity), properties[PROP_INFO]);
+    g_assert (GSIGNOND_IS_IDENTITY (identity));
+    g_assert (identity->priv != NULL);
 
-    return TRUE;
+    return identity->priv->info;
 }
 
 /**

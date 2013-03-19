@@ -104,7 +104,7 @@ gsignond_process_data_new (GSignondAuthSessionIface* auth_session,
 static void gsignond_process_data_free (GSignondProcessData* data)
 {
     g_object_unref (data->auth_session);
-    gsignond_dictionary_free (data->session_data);
+    gsignond_dictionary_unref (data->session_data);
     g_free (data->mechanism);
     g_slice_free (GSignondProcessData, data);
 }

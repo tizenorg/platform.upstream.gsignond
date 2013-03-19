@@ -86,9 +86,9 @@ START_TEST (test_session_data)
     fail_unless(gsignond_session_data_get_query_password(data_from_variant) == TRUE);    
     
     g_variant_unref(variant);
-    gsignond_dictionary_free(data_from_variant);
-    gsignond_dictionary_free(data_from_copy);
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data_from_variant);
+    gsignond_dictionary_unref(data_from_copy);
+    gsignond_dictionary_unref(data);
 }
 END_TEST
 
@@ -169,7 +169,7 @@ START_TEST (test_passwordplugin_request)
     fail_if(gsignond_session_data_get_username(result) != NULL);
     fail_if(g_strcmp0(
         gsignond_session_data_get_secret(result), "megapassword") != 0);
-    gsignond_dictionary_free(result);
+    gsignond_dictionary_unref(result);
     result = NULL;
     
     // username and password not empty
@@ -182,11 +182,11 @@ START_TEST (test_passwordplugin_request)
         gsignond_session_data_get_username(result), "megauser") != 0);
     fail_if(g_strcmp0(
         gsignond_session_data_get_secret(result), "megapassword") != 0);
-    gsignond_dictionary_free(result);
+    gsignond_dictionary_unref(result);
     result = NULL;
     
     //username and password empty
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     data = gsignond_dictionary_new();
     gsignond_plugin_request_initial(plugin, data, "password");
     fail_if(result != NULL);    
@@ -194,7 +194,7 @@ START_TEST (test_passwordplugin_request)
     fail_if(error != NULL);
     fail_if(gsignond_session_data_get_query_username(ui_action) == FALSE);
     fail_if(gsignond_session_data_get_query_password(ui_action) == FALSE);
-    gsignond_dictionary_free(ui_action);
+    gsignond_dictionary_unref(ui_action);
     ui_action = NULL;
     
     //username not empty, password empty
@@ -205,10 +205,10 @@ START_TEST (test_passwordplugin_request)
     fail_if(error != NULL);
     fail_if(gsignond_session_data_get_query_username(ui_action) == TRUE);
     fail_if(gsignond_session_data_get_query_password(ui_action) == FALSE);
-    gsignond_dictionary_free(ui_action);
+    gsignond_dictionary_unref(ui_action);
     ui_action = NULL;
     
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     g_object_unref(plugin);
 }
 END_TEST
@@ -253,7 +253,7 @@ START_TEST (test_passwordplugin_user_action_finished)
         gsignond_session_data_get_username(result), "megauser") != 0);
     fail_if(g_strcmp0(
         gsignond_session_data_get_secret(result), "megapassword") != 0);
-    gsignond_dictionary_free(result);
+    gsignond_dictionary_unref(result);
     result = NULL;
 
     // user canceled
@@ -278,7 +278,7 @@ START_TEST (test_passwordplugin_user_action_finished)
     g_error_free(error);
     error = NULL;
     
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     g_object_unref(plugin);
 }
 END_TEST
@@ -300,10 +300,10 @@ START_TEST (test_passwordplugin_refresh)
     gsignond_plugin_refresh(plugin, data);
     fail_if(result == NULL);    
     fail_if(error != NULL);
-    gsignond_dictionary_free(result);
+    gsignond_dictionary_unref(result);
     result = NULL;
     
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     g_object_unref(plugin);
 }
 END_TEST

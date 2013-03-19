@@ -67,7 +67,7 @@ static void gsignond_password_plugin_request_initial (
             gsignond_session_data_set_username(response, username);
         gsignond_session_data_set_secret(response, secret);
         gsignond_plugin_response_final(self, response);
-        gsignond_dictionary_free(response);
+        gsignond_dictionary_unref(response);
         return;
     }
     
@@ -78,7 +78,7 @@ static void gsignond_password_plugin_request_initial (
         gsignond_session_data_set_username(user_action_data, username);
     gsignond_session_data_set_query_password(user_action_data, TRUE);
     gsignond_plugin_user_action_required(self, user_action_data);
-    gsignond_dictionary_free(user_action_data);
+    gsignond_dictionary_unref(user_action_data);
 }
 
 static void gsignond_password_plugin_user_action_finished (
@@ -97,7 +97,7 @@ static void gsignond_password_plugin_user_action_finished (
         gsignond_session_data_set_username(response, username);
         gsignond_session_data_set_secret(response, secret);
         gsignond_plugin_response_final(self, response);
-        gsignond_dictionary_free(response);
+        gsignond_dictionary_unref(response);
         return;
     } else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
         GError* error = g_error_new(GSIGNOND_ERROR, 

@@ -48,7 +48,10 @@ GSignondDictionary *
 gsignond_dictionary_new (void);
 
 void
-gsignond_dictionary_free (GSignondDictionary *dict);
+gsignond_dictionary_ref (GSignondDictionary *dict);
+
+void
+gsignond_dictionary_unref (GSignondDictionary *dict);
 
 GSignondDictionary *
 gsignond_dictionary_copy (GSignondDictionary *other);

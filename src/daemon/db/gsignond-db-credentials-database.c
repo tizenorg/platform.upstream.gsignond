@@ -276,7 +276,7 @@ gsignond_db_credentials_database_clear (GSignondDbCredentialsDatabase *self)
  *
  * Returns: (transfer full) the info #GSignondIdentityInfo if successful,
  * NULL otherwise. When done, it should be freed with
- * gsignond_identity_info_free (identity)
+ * gsignond_identity_info_unref (identity)
  */
 GSignondIdentityInfo *
 gsignond_db_credentials_database_load_identity (
@@ -470,7 +470,7 @@ gsignond_db_credentials_database_check_secret (
 						self->secret_storage, creds);
 		}
 		g_object_unref (creds);
-    	gsignond_identity_info_free (identity);
+    	gsignond_identity_info_unref (identity);
     }
 	return check;
 }
@@ -736,7 +736,7 @@ gsignond_db_credentials_database_get_accesscontrol_list(
  *
  * Returns: (transfer full) the list #GSignondSecurityContext if successful,
  * NULL otherwise. When done the list should be freed with
- * gsignond_identity_info_free
+ * gsignond_identity_info_unref
  */
 GSignondSecurityContext *
 gsignond_db_credentials_database_get_owner(
@@ -759,7 +759,7 @@ gsignond_db_credentials_database_get_owner(
  *
  * Returns: (transfer full) the #GSignondSecurityContext if successful,
  * NULL otherwise. When done the context, it should be freed with
- * gsignond_identity_info_free
+ * gsignond_identity_info_unref
  */
 GSignondSecurityContext *
 gsignond_db_credentials_database_get_identity_owner (

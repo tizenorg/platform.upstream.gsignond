@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@linux.intel.com>
  *
@@ -254,18 +254,32 @@ gsignond_identity_info_copy (GSignondIdentityInfo *info)
 }
 
 /**
- * gsignond_identity_info_free:
+ * gsignond_identity_info_ref:
  * @info: instance of #GSignondIdentityInfo
  *
- * Frees the memory allocated by info structure.
+ * Increment reference count of the info structure.
  */
 void
-gsignond_identity_info_free (GSignondIdentityInfo *info)
+gsignond_identity_info_ref (GSignondIdentityInfo *info)
+{
+    g_return_if_fail (info != NULL);
+
+    gsignond_dictionary_ref (info);
+}
+
+/**
+ * gsignond_identity_info_unref:
+ * @info: instance of #GSignondIdentityInfo
+ *
+ * Decrement reference count of the info structure.
+ */
+void
+gsignond_identity_info_unref (GSignondIdentityInfo *info)
 {
     if (!info)
         return;
 
-    gsignond_dictionary_free (info);
+    gsignond_dictionary_unref (info);
 }
 
 /**
@@ -1184,6 +1198,6 @@ void
 gsignond_identity_info_list_free (GSignondIdentityInfoList *list)
 {
     g_return_if_fail (list != NULL);
-    g_list_free_full (list, (GDestroyNotify)gsignond_identity_info_free);
+    g_list_free_full (list, (GDestroyNotify)gsignond_identity_info_unref);
 }
 

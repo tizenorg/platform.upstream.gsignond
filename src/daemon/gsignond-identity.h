@@ -60,16 +60,20 @@ struct _GSignondIdentityClass
     GSignondDisposableClass parent_class;
 };
 
-GType gsignond_identity_get_type (void) G_GNUC_CONST;
+GType
+gsignond_identity_get_type (void) G_GNUC_CONST;
 
-GSignondIdentity * gsignond_identity_new (GSignondAuthServiceIface *owner,
-                                          GSignondIdentityInfo *info,
-                                          const gchar *app_context,
-                                          gint timeout);
+GSignondIdentity *
+gsignond_identity_new (GSignondAuthServiceIface *owner,
+                       GSignondIdentityInfo *info,
+                       const gchar *app_context,
+                       gint timeout);
 
-guint32 gsignond_identity_get_id (GSignondIdentity *identity);
+guint32
+gsignond_identity_get_id (GSignondIdentity *identity);
 
-gboolean gsignond_identity_set_id (GSignondIdentity *identity, guint32 id);
+GSignondIdentityInfo *
+gsignond_identity_get_identity_info (GSignondIdentity *identity);
 
 const gchar *
 gsignond_identity_get_object_path (GSignondIdentity *identity);

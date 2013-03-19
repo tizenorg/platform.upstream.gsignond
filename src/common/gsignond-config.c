@@ -106,7 +106,7 @@ gsignond_config_dispose (GObject *object)
     self = GSIGNOND_CONFIG (object);
 
     if (self->priv->config_table) {
-        gsignond_dictionary_free (self->priv->config_table);
+        gsignond_dictionary_unref (self->priv->config_table);
         self->priv->config_table = NULL;
     }
 

@@ -173,7 +173,7 @@ _on_process_result (GSignondAuthSessionIface *iface,
             gsignond_plugin_proxy_process(proxy, iface, data, "password");
             gsignond_plugin_proxy_process(proxy, iface, data, "password");
     
-            gsignond_dictionary_free(data);
+            gsignond_dictionary_unref(data);
         }
         if (proxy_process_queue_results == 3) {
             testing_proxy_process_queue = FALSE;
@@ -190,7 +190,7 @@ _on_process_result (GSignondAuthSessionIface *iface,
             for (i = 0; i < 9; i++)
                 gsignond_plugin_proxy_process(proxy, iface, data, "password");
     
-            gsignond_dictionary_free(data);
+            gsignond_dictionary_unref(data);
         }
         if (proxy_process_queue_cancel_results == 5) {
             GSignondPluginProxy* proxy = GSIGNOND_PLUGIN_PROXY(user_data);
@@ -296,7 +296,7 @@ START_TEST (test_pluginproxy_process)
     gsignond_plugin_proxy_process(proxy, GSIGNOND_AUTH_SESSION_IFACE(test_auth_session), data, "password");
     fail_if(testing_proxy_process);
     
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     g_object_unref(test_auth_session);
     g_object_unref(proxy);
     g_object_unref(config);
@@ -330,7 +330,7 @@ START_TEST (test_pluginproxy_process_cancel)
     gsignond_plugin_proxy_process(proxy, GSIGNOND_AUTH_SESSION_IFACE(test_auth_session), data, "password");
     fail_if(testing_proxy_process_cancel);
     
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     g_object_unref(test_auth_session);
     g_object_unref(proxy);
     g_object_unref(config);
@@ -365,7 +365,7 @@ START_TEST (test_pluginproxy_process_queue)
     fail_if(testing_proxy_process_queue);
     fail_if(proxy_process_queue_results < 3);
 
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     g_object_unref(test_auth_session);
     g_object_unref(proxy);
     g_object_unref(config);
@@ -400,7 +400,7 @@ START_TEST (test_pluginproxy_process_queue_cancel)
     fail_if(testing_proxy_process_queue_cancel);
     fail_if(proxy_process_queue_cancel_results != 10);
 
-    gsignond_dictionary_free(data);
+    gsignond_dictionary_unref(data);
     g_object_unref(test_auth_session);
     g_object_unref(proxy);
     g_object_unref(config);
