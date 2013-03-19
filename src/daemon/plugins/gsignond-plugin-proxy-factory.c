@@ -63,7 +63,9 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 
     DBG ("enumerate plugins in %s (factory=%p)",
          gsignond_config_get_string (self->config,
-                                     GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR));
+                                     GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR),
+                                     self
+        );
     gchar **method_iter = self->methods;
     while (1) {
         const gchar* plugin_soname = g_dir_read_name(plugin_dir);

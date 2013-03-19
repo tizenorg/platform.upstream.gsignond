@@ -126,7 +126,10 @@ gsignond_plugin_proxy_constructor (GType                  gtype,
     priv->plugin = gsignond_load_plugin (priv->config,
                                          priv->plugin_type);
 
-    if (priv->plugin != NULL) {
+    if (priv->plugin == NULL) {
+        g_free (priv->plugin_type);
+        priv->plugin_type = NULL;
+    } else {
         gchar *type;
         g_object_get (priv->plugin, "type", &type, NULL);
         if (g_strcmp0 (type, priv->plugin_type) != 0) {
