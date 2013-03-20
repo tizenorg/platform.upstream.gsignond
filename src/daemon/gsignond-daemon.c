@@ -333,6 +333,7 @@ _on_identity_disposed (gpointer data, GObject *object)
 {
     GSignondDaemon *daemon = GSIGNOND_DAEMON (data);
 
+    DBG ("daemon %p identity %p disposed", daemon, object);
     daemon->priv->identities = g_list_remove (daemon->priv->identities, object);
 
     if (g_list_length (daemon->priv->identities) == 0) {
@@ -454,6 +455,7 @@ _get_identity (GSignondAuthServiceIface *iface,
             identity_info = gsignond_identity_get_identity_info (liter->data);
             gsignond_identity_info_ref (identity_info);
             DBG ("use cached IdentityInfo=(%u, %p)", id, identity_info);
+            break;
         }
     }
     if (!identity_info)

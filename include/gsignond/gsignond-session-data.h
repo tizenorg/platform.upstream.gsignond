@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
  *
@@ -32,74 +32,91 @@ G_BEGIN_DECLS
 
 #define GSIGNOND_TYPE_SESSION_DATA (GSIGNOND_TYPE_DICTIONARY)
 
-#define GSIGNOND_SESSION_DATA(obj)  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-                                           GSIGNOND_TYPE_SESSION_DATA, \
-                                           GSignondSessionData))
-#define GSIGNOND_IS_SESSION_DATA(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj),\
-                                           GSIGNOND_TYPE_SESSION_DATA))
+#define GSIGNOND_SESSION_DATA(obj) \
+    (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
+                                 GSIGNOND_TYPE_SESSION_DATA, \
+                                 GSignondSessionData))
+#define GSIGNOND_IS_SESSION_DATA(obj) \
+    (G_TYPE_CHECK_INSTANCE_TYPE ((obj),\
+                                 GSIGNOND_TYPE_SESSION_DATA))
 
 typedef GSignondDictionary GSignondSessionData;
 
-/*!
- * Error codes for ui interaction.
- */
 typedef enum {
-    GSIGNOND_QUERY_ERROR_NONE = 0,        /**< No errors. */
-    GSIGNOND_QUERY_ERROR_GENERAL,         /**< Generic error during interaction. */
-    GSIGNOND_QUERY_ERROR_NO_SIGNONUI,     /**< Cannot send request to signon-ui. */
-    GSIGNOND_QUERY_ERROR_BAD_PARAMETERS,  /**< Signon-Ui cannot create dialog based on
-                                   the given UiSessionData. */
-    GSIGNOND_QUERY_ERROR_CANCELED,        /**< User canceled action. Plugin should not
-                                   retry automatically after this. */
-    GSIGNOND_QUERY_ERROR_NOT_AVAILABLE,   /**< Requested ui is not available. For
-                                   example browser cannot be started. */
-    GSIGNOND_QUERY_ERROR_BAD_URL,         /**< Given url was not valid. */
-    GSIGNOND_QUERY_ERROR_BAD_CAPTCHA,     /**< Given captcha image was not valid. */
-    GSIGNOND_QUERY_ERROR_BAD_CAPTCHA_URL, /**< Given url for capctha loading was not
-                                   valid. */
-    GSIGNOND_QUERY_ERROR_REFRESH_FAILED,  /**< Refresh failed. */
-    GSIGNOND_QUERY_ERROR_FORBIDDEN,       /**< Showing ui forbidden by ui policy. */
-    GSIGNOND_QUERY_ERROR_FORGOT_PASSWORD  /**< User pressed forgot password. */
-    //TODO add more errors
-} GSignondQueryError;
+    GSIGNOND_UI_POLICY_DEFAULT = 0,
+    GSIGNOND_UI_POLICY_REQUEST_PASSWORD,
+    GSIGNOND_UI_POLICY_NO_USER_INTERACTION,
+    GSIGNOND_UI_POLICY_VALIDATION
+} GSignondUiPolicy;
 
 
-//FIXME: all the other standard sessiondata and uisessiondata fields 
-//should be added
-const gchar*
-gsignond_session_data_get_username(GSignondSessionData* data);
+const gchar *
+gsignond_session_data_get_username (GSignondSessionData *data);
 
 void
-gsignond_session_data_set_username(GSignondSessionData* data, 
-                                   const gchar* username);
+gsignond_session_data_set_username (GSignondSessionData *data, 
+                                    const gchar *username);
 
-const gchar*
-gsignond_session_data_get_secret(GSignondSessionData* data);
+const gchar *
+gsignond_session_data_get_secret (GSignondSessionData *data);
 
 void
-gsignond_session_data_set_secret(GSignondSessionData* data, 
-                                 const gchar* secret);
+gsignond_session_data_set_secret (GSignondSessionData *data, 
+                                  const gchar *secret);
+
+const gchar *
+gsignond_session_data_get_realm (GSignondSessionData *data);
+
+void
+gsignond_session_data_set_realm (GSignondSessionData *data,
+                                 const gchar *realm);
+
+const gchar *
+gsignond_session_data_get_caption (GSignondSessionData *data);
+
+void
+gsignond_session_data_set_caption (GSignondSessionData *data,
+                                   const gchar *caption);
 
 gboolean
-gsignond_session_data_get_query_username(GSignondSessionData* data);
+gsignond_session_data_get_renew_token (GSignondSessionData *data,
+                                       gboolean *renew_token);
 
 void
-gsignond_session_data_set_query_username(GSignondSessionData* data, 
-                                         gboolean query_username);
+gsignond_session_data_set_renew_token (GSignondSessionData *data,
+                                       gboolean renew_token);
 
 gboolean
-gsignond_session_data_get_query_password(GSignondSessionData* data);
+gsignond_session_data_get_ui_policy (GSignondSessionData *data,
+                                     guint32 *ui_policy);
 
 void
-gsignond_session_data_set_query_password(GSignondSessionData* data, 
-                                         gboolean query_password);
+gsignond_session_data_set_ui_policy (GSignondSessionData *data,
+                                     guint32 ui_policy);
 
-GSignondQueryError gsignond_session_data_get_query_error(
-    GSignondSessionData* data);
+const gchar *
+gsignond_session_data_get_network_proxy (GSignondSessionData *data);
 
 void
-gsignond_session_data_set_query_error(GSignondSessionData* data, 
-                                         GSignondQueryError error);
+gsignond_session_data_set_network_proxy (GSignondSessionData *data,
+                                         const gchar *network_proxy);
+
+gboolean
+gsignond_session_data_get_network_timeout (GSignondSessionData *data,
+                                           guint32 *network_timeout);
+
+void
+gsignond_session_data_set_network_timeout (GSignondSessionData *data,
+                                           guint32 network_timeout);
+
+gboolean
+gsignond_session_data_get_window_id (GSignondSessionData *data,
+                                     guint32 *window_id);
+
+void
+gsignond_session_data_set_window_id (GSignondSessionData *data,
+                                     guint32 window_id);
+
 
 G_END_DECLS
 

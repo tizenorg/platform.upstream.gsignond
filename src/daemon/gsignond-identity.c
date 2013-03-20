@@ -393,7 +393,7 @@ _on_session_close (gpointer data, GObject *session)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (data);
 
-    DBG ("session %p closed", session);
+    DBG ("identity %p session %p disposed", identity, session);
     identity->priv->auth_sessions = g_list_remove (identity->priv->auth_sessions, session);
     
     if (g_list_length (identity->priv->auth_sessions) == 0) {

@@ -192,7 +192,9 @@ gsignond_dictionary_get_boolean (GSignondDictionary *dict, const gchar *key,
 
     if (variant == NULL)
         return FALSE;
-    *value = g_variant_get_boolean (variant);
+
+    if (value)
+        *value = g_variant_get_boolean (variant);
     return TRUE;
 }
 
@@ -222,7 +224,8 @@ gsignond_dictionary_get_int32 (GSignondDictionary *dict, const gchar *key,
     if (variant == NULL)
         return FALSE;
 
-    *value = g_variant_get_int32 (variant);
+    if (value)
+        *value = g_variant_get_int32 (variant);
     return TRUE;
 }
 
@@ -252,7 +255,8 @@ gsignond_dictionary_get_uint32 (GSignondDictionary *dict, const gchar *key,
     if (variant == NULL)
         return FALSE;
 
-    *value = g_variant_get_boolean (variant);
+    if (value)
+        *value = g_variant_get_boolean (variant);
     return TRUE;
 }
 

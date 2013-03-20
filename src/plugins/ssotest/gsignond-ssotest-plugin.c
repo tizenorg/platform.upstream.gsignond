@@ -78,8 +78,7 @@ static void gsignond_ssotest_plugin_request_initial (
 
     GSignondSessionData *response = gsignond_dictionary_copy (session_data);
     DBG ("response=%p", response);
-    // TODO: fix once proper property accessor exists
-    gsignond_dictionary_set_string (response, "Realm", "testRealm_after_test");
+    gsignond_session_data_set_realm (response, "testRealm_after_test");
 
     int i;
     for (i = 0; i < 10; i++) {
@@ -128,11 +127,12 @@ static void gsignond_ssotest_plugin_request_initial (
         const gchar* username =
             gsignond_session_data_get_username (session_data);
         GSignondSessionData *user_action_data = gsignond_dictionary_new ();
-        if (username == NULL)
+        // FIXME: fix when the signon ui is integrated
+        /*if (username == NULL)
             gsignond_session_data_set_query_username (user_action_data, TRUE);
-        else
+        else*/
             gsignond_session_data_set_username (user_action_data, username);
-        gsignond_session_data_set_query_password (user_action_data, TRUE);
+        //gsignond_session_data_set_query_password (user_action_data, TRUE);
         gsignond_plugin_user_action_required (plugin, user_action_data);
         gsignond_dictionary_unref (user_action_data);
         gsignond_dictionary_unref (response);
@@ -150,21 +150,21 @@ static void gsignond_ssotest_plugin_user_action_finished (
 {
     g_return_if_fail (GSIGNOND_IS_SSOTEST_PLUGIN (plugin));
 
-    GSignondQueryError query_error =
-        gsignond_session_data_get_query_error (session_data);
+    /*GSignondQueryError query_error =
+        gsignond_session_data_get_query_error (session_data);*/
     const gchar* username = gsignond_session_data_get_username (session_data);
     const gchar* secret = gsignond_session_data_get_secret (session_data);
     
-    if (query_error == GSIGNOND_QUERY_ERROR_NONE && 
+    /*if (query_error == GSIGNOND_QUERY_ERROR_NONE && 
         username != NULL && 
-        secret != NULL) {
+        secret != NULL) {*/
         GSignondSessionData *response = gsignond_dictionary_new ();
         gsignond_session_data_set_username (response, username);
         gsignond_session_data_set_secret (response, secret);
         gsignond_plugin_response_final (plugin, response);
         gsignond_dictionary_unref (response);
         return;
-    } else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
+    /*} else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
         GError* error = g_error_new (GSIGNOND_ERROR, 
                                      GSIGNOND_ERROR_SESSION_CANCELED,
                                      "user_action_finished: canceled");
@@ -183,7 +183,7 @@ static void gsignond_ssotest_plugin_user_action_finished (
                                     query_error);
         gsignond_plugin_error (plugin, error); 
         g_error_free(error);
-    }
+    }*/
 }
 
 static void gsignond_ssotest_plugin_refresh (
