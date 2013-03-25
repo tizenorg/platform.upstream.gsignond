@@ -67,7 +67,8 @@ void
 gsignond_signonui_data_set_caption (GSignondSignonuiData *data,
                    const gchar *caption);
 gboolean
-gsignond_signonui_data_get_confirm (GSignondSignonuiData *data);
+gsignond_signonui_data_get_confirm (GSignondSignonuiData *data, 
+                                    gboolean *confirm);
 void
 gsignond_signonui_data_set_confirm (GSignondSignonuiData *data,
                    gboolean confirm);
@@ -77,7 +78,8 @@ void
 gsignond_signonui_data_set_final_url (GSignondSignonuiData *data,
                      const gchar *url);
 gboolean
-gsignond_signonui_data_get_forgot_password (GSignondSignonuiData *data);
+gsignond_signonui_data_get_forgot_password (GSignondSignonuiData *data,
+                                            gboolean *forgot_password);
 void
 gsignond_signonui_data_set_forgot_password (GSignondSignonuiData *data,
                                             gboolean forgot);
@@ -101,23 +103,27 @@ gsignond_signonui_data_get_password (GSignondSignonuiData *data);
 void
 gsignond_signonui_data_set_password (GSignondSignonuiData *data,
                     const gchar *password);
-GSignondSignonuiError
-gsignond_signonui_data_get_query_error (GSignondSignonuiData *data);
+gboolean
+gsignond_signonui_data_get_query_error (GSignondSignonuiData *data,
+                                        GSignondSignonuiError *error);
 void
 gsignond_signonui_data_set_query_error (GSignondSignonuiData *data,
                        GSignondSignonuiError error);
 gboolean
-gsignond_signonui_data_get_query_password (GSignondSignonuiData *data);
+gsignond_signonui_data_get_query_password (GSignondSignonuiData *data,
+                                           gboolean *query_password);
 void
 gsignond_signonui_data_set_query_password (GSignondSignonuiData *data,
                           gboolean query);
 gboolean
-gsignond_signonui_data_get_query_username (GSignondSignonuiData *data);
+gsignond_signonui_data_get_query_username (GSignondSignonuiData *data,
+                                           gboolean *query_username);
 void
 gsignond_signonui_data_set_query_username (GSignondSignonuiData *data,
                                            gboolean query);
 gboolean
-gsignond_signonui_data_get_remember_password (GSignondSignonuiData *data);
+gsignond_signonui_data_get_remember_password (GSignondSignonuiData *data,
+                                              gboolean *query_password);
 void
 gsignond_signonui_data_set_remember_password (GSignondSignonuiData *data,
                              gboolean remember);

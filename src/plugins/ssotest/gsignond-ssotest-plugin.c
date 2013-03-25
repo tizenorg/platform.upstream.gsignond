@@ -149,8 +149,11 @@ static void gsignond_ssotest_plugin_user_action_finished (
 {
     g_return_if_fail (GSIGNOND_IS_SSOTEST_PLUGIN (plugin));
 
-    GSignondSignonuiError query_error =
-        gsignond_signonui_data_get_query_error (session_data);
+    GSignondSignonuiError query_error;
+    gboolean res = gsignond_signonui_data_get_query_error(session_data,
+                                                          &query_error);
+    g_assert(res == TRUE);
+
     const gchar* username = gsignond_signonui_data_get_username (session_data);
     const gchar* secret = gsignond_signonui_data_get_password (session_data);
     

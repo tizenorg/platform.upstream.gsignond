@@ -519,7 +519,9 @@ _on_query_dialog_done (GSignondSignonuiData *reply, GError *error, gpointer user
         err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
     }
 
-    err_id = gsignond_signonui_data_get_query_error (reply);
+    gboolean res = gsignond_signonui_data_get_query_error (reply, &err_id);
+    g_assert (res == TRUE);
+    
     if (err_id != SIGNONUI_ERROR_NONE) {
         switch (err_id) {
             case SIGNONUI_ERROR_CANCELED:
@@ -614,7 +616,9 @@ _on_user_verfied (GSignondSignonuiData *reply, GError *error, gpointer user_data
         err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
     }
 
-    err_id = gsignond_signonui_data_get_query_error (reply);
+    gboolean query_res = gsignond_signonui_data_get_query_error (reply, &err_id);
+    g_assert (query_res == TRUE);
+    
     if (err_id != SIGNONUI_ERROR_NONE) {
         switch (err_id) {
             case SIGNONUI_ERROR_CANCELED:
