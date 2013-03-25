@@ -145,31 +145,31 @@ static void gsignond_ssotest_plugin_request_initial (
 
 static void gsignond_ssotest_plugin_user_action_finished (
     GSignondPlugin *plugin, 
-    GSignondSessionData *session_data)
+    GSignondSignonuiData *session_data)
 {
     g_return_if_fail (GSIGNOND_IS_SSOTEST_PLUGIN (plugin));
 
-    /*GSignondQueryError query_error =
-        gsignond_session_data_get_query_error (session_data);*/
-    const gchar* username = gsignond_session_data_get_username (session_data);
-    const gchar* secret = gsignond_session_data_get_secret (session_data);
+    GSignondSignonuiError query_error =
+        gsignond_signonui_data_get_query_error (session_data);
+    const gchar* username = gsignond_signonui_data_get_username (session_data);
+    const gchar* secret = gsignond_signonui_data_get_password (session_data);
     
-    /*if (query_error == GSIGNOND_QUERY_ERROR_NONE && 
+    if (query_error == SIGNONUI_ERROR_NONE && 
         username != NULL && 
-        secret != NULL) {*/
+        secret != NULL) {
         GSignondSessionData *response = gsignond_dictionary_new ();
         gsignond_session_data_set_username (response, username);
         gsignond_session_data_set_secret (response, secret);
         gsignond_plugin_response_final (plugin, response);
         gsignond_dictionary_unref (response);
         return;
-    /*} else if (query_error == GSIGNOND_QUERY_ERROR_CANCELED) {
+    } else if (query_error == SIGNONUI_ERROR_CANCELED) {
         GError* error = g_error_new (GSIGNOND_ERROR, 
                                      GSIGNOND_ERROR_SESSION_CANCELED,
                                      "user_action_finished: canceled");
         gsignond_plugin_error (plugin, error); 
         g_error_free(error);
-    } else if (query_error == GSIGNOND_QUERY_ERROR_FORBIDDEN) {
+    } else if (query_error == SIGNONUI_ERROR_FORBIDDEN) {
         GError* error = g_error_new (GSIGNOND_ERROR, 
                                      GSIGNOND_ERROR_NOT_AUTHORIZED,
                                      "user_action_finished: forbidden");
@@ -182,7 +182,7 @@ static void gsignond_ssotest_plugin_user_action_finished (
                                     query_error);
         gsignond_plugin_error (plugin, error); 
         g_error_free(error);
-    }*/
+    }
 }
 
 static void gsignond_ssotest_plugin_refresh (
