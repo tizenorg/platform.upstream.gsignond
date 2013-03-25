@@ -84,9 +84,9 @@ struct _GSignondPluginInterface {
     void (*request) (GSignondPlugin *self, 
                      GSignondSessionData *session_data);
     void (*user_action_finished) (GSignondPlugin *self, 
-                                  GSignondSessionData *session_data);
+                                  GSignondSignonuiData *session_data);
     void (*refresh) (GSignondPlugin *self, 
-                     GSignondSessionData *session_data);
+                     GSignondSignonuiData *session_data);
 };
 
 GType gsignond_plugin_get_type (void);
