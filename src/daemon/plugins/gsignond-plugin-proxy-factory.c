@@ -245,7 +245,6 @@ gsignond_plugin_proxy_factory_new(GSignondConfig *config)
 
 GSignondPluginProxy*
 gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
-                                         guint32 identity_id,
                                          const gchar* plugin_type)
 {
     g_return_val_if_fail (factory && GSIGNOND_IS_PLUGIN_PROXY_FACTORY(factory), NULL);
@@ -253,55 +252,39 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
 
     GSignondPluginProxy* proxy = NULL;
 
-    if (identity_id == -1) {
-        DBG("invalid identity id");
-        return NULL;
-    }
-    if (!identity_id) {
-        proxy = gsignond_plugin_proxy_new(factory->config, plugin_type);
-        DBG("get plugin for new identity %s -> %p", plugin_type, proxy);
-        return proxy;
-    }
-
-    gchar* key = g_strdup_printf("%d %s", identity_id, plugin_type);
-    proxy = g_hash_table_lookup(factory->plugins, key);
+    proxy = g_hash_table_lookup(factory->plugins, plugin_type);
     if (proxy != NULL) {
-        DBG("get existing plugin %s -> %p", key, proxy);
-        g_free(key);
+        DBG("get existing plugin %s -> %p", plugin_type, proxy);
         g_object_ref(proxy);
         return proxy;
     }
     proxy = gsignond_plugin_proxy_new(factory->config, plugin_type);
     if (proxy == NULL) {
-        g_free(key);
         return NULL;
     }
-    g_hash_table_insert(factory->plugins, key, proxy);
-    DBG("get new plugin %s -> %p", key, proxy);
+    g_hash_table_insert(factory->plugins, g_strdup (plugin_type), proxy);
+    DBG("get new plugin %s -> %p", plugin_type, proxy);
     g_object_ref(proxy);
     return proxy;
 }
 
 gboolean gsignond_plugin_proxy_factory_add_plugin(
     GSignondPluginProxyFactory* factory,
-    guint32 identity_id,
     GSignondPluginProxy* proxy)
 {
     g_return_val_if_fail (factory && GSIGNOND_IS_PLUGIN_PROXY_FACTORY(factory), FALSE);
     g_return_val_if_fail (proxy && GSIGNOND_IS_PLUGIN_PROXY(proxy), FALSE);
     
-    gchar* plugin_type;
+    gchar* plugin_type = NULL;
     g_object_get (proxy, "type", &plugin_type, NULL);
-    gchar* key = g_strdup_printf("%d %s", identity_id, plugin_type);
-    g_free(plugin_type);
 
-    if (g_hash_table_contains(factory->plugins, key)) {
-        g_free(key);
+    if (g_hash_table_contains(factory->plugins, plugin_type)) {
+        g_free(plugin_type);
         return FALSE;
     }
     g_object_ref(proxy);
-    DBG("add plugin %s -> %p", key, proxy);
-    g_hash_table_insert(factory->plugins, key, proxy);
+    DBG("add plugin %s -> %p", plugin_type, proxy);
+    g_hash_table_insert(factory->plugins, plugin_type, proxy);
 
     return TRUE;
 }

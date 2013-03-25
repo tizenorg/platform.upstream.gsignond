@@ -23,14 +23,11 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-auth-session-iface.h"
+#include "gsignond-auth-session.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-session-data.h"
 #include "gsignond/gsignond-identity-info.h"
-#include "dbus/gsignond-dbus.h"
-#include "dbus/gsignond-dbus-auth-session-adapter.h"
-#include "gsignond-auth-session.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 #include "gsignond-daemon.h"
 
@@ -44,21 +41,29 @@ enum
 
 static GParamSpec *properties[N_PROPERTIES];
 
+enum {
+    SIG_PROCESS_RESULT,
+    SIG_PROCESS_ERROR,
+    SIG_PROCESS_STORE,
+    SIG_PROCESS_USER_ACTION_REQUIRED,
+    SIG_PROCESS_REFRESHED,
+    SIG_PROCESS_STATE_CHANGED,
+    
+    SIG_MAX
+};
+
+static guint signals[SIG_MAX] = { 0 };
+
 struct _GSignondAuthSessionPrivate
 {
     gchar *method;
-    GSignondDbusAuthSessionAdapter *session_adapter;
+    gchar *app_context;
     GSignondPluginProxy *proxy;
     GSequence *available_mechanisms;
     GSignondIdentityInfo *identity_info;
 };
 
-static void gsignond_auth_session_iface_init (gpointer g_iface);
-
-G_DEFINE_TYPE_WITH_CODE (GSignondAuthSession, gsignond_auth_session,
-                        GSIGNOND_TYPE_DISPOSABLE,
-                        G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_AUTH_SESSION_IFACE,
-                                               gsignond_auth_session_iface_init));
+G_DEFINE_TYPE (GSignondAuthSession, gsignond_auth_session, G_TYPE_OBJECT)
 
 #define GSIGNOND_AUTH_SESSION_PRIV(obj) \
     G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SESSION, \
@@ -148,18 +153,17 @@ _create_mechanism_cache (GSignondAuthSession *self)
     g_free (mechanisms);
 }
 
-static gchar **
-_query_available_mechanisms (GSignondAuthSessionIface *iface,
-                             const gchar **wanted_mechanisms,
-                             const GSignondSecurityContext *ctx,
-                             GError **error)
+gchar **
+gsignond_auth_session_query_available_mechanisms (GSignondAuthSession *self,
+                                                  const gchar **wanted_mechanisms,
+                                                  const GSignondSecurityContext *ctx,
+                                                  GError **error)
 {
-    if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
-        WARN ("assertion (iface && GSIGNOND_IS_AUTH_SESSION (iface)) failed");
+    if (!self || !GSIGNOND_IS_AUTH_SESSION (self)) {
+        WARN ("assertion (iself && GSIGNOND_IS_AUTH_SESSION (self)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
-    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
     VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, NULL);
 
@@ -187,19 +191,18 @@ _query_available_mechanisms (GSignondAuthSessionIface *iface,
     return mechanisms;
 }
 
-static gboolean
-_process (GSignondAuthSessionIface *iface, 
-          GSignondSessionData *session_data,
-          const gchar *mechanism,
-          const GSignondSecurityContext *ctx,
-          GError **error)
+gboolean
+gsignond_auth_session_process (GSignondAuthSession *self,
+                               GSignondSessionData *session_data,
+                               const gchar *mechanism,
+                               const GSignondSecurityContext *ctx,
+                               GError **error)
 {
-    if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
-        WARN ("assertion (iface && GSIGNOND_IS_AUTH_SESSION (iface))failed");
+    if (!self || !GSIGNOND_IS_AUTH_SESSION (self)) {
+        WARN ("assertion (seöf && GSIGNOND_IS_AUTH_SESSION (self))failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
-    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
     VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
 
@@ -222,51 +225,53 @@ _process (GSignondAuthSessionIface *iface,
         }
     }
 
-    gsignond_plugin_proxy_process(self->priv->proxy, iface, session_data,
+    gsignond_plugin_proxy_process(self->priv->proxy, self, session_data,
                                   mechanism);
 
     return TRUE;
 }
 
-static gboolean
-_cancel (GSignondAuthSessionIface *iface,
-         const GSignondSecurityContext *ctx,
-         GError **error)
+gboolean
+gsignond_auth_session_cancel (GSignondAuthSession *self,
+                              const GSignondSecurityContext *ctx,
+                              GError **error)
 {
-    if (!iface || !GSIGNOND_IS_AUTH_SESSION (iface)) {
-        WARN ("assertion (iface && GSIGNOND_IS_AUTH_SESSION (iface)) failed");
+    if (!self || !GSIGNOND_IS_AUTH_SESSION (self)) {
+        WARN ("assertion (self && GSIGNOND_IS_AUTH_SESSION (self)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
-    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
-
     VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
 
-    gsignond_plugin_proxy_cancel(self->priv->proxy, iface);
+    gsignond_plugin_proxy_cancel(self->priv->proxy, self);
 
     return TRUE;
 }
 
-void 
-_user_action_finished (GSignondAuthSessionIface *iface, 
-                       GSignondSignonuiData *ui_data)
+void
+gsignond_auth_session_abort_process (GSignondAuthSession *self)
 {
-    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+    g_return_if_fail (self && GSIGNOND_IS_AUTH_SESSION (self));
 
-    gsignond_plugin_proxy_user_action_finished(self->priv->proxy, ui_data);
+    gsignond_plugin_proxy_cancel (self->priv->proxy, self);
 }
 
 void 
-_refresh (GSignondAuthSessionIface *iface, 
-            GSignondSignonuiData *ui_data)
+gsignond_auth_session_user_action_finished (GSignondAuthSession *self,
+                                            GSignondSignonuiData *ui_data)
 {
-    GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
+    gsignond_plugin_proxy_user_action_finished(self->priv->proxy, ui_data);
+}
 
+void
+gsignond_auth_session_refresh (GSignondAuthSession *self, 
+                               GSignondSignonuiData *ui_data)
+{
     gsignond_plugin_proxy_refresh(self->priv->proxy, ui_data);
 }
 
 GSignondAccessControlManager *
-_get_acm (GSignondAuthSessionIface *iface)
+gsignond_auth_session_get_acm (GSignondAuthSession *session)
 {
     return gsignond_get_access_control_manager ();
 }
@@ -283,7 +288,7 @@ _get_property (GObject *object, guint property_id, GValue *value,
             g_value_set_string (value, self->priv->method);
             break;
         case PROP_APP_CONTEXT:
-            g_object_get_property (G_OBJECT (self->priv->session_adapter), "app-context", value);
+            g_value_set_string (value, self->priv->app_context);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -302,7 +307,7 @@ _set_property (GObject *object, guint property_id, const GValue *value,
             self->priv->method = g_value_dup_string (value);
             break;
         case PROP_APP_CONTEXT:
-            g_object_set_property (G_OBJECT (self->priv->session_adapter), "app-context", value);
+            self->priv->app_context = g_value_dup_string (value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -313,11 +318,6 @@ static void
 _dispose (GObject *object)
 {
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (object);
-
-    if (self->priv->session_adapter) {
-        g_object_unref (self->priv->session_adapter);
-        self->priv->session_adapter = NULL;
-    }
 
     if (self->priv->proxy) {
         g_object_unref (self->priv->proxy);
@@ -355,9 +355,10 @@ gsignond_auth_session_init (GSignondAuthSession *self)
 {
     self->priv = GSIGNOND_AUTH_SESSION_PRIV (self);
 
-    self->priv->session_adapter =
-        gsignond_dbus_auth_session_adapter_new (
-                                             GSIGNOND_AUTH_SESSION_IFACE(self));
+    self->priv->method = NULL;
+    self->priv->proxy = NULL;
+    self->priv->identity_info = NULL;
+    self->priv->available_mechanisms = NULL;
 }
 
 static void
@@ -389,20 +390,74 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
                               | G_PARAM_STATIC_STRINGS);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
-}
 
-static void
-gsignond_auth_session_iface_init (gpointer g_iface)
-{
-    GSignondAuthSessionIfaceInterface *auth_session_iface =
-        (GSignondAuthSessionIfaceInterface *) g_iface;
+    signals[SIG_PROCESS_RESULT] =  g_signal_new ("process-result",
+            GSIGNOND_TYPE_AUTH_SESSION,
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            GSIGNOND_TYPE_SESSION_DATA);
 
-    auth_session_iface->process = _process;
-    auth_session_iface->query_available_mechanisms = _query_available_mechanisms;
-    auth_session_iface->cancel = _cancel;
-    auth_session_iface->user_action_finished = _user_action_finished;
-    auth_session_iface->refresh = _refresh;
-    auth_session_iface->get_acm = _get_acm;
+    signals[SIG_PROCESS_ERROR] = g_signal_new ("process-error",
+            GSIGNOND_TYPE_AUTH_SESSION,
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            G_TYPE_ERROR);
+
+    signals[SIG_PROCESS_STORE] =  g_signal_new ("process-store",
+            GSIGNOND_TYPE_AUTH_SESSION,
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            GSIGNOND_TYPE_SESSION_DATA);
+    
+    signals[SIG_PROCESS_USER_ACTION_REQUIRED] =  g_signal_new ("process-user-action-required",
+            GSIGNOND_TYPE_AUTH_SESSION,
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            GSIGNOND_TYPE_SIGNONUI_DATA);
+
+    signals[SIG_PROCESS_REFRESHED] =  g_signal_new ("process-refreshed",
+            GSIGNOND_TYPE_AUTH_SESSION,
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            1,
+            GSIGNOND_TYPE_SIGNONUI_DATA);
+
+    signals[SIG_PROCESS_STATE_CHANGED] =  g_signal_new (
+            "state-changed",
+            GSIGNOND_TYPE_AUTH_SESSION,
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            2,
+            G_TYPE_INT, G_TYPE_STRING);
+
 }
 
 /**
@@ -421,27 +476,55 @@ gsignond_auth_session_get_method (GSignondAuthSession *session)
     return session->priv->method;
 }
 
-/**
- * gsignond_auth_session_get_object_path:
- * @session: instance of #GSignondAuthSession
- *
- * Retrieves dbus object path used by #session object.
- *
- * Returns: (transfer none) dbus object path if success, NULL otherwise
- */
 const gchar *
-gsignond_auth_session_get_object_path (GSignondAuthSession *session)
+gsignond_auth_session_get_context (GSignondAuthSession *session)
 {
     g_return_val_if_fail (session && GSIGNOND_IS_AUTH_SESSION (session), NULL);
-    
-    return gsignond_dbus_auth_session_adapter_get_object_path (
-        session->priv->session_adapter);
+
+    return session->priv->app_context;
 }
 
-gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id)
+void
+gsignond_auth_session_notify_process_result (GSignondAuthSession *iface,
+                                             GSignondSessionData *result)
 {
-    return gsignond_plugin_proxy_factory_add_plugin(
-        gsignond_get_plugin_proxy_factory(), id, session->priv->proxy);
+    g_signal_emit (iface, signals[SIG_PROCESS_RESULT], 0, result);
+}
+
+void
+gsignond_auth_session_notify_process_error (GSignondAuthSession *iface,
+                                            const GError *error)
+{
+    g_signal_emit (iface, signals[SIG_PROCESS_ERROR], 0, error);
+}
+
+void 
+gsignond_auth_session_notify_store (GSignondAuthSession *self, 
+                                    GSignondSessionData *session_data)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_STORE], 0, session_data);
+}
+
+void 
+gsignond_auth_session_notify_user_action_required (GSignondAuthSession *self, 
+                                                   GSignondSignonuiData *ui_data)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_USER_ACTION_REQUIRED], 0, ui_data);
+}
+
+void 
+gsignond_auth_session_notify_refreshed (GSignondAuthSession *self, 
+                                        GSignondSignonuiData *ui_data)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_REFRESHED], 0, ui_data);
+}
+
+void 
+gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
+                                            gint state,
+                                            const gchar *message)
+{
+    g_signal_emit (self, signals[SIG_PROCESS_STATE_CHANGED], 0, state, message);
 }
 
 /**
@@ -455,28 +538,20 @@ gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id)
  * Returns: (transfer full) newly created object 
  */
 GSignondAuthSession * 
-gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context, const gchar *method, gint timeout)
+gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context, const gchar *method)
 {
     GSignondPluginProxy* proxy = NULL;
-    guint id;
 
-    id = gsignond_identity_info_get_id (info);
-    
-    if (gsignond_identity_info_get_is_identity_new (info)) {
-        proxy = gsignond_plugin_proxy_new(gsignond_get_config(), method);
-        if (!proxy) return NULL;
-    } else {
-        proxy = gsignond_plugin_proxy_factory_get_plugin(
-            gsignond_get_plugin_proxy_factory(), id, method);
-        if (!proxy) return NULL;
-    }
+    g_return_val_if_fail (method, NULL);
+
+    proxy = gsignond_plugin_proxy_factory_get_plugin(
+    gsignond_get_plugin_proxy_factory(), method);
+    if (!proxy) return NULL;
 
     GSignondAuthSession *auth_session =
         g_object_new (GSIGNOND_TYPE_AUTH_SESSION,
                       "method", method,
-                      "app-context", app_context,
-                      "timeout", timeout, 
-                      NULL);
+                      "app-context", app_context, NULL);
     auth_session->priv->proxy = proxy;
     auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
 

@@ -23,6 +23,7 @@
  * 02110-1301 USA
  */
 
+#include <config.h>
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
@@ -32,11 +33,18 @@
 #include <gio/gio.h>
 
 #include "gsignond/gsignond-log.h"
-#include "daemon/gsignond-daemon.h"
 #include "daemon/dbus/gsignond-dbus.h"
+#include "daemon/dbus/gsignond-dbus-server.h"
 
-static GSignondDaemon *_daemon = NULL;
+static GSignondDbusServer *_server = NULL;
 static guint           _sig_source_id[3];
+
+static void
+_on_server_closed (gpointer data, GObject *server)
+{
+    _server = NULL;
+    if (data) g_main_loop_quit ((GMainLoop *)data);
+}
 
 static gboolean
 _handle_quit_signal (gpointer user_data)
@@ -53,14 +61,16 @@ _handle_quit_signal (gpointer user_data)
 static gboolean
 _handle_reload_signal (gpointer user_data)
 {
-    GSignondDaemon **daemon = (GSignondDaemon **) user_data;
+    GMainLoop *ml = (GMainLoop *) user_data;
 
     DBG ("Received reload signal");
-    g_return_val_if_fail (daemon != NULL, FALSE);
-    if (*daemon) {
-        g_object_unref (*daemon);
+    g_return_val_if_fail (ml != NULL, FALSE);
+    if (_server) {
+        g_object_weak_unref (G_OBJECT(_server), _on_server_closed, ml);
+        g_object_unref (_server);
         DBG ("Restarting daemon ....");
-        *daemon = gsignond_daemon_new ();
+        _server = gsignond_dbus_server_new ();
+        g_object_weak_ref (G_OBJECT(_server), _on_server_closed, ml);
     }
 
     return TRUE;
@@ -75,7 +85,7 @@ _install_sighandlers (GMainLoop *main_loop)
     source = g_unix_signal_source_new (SIGHUP);
     g_source_set_callback (source,
                            _handle_reload_signal,
-                           &_daemon,
+                           main_loop,
                            NULL);
     _sig_source_id[0] = g_source_attach (source, ctx);
     source = g_unix_signal_source_new (SIGTERM);
@@ -92,40 +102,11 @@ _install_sighandlers (GMainLoop *main_loop)
     _sig_source_id[2] = g_source_attach (source, ctx);
 }
 
-static void
-_on_bus_acquired (GDBusConnection *connection,
-                  const gchar     *name,
-                  gpointer         user_data)
-{
-    INFO ("Connected to the session bus");
-    if (connection != NULL) 
-        _daemon = gsignond_daemon_new ();
-}
-
-static void
-_on_name_lost (GDBusConnection *connection,
-               const gchar     *name,
-               gpointer         user_data)
-{
-    GMainLoop *ml = (GMainLoop *) user_data;
-    INFO ("Lost (or failed to acquire) the name '%s' on the session message bus", name);
-    if (ml) g_main_loop_quit (ml);
-}
-
-static void
-_on_name_acquired (GDBusConnection *connection,
-                   const gchar     *name,
-                   gpointer         user_data)
-{
-    INFO ("Acquired the name %s on the session message bus", name);
-}
-
 int main (int argc, char **argv)
 {
     GError *error = NULL;
     GMainLoop *main_loop = NULL;
     GOptionContext *opt_context = NULL;
-    guint name_owner_id = 0;
     GOptionEntry opt_entries[] = {
         {NULL }
     };
@@ -141,24 +122,23 @@ int main (int argc, char **argv)
     }
 
     main_loop = g_main_loop_new (NULL, FALSE);
+
+    _server = gsignond_dbus_server_new ();
+    if (!_server) {
+        g_option_context_free (opt_context);
+        return -1;
+    }
+    g_object_weak_ref (G_OBJECT (_server), _on_server_closed, main_loop);
     _install_sighandlers(main_loop);
-
-    name_owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
-            GSIGNOND_SERVICE, // "com.google.code.AccountsSSO.SingleSignOn",
-            G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
-            G_BUS_NAME_OWNER_FLAGS_REPLACE,
-            _on_bus_acquired,
-            _on_name_acquired,
-            _on_name_lost,
-            main_loop, NULL);
-
+#ifdef USE_P2P
+    INFO ("server started at : %s", gsignond_dbus_server_get_address (_server));
+#endif
     INFO ("Entering main event loop");
 
     g_main_loop_run (main_loop);
 
-    g_bus_unown_name (name_owner_id);
-
-    if (_daemon) g_object_unref (G_OBJECT (_daemon));
+    if(_server) g_object_unref (_server);
+ 
     if (main_loop) g_main_loop_unref (main_loop);
 
     return 0;

@@ -26,8 +26,10 @@
 #ifndef __GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_H_
 #define __GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_H_
 
+#include <config.h>
 #include <glib.h>
-#include <daemon/gsignond-auth-session-iface.h>
+#include <daemon/gsignond-auth-session.h>
+#include "gsignond-disposable.h"
 #include "gsignond-dbus-auth-session-gen.h"
 
 G_BEGIN_DECLS
@@ -35,8 +37,8 @@ G_BEGIN_DECLS
 #define GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER            (gsignond_dbus_auth_session_adapter_get_type())
 #define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapter))
 #define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterClass))
-#define GSIGNOND_IS_AUTH_SESSION_ADAPTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER))
-#define GSIGNOND_IS_AUTH_SESSION_ADAPTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER))
+#define GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER))
+#define GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER))
 #define GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, GSignondDbusAuthSessionAdapterClass))
 
 typedef struct _GSignondDbusAuthSessionAdapter GSignondDbusAuthSessionAdapter;
@@ -45,7 +47,7 @@ typedef struct _GSignondDbusAuthSessionAdapterPrivate GSignondDbusAuthSessionAda
 
 struct _GSignondDbusAuthSessionAdapter
 {
-    GSignondDbusAuthSessionSkeleton parent;
+    GSignondDisposable parent;
 
     /* priv */
     GSignondDbusAuthSessionAdapterPrivate *priv;
@@ -53,15 +55,25 @@ struct _GSignondDbusAuthSessionAdapter
 
 struct _GSignondDbusAuthSessionAdapterClass
 {
-    GSignondDbusAuthSessionSkeletonClass parent_class;
+    GSignondDisposableClass parent_class;
 };
 
 GType gsignond_dbus_auth_session_adapter_get_type (void) G_GNUC_CONST;
 
-#define gsignond_dbus_auth_session_adapter_get_object_path(adapter) \
-    g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON (adapter))
+GSignondDbusAuthSessionAdapter *
+gsignond_dbus_auth_session_adapter_new_with_connection (GDBusConnection *connection,
+                                                        GSignondAuthSession *session,
+                                                        guint timeout);
 
-GSignondDbusAuthSessionAdapter * gsignond_dbus_auth_session_adapter_new (GSignondAuthSessionIface *parent);
+#ifndef USE_P2P
+GSignondDbusAuthSessionAdapter *
+gsignond_dbus_auth_session_adapter_new (GSignondAuthSession *session,
+                                        guint timeout);
+#endif
+
+const gchar *
+gsignond_dbus_auth_session_adapter_get_object_path (
+        GSignondDbusAuthSessionAdapter *dbus_session) G_GNUC_CONST;
 
 G_END_DECLS
 

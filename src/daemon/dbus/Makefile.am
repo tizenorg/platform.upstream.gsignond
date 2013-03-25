@@ -59,7 +59,7 @@ libgsignond_dbus_glue_la_CPPFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 
-libgsignond_dbus_glue_la_LIBS = \
+libgsignond_dbus_glue_la_LIBADD = \
     $(GSIGNOND_LIBS) \
     $(NULL)
 
@@ -74,14 +74,18 @@ libgsignond_dbus_la_CPPFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 
-libgsignond_dbus_la_LIBS = \
-    $(top_srcdir)/src/daemon/dbus/libgsignond_dbus_glue.so \
+libgsignond_dbus_la_LIBADD = \
+    $(top_srcdir)/src/daemon/dbus/libgsignond-dbus-glue.la \
     $(GSIGNOND_LIBS) \
     $(NULL)
 
 libgsignond_dbus_la_SOURCES = \
    $(DBUS_BUILT_SOURCES) \
+   gsignond-disposable.h \
+   gsignond-disposable.c \
    gsignond-dbus.h \
+   gsignond-dbus-server.c \
+   gsignond-dbus-server.h \
    gsignond-dbus-auth-service-adapter.c \
    gsignond-dbus-auth-service-adapter.h \
    gsignond-dbus-auth-session-adapter.c \

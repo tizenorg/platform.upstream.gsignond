@@ -28,7 +28,6 @@
 
 #include <glib.h>
 #include <gio/gio.h>
-#include "gsignond-dbus-signonui-gen.h"
 
 G_BEGIN_DECLS
 

@@ -29,6 +29,7 @@
 /*
  * Common DBUS definitions
  */
+#define GSIGNOND_DBUS_ADDRESS            "unix:abstract=gsignond"
 #define GSIGNOND_SERVICE_PREFIX          "com.google.code.AccountsSSO.gSingleSignOn"
 #define GSIGNOND_SERVICE                 GSIGNOND_SERVICE_PREFIX
 #define GSIGNOND_DAEMON_OBJECTPATH       "/com/google/code/AccountsSSO/gSingleSignOn"

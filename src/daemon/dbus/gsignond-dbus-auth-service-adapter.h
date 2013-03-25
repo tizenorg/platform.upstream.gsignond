@@ -26,8 +26,10 @@
 #ifndef __GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_H_
 #define __GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_H_
 
+#include <config.h>
 #include <glib.h>
-#include <daemon/gsignond-auth-service-iface.h>
+#include <daemon/gsignond-daemon.h>
+#include "gsignond-disposable.h"
 #include "gsignond-dbus-auth-service-gen.h"
 
 G_BEGIN_DECLS
@@ -35,8 +37,8 @@ G_BEGIN_DECLS
 #define GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER            (gsignond_dbus_auth_service_adapter_get_type())
 #define GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, GSignondDbusAuthServiceAdapter))
 #define GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, GSignondDbusAuthServiceAdapterClass))
-#define GSIGNOND_IS_AUTH_SERVICE_ADAPTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER))
-#define GSIGNOND_IS_AUTH_SERVICE_ADAPTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER))
+#define GSIGNOND_IS_DBUS_AUTH_SERVICE_ADAPTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER))
+#define GSIGNOND_IS_DBUS_AUTH_SERVICE_ADAPTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER))
 #define GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, GSignondDbusAuthServiceAdapterClass))
 
 typedef struct _GSignondDbusAuthServiceAdapter GSignondDbusAuthServiceAdapter;
@@ -45,7 +47,7 @@ typedef struct _GSignondDbusAuthServiceAdapterPrivate GSignondDbusAuthServiceAda
 
 struct _GSignondDbusAuthServiceAdapter
 {
-    GSignondDbusAuthServiceSkeleton parent;
+    GSignondDisposable parent;
 
     /* priv */
     GSignondDbusAuthServiceAdapterPrivate *priv;
@@ -53,12 +55,19 @@ struct _GSignondDbusAuthServiceAdapter
 
 struct _GSignondDbusAuthServiceAdapterClass
 {
-    GSignondDbusAuthServiceSkeletonClass parent_class;
+    GSignondDisposableClass parent_class;
 };
 
 GType gsignond_dbus_auth_service_adapter_get_type (void) G_GNUC_CONST;
 
-GSignondDbusAuthServiceAdapter * gsignond_dbus_auth_service_adapter_new (GSignondAuthServiceIface *parent);
+GSignondDbusAuthServiceAdapter *
+gsignond_dbus_auth_service_adapter_new_with_connection (GDBusConnection *conneciton,
+                                                        GSignondDaemon *daemon);
+
+#ifndef USE_P2P
+GSignondDbusAuthServiceAdapter *
+gsignond_dbus_auth_service_adapter_new (GSignondDaemon *daemon);
+#endif
 
 G_END_DECLS
 

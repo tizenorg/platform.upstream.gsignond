@@ -30,9 +30,7 @@
 #include <glib-object.h>
 
 #include <gsignond/gsignond-identity-info.h>
-
-#include "gsignond-auth-service-iface.h"
-#include "gsignond-disposable.h"
+#include <gsignond/gsignond-access-control-manager.h>
 
 G_BEGIN_DECLS
 
@@ -47,9 +45,19 @@ typedef struct _GSignondIdentity GSignondIdentity;
 typedef struct _GSignondIdentityClass GSignondIdentityClass;
 typedef struct _GSignondIdentityPrivate GSignondIdentityPrivate;
 
+typedef struct _GSignondDaemon GSignondDaemon;
+typedef struct _GSignondAuthSession GSignondAuthSession;
+
+typedef enum {
+    GSIGNOND_IDENTITY_DATA_UPDATED = 0,
+    GSIGNOND_IDENTITY_REMOVED,
+    GSIGNOND_IDENTITY_SIGNED_OUT
+} IdentityChangeType;
+typedef IdentityChangeType GSignondIdentityChangeType;
+
 struct _GSignondIdentity
 {
-    GSignondDisposable parent;
+    GObject parent;
 
     /* priv */
     GSignondIdentityPrivate *priv;
@@ -57,17 +65,79 @@ struct _GSignondIdentity
 
 struct _GSignondIdentityClass
 {
-    GSignondDisposableClass parent_class;
+    GObjectClass parent_class;
 };
 
 GType
 gsignond_identity_get_type (void) G_GNUC_CONST;
 
 GSignondIdentity *
-gsignond_identity_new (GSignondAuthServiceIface *owner,
+gsignond_identity_new (GSignondDaemon *owner,
                        GSignondIdentityInfo *info,
-                       const gchar *app_context,
-                       gint timeout);
+                       const gchar *app_context);
+
+GVariant * 
+gsignond_identity_get_info (GSignondIdentity *identity,
+                            const GSignondSecurityContext *ctx,
+                            GError **error);
+
+
+GSignondAuthSession *
+gsignond_identity_get_auth_session (GSignondIdentity *identity,
+                                    const gchar *method,
+                                    const GSignondSecurityContext *ctx,
+                                    GError **error);
+
+gboolean
+gsignond_identity_request_credentials_update (GSignondIdentity *identity,
+                                              const gchar *message,
+                                              const GSignondSecurityContext *ctx,
+                                              GError **error);
+
+gboolean 
+gsignond_identity_verify_user (GSignondIdentity *identity,
+                               GVariant *params,
+                               const GSignondSecurityContext *ctx,
+                               GError **error);
+
+gboolean
+gsignond_identity_verify_secret (GSignondIdentity *identity,
+                                 const gchar *secret,
+                                 const GSignondSecurityContext *ctx,
+                                 GError **error);
+
+guint32
+gsignond_identity_store (GSignondIdentity *identity, 
+                         const GVariant *info,
+                         const GSignondSecurityContext *ctx,
+                         GError **error);
+gboolean
+gsignond_identity_remove (GSignondIdentity *identity, 
+                          const GSignondSecurityContext *ctx,
+                          GError **error);
+
+gboolean
+gsignond_identity_sign_out (GSignondIdentity *identity,
+                            const GSignondSecurityContext *ctx,
+                            GError **error);
+
+gint32
+gsignond_identity_add_reference (GSignondIdentity *identity,
+                                 const gchar *reference,
+                                 const GSignondSecurityContext *ctx,
+                                 GError **error);
+
+gint32
+gsignond_identity_remove_reference (GSignondIdentity *identity,
+                                    const gchar *reference,
+                                    const GSignondSecurityContext *ctx,
+                                    GError **error);
+
+guint
+gsignond_identity_get_auth_session_timeout (GSignondIdentity *identity);
+
+GSignondAccessControlManager *
+gsignond_identity_get_acm (GSignondIdentity *identity);
 
 guint32
 gsignond_identity_get_id (GSignondIdentity *identity);
@@ -76,7 +146,7 @@ GSignondIdentityInfo *
 gsignond_identity_get_identity_info (GSignondIdentity *identity);
 
 const gchar *
-gsignond_identity_get_object_path (GSignondIdentity *identity);
+gsignond_identity_get_app_context (GSignondIdentity *identity);
 
 G_END_DECLS
 

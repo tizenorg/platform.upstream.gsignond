@@ -8,35 +8,27 @@ BUILT_SOURCES = \
     gsignond-identity-enum-types.c \
     $(NULL)
 
-gsignond-identity-enum-types.h: $(top_srcdir)/src/common/gsignond-enum.h.template gsignond-identity-iface.h
+gsignond-identity-enum-types.h: $(top_srcdir)/src/common/gsignond-enum.h.template gsignond-identity.h
 	$(GLIB_MKENUMS) --template $(top_srcdir)/src/common/gsignond-enum.h.template \
                     --fhead "#ifndef GSIGNOND_IDENTITY_ENUM_TYPES_H_\n#define GSIGNOND_IDENTITY_ENUM_TYPES_H_\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS" \
                     --identifier-prefix gsignond \
                     --ftail "\nG_END_DECLS\n\n#endif\n" \
-                    gsignond-identity-iface.h > $@
+                    gsignond-identity.h > $@
 
-gsignond-identity-enum-types.c: $(top_srcdir)/src/common/gsignond-enum.c.template gsignond-identity-iface.h
+gsignond-identity-enum-types.c: $(top_srcdir)/src/common/gsignond-enum.c.template gsignond-identity.h
 	$(GLIB_MKENUMS) --template $(top_srcdir)/src/common/gsignond-enum.c.template \
                     --fhead "#include \"gsignond-identity-enum-types.h\"\n" \
                     --identifier-prefix gsignond \
-                    gsignond-identity-iface.h > $@
+                    gsignond-identity.h > $@
 
 gsignond_SOURCES = \
     main.c \
     gsignond-auth-session.c \
     gsignond-auth-session.h \
-    gsignond-auth-service-iface.c \
-    gsignond-auth-service-iface.h \
-    gsignond-auth-session-iface.c \
-    gsignond-auth-session-iface.h \
     gsignond-daemon.c \
     gsignond-daemon.h \
-    gsignond-identity-iface.c \
-    gsignond-identity-iface.h \
     gsignond-identity.c \
     gsignond-identity.h \
-    gsignond-disposable.c \
-    gsignond-disposable.h \
     gsignond-signonui-proxy.c \
     gsignond-signonui-proxy.h \
     $(BUILT_SOURCES) \

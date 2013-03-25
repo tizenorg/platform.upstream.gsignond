@@ -26,8 +26,10 @@
 #ifndef __GSIGNOND_IDENTITY_ADAPTER_H_
 #define __GSIGNOND_IDENTITY_ADAPTER_H_
 
+#include <config.h>
 #include <glib.h>
-#include <daemon/gsignond-identity-iface.h>
+#include <daemon/gsignond-identity.h>
+#include "gsignond-disposable.h"
 #include "gsignond-dbus-identity-gen.h"
 
 G_BEGIN_DECLS
@@ -45,7 +47,7 @@ typedef struct _GSignondDbusIdentityAdapterPrivate GSignondDbusIdentityAdapterPr
 
 struct _GSignondDbusIdentityAdapter
 {
-    GSignondDbusIdentitySkeleton parent;
+    GSignondDisposable parent;
 
     /* priv */
     GSignondDbusIdentityAdapterPrivate *priv;
@@ -53,15 +55,24 @@ struct _GSignondDbusIdentityAdapter
 
 struct _GSignondDbusIdentityAdapterClass
 {
-    GSignondDbusIdentitySkeletonClass parent_class;
+    GSignondDisposableClass parent_class;
 };
 
 GType gsignond_dbus_identity_adapter_get_type (void) G_GNUC_CONST;
 
-#define gsignond_dbus_identity_adapter_get_object_path(adapter) \
-    g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON (adapter))
+GSignondDbusIdentityAdapter * 
+gsignond_dbus_identity_adapter_new_with_connection (GDBusConnection *connection,
+                                                    GSignondIdentity *identity,
+                                                    guint timeout);
 
-GSignondDbusIdentityAdapter * gsignond_dbus_identity_adapter_new (GSignondIdentityIface *parent);
+#ifndef USE_P2P
+GSignondDbusIdentityAdapter *
+gsignond_dbus_identity_adapter_new (GSignondIdentity *identity,
+                                    guint timeout);
+#endif
+
+const gchar*
+gsignond_dbus_identity_adapter_get_object_path (GSignondDbusIdentityAdapter *self) G_GNUC_CONST;
 
 G_END_DECLS
 

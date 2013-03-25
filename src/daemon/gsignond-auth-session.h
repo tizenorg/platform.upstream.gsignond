@@ -29,7 +29,9 @@
 #include <glib-object.h>
 
 #include <gsignond/gsignond-identity-info.h>
-#include "gsignond-disposable.h"
+#include <gsignond/gsignond-signonui-data.h>
+#include <gsignond/gsignond-session-data.h>
+#include <gsignond/gsignond-access-control-manager.h>
 
 G_BEGIN_DECLS
 
@@ -55,7 +57,7 @@ typedef struct _GSignondAuthSessionPrivate GSignondAuthSessionPrivate;
 
 struct _GSignondAuthSession
 {
-    GSignondDisposable parent;
+    GObject parent;
 
     /* private */
     GSignondAuthSessionPrivate *priv;
@@ -63,24 +65,80 @@ struct _GSignondAuthSession
 
 struct _GSignondAuthSessionClass
 {
-    GSignondDisposableClass parent_class;
+    GObjectClass parent_class;
 };
 
 GType gsignond_auth_session_get_type (void);
+
+gchar **
+gsignond_auth_session_query_available_mechanisms (GSignondAuthSession *self,
+                                                  const gchar **wanted_mechanisms,
+                                                  const GSignondSecurityContext *ctx,
+                                                  GError **error);
+
+gboolean
+gsignond_auth_session_process (GSignondAuthSession *self,
+                               GSignondSessionData *session_data,
+                               const gchar *mechanism,
+                               const GSignondSecurityContext *ctx,
+                               GError **error);
+gboolean
+gsignond_auth_session_cancel (GSignondAuthSession *self,
+                              const GSignondSecurityContext *ctx,
+                              GError **error);
+
+void
+gsignond_auth_session_abort_process (GSignondAuthSession *self);
+
+void 
+gsignond_auth_session_user_action_finished (GSignondAuthSession *self,
+                                            GSignondSignonuiData *ui_data);
+
+void
+gsignond_auth_session_refresh (GSignondAuthSession *self, 
+                               GSignondSignonuiData *ui_data);
 
 const gchar *
 gsignond_auth_session_get_method (GSignondAuthSession *session);
 
 const gchar *
-gsignond_auth_session_get_object_path (GSignondAuthSession *session);
+gsignond_auth_session_get_context (GSignondAuthSession *session);
 
-gboolean gsignond_auth_session_set_id(GSignondAuthSession *session, gint id);
+GSignondAccessControlManager *
+gsignond_auth_session_get_acm (GSignondAuthSession *session);
+
+gboolean 
+gsignond_auth_session_set_id(GSignondAuthSession *session, gint id);
+
+void
+gsignond_auth_session_notify_process_result (GSignondAuthSession *iface,
+                                             GSignondSessionData *result);
+
+void
+gsignond_auth_session_notify_process_error (GSignondAuthSession *iface,
+                                            const GError *error);
+
+void 
+gsignond_auth_session_notify_store (GSignondAuthSession *self, 
+                                    GSignondSessionData *session_data);
+
+void 
+gsignond_auth_session_notify_user_action_required (GSignondAuthSession *self, 
+                                                   GSignondSignonuiData *ui_data);
+
+void 
+gsignond_auth_session_notify_refreshed (GSignondAuthSession *self, 
+                                        GSignondSignonuiData *ui_data);
+
+void 
+gsignond_auth_session_notify_state_changed (GSignondAuthSession *self, 
+                                            gint state,
+                                            const gchar *message);
 
 GSignondAuthSession * 
 gsignond_auth_session_new (GSignondIdentityInfo *info,
                            const gchar *app_context,
-                           const gchar *method,
-                           gint timeout);
+                           const gchar *method);
 
 G_END_DECLS
 

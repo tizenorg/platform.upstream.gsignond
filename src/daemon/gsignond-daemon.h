@@ -29,9 +29,9 @@
 #include <glib-object.h>
 
 #include <gsignond/gsignond-access-control-manager.h>
-#include "gsignond-disposable.h"
-#include "plugins/gsignond-plugin-proxy-factory.h"
+#include "gsignond-identity.h"
 #include "gsignond-signonui-proxy.h"
+#include "plugins/gsignond-plugin-proxy-factory.h"
 
 G_BEGIN_DECLS
 
@@ -48,7 +48,7 @@ typedef struct _GSignondDaemonPrivate GSignondDaemonPrivate;
 
 struct _GSignondDaemon
 {
-    GSignondDisposable parent;
+    GObject parent;
 
     /* priv */
     GSignondDaemonPrivate *priv;
@@ -56,25 +56,63 @@ struct _GSignondDaemon
 
 struct _GSignondDaemonClass
 {
-    GSignondDisposableClass parent_class;
+    GObjectClass parent_class;
 };
 
 GType gsignond_daemon_get_type (void) G_GNUC_CONST;
 
 GSignondDaemon * gsignond_daemon_new ();
 
-guint gsignond_daemon_identity_timeout (GSignondDaemon *self);
+GSignondIdentity *
+gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
+                                       const GSignondSecurityContext *ctx,
+                                       GError **error) ;
 
-guint gsignond_daemon_auth_session_timeout (GSignondDaemon *self);
+GSignondIdentity *
+gsignond_daemon_get_identity (GSignondDaemon *daemon,
+                              const guint32 id,
+                              const GSignondSecurityContext *ctx,
+                              GError **error);
+
+const gchar ** 
+gsignond_daemon_query_methods (GSignondDaemon *daemon, GError **error);
+
+const gchar ** 
+gsignond_daemon_query_mechanisms (GSignondDaemon *daemon,
+                                  const gchar *method,
+                                  GError **error);
+
+GList *
+gsignond_daemon_query_identities (GSignondDaemon *daemon,
+                                  GVariant *filter,
+                                  GError **error);
+
+gboolean 
+gsignond_daemon_clear (GSignondDaemon *daemon, GError **error);
+
+guint32
+gsignond_daemon_store_identity (GSignondDaemon *daemon, GSignondIdentity *identity);
+
+gboolean
+gsignond_daemon_remove_identity (GSignondDaemon *daemon, guint32 id);
+
+guint
+gsignond_daemon_get_timeout (GSignondDaemon *self) G_GNUC_CONST;
+
+guint
+gsignond_daemon_get_identity_timeout (GSignondDaemon *self) G_GNUC_CONST;
+
+guint
+gsignond_daemon_get_auth_session_timeout (GSignondDaemon *self) G_GNUC_CONST;
 
 GSignondAccessControlManager *
-gsignond_daemon_get_access_control_manager (GSignondDaemon *self);
+gsignond_daemon_get_access_control_manager (GSignondDaemon *self) G_GNUC_CONST;
 
 GSignondPluginProxyFactory *
-gsignond_daemon_get_plugin_proxy_factory (GSignondDaemon *self);
+gsignond_daemon_get_plugin_proxy_factory (GSignondDaemon *self) G_GNUC_CONST;
 
 GSignondConfig *
-gsignond_daemon_get_config (GSignondDaemon *self);
+gsignond_daemon_get_config (GSignondDaemon *self) G_GNUC_CONST;
 
 gboolean
 gsignond_daemon_show_dialog (GSignondDaemon *self,

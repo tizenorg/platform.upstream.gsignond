@@ -23,15 +23,18 @@
  * 02110-1301 USA
  */
 
-#include "gsignond/gsignond-log.h"
+#include <config.h>
 #include "gsignond-dbus-auth-service-adapter.h"
+#include "gsignond-dbus-identity-adapter.h"
 #include "gsignond-dbus.h"
+#include "gsignond/gsignond-log.h"
 
 enum
 {
     PROP_0,
 
-    PROP_IMPL,
+    PROP_CONNECTION,
+    PROP_AUTH_SERVICE,
     N_PROPERTIES
 };
 
@@ -39,14 +42,16 @@ static GParamSpec *properties[N_PROPERTIES];
 
 struct _GSignondDbusAuthServiceAdapterPrivate
 {
-    GDBusConnection     *connection;
-    GSignondAuthServiceIface *parent;
+    GDBusConnection *connection;
+    GSignondDbusAuthService *dbus_auth_service;
+    GSignondDaemon  *auth_service;
+    GList *identities;
 };
 
-G_DEFINE_TYPE (GSignondDbusAuthServiceAdapter, gsignond_dbus_auth_service_adapter, GSIGNOND_DBUS_TYPE_AUTH_SERVICE_SKELETON)
+G_DEFINE_TYPE (GSignondDbusAuthServiceAdapter, gsignond_dbus_auth_service_adapter, GSIGNOND_TYPE_DISPOSABLE)
 
-
-#define GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_GET_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, GSignondDbusAuthServiceAdapterPrivate)
+#define GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_GET_PRIV(obj) \
+    G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, GSignondDbusAuthServiceAdapterPrivate)
 
 static gboolean _handle_register_new_identity (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, 
                                            const gchar *, gpointer);
@@ -60,51 +65,76 @@ static gboolean _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *,
                                       const gchar *, gpointer);
 static gboolean _handle_query_identities (GSignondDbusAuthServiceAdapter *,
                                       GDBusMethodInvocation *,
-                                      const GVariant*, gpointer);
+                                      GVariant*, gpointer);
 static gboolean _handle_clear (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, gpointer);
 
 static void
-gsignond_dbus_auth_service_adapter_set_property (GObject *object,
-        guint property_id,
-        const GValue *value, GParamSpec *pspec)
+_set_property (GObject *object, guint property_id, const GValue *value, GParamSpec *pspec)
 {
     GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (object);
 
     switch (property_id) {
-        case PROP_IMPL: {
-            gpointer iface = g_value_get_pointer (value);
-            if (iface) {
-                self->priv->parent = GSIGNOND_AUTH_SERVICE_IFACE (iface);
+        case PROP_AUTH_SERVICE: {
+            GObject *auth_service = g_value_get_object (value);
+            if (auth_service) {
+                if (self->priv->auth_service) g_object_unref (self->priv->auth_service);
+                self->priv->auth_service = GSIGNOND_DAEMON (auth_service);
             }
             break;
         }
+        case PROP_CONNECTION:
+            self->priv->connection = g_value_get_object(value);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
 }
 
 static void
-gsignond_dbus_auth_service_adapter_get_property (GObject *object,
-        guint property_id,
-        GValue *value, 
-        GParamSpec *pspec)
+_get_property (GObject *object, guint property_id, GValue *value, GParamSpec *pspec)
 {
     GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (object);
 
     switch (property_id) {
-        case PROP_IMPL: {
-            g_value_set_pointer (value, self->priv->parent);
+        case PROP_AUTH_SERVICE: {
+            g_value_set_object (value, self->priv->auth_service);
             break;
         }
+        case PROP_CONNECTION:
+            g_value_set_object (value, self->priv->connection);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
 }
 
 static void
-gsignond_dbus_auth_service_adapter_dispose (GObject *object)
+_identity_unref (gpointer data, gpointer user_data)
+{
+    if (data) g_object_unref (data);
+}
+
+static void
+_dispose (GObject *object)
 {
     GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (object);
+
+    DBG("- unregistering dubs auth service. %d", G_OBJECT (self->priv->auth_service)->ref_count);
+
+    if (self->priv->identities) {
+        g_list_foreach (self->priv->identities, _identity_unref, NULL);
+    }
+
+    if (self->priv->auth_service) {
+        g_object_unref (self->priv->auth_service);
+        self->priv->auth_service = NULL;
+    }
+
+    if (self->priv->dbus_auth_service) {
+        g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (self->priv->dbus_auth_service));
+        g_object_unref (self->priv->dbus_auth_service);
+        self->priv->dbus_auth_service = NULL;
+    }
 
     if (self->priv->connection) {
         g_object_unref (self->priv->connection);
@@ -115,14 +145,13 @@ gsignond_dbus_auth_service_adapter_dispose (GObject *object)
 }
 
 static void
-gsignond_dbus_auth_service_adapter_finalize (GObject *object)
+_finalize (GObject *object)
 {
     GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (object);
 
-    g_dbus_interface_skeleton_unexport (G_DBUS_INTERFACE_SKELETON (object));
-
-    if (self->priv->parent) {
-        self->priv->parent = NULL;
+    if (self->priv->identities) {
+        g_list_free (self->priv->identities);
+        self->priv->identities = NULL;
     }
 
     G_OBJECT_CLASS (gsignond_dbus_auth_service_adapter_parent_class)->finalize (object);
@@ -135,16 +164,22 @@ gsignond_dbus_auth_service_adapter_class_init (GSignondDbusAuthServiceAdapterCla
 
     g_type_class_add_private (object_class, sizeof (GSignondDbusAuthServiceAdapterPrivate));
 
-    object_class->get_property = gsignond_dbus_auth_service_adapter_get_property;
-    object_class->set_property = gsignond_dbus_auth_service_adapter_set_property;
-    object_class->dispose = gsignond_dbus_auth_service_adapter_dispose;
-    object_class->finalize = gsignond_dbus_auth_service_adapter_finalize;
+    object_class->get_property = _get_property;
+    object_class->set_property = _set_property;
+    object_class->dispose = _dispose;
+    object_class->finalize = _finalize;
 
-    properties[PROP_IMPL] = g_param_spec_pointer ("auth-session-impl",
-                                                  "Auth session impl",
-                                                  "AuthSessionIface implementation object",
-                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
-                                                  G_PARAM_STATIC_STRINGS);
+    properties[PROP_AUTH_SERVICE] = g_param_spec_object ("auth-service",
+                                                  "Core auth service",
+                                                  "AuthService core object",
+                                                  GSIGNOND_TYPE_DAEMON,
+                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+
+    properties[PROP_CONNECTION] = g_param_spec_object ("connection",
+                                                  "Bus connection",
+                                                  "DBus connection used",
+                                                  G_TYPE_DBUS_CONNECTION,
+                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }
@@ -152,48 +187,47 @@ gsignond_dbus_auth_service_adapter_class_init (GSignondDbusAuthServiceAdapterCla
 static void
 gsignond_dbus_auth_service_adapter_init (GSignondDbusAuthServiceAdapter *self)
 {
-    GError *err = 0;
-
     self->priv = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER_GET_PRIV(self);
 
     self->priv->connection = 0;
-    self->priv->parent = 0;
+    self->priv->auth_service = 0;
+    self->priv->dbus_auth_service = gsignond_dbus_auth_service_skeleton_new ();
 
-    self->priv->connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &err);
-    if (err) {
-        ERR ("Error getting session bus :%s", err->message);
-        g_error_free (err);
-        return;
-    }
-
-    if (!g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (self),
-                                           self->priv->connection,
-                                           GSIGNOND_DAEMON_OBJECTPATH,
-                                           &err)) {
-        ERR ("failed to register object: %s", err->message);
-        g_error_free (err);
-        return ;
-    }
-
-    g_signal_connect (self, "handle-register-new-identity", G_CALLBACK (_handle_register_new_identity), NULL);
-    g_signal_connect (self, "handle-get-identity", G_CALLBACK(_handle_get_identity), NULL);
-    g_signal_connect (self, "handle-query-methods", G_CALLBACK(_handle_query_methods), NULL);
-    g_signal_connect (self, "handle-query-mechanisms", G_CALLBACK(_handle_query_mechanisms), NULL);
-    g_signal_connect (self, "handle-query-identities", G_CALLBACK(_handle_query_identities), NULL);
-    g_signal_connect (self, "handle-clear", G_CALLBACK(_handle_clear), NULL);
-
+    g_signal_connect_swapped (self->priv->dbus_auth_service,
+        "handle-register-new-identity", G_CALLBACK (_handle_register_new_identity), self);
+    g_signal_connect_swapped (self->priv->dbus_auth_service,
+        "handle-get-identity", G_CALLBACK(_handle_get_identity), self);
+    g_signal_connect_swapped (self->priv->dbus_auth_service,
+        "handle-query-methods", G_CALLBACK(_handle_query_methods), self);
+    g_signal_connect_swapped (self->priv->dbus_auth_service,
+        "handle-query-mechanisms", G_CALLBACK(_handle_query_mechanisms), self);
+    g_signal_connect_swapped (self->priv->dbus_auth_service,
+        "handle-query-identities", G_CALLBACK(_handle_query_identities), self);
+    g_signal_connect_swapped (self->priv->dbus_auth_service,
+        "handle-clear", G_CALLBACK(_handle_clear), self);
 }
 
+#ifndef USE_P2P
 static void
-_on_connnection_lost (GDBusConnection *conn,
-                  const char *peer_name,
-                  gpointer user_data)
+_on_connnection_lost (GDBusConnection *conn, const char *peer_name, gpointer user_data)
 {
-    DBG ("peer disappeared : %s", peer_name);
-    /*
-     * FIXME; inform upper layer that peer closed so free objects
-     * referenced by that peer.
-     */
+    (void) conn;
+    DBG ("(-)peer disappeared : %s, disposing identity object '%p'", peer_name, user_data);
+    g_object_unref (G_OBJECT (user_data));
+}
+#endif
+static void
+_on_identity_disposed (gpointer data, GObject *object)
+{
+    GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (data);
+
+    DBG ("identity object %p disposed", object);
+    self->priv->identities = g_list_remove (self->priv->identities, object);
+
+    if (g_list_length (self->priv->identities) == 0) {
+        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
+    }
 }
 
 static gboolean
@@ -202,37 +236,56 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
                                const gchar *app_context,
                                gpointer user_data)
 {
-    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
-    GDBusConnection *connection = g_dbus_method_invocation_get_connection (invocation);
-    const gchar *sender = g_dbus_method_invocation_get_sender (invocation); 
-    GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (self->priv->parent); 
     GSignondSecurityContext sec_context = {0, 0};
-    const gchar *object_path = NULL;
+    GSignondIdentity *identity = NULL;
     GError *error = NULL;
+    GDBusConnection *connection = NULL;
+    const gchar *sender = NULL;
+    int fd = -1;
+
+    g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SERVICE_ADAPTER(self), FALSE);
+
+    connection = g_dbus_method_invocation_get_connection (invocation);
+#ifdef USE_P2P
+    fd = g_socket_get_fd (g_socket_connection_get_socket (G_SOCKET_CONNECTION (g_dbus_connection_get_stream(connection))));
+#else
+    sender = g_dbus_method_invocation_get_sender (invocation);
+#endif
 
     gsignond_access_control_manager_security_context_of_peer(
-            acm,
+            gsignond_daemon_get_access_control_manager (self->priv->auth_service),
             &sec_context,
-            -1,
+            fd,
             sender,
             app_context);
 
-    object_path = gsignond_auth_service_iface_register_new_identity (self->priv->parent, &sec_context, &error);
+    identity = gsignond_daemon_register_new_identity (self->priv->auth_service, &sec_context, &error);
 
-    if (object_path) {
-        g_bus_watch_name_on_connection (connection, 
-                                    sender, 
-                                    G_BUS_NAME_WATCHER_FLAGS_NONE, 
-                                    NULL, 
-                                    _on_connnection_lost, 
-                                    iface,
-                                    NULL);
+    if (identity) {
+        GSignondDbusIdentityAdapter *dbus_identity = NULL;
+        guint identity_timeout = gsignond_daemon_get_identity_timeout (self->priv->auth_service);
+ 
+        dbus_identity = gsignond_dbus_identity_adapter_new_with_connection (
+                            g_object_ref (connection), identity, identity_timeout);
+#ifndef USE_P2P
+        g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 
+                                        NULL, _on_connnection_lost, dbus_identity, NULL);
+#endif
 
-        gsignond_dbus_auth_service_complete_register_new_identity (iface, invocation, object_path);
+        self->priv->identities = g_list_append (self->priv->identities, dbus_identity);
+        g_object_weak_ref (G_OBJECT (dbus_identity), _on_identity_disposed, self);
+
+        /* keep alive till this identity object gets disposed */
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
+        gsignond_dbus_auth_service_complete_register_new_identity (self->priv->dbus_auth_service,
+            invocation, gsignond_dbus_identity_adapter_get_object_path (dbus_identity));
     }
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
+        
+        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
     }
 
     return TRUE;
@@ -245,38 +298,56 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
                       const gchar *app_context,
                       gpointer user_data)
 {
-    GVariant *identity_data = 0;
-    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
-    GDBusConnection *connection = g_dbus_method_invocation_get_connection (invocation);
-    const gchar *sender =  g_dbus_method_invocation_get_sender (invocation);
-    GSignondAccessControlManager *acm = gsignond_auth_service_iface_get_acm (self->priv->parent); 
     GSignondSecurityContext sec_context = {0, 0};
-    const gchar *object_path = NULL;
+    GSignondIdentity *identity = NULL;
     GError *error = NULL;
+    GDBusConnection *connection = NULL;
+    const gchar *sender =  NULL;
+    int fd = -1;
 
+    connection = g_dbus_method_invocation_get_connection (invocation);
+#ifdef USE_P2P
+    fd = g_socket_get_fd (g_socket_connection_get_socket (G_SOCKET_CONNECTION (g_dbus_connection_get_stream(connection))));
+#else
+    sender = g_dbus_method_invocation_get_sender (invocation);
+#endif
     gsignond_access_control_manager_security_context_of_peer(
-            acm,
+            gsignond_daemon_get_access_control_manager (self->priv->auth_service),
             &sec_context,
-            -1,
+            fd,
             sender,
             app_context);
 
-    object_path = gsignond_auth_service_iface_get_identity (self->priv->parent, id, &sec_context, &identity_data, &error);
+    identity = gsignond_daemon_get_identity (self->priv->auth_service, id, &sec_context, &error);
 
-    if (object_path) {
-        g_bus_watch_name_on_connection (connection, 
-                                    sender, 
-                                    G_BUS_NAME_WATCHER_FLAGS_NONE, 
-                                    NULL, 
-                                    _on_connnection_lost, 
-                                    iface,
-                                    NULL);
+    if (identity) {
+        GSignondDbusIdentityAdapter *dbus_identity = NULL;
+        GSignondIdentityInfo *info = NULL;
+        guint identity_timeout = 0;
 
-        gsignond_dbus_auth_service_complete_get_identity (iface, invocation, object_path, identity_data);
+        identity_timeout = gsignond_daemon_get_identity_timeout (self->priv->auth_service);
+        dbus_identity = gsignond_dbus_identity_adapter_new_with_connection (
+                            g_object_ref(connection), identity, identity_timeout);
+        info = gsignond_identity_get_identity_info (identity);
+#ifndef USE_P2P
+        g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 
+                                        NULL, _on_connnection_lost, dbus_identity, NULL);
+#endif
+        self->priv->identities = g_list_append (self->priv->identities, dbus_identity);
+        g_object_weak_ref (G_OBJECT (dbus_identity), _on_identity_disposed, self);
+
+        /* keep alive till this identity object gets disposed */
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
+        gsignond_dbus_auth_service_complete_get_identity (self->priv->dbus_auth_service,
+            invocation, gsignond_dbus_identity_adapter_get_object_path (dbus_identity),
+            gsignond_dictionary_to_variant (info));
     }
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
+
+        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
     }
 
     return TRUE;
@@ -287,18 +358,20 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
                        GDBusMethodInvocation *invocation,
                        gpointer               user_data)
 {
-    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
     const gchar **methods = NULL;
     GError *error = NULL;
     
-    methods = gsignond_auth_service_iface_query_methods (self->priv->parent, &error);
+    methods = gsignond_daemon_query_methods (self->priv->auth_service, &error);
 
     if (methods)
-        gsignond_dbus_auth_service_complete_query_methods (iface, invocation, (const gchar * const*)methods);
+        gsignond_dbus_auth_service_complete_query_methods (
+            self->priv->dbus_auth_service, invocation, (const gchar * const*)methods);
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     }
+
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
 
     return TRUE;
 }
@@ -309,40 +382,66 @@ _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
                           const gchar *method,
                           gpointer user_data)
 {
-    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);    
     const gchar **mechanisms = 0;
     GError *error = NULL;
 
-    mechanisms = gsignond_auth_service_iface_query_mechanisms (self->priv->parent, method, &error);
+    mechanisms = gsignond_daemon_query_mechanisms (self->priv->auth_service, method, &error);
 
     if (mechanisms)
-        gsignond_dbus_auth_service_complete_query_mechanisms (iface, invocation, (const gchar* const*)mechanisms);
+        gsignond_dbus_auth_service_complete_query_mechanisms (
+            self->priv->dbus_auth_service, invocation, (const gchar* const*)mechanisms);
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     }
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
     return TRUE;
+}
+
+static void
+_append_identity_info (gpointer data, gpointer user_data)
+{
+    GVariantBuilder *builder = (GVariantBuilder *)user_data;
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (data);
+    GSignondIdentityInfo *info = gsignond_identity_get_identity_info (identity);
+
+    g_variant_builder_add (builder, "@a{sv}", gsignond_dictionary_to_variant (info));
 }
 
 static gboolean
 _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
                           GDBusMethodInvocation *invocation,
-                          const GVariant *filter,
+                          GVariant *filter,
                           gpointer user_data)
 {
-    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
-    GVariant *identities = NULL;
+    GList *identities = NULL;
     GError *error = NULL;
-    
-    identities = gsignond_auth_service_iface_query_identities (self->priv->parent, filter, &error);
 
-    if (!error) gsignond_dbus_auth_service_complete_query_identities (iface, invocation, identities);
+    identities = gsignond_daemon_query_identities (self->priv->auth_service, filter, &error);
+
+    if (identities) {
+        GVariantBuilder builder;
+        
+        g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
+
+        g_list_foreach(identities, _append_identity_info, &builder);
+
+        g_list_free (identities);
+
+        gsignond_dbus_auth_service_complete_query_identities (
+            self->priv->dbus_auth_service, invocation,
+            g_variant_builder_end(&builder));
+
+        g_variant_builder_clear (&builder);
+    }
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     }
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+    
     return TRUE;
 }
 
@@ -351,22 +450,62 @@ _handle_clear (GSignondDbusAuthServiceAdapter *self,
                GDBusMethodInvocation *invocation,
                gpointer user_data)
 {
-    GSignondDbusAuthService *iface = GSIGNOND_DBUS_AUTH_SERVICE (self);
     gboolean res ;
     GError *error = NULL;
 
-    res = gsignond_auth_service_iface_clear (self->priv->parent, &error);
+    res = gsignond_daemon_clear (self->priv->auth_service, &error);
 
-    if (!error) gsignond_dbus_auth_service_complete_clear (iface, invocation, res);
+    if (!error)
+        gsignond_dbus_auth_service_complete_clear (self->priv->dbus_auth_service, invocation, res);
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     }
 
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+    
     return TRUE;
 }
 
-GSignondDbusAuthServiceAdapter * gsignond_dbus_auth_service_adapter_new (GSignondAuthServiceIface *impl)
+GSignondDbusAuthServiceAdapter *
+gsignond_dbus_auth_service_adapter_new_with_connection (GDBusConnection *bus_connection, GSignondDaemon *daemon)
 {
-    return GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (g_object_new (GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, "auth-session-impl", impl, NULL));
+    GError *err = NULL;
+    guint timeout = 0;
+    GSignondDbusAuthServiceAdapter *adapter = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (
+        g_object_new (GSIGNOND_TYPE_AUTH_SERVICE_ADAPTER, 
+            "auth-service", daemon, 
+            "connection", bus_connection,
+            NULL));
+
+    if (!g_dbus_interface_skeleton_export (
+            G_DBUS_INTERFACE_SKELETON(adapter->priv->dbus_auth_service),
+            adapter->priv->connection, GSIGNOND_DAEMON_OBJECTPATH, &err)) {
+        ERR ("failed to register object: %s", err->message);
+        g_error_free (err);
+        g_object_unref (adapter);
+        return NULL;
+    }
+    DBG("(+) started auth service '%p' at path '%s' on conneciton '%p'", adapter, GSIGNOND_DAEMON_OBJECTPATH, bus_connection);
+
+    timeout = gsignond_daemon_get_timeout (adapter->priv->auth_service);
+    if (timeout) {
+        gsignond_disposable_set_timeout (GSIGNOND_DISPOSABLE (adapter), timeout);
+    }
+    return adapter;
 }
+#ifndef USE_P2P
+GSignondDbusAuthServiceAdapter * gsignond_dbus_auth_service_adapter_new (GSignondDaemon *daemon)
+{
+    GError *error = NULL;
+    GDBusConnection *connection = g_bus_get_sync (GSIGNOND_BUS_TYPE, NULL, &error);
+
+    if (error) {
+        ERR("failed to connect to session bus : %s", error->message);
+        g_error_free (error);
+        return NULL;
+    }
+
+    return gsignond_dbus_auth_service_adapter_new_with_connection (connection, daemon);
+}
+#endif

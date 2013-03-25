@@ -23,38 +23,32 @@
  * 02110-1301 USA
  */
 
+#include "gsignond-daemon.h"
+
+#include <gmodule.h>
+
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-extension-interface.h"
 #include "daemon/gsignond-identity.h"
-#include "daemon/dbus/gsignond-dbus-auth-service-adapter.h"
 #include "daemon/db/gsignond-db-credentials-database.h"
-
-#include "gsignond-auth-service-iface.h"
-#include "gsignond-daemon.h"
 
 struct _GSignondDaemonPrivate
 {
     GSignondConfig      *config;
-    GList               *identities;
+    GHashTable          *identities;
     GModule             *extension_module;
     GSignondExtension   *extension;
     GSignondStorageManager *storage_manager;
     GSignondSecretStorage *secret_storage;
     GSignondDbCredentialsDatabase *db;
     GSignondAccessControlManager *acm;
-    GSignondDbusAuthServiceAdapter *auth_service;
     GSignondPluginProxyFactory *plugin_proxy_factory;
     GSignondSignonuiProxy *ui;
 };
 
-static void gsignond_daemon_auth_service_iface_init (gpointer g_iface,
-                                                     gpointer iface_data);
-
-G_DEFINE_TYPE_EXTENDED (GSignondDaemon, gsignond_daemon, GSIGNOND_TYPE_DISPOSABLE, 0,
-                        G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_AUTH_SERVICE_IFACE, 
-                                               gsignond_daemon_auth_service_iface_init));
+G_DEFINE_TYPE (GSignondDaemon, gsignond_daemon, G_TYPE_OBJECT)
 
 
 #define GSIGNOND_DAEMON_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DAEMON, GSignondDaemonPrivate)
@@ -69,11 +63,9 @@ _constructor (GType type,
     /*
      * Signleton daemon
      */
-
     if (!self) {
         self = G_OBJECT_CLASS (gsignond_daemon_parent_class)->constructor (
                   type, n_construct_params, construct_params);
-        
         g_object_add_weak_pointer (self, (gpointer) &self);
     }
     else {
@@ -81,20 +73,6 @@ _constructor (GType type,
     }
 
     return self;
-}
-
-static void
-_get_property (GObject *object, guint property_id, GValue *value,
-               GParamSpec *pspec)
-{
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-}
-
-static void
-_set_property (GObject *object, guint property_id, const GValue *value,
-               GParamSpec *pspec)
-{
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 }
 
 void
@@ -120,11 +98,6 @@ _dispose (GObject *object)
     if (self->priv->config) {
         g_object_unref (self->priv->config);
         self->priv->config = NULL;
-    }
-
-    if (self->priv->auth_service) {
-        g_object_unref (self->priv->auth_service);
-        self->priv->auth_service = NULL;
     }
 
     if (self->priv->db) {
@@ -159,7 +132,8 @@ _dispose (GObject *object)
     }
 
     if (self->priv->identities) {
-        g_list_foreach (self->priv->identities, _free_identity, NULL);
+        g_hash_table_unref (self->priv->identities);
+        self->priv->identities = NULL;
     }
 
     if (self->priv->ui) {
@@ -173,13 +147,6 @@ _dispose (GObject *object)
 static void
 _finalize (GObject *object)
 {
-    GSignondDaemon *self = GSIGNOND_DAEMON(object);
-
-    if (self->priv->identities) {
-        g_list_free (self->priv->identities);
-        self->priv->identities = NULL;
-    }
-
     G_OBJECT_CLASS (gsignond_daemon_parent_class)->finalize (object);
 }
 
@@ -303,7 +270,8 @@ gsignond_daemon_init (GSignondDaemon *self)
     self->priv = GSIGNOND_DAEMON_PRIV(self);
 
     self->priv->config = gsignond_config_new ();
-    self->priv->identities = NULL;
+    self->priv->identities = g_hash_table_new_full (
+            g_direct_hash, g_direct_equal, NULL, NULL);
     self->priv->plugin_proxy_factory = gsignond_plugin_proxy_factory_new(
         self->priv->config);
     
@@ -314,10 +282,6 @@ gsignond_daemon_init (GSignondDaemon *self)
         ERR("gsignond_daemon_init_storage() failed");
     if (!_open_database (self))
         ERR("gisgnond_daemon_open_database() failed");
-
-    self->priv->auth_service =
-        gsignond_dbus_auth_service_adapter_new (
-                                            GSIGNOND_AUTH_SERVICE_IFACE (self));
 
     self->priv->ui = gsignond_signonui_proxy_new ();
 }
@@ -330,10 +294,14 @@ gsignond_daemon_class_init (GSignondDaemonClass *klass)
     g_type_class_add_private (object_class, sizeof (GSignondDaemonPrivate));
 
     object_class->constructor = _constructor;
-    object_class->get_property = _get_property;
-    object_class->set_property = _set_property;
     object_class->dispose = _dispose;
     object_class->finalize = _finalize;
+}
+
+static gboolean
+_compare_identity_by_pointer (gpointer key, gpointer value, gpointer dead_object)
+{
+    return value == dead_object;
 }
 
 static void
@@ -342,46 +310,55 @@ _on_identity_disposed (gpointer data, GObject *object)
     GSignondDaemon *daemon = GSIGNOND_DAEMON (data);
 
     DBG ("daemon %p identity %p disposed", daemon, object);
-    daemon->priv->identities = g_list_remove (daemon->priv->identities, object);
-
-    if (g_list_length (daemon->priv->identities) == 0) {
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (daemon));
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (daemon), TRUE);
-    }
+    g_hash_table_foreach_remove (daemon->priv->identities,
+                _compare_identity_by_pointer, object);
 }
 
-static void
-_catch_identity (GSignondDaemon *daemon, GSignondIdentity *identity)
+guint32
+gsignond_daemon_store_identity (GSignondDaemon *daemon, GSignondIdentity *identity)
 {
-    daemon->priv->identities = g_list_append (daemon->priv->identities, 
-                                              (gpointer) identity);
+    g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), 0);
+    g_return_val_if_fail (identity && GSIGNOND_IS_IDENTITY(identity), 0);
 
-    g_object_weak_ref (G_OBJECT (identity), _on_identity_disposed, daemon); 
-
-    /* keep alive till this identity object gets disposed */
-    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
-
-    g_signal_connect_swapped (identity, "store", 
-        G_CALLBACK (gsignond_db_credentials_database_update_identity), daemon->priv->db);
-    g_signal_connect_swapped (identity, "remove", 
-        G_CALLBACK (gsignond_db_credentials_database_remove_identity), daemon->priv->db);
+    GSignondIdentityInfo *info = NULL;
+    guint32 id = 0;
+    gboolean was_new_identity = FALSE;
     
+    info = gsignond_identity_get_identity_info(identity);
+    if (!info) return 0;
+    
+    was_new_identity = (gsignond_identity_info_get_id (info) == 0);
+
+    id = gsignond_db_credentials_database_update_identity (daemon->priv->db, info);
+
+    if (was_new_identity && id) {
+        g_hash_table_insert (daemon->priv->identities, GINT_TO_POINTER(id), identity);
+        g_object_weak_ref (G_OBJECT (identity), _on_identity_disposed, daemon);
+    }
+
+    return id;
 }
 
-static const gchar * 
-_register_new_identity (GSignondAuthServiceIface *self,
-                        const GSignondSecurityContext *ctx,
-                        GError **error) 
+gboolean
+gsignond_daemon_remove_identity (GSignondDaemon *daemon, guint32 id)
 {
-    if (!self || !GSIGNOND_IS_DAEMON (self)) {
-        WARN ("assertion failed (self && GSIGNOND_IS_DAEMON (self)) failed");
+    g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), FALSE);
+
+    return gsignond_db_credentials_database_remove_identity(daemon->priv->db, id);
+}
+
+GSignondIdentity *
+gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
+                                       const GSignondSecurityContext *ctx,
+                                       GError **error) 
+{
+    if (!daemon || !GSIGNOND_IS_DAEMON (daemon)) {
+        WARN ("assertion failed (daemon && GSIGNOND_IS_DAEMON (daemon)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
 
-    GSignondDaemon *daemon = GSIGNOND_DAEMON (self);
     const gchar *app_context = ctx ? gsignond_security_context_get_application_context (ctx) : "";
-    gint timeout = gsignond_config_get_integer (daemon->priv->config, GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT);
     GSignondIdentityInfo *info = gsignond_identity_info_new ();
     GSignondIdentity *identity = NULL;
     GSignondSecurityContext *owner = NULL;
@@ -397,49 +374,42 @@ _register_new_identity (GSignondAuthServiceIface *self,
     gsignond_security_context_free (owner);
     g_list_free (acl);
 
-    identity = gsignond_identity_new (self, info, app_context, timeout);
+    DBG("register_new_identity: cache size : %d", g_hash_table_size(daemon->priv->identities));
+    identity = gsignond_identity_new (daemon, info, app_context);
     if (identity == NULL) {
         gsignond_dictionary_unref (info);
         ERR("Unable to register new identity");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, "Internal server error");
         return NULL;
     }
-
-    _catch_identity (daemon, identity);
-
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
-
-    return gsignond_identity_get_object_path (identity);
+    DBG(" --- registered new identity : %p", identity);
+    return identity;
 }
 
-static const gchar *
-_get_identity (GSignondAuthServiceIface *iface,
-               const guint32 id,
-               const GSignondSecurityContext *ctx,
-               GVariant **identity_data,
-               GError **error)
+GSignondIdentity *
+gsignond_daemon_get_identity (GSignondDaemon *daemon,
+                              const guint32 id,
+                              const GSignondSecurityContext *ctx,
+                              GError **error)
 {
-    if (!iface || !GSIGNOND_IS_DAEMON (iface)) {
-        WARN ("assertion (iface && GSIGNOND_IS_DAEMON (iface)) failed");
+    if (!daemon || !GSIGNOND_IS_DAEMON (daemon)) {
+        WARN ("assertion (daemon && GSIGNOND_IS_DAEMON (daemon)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
-    if (id == 0 || id == -1) {
+    if (id <= 0) {
         WARN ("client provided invalid identity id");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Invalid identity id");
         return NULL;
     }
 
-    GSignondDaemon *self = GSIGNOND_DAEMON (iface);
-    GList *liter;
     GSignondIdentity *identity = NULL;
     GSignondIdentityInfo *identity_info = NULL;
     const gchar *app_context = ctx ? gsignond_security_context_get_application_context (ctx) : "" ;
-    gint timeout = 0;
 
 #define VALIDATE_IDENTITY_READ_ACCESS(info, ctx, ret) \
 { \
-    GSignondAccessControlManager *acm = self->priv->acm; \
+    GSignondAccessControlManager *acm = daemon->priv->acm; \
     GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (info); \
     gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
     gsignond_security_context_list_free (acl); \
@@ -452,26 +422,22 @@ _get_identity (GSignondAuthServiceIface *iface,
         return ret; \
     } \
 }
+    DBG("Get identity for id '%d'\n cache size : %d", id, g_hash_table_size(daemon->priv->identities));
+    identity = GSIGNOND_IDENTITY(g_hash_table_lookup (daemon->priv->identities, GINT_TO_POINTER(id)));
+    if (identity) {
+        identity_info = gsignond_identity_get_identity_info (identity);
+        VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
+        DBG ("using cased Identity '%p' for id %d", identity, id);
 
-    if (identity_data) *identity_data = NULL;
-
-    for (liter = self->priv->identities;
-         liter != NULL;
-         liter = g_list_next(liter)) {
-        if (gsignond_identity_get_id (liter->data) == id)
-        {
-            identity_info = gsignond_identity_get_identity_info (liter->data);
-            gsignond_identity_info_ref (identity_info);
-            DBG ("use cached IdentityInfo=(%u, %p)", id, identity_info);
-            break;
-        }
+        return GSIGNOND_IDENTITY (g_object_ref (identity));
     }
-    if (!identity_info)
-        identity_info = gsignond_db_credentials_database_load_identity (
-                            self->priv->db, id, TRUE);
+
+    /* identity not found in cache, so try to load form db */
+    identity_info = gsignond_db_credentials_database_load_identity (
+                            daemon->priv->db, id, TRUE);
     if (!identity_info) {
         if (error)  {
-            const GError *err = gsignond_db_credentials_database_get_last_error (self->priv->db);
+            const GError *err = gsignond_db_credentials_database_get_last_error (daemon->priv->db);
             *error = err ? g_error_copy (err) : gsignond_get_gerror_for_id (
                         GSIGNOND_ERROR_IDENTITY_NOT_FOUND, "identity not found with id '%d'", id);
         }
@@ -480,50 +446,44 @@ _get_identity (GSignondAuthServiceIface *iface,
 
     VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
 
-    timeout = gsignond_config_get_integer (self->priv->config, GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT);
-    identity = gsignond_identity_new (iface, identity_info, app_context, timeout);
+    identity = gsignond_identity_new (daemon, identity_info, app_context);
     if (!identity) {
         gsignond_identity_info_unref (identity_info);
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, "Internal server error");
         return NULL;
     }
 
-    if (identity_data) *identity_data = gsignond_dictionary_to_variant (identity_info);
+    g_hash_table_insert (daemon->priv->identities, GINT_TO_POINTER(id), identity);
+    g_object_weak_ref (G_OBJECT (identity), _on_identity_disposed, daemon);
 
-    _catch_identity (self, identity);
+    DBG("created new identity '%p' for id '%d'", identity, id);
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
-
-    return gsignond_identity_get_object_path (identity);
+    return identity;
 
 #undef VALIDATE_IDENTITY_READ_ACCESS
 }
 
-static const gchar ** 
-_query_methods (GSignondAuthServiceIface *self, GError **error)
+const gchar ** 
+gsignond_daemon_query_methods (GSignondDaemon *daemon, GError **error)
 {
-    if (!self || !GSIGNOND_IS_DAEMON (self)) {
-        WARN ("assertion (self && GSIGNOND_IS_DAEMON(self)) failed");
+    if (!daemon || !GSIGNOND_IS_DAEMON (daemon)) {
+        WARN ("assertion (daemon && GSIGNOND_IS_DAEMON(daemon)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
-
-    GSignondDaemon *daemon = GSIGNOND_DAEMON (self);
 
     return gsignond_plugin_proxy_factory_get_plugin_types (
             daemon->priv->plugin_proxy_factory);
 }
 
-static const gchar ** 
-_query_mechanisms (GSignondAuthServiceIface *self, const gchar *method, GError **error) 
+const gchar ** 
+gsignond_daemon_query_mechanisms (GSignondDaemon *daemon, const gchar *method, GError **error) 
 {
-    if (!self || !GSIGNOND_IS_DAEMON (self)) {
-        WARN ("assertion (self && GSIGNOND_IS_DAEMON(self)) failed");
+    if (!daemon || !GSIGNOND_IS_DAEMON (daemon)) {
+        WARN ("assertion (daemon && GSIGNOND_IS_DAEMON(daemon)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
-
-    GSignondDaemon *daemon = GSIGNOND_DAEMON (self);
 
     const gchar **mechanisms = gsignond_plugin_proxy_factory_get_plugin_mechanisms (
             daemon->priv->plugin_proxy_factory, method);
@@ -536,8 +496,8 @@ _query_mechanisms (GSignondAuthServiceIface *self, const gchar *method, GError *
     return mechanisms;
 }
 
-static GVariant * 
-_query_identities (GSignondAuthServiceIface *self, const GVariant *filter, GError **error)
+GList *
+gsignond_daemon_query_identities (GSignondDaemon *self, GVariant *filter, GError **error)
 {
     if (!self || !GSIGNOND_IS_DAEMON (self)) {
         WARN ("assertion (self && GSIGNOND_IS_DAEMON(self)) failed");
@@ -546,13 +506,13 @@ _query_identities (GSignondAuthServiceIface *self, const GVariant *filter, GErro
     }
     (void)filter;
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+    if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Not supported");
 
     return NULL;
 }
 
-static gboolean 
-_clear (GSignondAuthServiceIface *self, GError **error)
+gboolean 
+gsignond_daemon_clear (GSignondDaemon *self, GError **error)
 {
     if (!self || !GSIGNOND_IS_DAEMON (self)) {
         WARN ("assertion (self && GSIGNOND_IS_DAEMON(self)) failed");
@@ -560,36 +520,7 @@ _clear (GSignondAuthServiceIface *self, GError **error)
         return FALSE;
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
-
     return FALSE;
-}
-
-static GSignondAccessControlManager *
-_get_acm (GSignondAuthServiceIface *iface)
-{
-    GSignondDaemon *self = GSIGNOND_DAEMON (iface);
-
-    g_return_val_if_fail (self != NULL, NULL);
-
-    return self->priv->acm;
-}
-
-static void
-gsignond_daemon_auth_service_iface_init (gpointer g_iface, gpointer iface_data)
-{
-    GSignondAuthServiceIfaceInterface *auth_service_iface =
-        (GSignondAuthServiceIfaceInterface *) g_iface;
-
-    (void) iface_data;
-
-    auth_service_iface->register_new_identity = _register_new_identity;
-    auth_service_iface->get_identity = _get_identity;
-    auth_service_iface->query_identities = _query_identities;
-    auth_service_iface->query_methods = _query_methods;
-    auth_service_iface->query_mechanisms = _query_mechanisms;
-    auth_service_iface->clear = _clear;
-    auth_service_iface->get_acm = _get_acm;
 }
 
 /**
@@ -600,24 +531,25 @@ gsignond_daemon_auth_service_iface_init (gpointer g_iface, gpointer iface_data)
 GSignondDaemon *
 gsignond_daemon_new ()
 {
-    GSignondDaemon *self = GSIGNOND_DAEMON(g_object_new (GSIGNOND_TYPE_DAEMON, NULL));
-    guint timeout = gsignond_config_get_integer (self->priv->config, GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT);
-    if (timeout) {
-        gsignond_disposable_set_timeout (GSIGNOND_DISPOSABLE (self), timeout);
-    }
-
-    return self;
+    return  GSIGNOND_DAEMON(g_object_new (GSIGNOND_TYPE_DAEMON, NULL));
 }
 
 guint
-gsignond_daemon_identity_timeout (GSignondDaemon *self)
+gsignond_daemon_get_timeout (GSignondDaemon *self)
+{
+    return gsignond_config_get_integer (self->priv->config,
+        GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT);
+}
+
+guint
+gsignond_daemon_get_identity_timeout (GSignondDaemon *self)
 {
     return gsignond_config_get_integer (self->priv->config,
         GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT);
 }
 
 guint
-gsignond_daemon_auth_session_timeout (GSignondDaemon *self)
+gsignond_daemon_get_auth_session_timeout (GSignondDaemon *self)
 {
     return gsignond_config_get_integer (self->priv->config,
         GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT);

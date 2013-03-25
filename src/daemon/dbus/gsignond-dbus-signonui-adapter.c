@@ -24,6 +24,7 @@
  */
 
 #include "gsignond-dbus-signonui-adapter.h"
+#include "gsignond-dbus-signonui-gen.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond-dbus.h"
 
@@ -101,7 +102,6 @@ static void
 gsignond_dbus_signonui_adapter_init (GSignondDbusSignonuiAdapter *self)
 {
     self->priv = GSIGNOND_DBUS_SIGNONUI_ADAPTER_GET_PRIV(self);
-
     self->priv->connection = 0;
     self->priv->proxy = 0;
 }

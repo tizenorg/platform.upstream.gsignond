@@ -65,12 +65,10 @@ gsignond_plugin_proxy_factory_new(GSignondConfig *config);
 
 GSignondPluginProxy*
 gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
-                                         guint32 identity_id,
                                          const gchar* plugin_type);
 
 gboolean gsignond_plugin_proxy_factory_add_plugin(
     GSignondPluginProxyFactory* factory,
-    guint32 identity_id,
     GSignondPluginProxy* proxy);
     
 const gchar** 
