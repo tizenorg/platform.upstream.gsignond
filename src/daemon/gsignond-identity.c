@@ -24,19 +24,20 @@
  * 02110-1301 USA
  */
 
+#include "gsignond-identity.h"
+
 #include <string.h>
 
+#include "gsignond-daemon.h"
+#include "gsignond-identity-iface.h"
+#include "gsignond-auth-session.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-error.h"
-
-#include "gsignond-identity-iface.h"
+#include "gsignond/gsignond-config-dbus.h"
+#include "gsignond/gsignond-signonui.h"
 #include "dbus/gsignond-dbus.h"
 #include "dbus/gsignond-dbus-identity-adapter.h"
-#include "gsignond-identity.h"
-#include "gsignond-auth-session.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
-#include "gsignond-daemon.h"
-#include "gsignond/gsignond-config-dbus.h"
 
 enum 
 {
@@ -301,49 +302,6 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                   G_TYPE_NONE);
 }
 
-static gboolean
-_request_credentials_update (GSignondIdentityIface *iface, const gchar *message, const GSignondSecurityContext *ctx, GError **error)
-{
-    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
-        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
-        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
-        return FALSE;
-    }
-
-    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
-
-    if (!(identity && identity->priv->info)) {
-        WARN ("assertion (identity && identity->priv->info) failed");
-        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
-        return FALSE;
-    }
-
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
-
-    if (!gsignond_identity_info_get_store_secret (identity->priv->info)) {
-        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_CREDENTIALS_NOT_AVAILABLE, "Password can not be stored.");
-        return FALSE;
-    }
-
-    /*
-     * TODO: Call UI to request credentials
-     * and when ready, emit signal "store" to save the new credentials info
-     * to database(which is handled by Daemon object).
-     * On success, call 
-     *      gsignond_identity_iface_notify_credentials_updated(self, id, NULL);
-     * otherwise, calls
-     *      gsignond_identity_iface_notify_credentials_updated(self, 0, error);
-     */
-
-     /*
-      * emit "identity-data-updated"
-      */
-
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
-
-    return TRUE;
-}
-
 static GVariant * 
 _get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GError **error)
 {
@@ -386,6 +344,63 @@ _get_info (GSignondIdentityIface *iface, const GSignondSecurityContext *ctx, GEr
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
 
     return vinfo;
+}
+
+static void
+_on_dialog_refreshed (GError *error, gpointer user_data)
+{
+    GSignondAuthSessionIface *session = GSIGNOND_AUTH_SESSION_IFACE (user_data);
+
+    if (error) {
+        WARN ("Error : %s", error->message);
+        g_error_free (error);
+    }
+
+    if (session) {
+        /*
+         * FIXME: whom to pass the reply ? 
+         */
+    }
+}
+
+static void
+_on_refresh_dialog (GSignondAuthSessionIface *session, GSignondSignonuiData *ui_data, gpointer userdata)
+{
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (userdata);
+
+    gsignond_daemon_refresh_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT (session),
+            ui_data, _on_dialog_refreshed, (gpointer)session);
+}
+
+static void
+_on_refresh_requested (GSignondSignonuiData *ui_data, gpointer user_data)
+{
+    GSignondAuthSessionIface *session = GSIGNOND_AUTH_SESSION_IFACE (user_data);
+    gsignond_auth_session_iface_refresh (session, ui_data);
+}
+
+static void
+_on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer user_data)
+{
+    GSignondAuthSessionIface *session = GSIGNOND_AUTH_SESSION_IFACE (user_data);
+    if (error) {
+        WARN ("UI-Error: %s", error->message);
+        g_error_free (error);
+        return;
+    }
+    if (session) {
+        gsignond_auth_session_iface_user_action_finished (session, reply);
+    }
+    else if (reply) gsignond_signonui_data_unref (reply);
+}
+
+static void
+_on_user_action_required (GSignondAuthSessionIface *session, GSignondSignonuiData *ui_data, gpointer userdata)
+{
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (userdata);
+
+    gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(session), 
+            ui_data, _on_user_action_completed, _on_refresh_requested, session);
 }
 
 static void
@@ -469,6 +484,9 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
+    /* Handle 'ui' signanls on session */
+    g_signal_connect (session, "process-user-action-required", G_CALLBACK (_on_user_action_required), identity);
+    g_signal_connect (session, "process-refreshed", G_CALLBACK (_on_refresh_dialog), identity);
 
     object_path = gsignond_auth_session_get_object_path (session);
 
@@ -484,8 +502,156 @@ _get_auth_session (GSignondIdentityIface *iface, const gchar *method, const GSig
     return object_path;
 }
 
+static void
+_on_query_dialog_done (GSignondSignonuiData *reply, GError *error, gpointer user_data)
+{
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (user_data);
+    guint32 id = 0;
+    GError *err = NULL;
+    GSignondSignonuiError err_id = 0;
+
+    if (error) {
+        WARN ("failed to verfiy user : %s", error->message);
+        g_error_free (error);
+
+        err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
+    }
+
+    err_id = gsignond_signonui_data_get_query_error (reply);
+    if (err_id != SIGNONUI_ERROR_NONE) {
+        switch (err_id) {
+            case SIGNONUI_ERROR_CANCELED:
+                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
+                        "Operation cancled");
+                break;
+            default:
+                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, 
+                        "signon ui returned with error : %d", err_id);
+                break;
+        }
+    }
+    else {
+        const gchar *secret = gsignond_signonui_data_get_password (reply);
+
+        if (!secret) {
+            err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER,
+                                "Server internal error occured");
+        } else if (identity->priv->info) {
+            gsignond_identity_info_set_secret (identity->priv->info, secret) ;
+
+            /* Save new secret in db */
+            g_signal_emit (identity, signals[SIG_STORE], 0, identity->priv->info, &id);
+            if (!id) err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_STORE_FAILED, "Failed to store secret");
+        }
+    }
+
+    gsignond_signonui_data_unref (reply);
+
+    gsignond_identity_iface_notify_credentials_updated (GSIGNOND_IDENTITY_IFACE (identity), id, err);
+
+    if (err) g_error_free (err);
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (identity), TRUE);
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+}
+
+static gboolean
+_request_credentials_update (GSignondIdentityIface *iface, const gchar *message, const GSignondSecurityContext *ctx, GError **error)
+{
+    if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
+        WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        return FALSE;
+    }
+
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
+    GSignondSignonuiData *ui_data = NULL;
+
+    if (!(identity && identity->priv->info)) {
+        WARN ("assertion (identity && identity->priv->info) failed");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
+        return FALSE;
+    }
+
+    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+
+    if (!gsignond_identity_info_get_store_secret (identity->priv->info)) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_CREDENTIALS_NOT_AVAILABLE, "Password can not be stored.");
+        return FALSE;
+    }
+
+    ui_data = gsignond_signonui_data_new ();
+
+    gsignond_signonui_data_set_query_username (ui_data, TRUE);
+    gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
+    gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
+    gsignond_signonui_data_set_message (ui_data, message);
+  
+    gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(identity),
+        ui_data, _on_query_dialog_done, NULL, identity);
+
+    gsignond_signonui_data_unref (ui_data);
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (identity), FALSE);
+
+    return TRUE;
+}
+
+static void
+_on_user_verfied (GSignondSignonuiData *reply, GError *error, gpointer user_data)
+{
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (user_data);
+    gboolean res = FALSE;
+    GError *err = NULL;
+    GSignondSignonuiError err_id = 0;
+
+    if (error) {
+        WARN ("failed to verfiy user : %s", error->message);
+        g_error_free (error);
+
+        err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
+    }
+
+    err_id = gsignond_signonui_data_get_query_error (reply);
+    if (err_id != SIGNONUI_ERROR_NONE) {
+        switch (err_id) {
+            case SIGNONUI_ERROR_CANCELED:
+                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
+                        "Operation cancled");
+                break;
+            case SIGNONUI_ERROR_FORGOT_PASSWORD:
+                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_FORGOT_PASSWORD, "Forgot password");
+                break;
+            default:
+                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, 
+                        "signon ui returned error : %d", err_id);
+                break;
+        }
+    }
+    else {
+        const gchar *secret = gsignond_signonui_data_get_password (reply);
+
+        if (!secret) {
+            err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER,
+                                "Server internal error occured");
+        } else if (identity->priv->info) {
+            res = g_strcmp0 (secret, gsignond_identity_info_get_secret 
+                                       (identity->priv->info)) == 0;
+        }
+    }
+
+    gsignond_signonui_data_unref (reply);
+
+    gsignond_identity_iface_notify_user_verified (GSIGNOND_IDENTITY_IFACE (identity), res, err);
+
+    if (err) g_error_free (err);
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (identity), TRUE);
+    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+}
+
 static gboolean 
-_verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSignondSecurityContext *ctx, GError **error)
+_verify_user (GSignondIdentityIface *iface, GVariant *params, const GSignondSecurityContext *ctx, GError **error)
 {
     if (!(iface && GSIGNOND_IS_IDENTITY (iface))) {
         WARN ("assertion (iface && GSIGNOND_IS_IDENTITY(iface)) == 0) failed");
@@ -494,6 +660,8 @@ _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSigno
     }
     GSignondIdentity *identity = GSIGNOND_IDENTITY (iface);
     const gchar *passwd = 0;
+    GSignondSignonuiData *ui_data = NULL;
+
     if (!identity->priv->info) {
         WARN ("assertion (identity->priv->info) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity not found.");
@@ -510,15 +678,17 @@ _verify_user (GSignondIdentityIface *iface, const GVariant *params, const GSigno
         return FALSE;
     }
 
-    /*
-     * TODO: Call UI to request credentials
-     * and when ready, emit signal "store" to save the new credentials info
-     * to database(which is handled by Daemon object).
-     * On success, call 
-     *      gsignond_identity_iface_notify_credentials_updated(self, id, NULL);
-     */    
+    ui_data = gsignond_signonui_data_new_from_variant (params);
+    gsignond_signonui_data_set_query_password (ui_data, TRUE);
+    gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
+    gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
+   
+    gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT (identity),
+        ui_data, _on_user_verfied, NULL, identity);
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (identity));
+    gsignond_signonui_data_unref (ui_data);
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (identity), FALSE);
 
     return TRUE;
 }

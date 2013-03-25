@@ -46,6 +46,7 @@ struct _GSignondDaemonPrivate
     GSignondAccessControlManager *acm;
     GSignondDbusAuthServiceAdapter *auth_service;
     GSignondPluginProxyFactory *plugin_proxy_factory;
+    GSignondSignonuiProxy *ui;
 };
 
 static void gsignond_daemon_auth_service_iface_init (gpointer g_iface,
@@ -159,6 +160,11 @@ _dispose (GObject *object)
 
     if (self->priv->identities) {
         g_list_foreach (self->priv->identities, _free_identity, NULL);
+    }
+
+    if (self->priv->ui) {
+        g_object_unref (self->priv->ui);
+        self->priv->ui = NULL;
     }
 
     G_OBJECT_CLASS (gsignond_daemon_parent_class)->dispose (object);
@@ -312,6 +318,8 @@ gsignond_daemon_init (GSignondDaemon *self)
     self->priv->auth_service =
         gsignond_dbus_auth_service_adapter_new (
                                             GSIGNOND_AUTH_SERVICE_IFACE (self));
+
+    self->priv->ui = gsignond_signonui_proxy_new ();
 }
 
 static void
@@ -640,6 +648,42 @@ gsignond_daemon_get_config (GSignondDaemon *self)
     g_assert (self->priv != NULL);
 
     return self->priv->config;
+}
+
+gboolean
+gsignond_daemon_show_dialog (GSignondDaemon *self,
+                             GObject *caller,
+                             GSignondSignonuiData *ui_data,
+                             GSignondSignonuiProxyQueryDialogCb handler,
+                             GSignondSignonuiProxyRefreshCb refresh_handler,
+                             gpointer userdata)
+{
+    g_return_val_if_fail (self && GSIGNOND_IS_DAEMON(self), FALSE);
+
+    return gsignond_signonui_proxy_query_dialog (self->priv->ui, caller, ui_data, handler, refresh_handler, userdata);
+}
+
+gboolean
+gsignond_daemon_refresh_dialog (GSignondDaemon *self,
+                                GObject *caller,
+                                GSignondSignonuiData *ui_data,
+                                GSignondSignonuiProxyRefreshDialogCb handler,
+                                gpointer userdata)
+{
+    g_return_val_if_fail (self && GSIGNOND_IS_DAEMON(self), FALSE);
+
+    return gsignond_signonui_proxy_refresh_dialog (self->priv->ui, caller, ui_data, handler, userdata);
+}
+
+gboolean
+gsignond_daemon_cancel_dialog (GSignondDaemon *self,
+                               GObject *caller,
+                               GSignondSignonuiProxyCancelRequestCb handler,
+                               gpointer userdata)
+{
+    g_return_val_if_fail (self && GSIGNOND_IS_DAEMON(self), FALSE);
+
+    return gsignond_signonui_proxy_cancel_request (self->priv->ui, caller, handler, userdata);
 }
 
 GSignondAccessControlManager *

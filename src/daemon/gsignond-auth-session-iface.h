@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-session-data.h>
+#include <gsignond/gsignond-signonui-data.h>
 #include <gsignond/gsignond-access-control-manager.h>
 #include <gsignond/gsignond-security-context.h>
 
@@ -97,10 +98,10 @@ struct _GSignondAuthSessionIfaceInterface {
     GSignondAccessControlManager * (*get_acm) (GSignondAuthSessionIface *session);
 
     void (*user_action_finished) (GSignondAuthSessionIface *session, 
-                                  GSignondSessionData *session_data);
+                                  GSignondSignonuiData *ui_data);
 
     void (*refresh) (GSignondAuthSessionIface *session, 
-                     GSignondSessionData *session_data);
+                     GSignondSignonuiData *ui_data);
 
 };
 
@@ -123,10 +124,10 @@ gsignond_auth_session_iface_cancel (GSignondAuthSessionIface *self,
                                     GError **error);
 void 
 gsignond_auth_session_iface_user_action_finished (GSignondAuthSessionIface *self, 
-                                                  GSignondSessionData *session_data);
+                                                  GSignondSignonuiData *ui_data);
 void 
 gsignond_auth_session_iface_refresh (GSignondAuthSessionIface *self, 
-                                     GSignondSessionData *session_data);
+                                     GSignondSignonuiData *ui_data);
 
 
 /* handlers */
@@ -160,10 +161,10 @@ gsignond_auth_session_iface_notify_store (GSignondAuthSessionIface *self,
                                           GSignondSessionData *session_data);
 void 
 gsignond_auth_session_iface_notify_user_action_required (GSignondAuthSessionIface *self, 
-                                                         GSignondSessionData *session_data);
+                                                         GSignondSignonuiData *ui_data);
 void 
 gsignond_auth_session_iface_notify_refreshed (GSignondAuthSessionIface *self, 
-                                              GSignondSessionData *session_data);
+                                              GSignondSignonuiData *ui_data);
 void 
 gsignond_auth_session_iface_notify_state_changed (GSignondAuthSessionIface *self, 
                                                   gint state,

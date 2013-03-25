@@ -36,4 +36,8 @@
 #define GSIGNOND_IDENTITY_INTERFACE      GSIGNOND_SERVICE_PREFIX ".Identity"
 #define GSIGNOND_AUTH_SESSION_INTERFACE  GSIGNOND_SERVICE_PREFIX ".AuthSession"
 
+#define SIGNONUI_SERVICE                 "org.tizen.SSO"
+#define SIGNONUI_OBJECTPATH              "/org/tizen/SSO/SignonUi"
+#define SIGNONUI_INTERFACE               "org.tizen.SSO.singlesignonui"
+
 #endif /* __GSIGNOND_DBUS_H_ */

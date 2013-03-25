@@ -102,7 +102,7 @@ struct _GSignondIdentityIfaceInterface {
      *
      * Returns: @TRUE on success, @FALSE otherwise
      */
-    gboolean  (*verify_user) (GSignondIdentityIface *identity, const GVariant *params, const GSignondSecurityContext *ctx, GError **error);
+    gboolean  (*verify_user) (GSignondIdentityIface *identity, GVariant *params, const GSignondSecurityContext *ctx, GError **error);
 
     /**
      * verify_secret:
@@ -211,7 +211,7 @@ gsignond_identity_iface_get_auth_session (GSignondIdentityIface *iface,
 
 gboolean 
 gsignond_identity_iface_verify_user (GSignondIdentityIface *self,
-                                     const GVariant *params,
+                                     GVariant *params,
                                      const GSignondSecurityContext *ctx,
                                      GError **error);
 
@@ -253,11 +253,13 @@ GSignondAccessControlManager *
 gsignond_identity_iface_get_acm (GSignondIdentityIface *self);
 
 void 
-gsignond_identity_iface_notify_user_verified (GSignondIdentityIface *identity, 
+gsignond_identity_iface_notify_user_verified (GSignondIdentityIface *identity,
+                                              gboolean res,
                                               const GError *error);
 
 void
 gsignond_identity_iface_notify_secret_verified (GSignondIdentityIface *identity, 
+                                                gboolean res,
                                                 const GError *error);
 
 void

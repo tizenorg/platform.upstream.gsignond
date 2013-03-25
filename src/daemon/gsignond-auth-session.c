@@ -249,20 +249,20 @@ _cancel (GSignondAuthSessionIface *iface,
 
 void 
 _user_action_finished (GSignondAuthSessionIface *iface, 
-                       GSignondSessionData *session_data)
+                       GSignondSignonuiData *ui_data)
 {
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
-    gsignond_plugin_proxy_user_action_finished(self->priv->proxy, session_data);
+    gsignond_plugin_proxy_user_action_finished(self->priv->proxy, ui_data);
 }
 
 void 
 _refresh (GSignondAuthSessionIface *iface, 
-                              GSignondSessionData *session_data)
+            GSignondSignonuiData *ui_data)
 {
     GSignondAuthSession *self = GSIGNOND_AUTH_SESSION (iface);
 
-    gsignond_plugin_proxy_refresh(self->priv->proxy, session_data);
+    gsignond_plugin_proxy_refresh(self->priv->proxy, ui_data);
 }
 
 GSignondAccessControlManager *

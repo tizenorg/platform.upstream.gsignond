@@ -37,6 +37,8 @@ gsignond_SOURCES = \
     gsignond-identity.h \
     gsignond-disposable.c \
     gsignond-disposable.h \
+    gsignond-signonui-proxy.c \
+    gsignond-signonui-proxy.h \
     $(BUILT_SOURCES) \
     $(NULL)
 

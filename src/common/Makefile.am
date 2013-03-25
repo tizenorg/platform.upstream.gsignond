@@ -56,6 +56,7 @@ libgsignond_common_la_SOURCES = \
     gsignond-plugin-interface.c \
     gsignond-dictionary.c \
     gsignond-session-data.c \
+    gsignond-signonui-data.c \
     gsignond-plugin-loader.c \
     $(BUILT_SOURCES) \
     $(NULL)

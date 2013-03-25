@@ -1,0 +1,24 @@
+<node>
+  <interface name="org.tizen.SSO.singlesignonui">
+
+    <method name="queryDialog">
+      <arg direction="in" type="a{sv}" name="parameters"/>
+      <arg direction="out" type="a{sv}" name="return_value"/>
+    </method>
+
+    <method name="refreshDialog">
+      <arg direction="in" type="a{sv}" name="parameters"/>
+    </method>
+
+    <method name="cancelUiRequest">
+      <arg direction="in" type="s" name="request_id"/>
+    </method>
+
+    <!-- user selected 'refresh', regenerate captcha image/url -->
+    <signal name="refresh">
+        <arg type="s" name="request_id"/>
+    </signal>
+
+  </interface>
+</node>
+

@@ -65,11 +65,11 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
     signals[USER_ACTION_REQUIRED] = g_signal_new ("user-action-required", 
         G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, GSIGNOND_TYPE_SESSION_DATA);
+        1, GSIGNOND_TYPE_SIGNONUI_DATA);
 
     signals[REFRESHED] = g_signal_new ("refreshed", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, GSIGNOND_TYPE_SESSION_DATA);
+        1, GSIGNOND_TYPE_SIGNONUI_DATA);
 
     signals[STATUS_CHANGED] = g_signal_new ("status-changed", 
         G_TYPE_FROM_CLASS (g_class),
@@ -119,20 +119,20 @@ void gsignond_plugin_request (GSignondPlugin *self,
 }
 
 void gsignond_plugin_user_action_finished (GSignondPlugin *self, 
-                                           GSignondSessionData *session_data)
+                                           GSignondSignonuiData *ui_data)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->user_action_finished (self, 
-                                                                session_data);
+                                                                ui_data);
 }
 
 void gsignond_plugin_refresh (GSignondPlugin *self, 
-                              GSignondSessionData *session_data)
+                              GSignondSignonuiData *ui_data)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
-    GSIGNOND_PLUGIN_GET_INTERFACE (self)->refresh (self, session_data);
+    GSIGNOND_PLUGIN_GET_INTERFACE (self)->refresh (self, ui_data);
 }
 
 void gsignond_plugin_response (GSignondPlugin *self, 
@@ -159,15 +159,15 @@ void gsignond_plugin_error (GSignondPlugin *self, GError *error)
 }
 
 void gsignond_plugin_user_action_required (GSignondPlugin *self, 
-                                           GSignondSessionData *session_data)
+                                           GSignondSignonuiData *ui_data)
 {
-    g_signal_emit (self, signals[USER_ACTION_REQUIRED], 0, session_data);
+    g_signal_emit (self, signals[USER_ACTION_REQUIRED], 0, ui_data);
 }
 
 void gsignond_plugin_refreshed (GSignondPlugin *self, 
-                                GSignondSessionData *session_data)
+                                GSignondSignonuiData *ui_data)
 {
-    g_signal_emit (self, signals[REFRESHED], 0, session_data);
+    g_signal_emit (self, signals[REFRESHED], 0, ui_data);
 }
 
 void gsignond_plugin_status_changed (GSignondPlugin *self, GSignondPluginState state, 

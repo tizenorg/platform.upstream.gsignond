@@ -31,6 +31,7 @@
 #include <gsignond/gsignond-access-control-manager.h>
 #include "gsignond-disposable.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
+#include "gsignond-signonui-proxy.h"
 
 G_BEGIN_DECLS
 
@@ -74,6 +75,27 @@ gsignond_daemon_get_plugin_proxy_factory (GSignondDaemon *self);
 
 GSignondConfig *
 gsignond_daemon_get_config (GSignondDaemon *self);
+
+gboolean
+gsignond_daemon_show_dialog (GSignondDaemon *self,
+                             GObject *caller,
+                             GSignondSignonuiData *ui_data,
+                             GSignondSignonuiProxyQueryDialogCb handler,
+                             GSignondSignonuiProxyRefreshCb refresh_handler,
+                             gpointer userdata);
+
+gboolean
+gsignond_daemon_refresh_dialog (GSignondDaemon *self,
+                                GObject *caller,
+                                GSignondSignonuiData *ui_data,
+                                GSignondSignonuiProxyRefreshDialogCb handler,
+                                gpointer userdata);
+
+gboolean
+gsignond_daemon_cancel_dialog (GSignondDaemon *self,
+                               GObject *caller,
+                               GSignondSignonuiProxyCancelRequestCb handler,
+                               gpointer userdata);
 
 GSignondAccessControlManager *
 gsignond_get_access_control_manager ();

@@ -8,12 +8,15 @@ DBUS_BUILT_SOURCES = \
     gsignond-dbus-auth-session-gen.h \
     gsignond-dbus-identity-gen.c \
     gsignond-dbus-identity-gen.h \
+    gsignond-dbus-signonui-gen.c \
+    gsignond-dbus-signonui-gen.h \
     $(NULL)
 
 DBUS_BUILT_DOCS = \
     gsignond-dbus-auth-service-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
     gsignond-dbus-auth-session-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
     gsignond-dbus-identity-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.Identity.xml \
+    gsignond-dbus-signonui-doc-gen-org.tizen.SSO.singlesignonui.xml \
     $(NULL)
 
 DBUS_INTERFACE_PREFIX="com.google.code.AccountsSSO.gSingleSignOn."
@@ -39,6 +42,14 @@ gsignond-dbus-identity-gen.c gsignond-dbus-identity-gen.h : $(INTERFACES_DIR)/co
        --c-namespace GSignondDbus                           \
        --generate-c-code  gsignond-dbus-identity-gen         \
        --generate-docbook gsignond-dbus-identity-doc-gen     \
+       $<
+
+gsignond-dbus-signonui-gen.c gsignond-dbus-signonui-gen.h : $(INTERFACES_DIR)/org.tizen.SSO.singlesignonui.xml
+	gdbus-codegen                                       \
+       --interface-prefix org.tizen.SSO                 \
+       --c-namespace GSignondDbus                       \
+       --generate-c-code  gsignond-dbus-signonui-gen    \
+       --generate-docbook gsignond-dbus-signonui-doc-gen\
        $<
 
 lib_LTLIBRARIES = libgsignond-dbus-glue.la
@@ -77,16 +88,20 @@ libgsignond_dbus_la_SOURCES = \
    gsignond-dbus-auth-session-adapter.h \
    gsignond-dbus-identity-adapter.c \
    gsignond-dbus-identity-adapter.h \
+   gsignond-dbus-signonui-adapter.c \
+   gsignond-dbus-signonui-adapter.h \
    $(NULL)
 
 dbusservicedir = $(DBUS_SERVICES_DIR)
-dbusservice_DATA = $(SERVCIES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.service
+dbusservice_DATA = \
+    $(SERVCIES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.service
 
 dbusinterfacesdir = $(DBUS_INTERFACES_DIR)
 dbusinterfaces_DATA = \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
-    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.Identity.xml 
+    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.Identity.xml \
+    $(INTERFACES_DIR)/org.tizen.SSO.singlesignonui.xml
 
 EXTRA_DIST = dbusservice
 

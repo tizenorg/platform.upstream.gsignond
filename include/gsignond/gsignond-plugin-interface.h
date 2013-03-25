@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-session-data.h>
+#include <gsignond/gsignond-signonui-data.h>
 
 G_BEGIN_DECLS
 
@@ -104,10 +105,10 @@ gsignond_plugin_request (GSignondPlugin *self,
                               GSignondSessionData *session_data);
 void 
 gsignond_plugin_user_action_finished (GSignondPlugin *self, 
-                                           GSignondSessionData *session_data);
+                                      GSignondSignonuiData *ui_data);
 void 
 gsignond_plugin_refresh (GSignondPlugin *self, 
-                              GSignondSessionData *session_data);
+                         GSignondSignonuiData *ui_data);
 
 /* Signals */
 void 
@@ -123,10 +124,10 @@ void
 gsignond_plugin_error (GSignondPlugin *self, GError *error);
 void 
 gsignond_plugin_user_action_required (GSignondPlugin *self, 
-                                           GSignondSessionData *session_data);
+                                      GSignondSignonuiData *ui_data);
 void 
 gsignond_plugin_refreshed (GSignondPlugin *self, 
-                                GSignondSessionData *session_data);
+                           GSignondSignonuiData *ui_data);
 void 
 gsignond_plugin_status_changed (GSignondPlugin *self, 
                                      GSignondPluginState state, 

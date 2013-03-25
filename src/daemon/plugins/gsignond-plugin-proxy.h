@@ -70,9 +70,9 @@ void gsignond_plugin_proxy_process (GSignondPluginProxy *self,
                               GSignondSessionData *session_data, 
                               const gchar *mechanism);
 void gsignond_plugin_proxy_user_action_finished (GSignondPluginProxy *self, 
-                                           GSignondSessionData *session_data);
+                                           GSignondSignonuiData *ui_data);
 void gsignond_plugin_proxy_refresh (GSignondPluginProxy *self, 
-                              GSignondSessionData *session_data);
+                              GSignondSignonuiData *ui_data);
 
 
 #endif /* __GSIGNOND_PLUGIN_PROXY_H__ */

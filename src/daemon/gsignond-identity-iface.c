@@ -75,7 +75,7 @@ _dummy_get_auth_session (GSignondIdentityIface *self, const gchar *method, const
 }
 
 static gboolean
-_dummy_verify_user (GSignondIdentityIface *self, const GVariant *params, const GSignondSecurityContext *ctx, GError **error)
+_dummy_verify_user (GSignondIdentityIface *self, GVariant *params, const GSignondSecurityContext *ctx, GError **error)
 {
     (void) self;
     (void) params;
@@ -171,7 +171,8 @@ gsignond_identity_iface_default_init (GSignondIdentityIfaceInterface *self)
             NULL,
             NULL,
             G_TYPE_NONE,
-            1,
+            2,
+            G_TYPE_BOOLEAN,
             G_TYPE_ERROR);
 
     signals[SIG_SECRET_VERIFIED] = g_signal_new ("secret-verified",
@@ -182,7 +183,8 @@ gsignond_identity_iface_default_init (GSignondIdentityIfaceInterface *self)
             NULL,
             NULL,
             G_TYPE_NONE,
-            1,
+            2,
+            G_TYPE_BOOLEAN,
             G_TYPE_ERROR);
 
     signals[SIG_CREDENTIALS_UPDATED] = g_signal_new ("credentials-updated",
@@ -283,7 +285,7 @@ gsignond_identity_iface_get_auth_session (GSignondIdentityIface *self,
  */
 gboolean
 gsignond_identity_iface_verify_user (GSignondIdentityIface *self,
-                                     const GVariant *params,
+                                     GVariant *params,
                                      const GSignondSecurityContext *ctx,
                                      GError **error)
 {
@@ -420,29 +422,33 @@ gsignond_identity_iface_get_acm (GSignondIdentityIface *self)
 /**
  * gsignond_identity_iface_notify_user_verified:
  * @self: instance of #GSignondIdentityIface
+ * @result: verification result
  * @error: instance of #GError, error if any, that was occured in user verification process, otherwise NULL
  *
  * Emits "user-verified" signal
  */
 void
 gsignond_identity_iface_notify_user_verified (GSignondIdentityIface *self,
+                                              gboolean result,
                                               const GError *error)
 {
-    g_signal_emit (self, signals[SIG_USER_VERIFIED], 0, error);
+    g_signal_emit (self, signals[SIG_USER_VERIFIED], 0, result, error);
 }
 
 /**
  * gsignond_identity_iface_notify_secret_verified:
  * @self: instance of #GSignondIdentityIface
+ * @result: verfication result
  * @error: instance of #GError, error if any, that was occured in secret verification process, otherwise NULL
  *
  * Emits "secret-verified" signal
  */
 void
 gsignond_identity_iface_notify_secret_verified (GSignondIdentityIface *self,
+                                                gboolean result,
                                                 const GError *error)
 {
-    g_signal_emit (self, signals[SIG_SECRET_VERIFIED], 0, error);
+    g_signal_emit (self, signals[SIG_SECRET_VERIFIED], 0, result, error);
 }
 
 /**

@@ -95,7 +95,7 @@ gsignond_auth_session_iface_default_init (
             NULL,
             G_TYPE_NONE,
             1,
-            GSIGNOND_TYPE_SESSION_DATA);
+            GSIGNOND_TYPE_SIGNONUI_DATA);
 
     signals[SIG_PROCESS_REFRESHED] =  g_signal_new (
             "process-refreshed",
@@ -107,7 +107,7 @@ gsignond_auth_session_iface_default_init (
             NULL,
             G_TYPE_NONE,
             1,
-            GSIGNOND_TYPE_SESSION_DATA);
+            GSIGNOND_TYPE_SIGNONUI_DATA);
 
     signals[SIG_PROCESS_STATE_CHANGED] =  g_signal_new (
             "state-changed",
@@ -160,18 +160,18 @@ gsignond_auth_session_iface_get_acm (GSignondAuthSessionIface *self)
 
 void 
 gsignond_auth_session_iface_user_action_finished (GSignondAuthSessionIface *self, 
-                                                  GSignondSessionData *session_data)
+                                                  GSignondSignonuiData *ui_data)
 {
     return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
-        user_action_finished (self, session_data);
+        user_action_finished (self, ui_data);
 }
 
 void 
 gsignond_auth_session_iface_refresh (GSignondAuthSessionIface *self, 
-                                     GSignondSessionData *session_data)
+                                     GSignondSignonuiData *ui_data)
 {
-    return GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
-        refresh (self, session_data);
+    GSIGNOND_AUTH_SESSION_GET_INTERFACE (self)->
+        refresh (self, ui_data);
 }
 
 void
@@ -197,17 +197,16 @@ gsignond_auth_session_iface_notify_store (GSignondAuthSessionIface *self,
 
 void 
 gsignond_auth_session_iface_notify_user_action_required (GSignondAuthSessionIface *self, 
-                                                         GSignondSessionData *session_data)
+                                                         GSignondSignonuiData *ui_data)
 {
-    g_signal_emit (self, signals[SIG_PROCESS_USER_ACTION_REQUIRED], 0, 
-                   session_data);
+    g_signal_emit (self, signals[SIG_PROCESS_USER_ACTION_REQUIRED], 0, ui_data);
 }
 
 void 
 gsignond_auth_session_iface_notify_refreshed (GSignondAuthSessionIface *self, 
-                                              GSignondSessionData *session_data)
+                                            GSignondSignonuiData *ui_data)
 {
-    g_signal_emit (self, signals[SIG_PROCESS_REFRESHED], 0, session_data);
+    g_signal_emit (self, signals[SIG_PROCESS_REFRESHED], 0, ui_data);
 }
 
 void 
