@@ -378,7 +378,7 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
                              "Authentication method used",
                              NULL,
                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY
-                              | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
+                              | G_PARAM_STATIC_STRINGS);
 
     properties[PROP_APP_CONTEXT] =
         g_param_spec_string ("app-context",
@@ -386,7 +386,7 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
                              "Application security context",
                              NULL,
                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY
-                              | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB);
+                              | G_PARAM_STATIC_STRINGS);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }

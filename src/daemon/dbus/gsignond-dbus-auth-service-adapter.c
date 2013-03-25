@@ -143,7 +143,8 @@ gsignond_dbus_auth_service_adapter_class_init (GSignondDbusAuthServiceAdapterCla
     properties[PROP_IMPL] = g_param_spec_pointer ("auth-session-impl",
                                                   "Auth session impl",
                                                   "AuthSessionIface implementation object",
-                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
+                                                  G_PARAM_STATIC_STRINGS);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }

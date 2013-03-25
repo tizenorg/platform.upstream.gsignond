@@ -121,7 +121,8 @@ gsignond_secret_storage_class_init (GSignondSecretStorageClass *klass)
                                                    "Configuration object",
                                                    GSIGNOND_TYPE_CONFIG,
                                                    G_PARAM_CONSTRUCT_ONLY |
-                                                   G_PARAM_READWRITE);
+                                                   G_PARAM_READWRITE |
+                                                   G_PARAM_STATIC_STRINGS);
     g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
 
     /* virtual methods */

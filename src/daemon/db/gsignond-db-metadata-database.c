@@ -450,7 +450,8 @@ gsignond_db_metadata_database_class_init (
                                                    "Configuration object",
                                                    GSIGNOND_TYPE_CONFIG,
                                                    G_PARAM_CONSTRUCT_ONLY |
-                                                   G_PARAM_READWRITE);
+                                                   G_PARAM_READWRITE |
+                                                   G_PARAM_STATIC_STRINGS);
     g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
 
     GSignondDbSqlDatabaseClass *sql_class =

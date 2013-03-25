@@ -184,13 +184,14 @@ gsignond_dbus_auth_session_adapter_class_init (GSignondDbusAuthSessionAdapterCla
     properties[PROP_IMPL] = g_param_spec_pointer ("auth-session-impl",
                                                   "Auth session impl",
                                                   "AuthSessionIface implementation object",
-                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
+                                                  G_PARAM_STATIC_STRINGS);
     properties[PROP_APP_CONTEXT] = g_param_spec_string (
                 "app-context",
                 "application security context",
                 "Application security context of the identity object creater",
                 NULL,
-                G_PARAM_READWRITE);
+                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }
 

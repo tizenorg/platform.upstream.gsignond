@@ -78,12 +78,13 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
 
     g_object_interface_install_property (g_class,
 	g_param_spec_string ("type", "Type", "Plugin type", "none", 
-                             G_PARAM_READABLE));
+                             G_PARAM_READABLE|G_PARAM_STATIC_STRINGS));
 
      g_object_interface_install_property (g_class,
         g_param_spec_boxed ("mechanisms", "Mechanisms", 
                             "List of plugin mechanisms", 
-                            G_TYPE_STRV, G_PARAM_READABLE));
+                            G_TYPE_STRV, G_PARAM_READABLE|
+                                         G_PARAM_STATIC_STRINGS));
     
 }
 
