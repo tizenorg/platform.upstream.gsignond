@@ -93,8 +93,7 @@ static void gsignond_password_plugin_user_action_finished (
     if (res == FALSE) {
         GError* error = g_error_new(GSIGNOND_ERROR, 
                                 GSIGNOND_ERROR_USER_INTERACTION,
-                                "userActionFinished did not return an error value",
-                                query_error);
+                                "userActionFinished did not return an error value");
         gsignond_plugin_error (self, error); 
         g_error_free(error);
     }
