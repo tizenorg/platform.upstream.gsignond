@@ -1,1 +1,1 @@
-SUBDIRS=password ssotest
+SUBDIRS=password ssotest digest

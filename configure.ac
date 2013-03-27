@@ -76,6 +76,7 @@ src/extensions/test/Makefile
 src/plugins/Makefile
 src/plugins/password/Makefile
 src/plugins/ssotest/Makefile
+src/plugins/digest/Makefile
 test/Makefile
 test/common/Makefile
 test/db/Makefile
