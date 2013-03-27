@@ -272,7 +272,13 @@ gsignond_digest_plugin_user_action_finished (
     GSignondSignonuiError query_error;
     gboolean res = gsignond_signonui_data_get_query_error(signonui_data,
             &query_error);
-    g_assert(res == TRUE);
+    if (res == FALSE) {
+        GError* error = g_error_new(GSIGNOND_ERROR,
+                                GSIGNOND_ERROR_USER_INTERACTION,
+                                "userActionFinished did not return an error value");
+        gsignond_plugin_error (plugin, error);
+        g_error_free(error);
+    }
 
     const gchar* username = gsignond_signonui_data_get_username(signonui_data);
     const gchar* secret = gsignond_signonui_data_get_password(signonui_data);
