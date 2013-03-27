@@ -33,56 +33,6 @@
 #include <gsignond/gsignond-plugin-loader.h>
 #include <gsignond/gsignond-config.h>
 
-START_TEST (test_session_data)
-{
-    GSignondSessionData* data;
-    GSignondSessionData* data_from_variant;
-    GSignondSessionData* data_from_copy;
-    GVariant* variant;
-
-    data = gsignond_dictionary_new();
-    fail_if(data == NULL);
-
-    fail_unless(gsignond_session_data_get_username(data) == NULL);
-    fail_unless(gsignond_session_data_get_secret(data) == NULL);
-
-    gsignond_session_data_set_username(data, "megauser");
-    gsignond_session_data_set_secret(data, "megapassword");
-
-    fail_unless(g_strcmp0(gsignond_session_data_get_username(data),
-                          "megauser") == 0);
-    fail_unless(g_strcmp0(gsignond_session_data_get_secret(data),
-                          "megapassword") == 0);
-
-    gsignond_session_data_set_username(data, "usermega");
-    fail_unless(g_strcmp0(gsignond_session_data_get_username(data),
-                          "usermega") == 0);
-
-    data_from_copy = gsignond_dictionary_copy(data);
-    fail_if(data_from_copy == NULL);
-
-    fail_unless(g_strcmp0(gsignond_session_data_get_username(data_from_copy),
-                          "usermega") == 0);
-    fail_unless(g_strcmp0(gsignond_session_data_get_secret(data_from_copy),
-                          "megapassword") == 0);
-
-    variant = gsignond_dictionary_to_variant(data);
-    fail_if(variant == NULL);
-    data_from_variant = gsignond_dictionary_new_from_variant(variant);
-    fail_if(data_from_variant == NULL);
-
-    fail_unless(g_strcmp0(gsignond_session_data_get_username(data_from_variant),
-                          "usermega") == 0);
-    fail_unless(g_strcmp0(gsignond_session_data_get_secret(data_from_variant),
-                          "megapassword") == 0);
-
-    g_variant_unref(variant);
-    gsignond_dictionary_unref(data_from_variant);
-    gsignond_dictionary_unref(data_from_copy);
-    gsignond_dictionary_unref(data);
-}
-END_TEST
-
 static void check_plugin(GSignondPlugin* plugin)
 {
     gchar* type;
@@ -346,7 +296,6 @@ Suite* digestplugin_suite (void)
 
     /* Core test case */
     TCase *tc_core = tcase_create ("Tests");
-    tcase_add_test (tc_core, test_session_data);
     tcase_add_test (tc_core, test_digestplugin_create);
     tcase_add_test (tc_core, test_digestplugin_request);
     tcase_add_test (tc_core, test_digestplugin_user_action_finished);
