@@ -256,7 +256,7 @@ gsignond_dictionary_get_uint32 (GSignondDictionary *dict, const gchar *key,
         return FALSE;
 
     if (value)
-        *value = g_variant_get_boolean (variant);
+        *value = g_variant_get_uint32 (variant);
     return TRUE;
 }
 
