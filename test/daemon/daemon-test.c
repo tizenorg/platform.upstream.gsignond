@@ -33,6 +33,7 @@
 #include <daemon/dbus/gsignond-dbus-auth-service-gen.h>
 #include <daemon/dbus/gsignond-dbus-identity-gen.h>
 #include <gsignond/gsignond-identity-info.h>
+#include <gsignond/gsignond-log.h>
 
 struct IdentityData {
     gchar *key;
@@ -42,7 +43,7 @@ struct IdentityData {
         { "UserName", "s", "test_user" },
         { "Secret", "s", "test_pass" },
         { "StoreSecret", "b", (void *)TRUE}
-    };
+ };
 
 #if HAVE_GTESTDBUS
 
@@ -163,8 +164,9 @@ START_TEST (test_identity_store)
     guint id;
     GVariant *identity_info = NULL;
     gchar *identity_path = NULL;
-    GVariantBuilder builder, method_builder, mechansisms_builder;
+    GVariantBuilder builder, method_builder;
     int i;
+    gchar* mechanisms [] = {"password", NULL};
 
     auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
         G_BUS_TYPE_SESSION,
@@ -190,11 +192,8 @@ START_TEST (test_identity_store)
         g_variant_builder_add (&builder, "{sv}", data[i].key, g_variant_new (data[i].type, data[i].value));
     }
 
-    g_variant_builder_init (&mechansisms_builder, G_VARIANT_TYPE_STRING_ARRAY);
-    g_variant_builder_add (&mechansisms_builder, "s", "password");
-
-    g_variant_builder_init (&method_builder, (const GVariantType *)"a{sv}");
-    g_variant_builder_add (&method_builder, "{sv}", "password",  g_variant_builder_end (&mechansisms_builder));
+    g_variant_builder_init (&method_builder, (const GVariantType *)"a{sas}");
+    g_variant_builder_add (&method_builder, "{s^as}", "password", mechanisms);
 
     g_variant_builder_add (&builder, "{sv}", "AuthMethods", g_variant_builder_end (&method_builder));
 
@@ -255,7 +254,7 @@ START_TEST(test_identity_get_identity)
     fail_if (identity_path == NULL);
     fail_if (identity_info == NULL);
 
-    fail_if (validate_identity_info(identity_info));
+    fail_if (validate_identity_info(identity_info) == FALSE);
 }
 END_TEST
 

@@ -1,1 +1,1 @@
-SUBDIRS = common db plugins daemon
+SUBDIRS = common daemon db plugins
