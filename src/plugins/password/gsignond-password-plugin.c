@@ -74,8 +74,10 @@ static void gsignond_password_plugin_request_initial (
     GSignondSignonuiData *user_action_data = gsignond_signonui_data_new();
     if (username == NULL)
         gsignond_signonui_data_set_query_username(user_action_data, TRUE);
-    else
+    else {
+        gsignond_signonui_data_set_query_username(user_action_data, FALSE);
         gsignond_signonui_data_set_username(user_action_data, username);
+    }
     gsignond_signonui_data_set_query_password(user_action_data, TRUE);
     gsignond_plugin_user_action_required(self, user_action_data);
     gsignond_dictionary_unref(user_action_data);
@@ -88,7 +90,14 @@ static void gsignond_password_plugin_user_action_finished (
     GSignondSignonuiError query_error;
     gboolean res = gsignond_signonui_data_get_query_error(session_data,
                                                           &query_error);
-    g_assert(res == TRUE);
+    if (res == FALSE) {
+        GError* error = g_error_new(GSIGNOND_ERROR, 
+                                GSIGNOND_ERROR_USER_INTERACTION,
+                                "userActionFinished did not return an error value",
+                                query_error);
+        gsignond_plugin_error (self, error); 
+        g_error_free(error);
+    }
     const gchar* username = gsignond_signonui_data_get_username(session_data);
     const gchar* secret = gsignond_signonui_data_get_password(session_data);
     

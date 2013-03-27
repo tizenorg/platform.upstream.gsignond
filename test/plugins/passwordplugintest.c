@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include "gsignond-password-plugin.h"
 #include <gsignond/gsignond-session-data.h>
+#include <gsignond/gsignond-signonui-data.h>
 #include <gsignond/gsignond-plugin-interface.h>
 #include <gsignond/gsignond-error.h>
 #include <gsignond/gsignond-plugin-loader.h>
@@ -44,20 +45,14 @@ START_TEST (test_session_data)
     
     fail_unless(gsignond_session_data_get_username(data) == NULL);
     fail_unless(gsignond_session_data_get_secret(data) == NULL);
-    fail_unless(gsignond_session_data_get_query_username(data) == FALSE);
-    fail_unless(gsignond_session_data_get_query_password(data) == FALSE);
 
     gsignond_session_data_set_username(data, "megauser");
     gsignond_session_data_set_secret(data, "megapassword");
-    gsignond_session_data_set_query_username(data, TRUE);
-    gsignond_session_data_set_query_password(data, TRUE);
     
     fail_unless(g_strcmp0(gsignond_session_data_get_username(data), 
                           "megauser") == 0);
     fail_unless(g_strcmp0(gsignond_session_data_get_secret(data), 
                           "megapassword") == 0);
-    fail_unless(gsignond_session_data_get_query_username(data) == TRUE);
-    fail_unless(gsignond_session_data_get_query_password(data) == TRUE);    
 
     gsignond_session_data_set_username(data, "usermega");
     fail_unless(g_strcmp0(gsignond_session_data_get_username(data), 
@@ -70,8 +65,6 @@ START_TEST (test_session_data)
                           "usermega") == 0);
     fail_unless(g_strcmp0(gsignond_session_data_get_secret(data_from_copy), 
                           "megapassword") == 0);
-    fail_unless(gsignond_session_data_get_query_username(data_from_copy) == TRUE);
-    fail_unless(gsignond_session_data_get_query_password(data_from_copy) == TRUE);    
 
     variant = gsignond_dictionary_to_variant(data);
     fail_if(variant == NULL);
@@ -82,8 +75,6 @@ START_TEST (test_session_data)
                           "usermega") == 0);
     fail_unless(g_strcmp0(gsignond_session_data_get_secret(data_from_variant), 
                           "megapassword") == 0);
-    fail_unless(gsignond_session_data_get_query_username(data_from_variant) == TRUE);
-    fail_unless(gsignond_session_data_get_query_password(data_from_variant) == TRUE);    
     
     g_variant_unref(variant);
     gsignond_dictionary_unref(data_from_variant);
@@ -127,10 +118,10 @@ static void response_callback(GSignondPlugin* plugin, GSignondSessionData* resul
 }
 
 static void user_action_required_callback(GSignondPlugin* plugin, 
-                                          GSignondSessionData* ui_request, 
+                                          GSignondSignonuiData* ui_request, 
                                           gpointer user_data)
 {
-    GSignondSessionData** user_data_p = user_data;
+    GSignondSignonuiData** user_data_p = user_data;
     *user_data_p = gsignond_dictionary_copy(ui_request);
 }
 
@@ -150,8 +141,9 @@ START_TEST (test_passwordplugin_request)
     fail_if(plugin == NULL);
 
     GSignondSessionData* result = NULL;
-    GSignondSessionData* ui_action = NULL;
+    GSignondSignonuiData* ui_action = NULL;
     GError* error = NULL;
+    gboolean bool_res;
 
     g_signal_connect(plugin, "response-final", G_CALLBACK(response_callback), &result);
     g_signal_connect(plugin, "user-action-required", 
@@ -192,8 +184,10 @@ START_TEST (test_passwordplugin_request)
     fail_if(result != NULL);    
     fail_if(ui_action == NULL);
     fail_if(error != NULL);
-    fail_if(gsignond_session_data_get_query_username(ui_action) == FALSE);
-    fail_if(gsignond_session_data_get_query_password(ui_action) == FALSE);
+    fail_if(gsignond_signonui_data_get_query_username(ui_action, &bool_res) == FALSE);
+    fail_if(bool_res == FALSE);
+    fail_if(gsignond_signonui_data_get_query_password(ui_action, &bool_res) == FALSE);
+    fail_if(bool_res == FALSE);    
     gsignond_dictionary_unref(ui_action);
     ui_action = NULL;
     
@@ -203,8 +197,10 @@ START_TEST (test_passwordplugin_request)
     fail_if(result != NULL);    
     fail_if(ui_action == NULL);
     fail_if(error != NULL);
-    fail_if(gsignond_session_data_get_query_username(ui_action) == TRUE);
-    fail_if(gsignond_session_data_get_query_password(ui_action) == FALSE);
+    fail_if(gsignond_signonui_data_get_query_username(ui_action, &bool_res) == FALSE);
+    fail_if(bool_res == TRUE);
+    fail_if(gsignond_signonui_data_get_query_password(ui_action, &bool_res) == FALSE);
+    fail_if(bool_res == FALSE);    
     gsignond_dictionary_unref(ui_action);
     ui_action = NULL;
     
@@ -221,7 +217,7 @@ START_TEST (test_passwordplugin_user_action_finished)
     fail_if(plugin == NULL);
 
     GSignondSessionData* result = NULL;
-    GSignondSessionData* ui_action = NULL;
+    GSignondSignonuiData* ui_action = NULL;
     GError* error = NULL;
 
     g_signal_connect(plugin, "response-final", G_CALLBACK(response_callback), &result);
@@ -229,7 +225,7 @@ START_TEST (test_passwordplugin_user_action_finished)
                      G_CALLBACK(user_action_required_callback), &ui_action);
     g_signal_connect(plugin, "error", G_CALLBACK(error_callback), &error);
 
-    GSignondSessionData* data = gsignond_dictionary_new();
+    GSignondSignonuiData* data = gsignond_dictionary_new();
     
     //empty data
     gsignond_plugin_user_action_finished(plugin, data);
@@ -242,9 +238,9 @@ START_TEST (test_passwordplugin_user_action_finished)
     error = NULL;
     
     // correct values
-    gsignond_session_data_set_username(data, "megauser");
-    gsignond_session_data_set_secret(data, "megapassword");
-    gsignond_session_data_set_query_error(data, GSIGNOND_QUERY_ERROR_NONE);
+    gsignond_signonui_data_set_username(data, "megauser");
+    gsignond_signonui_data_set_password(data, "megapassword");
+    gsignond_signonui_data_set_query_error(data, SIGNONUI_ERROR_NONE);
     gsignond_plugin_user_action_finished(plugin, data);
     fail_if(result == NULL);    
     fail_if(ui_action != NULL);
@@ -257,7 +253,7 @@ START_TEST (test_passwordplugin_user_action_finished)
     result = NULL;
 
     // user canceled
-    gsignond_session_data_set_query_error(data, GSIGNOND_QUERY_ERROR_CANCELED);
+    gsignond_signonui_data_set_query_error(data, SIGNONUI_ERROR_CANCELED);
     gsignond_plugin_user_action_finished(plugin, data);
     fail_if(result != NULL);    
     fail_if(ui_action != NULL);
@@ -268,7 +264,7 @@ START_TEST (test_passwordplugin_user_action_finished)
     error = NULL;
 
     // error in ui request
-    gsignond_session_data_set_query_error(data, GSIGNOND_QUERY_ERROR_GENERAL);
+    gsignond_signonui_data_set_query_error(data, SIGNONUI_ERROR_GENERAL);
     gsignond_plugin_user_action_finished(plugin, data);
     fail_if(result != NULL);    
     fail_if(ui_action != NULL);
