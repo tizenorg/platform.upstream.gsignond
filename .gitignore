@@ -26,6 +26,7 @@ build-aux
 *dbus*gen*
 src/daemon/gsignond
 test/common/commontest
+test/daemon/daemontest
 test/db/dbtest
 test/plugins/passwordplugintest
 test/plugins/pluginproxytest

@@ -76,7 +76,7 @@ G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIG
 static gboolean _handle_request_credentials_update (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar*, gpointer);
 static gboolean _handle_get_info (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
 static gboolean _handle_get_auth_session (GSignondDbusIdentityAdapter *self, GDBusMethodInvocation *invocation, const gchar *method, gpointer user_data);
-static gboolean _handle_verify_user (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const GVariant *, gpointer);
+static gboolean _handle_verify_user (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, GVariant *, gpointer);
 static gboolean _handle_verify_secret (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
 static gboolean _handle_remove (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
 static gboolean _handle_sign_out (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, gpointer);
@@ -369,7 +369,7 @@ _on_user_verfied (GSignondIdentityIface *identity, gboolean res, const GError *e
 static gboolean
 _handle_verify_user (GSignondDbusIdentityAdapter *self,
                      GDBusMethodInvocation *invocation,
-                     const GVariant *params,
+                     GVariant *params,
                      gpointer user_data)
 {
     gboolean res = FALSE;
