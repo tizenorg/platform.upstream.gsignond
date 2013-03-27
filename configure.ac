@@ -77,6 +77,7 @@ src/plugins/Makefile
 src/plugins/password/Makefile
 src/plugins/ssotest/Makefile
 test/Makefile
+test/common/Makefile
 test/db/Makefile
 test/daemon/Makefile
 test/daemon/services/com.google.code.AccountsSSO.gSingleSignOn.service

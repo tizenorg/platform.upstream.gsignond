@@ -68,41 +68,6 @@ gsignond_test_auth_session_class_init (GSignondTestAuthSessionClass *klass)
  
 }
 
-static void check_plugin(GSignondPlugin* plugin)
-{
-    gchar* type;
-    gchar** mechanisms;
-
-    fail_if(plugin == NULL);
-    
-    g_object_get(plugin, "type", &type, "mechanisms", &mechanisms, NULL);
-    
-    fail_unless(g_strcmp0(type, "password") == 0);
-    fail_unless(g_strcmp0(mechanisms[0], "password") == 0);
-    fail_unless(mechanisms[1] == NULL);
-    
-    g_free(type);
-    g_strfreev(mechanisms);
-}
-
-
-
-START_TEST (test_plugin_loader)
-{
-    GSignondConfig* config = gsignond_config_new();
-    fail_if(config == NULL);
-
-    GSignondPlugin* absent_plugin = gsignond_load_plugin(config, "absentplugin");
-    fail_if(absent_plugin != NULL);
-    
-    GSignondPlugin* plugin = gsignond_load_plugin(config, "password");
-    check_plugin(plugin);    
-    
-    g_object_unref(plugin);
-    g_object_unref(config);
-}
-END_TEST
-
 static void check_plugin_proxy(GSignondPluginProxy* proxy)
 {
     gchar* type;
@@ -484,7 +449,6 @@ Suite* pluginproxy_suite (void)
     
     /* Core test case */
     TCase *tc_core = tcase_create ("Tests");
-    tcase_add_test (tc_core, test_plugin_loader);
     tcase_add_test (tc_core, test_pluginproxy_create);
     tcase_add_test (tc_core, test_pluginproxy_process);
     tcase_add_test (tc_core, test_pluginproxy_process_cancel);

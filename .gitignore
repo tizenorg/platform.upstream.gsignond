@@ -25,6 +25,7 @@ m4/lt*.m4
 build-aux
 *dbus*gen*
 src/daemon/gsignond
+test/common/commontest
 test/db/dbtest
 test/plugins/passwordplugintest
 test/plugins/pluginproxytest
