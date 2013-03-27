@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012-2013 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@intel.com>
  *

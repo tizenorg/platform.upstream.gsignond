@@ -36,10 +36,10 @@
 
 enum
 {
-	PROP_0,
-	PROP_METHOD,
+    PROP_0,
+    PROP_METHOD,
     PROP_APP_CONTEXT,
-	N_PROPERTIES
+    N_PROPERTIES
 };
 
 static GParamSpec *properties[N_PROPERTIES];

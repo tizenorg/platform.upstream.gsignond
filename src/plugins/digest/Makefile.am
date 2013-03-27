@@ -12,7 +12,6 @@ libdigest_la_CPPFLAGS = \
 libdigest_la_LIBADD = \
     $(top_builddir)/src/common/libgsignond-common.la \
     $(GSIGNOND_LIBS) \
-    -lgcrypt \
     $(NULL)
 
 libdigest_la_SOURCES = \

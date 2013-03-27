@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012-2013 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@intel.com>
  *
@@ -51,11 +51,16 @@ G_DEFINE_TYPE_WITH_CODE (GSignondDigestPlugin, gsignond_digest_plugin,
 
 struct _GSignondDigestPluginPrivate
 {
+    gboolean initialized;
     GSignondSessionData *session_data;
+    GRand *rand;
+    guint32 serial;
+    guchar key[32];
+    guchar entropy[16];
 };
 
 static gchar *
-_gsignond_digest_plugin_compute_md5_digest(
+_gsignond_digest_plugin_compute_md5_digest (
         const gchar* algo,
         const gchar* username,
         const gchar* realm,
@@ -126,32 +131,25 @@ _gsignond_digest_plugin_compute_md5_digest(
 }
 
 static gchar *
-_gsignond_digest_plugin_generate_nonce(void)
+_gsignond_digest_plugin_generate_nonce (GSignondDigestPluginPrivate *priv)
 {
-    GChecksum *hash = NULL;
-    gchar *nonce = NULL, *timestr = NULL;
+    GHmac *hmac;
+    gchar *nonce = NULL;
+    guint32 randint;
     struct timespec ts;
-    gint fd;
 
-    hash = g_checksum_new (G_CHECKSUM_MD5);
-    fd = open("/dev/urandom", O_RDONLY);
-    if (fd != -1) {
-        guint8 buf[32];
-        if (read (fd, buf, sizeof(buf) > 0)) {
-            g_checksum_update (hash, buf, 32);
-            g_checksum_update (hash, TO_GUCHAR(":"), 1);
-        }
-        close(fd);
-    }
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    timestr = g_strdup_printf ("%p:%d:%lu",
-                    hash,
-                    g_random_int (),
-                    (unsigned long) ts.tv_nsec);
-    g_checksum_update (hash, TO_GUCHAR(timestr), strlen(timestr));
-    g_free (timestr);
-    nonce = g_strdup (g_checksum_get_string (hash));
-    g_checksum_free (hash);
+    hmac = g_hmac_new (G_CHECKSUM_SHA1, priv->key, sizeof (priv->key));
+    g_hmac_update (hmac, priv->entropy, sizeof (priv->entropy));
+    priv->serial++;
+    g_hmac_update (hmac,
+                   (const guchar *) &priv->serial, sizeof (priv->serial));
+    if (clock_gettime (CLOCK_MONOTONIC, &ts) == 0)
+        g_hmac_update (hmac, (const guchar *) &ts, sizeof (ts));
+    memset (&ts, 0x00, sizeof(ts));
+    randint = g_rand_int (priv->rand);
+    g_hmac_update (hmac, (const guchar *) &randint, sizeof (randint));
+    nonce = g_strdup (g_hmac_get_string (hmac));
+    g_hmac_unref (hmac);
     return nonce;
 }
 
@@ -176,7 +174,6 @@ gsignond_digest_plugin_request (
     GSignondPlugin *self,
     GSignondSessionData *session_data)
 {
-
 }
 
 static void
@@ -185,8 +182,21 @@ gsignond_digest_plugin_request_initial (
     GSignondSessionData *session_data,
     const gchar *mechanism)
 {
+    g_return_if_fail (plugin != NULL);
+    g_return_if_fail (GSIGNOND_IS_DIGEST_PLUGIN (plugin));
 
-    GSignondDigestPlugin *self = NULL;
+    GSignondDigestPlugin *self = GSIGNOND_DIGEST_PLUGIN (plugin);
+    GSignondDigestPluginPrivate *priv = self->priv;
+
+    g_return_if_fail (priv != NULL);
+
+    if (!priv->initialized) {
+        GError *error = g_error_new (GSIGNOND_ERROR, GSIGNOND_ERROR_OPERATION_FAILED, "Method initialization failed");
+        gsignond_plugin_error (plugin, error);
+        g_error_free (error);
+        return;
+    }
+
     const gchar *username = gsignond_session_data_get_username(session_data);
     const gchar *secret = gsignond_session_data_get_secret(session_data);
     const gchar *realm = gsignond_session_data_get_realm (session_data);
@@ -207,15 +217,15 @@ gsignond_digest_plugin_request_initial (
     if ((!realm || !algo  || !nonce  || !method  || !digest_uri)
         || (qop && g_strcmp0 (qop, "auth-int") == 0 && !hentity)
         || (qop && !nonce_count)) {
-        GError* error = g_error_new(GSIGNOND_ERROR, GSIGNOND_ERROR_MISSING_DATA,
+        GError* error = g_error_new (GSIGNOND_ERROR, GSIGNOND_ERROR_MISSING_DATA,
                 "Missing Session Data");
         gsignond_plugin_error (plugin, error);
-        g_error_free(error);
+        g_error_free (error);
         return;
     }
 
     if (username != NULL && secret != NULL) {
-        gchar *cnonce = _gsignond_digest_plugin_generate_nonce ();
+        gchar *cnonce = _gsignond_digest_plugin_generate_nonce (priv);
         GSignondSessionData *response = gsignond_dictionary_new ();
         gsignond_session_data_set_username (response, username);
         gsignond_dictionary_set_string (response, "CNonce", cnonce);
@@ -230,13 +240,12 @@ gsignond_digest_plugin_request_initial (
         return;
     }
 
-    self = GSIGNOND_DIGEST_PLUGIN (plugin);
-    if (self->priv->session_data) {
-        gsignond_dictionary_unref (self->priv->session_data);
-        self->priv->session_data = NULL;
+    if (priv->session_data) {
+        gsignond_dictionary_unref (priv->session_data);
+        priv->session_data = NULL;
     }
     gsignond_dictionary_ref (session_data);
-    self->priv->session_data = session_data;
+    priv->session_data = session_data;
 
     GSignondSignonuiData *user_action_data = gsignond_signonui_data_new ();
     DATA_SET_VALUE (user_action_data, "Realm", realm);
@@ -252,6 +261,13 @@ gsignond_digest_plugin_user_action_finished (
     GSignondPlugin *plugin,
     GSignondSignonuiData *signonui_data)
 {
+    g_return_if_fail (plugin != NULL);
+    g_return_if_fail (GSIGNOND_IS_DIGEST_PLUGIN (plugin));
+
+    GSignondDigestPlugin *self = GSIGNOND_DIGEST_PLUGIN (plugin);
+    GSignondDigestPluginPrivate *priv = self->priv;
+    g_return_if_fail (priv != NULL);
+
     GSignondSessionData *session_data = NULL;
     GSignondSignonuiError query_error;
     gboolean res = gsignond_signonui_data_get_query_error(signonui_data,
@@ -261,7 +277,7 @@ gsignond_digest_plugin_user_action_finished (
     const gchar* username = gsignond_signonui_data_get_username(signonui_data);
     const gchar* secret = gsignond_signonui_data_get_password(signonui_data);
     
-    session_data = GSIGNOND_DIGEST_PLUGIN (plugin)->priv->session_data;
+    session_data = priv->session_data;
 
     if (query_error == SIGNONUI_ERROR_NONE &&
         username != NULL && 
@@ -283,7 +299,7 @@ gsignond_digest_plugin_user_action_finished (
                 "DigestUri");
         const gchar* hentity = gsignond_dictionary_get_string (session_data,
                 "HEntity");
-        gchar *cnonce = _gsignond_digest_plugin_generate_nonce ();
+        gchar *cnonce = _gsignond_digest_plugin_generate_nonce (priv);
         gchar *digest = _gsignond_digest_plugin_compute_md5_digest(algo,
                 username,realm, secret, nonce, nonce_count, cnonce, qop, method,
                 digest_uri, hentity);
@@ -331,8 +347,32 @@ gsignond_plugin_interface_init (GSignondPluginInterface *iface)
 static void
 gsignond_digest_plugin_init (GSignondDigestPlugin *self)
 {
-    self->priv = GSIGNOND_DIGEST_PLUGIN_GET_PRIVATE (self);
-    self->priv->session_data = NULL;
+    GSignondDigestPluginPrivate *priv =
+        GSIGNOND_DIGEST_PLUGIN_GET_PRIVATE (self);
+    self->priv = priv;
+
+    priv->initialized = FALSE;
+    priv->session_data = NULL;
+
+    gint fd;
+
+    fd = open ("/dev/urandom", O_RDONLY);
+    if (fd < 0)
+        return;
+    if (read (fd, priv->key, sizeof (priv->key)) != sizeof (priv->key)) {
+        close(fd);
+        return;
+    }
+    if (read (fd, priv->entropy, sizeof(priv->entropy)) !=
+        sizeof (priv->entropy)) {
+        close(fd);
+        return;
+    }
+
+    priv->rand = g_rand_new ();
+    priv->serial = 0;
+
+    priv->initialized = TRUE;
 }
 
 enum
@@ -387,11 +427,21 @@ gsignond_digest_plugin_dispose (GObject *gobject)
 {
     g_return_if_fail (GSIGNOND_IS_DIGEST_PLUGIN (gobject));
     GSignondDigestPlugin *self = GSIGNOND_DIGEST_PLUGIN (gobject);
+    g_return_if_fail (self->priv != NULL);
 
     if (self->priv->session_data) {
         gsignond_dictionary_unref (self->priv->session_data);
         self->priv->session_data = NULL;
     }
+
+    if (self->priv->rand) {
+        g_rand_free (self->priv->rand);
+        self->priv->rand = NULL;
+    }
+
+    memset (self->priv->key, 0x00, sizeof (self->priv->key));
+    memset (self->priv->entropy, 0x00, sizeof (self->priv->entropy));
+    self->priv->serial = 0;
 
     /* Chain up to the parent class */
     G_OBJECT_CLASS (gsignond_digest_plugin_parent_class)->dispose (
