@@ -48,7 +48,6 @@ struct _GSignondDbusServerPrivate
     GDBusServer *bus_server;
     gchar *address;
 #else
-    GDBusConnection *connection;
     guint name_owner_id;
 #endif
 };
@@ -94,7 +93,8 @@ _get_property (GObject *object,
             g_value_set_string (value, g_dbus_server_get_client_address (
                     self->priv->bus_server));
 #else
-            g_object_get_property (G_OBJECT (self->priv->connection), "address", value);
+            (void) self;
+            g_value_set_string (value, NULL);
 #endif
             break;
         }
@@ -124,18 +124,13 @@ _dispose (GObject *object)
         g_bus_unown_name (self->priv->name_owner_id);
         self->priv->name_owner_id = 0;
     }
-
-    if (self->priv->connection) {
-        g_object_unref (self->priv->connection);
-        self->priv->connection = NULL;
-    }
+#endif
 
     if (self->priv->daemon) {
         g_object_unref (self->priv->daemon);
         self->priv->daemon = NULL;
     }
  
-#endif
     G_OBJECT_CLASS (gsignond_dbus_server_parent_class)->dispose (object);
 }
 
@@ -183,7 +178,6 @@ gsignond_dbus_server_init (GSignondDbusServer *self)
     self->priv->bus_server = NULL;
     self->priv->address = NULL;
 #else
-    self->priv->connection = NULL;
     self->priv->name_owner_id = 0;
 #endif
     self->priv->daemon = gsignond_daemon_new ();
@@ -215,9 +209,9 @@ gsignond_dbus_server_start_auth_service (GSignondDbusServer *server, GDBusConnec
     DBG("Starting authentication service on connection %p", connection);
 
     auth_service = gsignond_dbus_auth_service_adapter_new_with_connection (
-        connection, g_object_ref (server->priv->daemon));
+        g_object_ref (connection), g_object_ref (server->priv->daemon));
 
-    g_hash_table_insert (server->priv->auth_services, g_object_ref(connection), auth_service);
+    g_hash_table_insert (server->priv->auth_services, connection, auth_service);
 
     g_signal_connect (connection, "closed", G_CALLBACK(_on_connection_closed), server);
 }
@@ -275,8 +269,6 @@ GSignondDbusServer * gsignond_dbus_server_new_with_address (const gchar *address
         return NULL;
     }
 
-    g_dbus_server_start (server->priv->bus_server);
-
     g_signal_connect (server->priv->bus_server, "new-connection", G_CALLBACK(_on_client_request), server);
 
     g_dbus_server_start (server->priv->bus_server);
@@ -294,11 +286,7 @@ _on_bus_acquired (GDBusConnection *connection,
                   const gchar     *name,
                   gpointer         user_data)
 {
-    GSignondDbusServer *server = GSIGNOND_DBUS_SERVER (user_data);
     INFO ("bus aquired on connection '%p'", connection);
-    if (connection != NULL) {
-        server->priv->connection = g_object_ref (connection);
-    }
 }
 
 static void
