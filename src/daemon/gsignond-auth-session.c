@@ -35,7 +35,6 @@ enum
 {
     PROP_0,
     PROP_METHOD,
-    PROP_APP_CONTEXT,
     N_PROPERTIES
 };
 
@@ -57,7 +56,6 @@ static guint signals[SIG_MAX] = { 0 };
 struct _GSignondAuthSessionPrivate
 {
     gchar *method;
-    gchar *app_context;
     GSignondPluginProxy *proxy;
     GSequence *available_mechanisms;
     GSignondIdentityInfo *identity_info;
@@ -287,9 +285,6 @@ _get_property (GObject *object, guint property_id, GValue *value,
         case PROP_METHOD:
             g_value_set_string (value, self->priv->method);
             break;
-        case PROP_APP_CONTEXT:
-            g_value_set_string (value, self->priv->app_context);
-            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -305,9 +300,6 @@ _set_property (GObject *object, guint property_id, const GValue *value,
     {
         case PROP_METHOD:
             self->priv->method = g_value_dup_string (value);
-            break;
-        case PROP_APP_CONTEXT:
-            self->priv->app_context = g_value_dup_string (value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -379,15 +371,7 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
                              "Authentication method used",
                              NULL,
                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY
-                              | G_PARAM_STATIC_STRINGS);
-
-    properties[PROP_APP_CONTEXT] =
-        g_param_spec_string ("app-context",
-                             "application security context",
-                             "Application security context",
-                             NULL,
-                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY
-                              | G_PARAM_STATIC_STRINGS);
+                             | G_PARAM_STATIC_STRINGS);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
@@ -476,14 +460,6 @@ gsignond_auth_session_get_method (GSignondAuthSession *session)
     return session->priv->method;
 }
 
-const gchar *
-gsignond_auth_session_get_context (GSignondAuthSession *session)
-{
-    g_return_val_if_fail (session && GSIGNOND_IS_AUTH_SESSION (session), NULL);
-
-    return session->priv->app_context;
-}
-
 void
 gsignond_auth_session_notify_process_result (GSignondAuthSession *iface,
                                              GSignondSessionData *result)
@@ -530,7 +506,6 @@ gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
 /**
  * gsignond_auth_session_new:
  * @info: instance of #GSignondIdentityInfo
- * @app_context: application security
  * @method: authentication method
  *
  * Creates instance of #GSignondAuthSession.
@@ -538,7 +513,7 @@ gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
  * Returns: (transfer full) newly created object 
  */
 GSignondAuthSession * 
-gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context, const gchar *method)
+gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *method)
 {
     GSignondPluginProxy* proxy = NULL;
 
@@ -550,8 +525,7 @@ gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *app_context,
 
     GSignondAuthSession *auth_session =
         g_object_new (GSIGNOND_TYPE_AUTH_SESSION,
-                      "method", method,
-                      "app-context", app_context, NULL);
+                      "method", method, NULL);
     auth_session->priv->proxy = proxy;
     auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
 

@@ -63,11 +63,13 @@ GType gsignond_dbus_identity_adapter_get_type (void) G_GNUC_CONST;
 GSignondDbusIdentityAdapter * 
 gsignond_dbus_identity_adapter_new_with_connection (GDBusConnection *connection,
                                                     GSignondIdentity *identity,
+                                                    const gchar *app_context,
                                                     guint timeout);
 
 #ifndef USE_P2P
 GSignondDbusIdentityAdapter *
 gsignond_dbus_identity_adapter_new (GSignondIdentity *identity,
+                                    const gchar *app_context,
                                     guint timeout);
 #endif
 

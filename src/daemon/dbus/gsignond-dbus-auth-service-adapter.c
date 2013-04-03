@@ -266,7 +266,7 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
         guint identity_timeout = gsignond_daemon_get_identity_timeout (self->priv->auth_service);
  
         dbus_identity = gsignond_dbus_identity_adapter_new_with_connection (
-                            g_object_ref (connection), identity, identity_timeout);
+                            g_object_ref (connection), identity, app_context, identity_timeout);
 #ifndef USE_P2P
         g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 
                                         NULL, _on_connnection_lost, dbus_identity, NULL);
@@ -327,7 +327,7 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
 
         identity_timeout = gsignond_daemon_get_identity_timeout (self->priv->auth_service);
         dbus_identity = gsignond_dbus_identity_adapter_new_with_connection (
-                            g_object_ref(connection), identity, identity_timeout);
+                            g_object_ref(connection), identity, app_context, identity_timeout);
         info = gsignond_identity_get_identity_info (identity);
 #ifndef USE_P2P
         g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 

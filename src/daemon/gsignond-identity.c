@@ -40,7 +40,6 @@ enum
 {
     PROP_0,
     PROP_INFO,
-    PROP_APP_CONTEXT,
     N_PROPERTIES
 };
 
@@ -62,7 +61,6 @@ static guint signals[SIG_MAX];
 struct _GSignondIdentityPrivate
 {
     GSignondIdentityInfo *info;
-    gchar *app_context;
     GSignondDaemon *owner;
     GHashTable *auth_sessions; // (auth_method,auth_session) table
 };
@@ -133,9 +131,6 @@ _get_property (GObject *object, guint property_id, GValue *value,
         case PROP_INFO:
             g_value_set_boxed (value, self->priv->info);
             break;
-        case PROP_APP_CONTEXT:
-            g_value_set_string (value, self->priv->app_context);
-            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -152,9 +147,6 @@ _set_property (GObject *object, guint property_id, const GValue *value,
         case PROP_INFO:
             self->priv->info =
                (GSignondIdentityInfo *)g_value_get_boxed (value);
-            break;
-        case PROP_APP_CONTEXT:
-            self->priv->app_context = g_value_dup_string (value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -226,15 +218,6 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
                             G_PARAM_STATIC_STRINGS);
     
-    properties[PROP_APP_CONTEXT] = g_param_spec_string (
-                "app-context",
-                "application security context",
-                "Application security context of the identity object creater",
-                NULL,
-                G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
-                G_PARAM_STATIC_STRINGS);
-
-
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
     signals[SIG_SIGNOUT] = g_signal_new ("signout",
@@ -470,9 +453,7 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
         return NULL;
     }
 
-    session = gsignond_auth_session_new (identity->priv->info,
-                                         identity->priv->app_context,
-                                         method);
+    session = gsignond_auth_session_new (identity->priv->info, method);
 
     if (!session) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
@@ -884,14 +865,6 @@ gsignond_identity_get_acm (GSignondIdentity *identity)
     return gsignond_daemon_get_access_control_manager (identity->priv->owner);
 }
 
-const gchar *
-gsignond_identity_get_app_context (GSignondIdentity *identity)
-{
-    g_return_val_if_fail (identity && GSIGNOND_IS_IDENTITY(identity), NULL);
-
-    return identity->priv->app_context;
-}
-
 guint
 gsignond_identity_get_auth_session_timeout (GSignondIdentity *identity)
 {
@@ -937,20 +910,17 @@ gsignond_identity_get_identity_info (GSignondIdentity *identity)
  * gsignond_identity_new:
  * @owner: Owner of this object, instance of #GSignondAuthServiceIface
  * @info (transfer full): Identity info, instance of #GSignondIdentityInfo
- * @app_context: application security context
  * 
  * Creates new instance of #GSignondIdentity
  *
  * Returns[transfer full]: new instance of #GSignondIdentity
  */
 GSignondIdentity * gsignond_identity_new (GSignondDaemon *owner,
-                                          GSignondIdentityInfo *info,
-                                          const gchar *app_context)
+                                          GSignondIdentityInfo *info)
 {
     GSignondIdentity *identity =
         GSIGNOND_IDENTITY(g_object_new (GSIGNOND_TYPE_IDENTITY,
                                         "info", info,
-                                        "app-context", app_context,
                                         NULL));
 
     identity->priv->owner = g_object_ref (owner);

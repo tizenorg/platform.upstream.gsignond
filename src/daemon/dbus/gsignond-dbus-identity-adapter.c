@@ -35,6 +35,7 @@ enum
 
     PROP_CONNECTION,
     PROP_IDENTITY,
+    PROP_APP_CONTEXT,
     N_PROPERTIES
 };
 
@@ -74,6 +75,7 @@ struct _GSignondDbusIdentityAdapterPrivate
     GDBusConnection   *connection;
     GSignondDbusIdentity *dbus_identity;
     GSignondIdentity  *identity;
+    gchar *app_context;
     GSignondSecurityContext sec_context;
     GList *sessions;
     /* signal handler ids */
@@ -104,7 +106,7 @@ G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIG
             &priv->sec_context, \
             fd, \
             sender, \
-            gsignond_identity_get_app_context(priv->identity)); \
+            priv->app_context); \
 }
 
 static gboolean _handle_request_credentials_update (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar*, gpointer);
@@ -160,6 +162,11 @@ gsignond_dbus_identity_adapter_set_property (GObject *object,
             }
             break;
         }
+        case PROP_APP_CONTEXT: {
+            if (self->priv->app_context) g_free (self->priv->app_context);
+            self->priv->app_context = g_strdup (g_value_get_string (value));
+            break;
+        }
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -180,6 +187,10 @@ gsignond_dbus_identity_adapter_get_property (GObject *object,
         }
         case PROP_CONNECTION: {
             g_value_set_object (value, self->priv->connection);
+            break;
+        }
+        case PROP_APP_CONTEXT:{
+            g_value_set_string (value, self->priv->app_context);
             break;
         }
         default:
@@ -253,6 +264,11 @@ gsignond_dbus_identity_adapter_finalize (GObject *object)
         self->priv->sessions = NULL;
     }
 
+    if (self->priv->app_context) {
+        g_free (self->priv->app_context);
+        self->priv->app_context = NULL;
+    }
+
     G_OBJECT_CLASS (gsignond_dbus_identity_adapter_parent_class)->finalize (object);
 }
 
@@ -282,7 +298,13 @@ gsignond_dbus_identity_adapter_class_init (GSignondDbusIdentityAdapterClass *kla
                                                        G_PARAM_READWRITE |
                                                        G_PARAM_CONSTRUCT_ONLY |
                                                        G_PARAM_STATIC_STRINGS);
-    
+    properties[PROP_APP_CONTEXT] = g_param_spec_string (
+                "app-context",
+                "application security context",
+                "Application security context of the identity object creater",
+                NULL,
+                G_PARAM_READWRITE |G_PARAM_STATIC_STRINGS);
+
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }
 
@@ -293,6 +315,7 @@ gsignond_dbus_identity_adapter_init (GSignondDbusIdentityAdapter *self)
 
     self->priv->connection = 0;
     self->priv->identity = 0;
+    self->priv->app_context = 0;
     self->priv->dbus_identity = gsignond_dbus_identity_skeleton_new();
 
     g_signal_connect_swapped (self->priv->dbus_identity,
@@ -430,7 +453,7 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
     if (session) {
         guint timeout =gsignond_identity_get_auth_session_timeout (self->priv->identity);
         GSignondDbusAuthSessionAdapter *dbus_session = gsignond_dbus_auth_session_adapter_new_with_connection (
-            g_object_ref (self->priv->connection), session, timeout);
+            g_object_ref (self->priv->connection), session, self->priv->app_context, timeout);
 
         self->priv->sessions = g_list_append (self->priv->sessions, dbus_session);
 
@@ -721,6 +744,7 @@ gsignond_dbus_identity_adapter_get_object_path(GSignondDbusIdentityAdapter *self
 GSignondDbusIdentityAdapter *
 gsignond_dbus_identity_adapter_new_with_connection (GDBusConnection *connection,
                                                     GSignondIdentity *identity,
+                                                    const gchar *app_context,
                                                     guint timeout)
 {
     static guint32 object_counter;
@@ -728,7 +752,7 @@ gsignond_dbus_identity_adapter_new_with_connection (GDBusConnection *connection,
     GError *err = NULL;
     GSignondDbusIdentityAdapter *adapter = GSIGNOND_DBUS_IDENTITY_ADAPTER (
         g_object_new (GSIGNOND_TYPE_DBUS_IDENTITY_ADAPTER, 
-            "identity", identity, "connection", connection, NULL));
+            "identity", identity, "connection", connection, "app-context", app_context, NULL));
 
     if (!adapter) return NULL;
 
@@ -761,7 +785,7 @@ gsignond_dbus_identity_adapter_new_with_connection (GDBusConnection *connection,
  * Retrurns: (transfer full) new instance of #GSignondDbusIdentityAdapter
  */
 GSignondDbusIdentityAdapter * 
-gsignond_dbus_identity_adapter_new (GSignondIdentity *identity, guint timeout)
+gsignond_dbus_identity_adapter_new (GSignondIdentity *identity, const gchar *app_context, guint timeout)
 {
     GError *error = NULL;
     GDBusConnection *connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
@@ -772,7 +796,7 @@ gsignond_dbus_identity_adapter_new (GSignondIdentity *identity, guint timeout)
         return NULL;
     }
 
-    return gsignond_dbus_identity_adapter_new_with_connection (connection, identity, timeout);
+    return gsignond_dbus_identity_adapter_new_with_connection (connection, identity, app_context, timeout);
 }
 
 #endif

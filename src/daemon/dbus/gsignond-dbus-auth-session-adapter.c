@@ -33,6 +33,7 @@ enum
     PROP_0,
     PROP_SESSION,
     PROP_CONNECTION,
+    PROP_APP_CONTEXT,
     N_PROPERTIES
 };
 
@@ -42,8 +43,9 @@ struct _GSignondDbusAuthSessionAdapterPrivate
 {
     GDBusConnection     *connection;
     GSignondDbusAuthSession *dbus_auth_session;
-    GSignondSecurityContext ctx;
     GSignondAuthSession *session;
+    gchar *app_context;
+    GSignondSecurityContext ctx;
     /* signal handlers */
     guint state_changed_handler_id;
     guint process_result_handler_id;
@@ -71,7 +73,7 @@ G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapte
             &priv->ctx, \
             fd, \
             sender, \
-            gsignond_auth_session_get_context (priv->session)); \
+            priv->app_context); \
 }
 
 static gboolean _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const gchar **, gpointer);
@@ -107,6 +109,11 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
             self->priv->connection = G_DBUS_CONNECTION (g_value_get_object (value));
             break;
         }
+        case PROP_APP_CONTEXT: {
+            if (self->priv->app_context) g_free (self->priv->app_context);
+            self->priv->app_context = g_strdup (g_value_get_string (value));
+            break;
+        }
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -127,6 +134,9 @@ gsignond_dbus_auth_session_adapter_get_property (GObject *object,
         }
         case PROP_CONNECTION:
             g_value_set_object (value, self->priv->connection);
+            break;
+        case PROP_APP_CONTEXT:
+            g_value_set_string (value, self->priv->app_context);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -178,6 +188,12 @@ gsignond_dbus_auth_session_adapter_dispose (GObject *object)
 static void
 gsignond_dbus_auth_session_adapter_finalize (GObject *object)
 {
+    GSignondDbusAuthSessionAdapter *self = GSIGNOND_DBUS_AUTH_SESSION_ADAPTER (object);
+
+    if (self->priv->app_context) {
+        g_free (self->priv->app_context);
+        self->priv->app_context = NULL;
+    }
 
     G_OBJECT_CLASS (gsignond_dbus_auth_session_adapter_parent_class)->finalize (object);
 }
@@ -209,6 +225,12 @@ gsignond_dbus_auth_session_adapter_class_init (GSignondDbusAuthSessionAdapterCla
                                                        G_PARAM_READWRITE |
                                                        G_PARAM_CONSTRUCT_ONLY | 
                                                        G_PARAM_STATIC_STRINGS);
+    properties[PROP_APP_CONTEXT] = g_param_spec_string (
+                "app-context",
+                "application security context",
+                "Application security context of the identity object creater",
+                NULL,
+                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 }
@@ -220,6 +242,7 @@ gsignond_dbus_auth_session_adapter_init (GSignondDbusAuthSessionAdapter *self)
 
     self->priv->connection = 0;
     self->priv->session = 0;
+    self->priv->app_context = 0;
     self->priv->state_changed_handler_id = 0;
     self->priv->process_result_handler_id = 0;
     self->priv->process_erroror_handler_id = 0;
@@ -417,6 +440,7 @@ gsignond_dbus_auth_session_adapter_get_object_path (GSignondDbusAuthSessionAdapt
 GSignondDbusAuthSessionAdapter *
 gsignond_dbus_auth_session_adapter_new_with_connection (GDBusConnection *connection, 
                                                         GSignondAuthSession *session,
+                                                        const gchar *app_context,
                                                         guint timeout)
 {
     static guint32 object_counter;
@@ -426,7 +450,7 @@ gsignond_dbus_auth_session_adapter_new_with_connection (GDBusConnection *connect
     
     adapter = GSIGNOND_DBUS_AUTH_SESSION_ADAPTER (
         g_object_new (GSIGNOND_TYPE_DBUS_AUTH_SESSION_ADAPTER, 
-            "connection", connection, "auth-session", session, NULL));
+            "connection", connection, "auth-session", session, "app-context", app_context, NULL));
 
     if (!adapter) return NULL;
 
@@ -451,7 +475,7 @@ gsignond_dbus_auth_session_adapter_new_with_connection (GDBusConnection *connect
 
 #ifndef USE_P2P
 GSignondDbusAuthSessionAdapter *
-gsignond_dbus_auth_session_adapter_new (GSignondAuthSession *session, guint timeout)
+gsignond_dbus_auth_session_adapter_new (GSignondAuthSession *session, const gchar *app_context, guint timeout)
 {
     GError *error = NULL;
     GDBusConnection *connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
@@ -461,6 +485,6 @@ gsignond_dbus_auth_session_adapter_new (GSignondAuthSession *session, guint time
         return NULL;
     }
 
-    return gsignond_dbus_auth_session_adapter_new_with_connection (connection, session, timeout);
+    return gsignond_dbus_auth_session_adapter_new_with_connection (connection, session, app_context, timeout);
 }
 #endif

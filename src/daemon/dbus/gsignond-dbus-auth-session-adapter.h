@@ -63,11 +63,13 @@ GType gsignond_dbus_auth_session_adapter_get_type (void) G_GNUC_CONST;
 GSignondDbusAuthSessionAdapter *
 gsignond_dbus_auth_session_adapter_new_with_connection (GDBusConnection *connection,
                                                         GSignondAuthSession *session,
+                                                        const gchar *app_context,
                                                         guint timeout);
 
 #ifndef USE_P2P
 GSignondDbusAuthSessionAdapter *
 gsignond_dbus_auth_session_adapter_new (GSignondAuthSession *session,
+                                        const gchar *app_context,
                                         guint timeout);
 #endif
 

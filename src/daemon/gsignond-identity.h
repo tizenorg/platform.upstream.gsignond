@@ -73,8 +73,7 @@ gsignond_identity_get_type (void) G_GNUC_CONST;
 
 GSignondIdentity *
 gsignond_identity_new (GSignondDaemon *owner,
-                       GSignondIdentityInfo *info,
-                       const gchar *app_context);
+                       GSignondIdentityInfo *info);
 
 GVariant * 
 gsignond_identity_get_info (GSignondIdentity *identity,
@@ -144,9 +143,6 @@ gsignond_identity_get_id (GSignondIdentity *identity);
 
 GSignondIdentityInfo *
 gsignond_identity_get_identity_info (GSignondIdentity *identity);
-
-const gchar *
-gsignond_identity_get_app_context (GSignondIdentity *identity);
 
 G_END_DECLS
 

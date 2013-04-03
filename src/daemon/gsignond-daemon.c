@@ -374,7 +374,6 @@ gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
         return NULL;
     }
 
-    const gchar *app_context = ctx ? gsignond_security_context_get_application_context (ctx) : "";
     GSignondIdentityInfo *info = gsignond_identity_info_new ();
     GSignondIdentity *identity = NULL;
     GSignondSecurityContext *owner = NULL;
@@ -391,7 +390,7 @@ gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
     g_list_free (acl);
 
     DBG("register_new_identity: cache size : %d", g_hash_table_size(daemon->priv->identities));
-    identity = gsignond_identity_new (daemon, info, app_context);
+    identity = gsignond_identity_new (daemon, info);
     if (identity == NULL) {
         gsignond_dictionary_unref (info);
         ERR("Unable to register new identity");
@@ -421,7 +420,6 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
 
     GSignondIdentity *identity = NULL;
     GSignondIdentityInfo *identity_info = NULL;
-    const gchar *app_context = ctx ? gsignond_security_context_get_application_context (ctx) : "" ;
 
 #define VALIDATE_IDENTITY_READ_ACCESS(info, ctx, ret) \
 { \
@@ -462,7 +460,7 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
 
     VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
 
-    identity = gsignond_identity_new (daemon, identity_info, app_context);
+    identity = gsignond_identity_new (daemon, identity_info);
     if (!identity) {
         gsignond_identity_info_unref (identity_info);
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, "Internal server error");

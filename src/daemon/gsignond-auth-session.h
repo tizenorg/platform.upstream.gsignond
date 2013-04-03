@@ -101,9 +101,6 @@ gsignond_auth_session_refresh (GSignondAuthSession *self,
 const gchar *
 gsignond_auth_session_get_method (GSignondAuthSession *session);
 
-const gchar *
-gsignond_auth_session_get_context (GSignondAuthSession *session);
-
 GSignondAccessControlManager *
 gsignond_auth_session_get_acm (GSignondAuthSession *session);
 
@@ -137,7 +134,6 @@ gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
 
 GSignondAuthSession * 
 gsignond_auth_session_new (GSignondIdentityInfo *info,
-                           const gchar *app_context,
                            const gchar *method);
 
 G_END_DECLS
