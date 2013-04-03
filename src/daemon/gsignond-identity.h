@@ -121,13 +121,13 @@ gsignond_identity_sign_out (GSignondIdentity *identity,
                             const GSignondSecurityContext *ctx,
                             GError **error);
 
-gint32
+guint32
 gsignond_identity_add_reference (GSignondIdentity *identity,
                                  const gchar *reference,
                                  const GSignondSecurityContext *ctx,
                                  GError **error);
 
-gint32
+guint32
 gsignond_identity_remove_reference (GSignondIdentity *identity,
                                     const gchar *reference,
                                     const GSignondSecurityContext *ctx,

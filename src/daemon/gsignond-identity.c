@@ -47,8 +47,6 @@ enum
 enum {
     SIG_VERIFY_USER,
     SIG_VERIFY_SECRET,
-    SIG_ADD_REFERENCE,
-    SIG_REMOVE_REFERENCE,
     SIG_SIGNOUT,
     SIG_USER_VERIFIED,
     SIG_SECRET_VERIFIED,
@@ -239,24 +237,6 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
-    signals[SIG_ADD_REFERENCE] = g_signal_new ("add-reference",
-                  GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                  0,
-                  NULL, NULL,
-                  NULL,
-                  G_TYPE_INT,
-                  1,
-                  G_TYPE_STRING);
-    signals[SIG_REMOVE_REFERENCE] = g_signal_new ("remove-reference",
-                  GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                  0,
-                  NULL, NULL,
-                  NULL,
-                  G_TYPE_INT,
-                  1,
-                  G_TYPE_STRING);
     signals[SIG_SIGNOUT] = g_signal_new ("signout",
                   GSIGNOND_TYPE_IDENTITY,
                   G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
@@ -835,7 +815,7 @@ gsignond_identity_remove (GSignondIdentity *identity,
     return is_removed;
 }
 
-gint32
+guint32
 gsignond_identity_add_reference (GSignondIdentity *identity,
                                  const gchar *reference,
                                  const GSignondSecurityContext *ctx,
@@ -846,15 +826,17 @@ gsignond_identity_add_reference (GSignondIdentity *identity,
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return 0;
     }
-    gint32 res = 0;
-    
+    guint32 res = 0;
+    guint32 identity_id = 0;
+
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
 
-    g_signal_emit (identity,
-                   signals[SIG_ADD_REFERENCE],
-                   0,
-                   reference,
-                   &res);
+    identity_id = gsignond_identity_info_get_id (identity->priv->info);
+    if (!identity_id) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_STORE_FAILED, "Cannot add reference to unsaved identity");
+        return 0;
+    }
+    res = gsignond_daemon_add_identity_reference (identity->priv->owner, identity_id, ctx, reference);
 
     if (res == 0) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
@@ -863,7 +845,7 @@ gsignond_identity_add_reference (GSignondIdentity *identity,
     return res;
 }
 
-gint32
+guint32
 gsignond_identity_remove_reference (GSignondIdentity *identity,
                                     const gchar *reference,
                                     const GSignondSecurityContext *ctx,
@@ -875,21 +857,23 @@ gsignond_identity_remove_reference (GSignondIdentity *identity,
         return 0;
     }
 
-    gint32 res = 0;
+    gboolean res = 0;
+    guint32 identity_id = 0;
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
 
-    g_signal_emit (identity,
-            signals[SIG_REMOVE_REFERENCE],
-            0,
-            reference,
-            &res);
+    identity_id = gsignond_identity_info_get_id (identity->priv->info);
+    if (!identity_id) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_REFERENCE_NOT_FOUND, "reference not '%s' found", reference);
+        return 0;
+    }
 
-    if (res == 0) {
+    res = gsignond_daemon_remove_identity_reference (identity->priv->owner, identity_id, ctx, reference);
+    if (res == FALSE) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_REFERENCE_NOT_FOUND,
                                                         "reference '%s' not found", reference);
     }
-    return res;
+    return identity_id;
 }
 
 GSignondAccessControlManager *

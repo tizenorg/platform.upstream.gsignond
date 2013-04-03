@@ -347,6 +347,22 @@ gsignond_daemon_remove_identity (GSignondDaemon *daemon, guint32 id)
     return gsignond_db_credentials_database_remove_identity(daemon->priv->db, id);
 }
 
+guint32
+gsignond_daemon_add_identity_reference (GSignondDaemon *daemon, guint32 identity_id, const GSignondSecurityContext *owner, const gchar *reference)
+{
+    g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), 0);
+
+    return gsignond_db_credentials_database_insert_reference (daemon->priv->db, identity_id, owner, reference);
+}
+
+gboolean
+gsignond_daemon_remove_identity_reference (GSignondDaemon *daemon, guint32 identity_id, const GSignondSecurityContext *owner, const gchar *reference)
+{
+    g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), FALSE);
+
+    return gsignond_db_credentials_database_remove_reference (daemon->priv->db, identity_id, owner, reference);
+}
+
 GSignondIdentity *
 gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
                                        const GSignondSecurityContext *ctx,
