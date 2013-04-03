@@ -45,11 +45,8 @@ struct _GSignondDbusAuthSessionAdapterPrivate
     GSignondDbusAuthSession *dbus_auth_session;
     GSignondAuthSession *session;
     gchar *app_context;
+    gboolean is_process_active;
     GSignondSecurityContext ctx;
-    /* signal handlers */
-    guint state_changed_handler_id;
-    guint process_result_handler_id;
-    guint process_erroror_handler_id;
 };
 
 G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapter, GSIGNOND_TYPE_DISPOSABLE)
@@ -80,9 +77,6 @@ static gboolean _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapt
 static gboolean _handle_process (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, const GVariant *, const gchar *, gpointer);
 static gboolean _handle_cancel (GSignondDbusAuthSessionAdapter *, GDBusMethodInvocation *, gpointer);
 
-/* signals */
-static void _emit_state_changed (GSignondDbusAuthSessionAdapter *self, gint state, const gchar *message, gpointer user_data);
-
 static void
 gsignond_dbus_auth_session_adapter_set_property (GObject *object,
         guint property_id,
@@ -93,15 +87,7 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
     switch (property_id) {
         case PROP_SESSION: {
             gpointer object = g_value_get_object (value);
-            if (object) {
-                if (self->priv->session) {
-                    g_signal_handler_disconnect (self->priv->session, self->priv->state_changed_handler_id);
-                }
-                self->priv->session = GSIGNOND_AUTH_SESSION ((object));
-                self->priv->state_changed_handler_id = 
-                       g_signal_connect_swapped (self->priv->session, "state-changed", 
-                                         G_CALLBACK (_emit_state_changed), self);
-            }
+            self->priv->session = GSIGNOND_AUTH_SESSION ((object));
             break;
         }
         case PROP_CONNECTION: {
@@ -149,19 +135,9 @@ gsignond_dbus_auth_session_adapter_dispose (GObject *object)
     GSignondDbusAuthSessionAdapter *self = GSIGNOND_DBUS_AUTH_SESSION_ADAPTER (object);
 
     if (self->priv->session) {
-        if (self->priv->state_changed_handler_id) {
-            g_signal_handler_disconnect (self->priv->session, self->priv->state_changed_handler_id);
-            self->priv->state_changed_handler_id = 0;
-        }
-        if (self->priv->process_erroror_handler_id) {
-            g_signal_handler_disconnect (self->priv->session, self->priv->process_erroror_handler_id);
-            self->priv->process_erroror_handler_id = 0;
-        }
-        if (self->priv->process_result_handler_id) {
-            g_signal_handler_disconnect (self->priv->session, self->priv->process_result_handler_id);
-            self->priv->process_result_handler_id = 0;
-
+        if (self->priv->is_process_active) {
             gsignond_auth_session_abort_process (self->priv->session);
+            self->priv->is_process_active = FALSE;
         }
 
         g_object_unref (self->priv->session);
@@ -243,9 +219,7 @@ gsignond_dbus_auth_session_adapter_init (GSignondDbusAuthSessionAdapter *self)
     self->priv->connection = 0;
     self->priv->session = 0;
     self->priv->app_context = 0;
-    self->priv->state_changed_handler_id = 0;
-    self->priv->process_result_handler_id = 0;
-    self->priv->process_erroror_handler_id = 0;
+    self->priv->is_process_active = FALSE;
     self->priv->dbus_auth_session = gsignond_dbus_auth_session_skeleton_new ();
 
     g_signal_connect_swapped (self->priv->dbus_auth_session,
@@ -293,7 +267,7 @@ typedef struct {
 static _AuthSessionDbusInfo*
 _auth_session_dbus_info_new (GSignondDbusAuthSessionAdapter *self, GDBusMethodInvocation *invocation)
 {
-    _AuthSessionDbusInfo *info = g_new0 (_AuthSessionDbusInfo, 1);
+    _AuthSessionDbusInfo *info = g_slice_new0(_AuthSessionDbusInfo);
 
     info->adapter = g_object_ref (self);
     info->invocation = g_object_ref (invocation);
@@ -309,47 +283,39 @@ _auth_session_dbus_info_free (_AuthSessionDbusInfo *info)
     g_object_unref (info->adapter);
     g_object_unref (info->invocation);
 
-    g_free (info);
+    g_slice_free (_AuthSessionDbusInfo, info);
 }
 
 static void
-_on_process_result (_AuthSessionDbusInfo *info, const GSignondSessionData *data, gpointer user_data)
+_emit_state_changed (gint state, const gchar *message, gpointer user_data)
 {
     GSignondDbusAuthSessionAdapter *self = NULL;
-    GVariant *result = NULL;
-    
-    if (!info) return ;
-
-    self = info->adapter;
-    result = gsignond_dictionary_to_variant ((GSignondDictionary *)data);
-
-    g_signal_handler_disconnect (self->priv->session, self->priv->process_erroror_handler_id);
-    g_signal_handler_disconnect (self->priv->session, self->priv->process_result_handler_id);
-    self->priv->process_erroror_handler_id = self->priv->process_result_handler_id = 0;
-
-    gsignond_dbus_auth_session_complete_process (
-        self->priv->dbus_auth_session, info->invocation, result);
-
-    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
-
-    _auth_session_dbus_info_free (info);
-}
-
-static void
-_on_process_error (_AuthSessionDbusInfo *info, const GError *error, gpointer user_data)
-{
-    GSignondDbusAuthSessionAdapter *self = NULL;
+    _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo*) user_data;
 
     if (!info) return ;
 
     self = info->adapter;
+    gsignond_dbus_auth_session_emit_state_changed (
+            self->priv->dbus_auth_session, state, message);
+}
+static void
+_on_process_done (GSignondSessionData *reply, const GError *error, gpointer user_data)
+{
+    GSignondDbusAuthSessionAdapter *self = NULL;
+    _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo*) user_data;
 
-    g_signal_handler_disconnect (self->priv->session, self->priv->process_erroror_handler_id);
-    g_signal_handler_disconnect (self->priv->session, self->priv->process_result_handler_id);
-    self->priv->process_erroror_handler_id = self->priv->process_result_handler_id = 0;
+    if (!info) return ;
 
-    g_dbus_method_invocation_return_gerror (info->invocation, error);
+    self = info->adapter;
+    self->priv->is_process_active = FALSE;
 
+    if (error)
+        g_dbus_method_invocation_return_gerror (info->invocation, error);
+    else {
+        GVariant *result = gsignond_dictionary_to_variant ((GSignondDictionary *)reply); 
+        gsignond_dbus_auth_session_complete_process (
+                self->priv->dbus_auth_session, info->invocation, result);
+    }
     gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     _auth_session_dbus_info_free (info);
@@ -368,26 +334,20 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (self), FALSE);
 
-    info = _auth_session_dbus_info_new (self, invocation);
-
-    self->priv->process_erroror_handler_id = 
-        g_signal_connect_swapped (self->priv->session, "process-error", G_CALLBACK(_on_process_error), info);
-    self->priv->process_result_handler_id = 
-        g_signal_connect_swapped (self->priv->session, "process-result", G_CALLBACK (_on_process_result), info);
-
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     data = (GSignondSessionData *)gsignond_dictionary_new_from_variant ((GVariant *)session_data);
-    if (!gsignond_auth_session_process (self->priv->session, data, mechanisms, &self->priv->ctx, &error)) {
+    info = _auth_session_dbus_info_new (self, invocation);
+    self->priv->is_process_active = TRUE;
+    if (!gsignond_auth_session_process (self->priv->session, data, mechanisms, 
+                &self->priv->ctx, _on_process_done, 
+                _emit_state_changed, info, &error)) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
  
-        g_signal_handler_disconnect (self->priv->session, self->priv->process_erroror_handler_id);
-        g_signal_handler_disconnect (self->priv->session, self->priv->process_result_handler_id);
-
-        self->priv->process_erroror_handler_id = self->priv->process_result_handler_id = 0;
-
         _auth_session_dbus_info_free (info);
+        
+        self->priv->is_process_active = FALSE;
 
         gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
     }
@@ -421,12 +381,6 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
 
     return TRUE;
-}
-
-static void
-_emit_state_changed (GSignondDbusAuthSessionAdapter *self, gint state, const gchar *message, gpointer user_data)
-{
-    gsignond_dbus_auth_session_emit_state_changed (self->priv->dbus_auth_session, state, message);
 }
 
 const gchar *

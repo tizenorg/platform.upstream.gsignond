@@ -54,6 +54,8 @@ G_BEGIN_DECLS
 typedef struct _GSignondAuthSession GSignondAuthSession;
 typedef struct _GSignondAuthSessionClass GSignondAuthSessionClass;
 typedef struct _GSignondAuthSessionPrivate GSignondAuthSessionPrivate;
+typedef void (*ProcessReadyCb) (GSignondSessionData *results, const GError *error, gpointer user_data);
+typedef void (*StateChangeCb) (gint state, const gchar *message, gpointer userdata);
 
 struct _GSignondAuthSession
 {
@@ -81,6 +83,9 @@ gsignond_auth_session_process (GSignondAuthSession *self,
                                GSignondSessionData *session_data,
                                const gchar *mechanism,
                                const GSignondSecurityContext *ctx,
+                               ProcessReadyCb ready_cb,
+                               StateChangeCb state_change_cb,
+                               gpointer userdata,
                                GError **error);
 gboolean
 gsignond_auth_session_cancel (GSignondAuthSession *self,
@@ -109,11 +114,18 @@ gsignond_auth_session_set_id(GSignondAuthSession *session, gint id);
 
 void
 gsignond_auth_session_notify_process_result (GSignondAuthSession *iface,
-                                             GSignondSessionData *result);
+                                             GSignondSessionData *result,
+                                             gpointer userdata);
 
 void
 gsignond_auth_session_notify_process_error (GSignondAuthSession *iface,
-                                            const GError *error);
+                                            const GError *error,
+                                            gpointer userdata);
+void 
+gsignond_auth_session_notify_state_changed (GSignondAuthSession *self, 
+                                            gint state,
+                                            const gchar *message,
+                                            gpointer userdata);
 
 void 
 gsignond_auth_session_notify_store (GSignondAuthSession *self, 
@@ -127,16 +139,11 @@ void
 gsignond_auth_session_notify_refreshed (GSignondAuthSession *self, 
                                         GSignondSignonuiData *ui_data);
 
-void 
-gsignond_auth_session_notify_state_changed (GSignondAuthSession *self, 
-                                            gint state,
-                                            const gchar *message);
-
 GSignondAuthSession * 
 gsignond_auth_session_new (GSignondIdentityInfo *info,
                            const gchar *method);
 
 G_END_DECLS
 
-#endif  /* _GSGINOND_AUTH_SESSION_H_ */
+#endif  /* _GSIGNOND_AUTH_SESSION_H_ */
 

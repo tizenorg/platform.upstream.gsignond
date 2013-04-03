@@ -41,17 +41,21 @@ enum
 static GParamSpec *properties[N_PROPERTIES];
 
 enum {
-    SIG_PROCESS_RESULT,
-    SIG_PROCESS_ERROR,
     SIG_PROCESS_STORE,
     SIG_PROCESS_USER_ACTION_REQUIRED,
     SIG_PROCESS_REFRESHED,
-    SIG_PROCESS_STATE_CHANGED,
-    
+ 
     SIG_MAX
 };
 
 static guint signals[SIG_MAX] = { 0 };
+
+typedef struct {
+    GSignondAuthSession *self;
+    ProcessReadyCb ready_cb;
+    StateChangeCb state_change_cb;
+    gpointer userdata;
+} _ProcessData;
 
 struct _GSignondAuthSessionPrivate
 {
@@ -194,6 +198,9 @@ gsignond_auth_session_process (GSignondAuthSession *self,
                                GSignondSessionData *session_data,
                                const gchar *mechanism,
                                const GSignondSecurityContext *ctx,
+                               ProcessReadyCb ready_cb,
+                               StateChangeCb state_change_cb,
+                               gpointer userdata,
                                GError **error)
 {
     if (!self || !GSIGNOND_IS_AUTH_SESSION (self)) {
@@ -223,8 +230,13 @@ gsignond_auth_session_process (GSignondAuthSession *self,
         }
     }
 
+    _ProcessData * data = g_slice_new0 (_ProcessData);
+    data->self = self;
+    data->ready_cb = ready_cb;
+    data->state_change_cb = state_change_cb;
+    data->userdata = userdata;
     gsignond_plugin_proxy_process(self->priv->proxy, self, session_data,
-                                  mechanism);
+                                  mechanism, data);
 
     return TRUE;
 }
@@ -375,28 +387,6 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
 
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
-    signals[SIG_PROCESS_RESULT] =  g_signal_new ("process-result",
-            GSIGNOND_TYPE_AUTH_SESSION,
-            G_SIGNAL_RUN_LAST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            1,
-            GSIGNOND_TYPE_SESSION_DATA);
-
-    signals[SIG_PROCESS_ERROR] = g_signal_new ("process-error",
-            GSIGNOND_TYPE_AUTH_SESSION,
-            G_SIGNAL_RUN_LAST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            1,
-            G_TYPE_ERROR);
-
     signals[SIG_PROCESS_STORE] =  g_signal_new ("process-store",
             GSIGNOND_TYPE_AUTH_SESSION,
             G_SIGNAL_RUN_LAST,
@@ -429,19 +419,6 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
             G_TYPE_NONE,
             1,
             GSIGNOND_TYPE_SIGNONUI_DATA);
-
-    signals[SIG_PROCESS_STATE_CHANGED] =  g_signal_new (
-            "state-changed",
-            GSIGNOND_TYPE_AUTH_SESSION,
-            G_SIGNAL_RUN_LAST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            2,
-            G_TYPE_INT, G_TYPE_STRING);
-
 }
 
 /**
@@ -462,16 +439,49 @@ gsignond_auth_session_get_method (GSignondAuthSession *session)
 
 void
 gsignond_auth_session_notify_process_result (GSignondAuthSession *iface,
-                                             GSignondSessionData *result)
+                                             GSignondSessionData *result,
+                                             gpointer userdata)
 {
-    g_signal_emit (iface, signals[SIG_PROCESS_RESULT], 0, result);
+    if (!userdata) {
+        WARN("assert (userdata)");
+        return ;
+    }
+    _ProcessData *data = (_ProcessData *)userdata;
+
+    if (data->ready_cb) data->ready_cb (result, NULL, data->userdata);
+
+    g_slice_free (_ProcessData, data);
 }
 
 void
 gsignond_auth_session_notify_process_error (GSignondAuthSession *iface,
-                                            const GError *error)
+                                            const GError *error,
+                                            gpointer userdata)
 {
-    g_signal_emit (iface, signals[SIG_PROCESS_ERROR], 0, error);
+    if (!userdata) {
+        WARN("assert (userdata)");
+        return ;
+    }
+    _ProcessData *data = (_ProcessData *)userdata;
+
+    if (data->ready_cb) data->ready_cb (NULL, error, data->userdata);
+
+    g_slice_free (_ProcessData, data);
+}
+
+void 
+gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
+                                            gint state,
+                                            const gchar *message,
+                                            gpointer userdata)
+{
+    if (!userdata) {
+        WARN("assert (userdata)");
+        return ;
+    }
+    _ProcessData *data = (_ProcessData *)userdata;
+
+    if (data->state_change_cb) data->state_change_cb (state, message, data->userdata);
 }
 
 void 
@@ -495,13 +505,6 @@ gsignond_auth_session_notify_refreshed (GSignondAuthSession *self,
     g_signal_emit (self, signals[SIG_PROCESS_REFRESHED], 0, ui_data);
 }
 
-void 
-gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
-                                            gint state,
-                                            const gchar *message)
-{
-    g_signal_emit (self, signals[SIG_PROCESS_STATE_CHANGED], 0, state, message);
-}
 
 /**
  * gsignond_auth_session_new:

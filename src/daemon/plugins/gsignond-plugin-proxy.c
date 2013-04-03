@@ -52,6 +52,7 @@ struct _GSignondPluginProxyPrivate
     GSignondPlugin* plugin;
     GQueue* session_queue;
     GSignondAuthSession* active_session;
+    gpointer active_process_userdata;
     gboolean expecting_request;
 };
 
@@ -59,6 +60,7 @@ typedef struct {
     GSignondAuthSession* auth_session;
     GSignondSessionData* session_data;
     gchar* mechanism;
+    gpointer userdata;
 } GSignondProcessData;
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
@@ -92,13 +94,15 @@ static void gsignond_plugin_proxy_status_changed_callback(GSignondPlugin* plugin
 static GSignondProcessData* 
 gsignond_process_data_new (GSignondAuthSession* auth_session,
                            GSignondSessionData *session_data,
-                           const gchar* mechanism) 
+                           const gchar* mechanism,
+                           gpointer userdata) 
 {
     GSignondProcessData* data = g_slice_new0 (GSignondProcessData);
     g_object_ref (auth_session);
     data->auth_session = auth_session;
     data->session_data = gsignond_dictionary_copy (session_data);
     data->mechanism = g_strdup (mechanism);
+    data->userdata = userdata;
     return data;
 }
 
@@ -307,6 +311,7 @@ gsignond_plugin_proxy_init (GSignondPluginProxy *self)
     priv->plugin = NULL;
     priv->session_queue = g_queue_new ();
     priv->active_session = NULL;
+    priv->active_process_userdata = NULL;
     priv->expecting_request = FALSE;
 }
 
@@ -342,12 +347,14 @@ gsignond_plugin_proxy_process_queue (GSignondPluginProxy *self)
     GSignondProcessData* next_data = g_queue_pop_head (priv->session_queue);
     if (next_data) {
         priv->expecting_request = FALSE;
+        priv->active_process_userdata = next_data->userdata;
         priv->active_session = next_data->auth_session;
         g_object_ref (priv->active_session);
         gsignond_auth_session_notify_state_changed (
                                             priv->active_session,
                                             GSIGNOND_PLUGIN_STATE_STARTED,
-                                            "The request is being processed.");
+                                            "The request is being processed.",
+                                            priv->active_process_userdata);
         gsignond_plugin_request_initial (priv->plugin,
                                          next_data->session_data, 
                                          next_data->mechanism);
@@ -358,7 +365,8 @@ gsignond_plugin_proxy_process_queue (GSignondPluginProxy *self)
 void gsignond_plugin_proxy_process (GSignondPluginProxy *self, 
                                     GSignondAuthSession *session,
                                     GSignondSessionData *session_data, 
-                                    const gchar *mechanism)
+                                    const gchar *mechanism,
+                                    gpointer userdata)
 {
     g_assert (GSIGNOND_IS_PLUGIN_PROXY (self));
     g_assert (GSIGNOND_IS_AUTH_SESSION (session));
@@ -375,11 +383,11 @@ void gsignond_plugin_proxy_process (GSignondPluginProxy *self,
     g_queue_push_tail (priv->session_queue,
                        gsignond_process_data_new (session,
                                                   session_data,
-                                                  mechanism));
+                                                  mechanism, userdata));
     gsignond_auth_session_notify_state_changed (
                                          session,
                                          GSIGNOND_PLUGIN_STATE_PROCESS_PENDING,
-                                         "The request has been queued.");
+                                         "The request has been queued.", userdata);
     if (priv->active_session == NULL) {
         gsignond_plugin_proxy_process_queue (self);
     }
@@ -423,6 +431,7 @@ gsignond_plugin_proxy_cancel (GSignondPluginProxy *self,
         gsignond_plugin_cancel (priv->plugin);
         g_object_unref (priv->active_session);
         priv->active_session = NULL;
+        priv->active_process_userdata = NULL;
         gsignond_plugin_proxy_process_queue (self);
     } else { /* cancel by de-queue */
         GSignondProcessData* data =
@@ -431,7 +440,7 @@ gsignond_plugin_proxy_cancel (GSignondPluginProxy *self,
             GError* error = g_error_new (GSIGNOND_ERROR, 
                                          GSIGNOND_ERROR_WRONG_STATE,
                                          "Canceling an unknown session");
-            gsignond_auth_session_notify_process_error (session, error);
+            gsignond_auth_session_notify_process_error (session, error, NULL);
             g_error_free (error);
             return;
         }
@@ -484,7 +493,7 @@ gsignond_plugin_proxy_response_final_callback (GSignondPlugin *plugin,
     // This avoids problems if cancel() is called from AuthSession handler
     GSignondAuthSession* active_session = priv->active_session;
     priv->active_session = NULL;
-    gsignond_auth_session_notify_process_result (active_session, result);
+    gsignond_auth_session_notify_process_result (active_session, result, priv->active_process_userdata);
     g_object_unref (active_session);
     gsignond_plugin_proxy_process_queue (self);
 }
@@ -504,7 +513,7 @@ gsignond_plugin_proxy_response_callback(GSignondPlugin *plugin,
     }
     priv->expecting_request = TRUE;
     gsignond_auth_session_notify_process_result (priv->active_session,
-                                                       result);
+                                                       result, priv->active_process_userdata);
 }
 
 static void
@@ -573,7 +582,7 @@ gsignond_plugin_proxy_error_callback (GSignondPlugin* plugin,
     // This avoids problems if cancel() is called from AuthSession handler
     GSignondAuthSession *active_session = priv->active_session;
     priv->active_session = NULL;
-    gsignond_auth_session_notify_process_error (active_session, error);
+    gsignond_auth_session_notify_process_error (active_session, error, priv->active_process_userdata);
     g_object_unref (active_session);
     gsignond_plugin_proxy_process_queue (self);
 }
@@ -594,6 +603,7 @@ gsignond_plugin_proxy_status_changed_callback (GSignondPlugin *plugin,
         return;
     }
     gsignond_auth_session_notify_state_changed (priv->active_session,
-                                                      (gint) state, message);
+                                                (gint) state, message,
+                                                priv->active_process_userdata);
 }
 

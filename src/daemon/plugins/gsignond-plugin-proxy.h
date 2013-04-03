@@ -68,7 +68,8 @@ gsignond_plugin_proxy_cancel (GSignondPluginProxy *self,
 void gsignond_plugin_proxy_process (GSignondPluginProxy *self, 
                               GSignondAuthSession* session,
                               GSignondSessionData *session_data, 
-                              const gchar *mechanism);
+                              const gchar *mechanism,
+                              gpointer userdata);
 void gsignond_plugin_proxy_user_action_finished (GSignondPluginProxy *self, 
                                            GSignondSignonuiData *ui_data);
 void gsignond_plugin_proxy_refresh (GSignondPluginProxy *self, 
