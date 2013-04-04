@@ -94,19 +94,21 @@ G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIG
 { \
     GSignondDbusIdentityAdapterPrivate *priv = dbus_object->priv;\
     GSignondAccessControlManager *acm = gsignond_identity_get_acm (priv->identity);\
-    const gchar *sender = NULL; \
-    int fd = -1; \
-    sender = g_dbus_method_invocation_get_sender (invocation);\
-    if (!sender) {\
-        GDBusConnection *connection = g_dbus_method_invocation_get_connection (invocation);\
-        fd = g_socket_get_fd (g_socket_connection_get_socket (G_SOCKET_CONNECTION (g_dbus_connection_get_stream(connection))));\
-    }\
-    gsignond_access_control_manager_security_context_of_peer( \
+    if (acm) { \
+        const gchar *sender = NULL; \
+        int fd = -1; \
+        sender = g_dbus_method_invocation_get_sender (invocation);\
+        if (!sender) {\
+            GDBusConnection *connection = g_dbus_method_invocation_get_connection (invocation);\
+            fd = g_socket_get_fd (g_socket_connection_get_socket (G_SOCKET_CONNECTION (g_dbus_connection_get_stream(connection))));\
+        }\
+        gsignond_access_control_manager_security_context_of_peer( \
             acm, \
             &priv->sec_context, \
             fd, \
             sender, \
             priv->app_context); \
+    }\
 }
 
 static gboolean _handle_request_credentials_update (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar*, gpointer);
@@ -477,8 +479,8 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
 static void
 _on_user_verfied (_IdentityDbusInfo *info, gboolean res, const GError *error, gpointer user_data)
 {
-    if (G_UNLIKELY (info)) {
-        WARN ("assertion G_UNLIKELY (info) fialed");
+    if (!info) {
+        WARN ("assertion G_UNLIKELY (info) failed");
         return ;
     }
 
