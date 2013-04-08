@@ -32,36 +32,32 @@
 #include <gsignond/gsignond-error.h>
 #include <gsignond/gsignond-log.h>
 
-static void gsignond_auth_session_iface_init (gpointer g_iface);
+typedef struct _GSignondAuthSession GSignondAuthSession;
+typedef struct _GSignondAuthSessionClass GSignondAuthSessionClass;
 
-typedef struct _GSignondTestAuthSession GSignondTestAuthSession;
-typedef struct _GSignondTestAuthSessionClass GSignondTestAuthSessionClass;
-
-struct _GSignondTestAuthSession
+struct _GSignondAuthSession
 {
     GObject parent;
 
 };
 
-struct _GSignondTestAuthSessionClass
+struct _GSignondAuthSessionClass
 {
     GObjectClass parent_class;
 };
 
-G_DEFINE_TYPE_WITH_CODE (GSignondTestAuthSession, gsignond_test_auth_session,
-                        G_TYPE_OBJECT,
-                        G_IMPLEMENT_INTERFACE (GSIGNOND_TYPE_AUTH_SESSION_IFACE,
-                                               gsignond_auth_session_iface_init));
+G_DEFINE_TYPE (GSignondAuthSession, gsignond_auth_session,
+                        G_TYPE_OBJECT);
 
 static void
-gsignond_test_auth_session_init (GSignondTestAuthSession *self)
+gsignond_auth_session_init (GSignondAuthSession *self)
 {
 
     
 }
 
 static void
-gsignond_test_auth_session_class_init (GSignondTestAuthSessionClass *klass)
+gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
 {
 //    GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
@@ -110,10 +106,9 @@ gboolean testing_proxy_process_queue_cancel = FALSE;
 gint proxy_process_queue_cancel_results = 0;
 
 void
-_on_process_result (GSignondAuthSessionIface *iface,
-                    GSignondSessionData *result,
-                    gpointer user_data
-                   )
+gsignond_auth_session_notify_process_result (GSignondAuthSession *iface,
+                                             GSignondSessionData *result,
+                                             gpointer user_data)
 {
     int i;
     
@@ -135,8 +130,8 @@ _on_process_result (GSignondAuthSessionIface *iface,
             gsignond_session_data_set_username(data, "megauser");
             gsignond_session_data_set_secret(data, "megapassword");
 
-            gsignond_plugin_proxy_process(proxy, iface, data, "password");
-            gsignond_plugin_proxy_process(proxy, iface, data, "password");
+            gsignond_plugin_proxy_process(proxy, iface, data, "password", proxy);
+            gsignond_plugin_proxy_process(proxy, iface, data, "password", proxy);
     
             gsignond_dictionary_unref(data);
         }
@@ -153,7 +148,7 @@ _on_process_result (GSignondAuthSessionIface *iface,
             gsignond_session_data_set_secret(data, "megapassword");
 
             for (i = 0; i < 9; i++)
-                gsignond_plugin_proxy_process(proxy, iface, data, "password");
+                gsignond_plugin_proxy_process(proxy, iface, data, "password", proxy);
     
             gsignond_dictionary_unref(data);
         }
@@ -169,8 +164,8 @@ _on_process_result (GSignondAuthSessionIface *iface,
 }
 
 void
-_on_process_error (
-                                                GSignondAuthSessionIface *iface,
+gsignond_auth_session_notify_process_error (
+                                                GSignondAuthSession *iface,
                                                 const GError *error,
                                                 gpointer user_data
                   )
@@ -185,32 +180,30 @@ _on_process_error (
 }
 
 void 
-_on_process_store (GSignondAuthSessionIface *self, 
-                            GSignondSessionData *session_data, gpointer user_data)
+gsignond_auth_session_notify_store (GSignondAuthSession *self, 
+                            GSignondSessionData *session_data)
 {
     fail_if(TRUE);
 }
 
 void 
-_on_process_user_action_required (GSignondAuthSessionIface *self, 
-                                           GSignondSessionData *session_data,
-                                           gpointer user_data
+gsignond_auth_session_notify_user_action_required (GSignondAuthSession *self, 
+                                           GSignondSignonuiData *session_data
                                  )
 {
     fail_if(TRUE);
 }
 
 void 
-_on_process_refreshed (GSignondAuthSessionIface *self, 
-                                GSignondSessionData *session_data,
-                                gpointer user_data
+gsignond_auth_session_notify_refreshed (GSignondAuthSession *self, 
+                                GSignondSignonuiData *session_data
                                              )
 {
     fail_if(TRUE);
 }
 
 void 
-_on_state_changed (GSignondAuthSessionIface *self, 
+gsignond_auth_session_notify_state_changed (GSignondAuthSession *self, 
                                      gint state, 
                                      const gchar *message,
                                      gpointer user_data
@@ -218,21 +211,6 @@ _on_state_changed (GSignondAuthSessionIface *self,
 {
     INFO("AuthSession state changed %d %s", state, message);
 }
-
-static void
-gsignond_auth_session_iface_init (gpointer g_iface)
-{
-/*    GSignondAuthSessionIfaceInterface *auth_session_iface =
-        (GSignondAuthSessionIfaceInterface *) g_iface;
-
-    auth_session_iface->process = _process;
-    auth_session_iface->query_available_mechanisms = _query_available_mechanisms;
-    auth_session_iface->cancel = _cancel;
-    auth_session_iface->user_action_finished = _user_action_finished;
-    auth_session_iface->refresh = _refresh;
-    auth_session_iface->get_acm = _get_acm;*/
-}
-
 
 START_TEST (test_pluginproxy_process)
 {
@@ -247,18 +225,11 @@ START_TEST (test_pluginproxy_process)
     gsignond_session_data_set_username(data, "megauser");
     gsignond_session_data_set_secret(data, "megapassword");
     
-    GSignondTestAuthSession* test_auth_session = g_object_new(gsignond_test_auth_session_get_type(), NULL);
+    GSignondAuthSession* test_auth_session = g_object_new(gsignond_auth_session_get_type(), NULL);
 
     testing_proxy_process = TRUE;
-    g_signal_connect (test_auth_session, "process-error", G_CALLBACK(_on_process_error), NULL);
-    g_signal_connect (test_auth_session, "process-result", G_CALLBACK(_on_process_result), proxy);
-    g_signal_connect (test_auth_session, "process-store", G_CALLBACK(_on_process_store), NULL);
-    g_signal_connect (test_auth_session, "process-user-action-required", 
-                      G_CALLBACK(_on_process_user_action_required), NULL);
-    g_signal_connect (test_auth_session, "process-refreshed", G_CALLBACK(_on_process_refreshed), NULL);
-    g_signal_connect (test_auth_session, "state-changed", G_CALLBACK(_on_state_changed), NULL);
 
-    gsignond_plugin_proxy_process(proxy, GSIGNOND_AUTH_SESSION_IFACE(test_auth_session), data, "password");
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password", proxy);
     fail_if(testing_proxy_process);
     
     gsignond_dictionary_unref(data);
@@ -281,18 +252,11 @@ START_TEST (test_pluginproxy_process_cancel)
     gsignond_session_data_set_username(data, "megauser");
     gsignond_session_data_set_secret(data, "megapassword");
 
-    GSignondTestAuthSession* test_auth_session = g_object_new(gsignond_test_auth_session_get_type(), NULL);
+    GSignondAuthSession* test_auth_session = g_object_new(gsignond_auth_session_get_type(), NULL);
     
     testing_proxy_process_cancel = TRUE;
-    g_signal_connect (test_auth_session, "process-error", G_CALLBACK(_on_process_error), NULL);
-    g_signal_connect (test_auth_session, "process-result", G_CALLBACK(_on_process_result), proxy);
-    g_signal_connect (test_auth_session, "process-store", G_CALLBACK(_on_process_store), NULL);
-    g_signal_connect (test_auth_session, "process-user-action-required", 
-                      G_CALLBACK(_on_process_user_action_required), NULL);
-    g_signal_connect (test_auth_session, "process-refreshed", G_CALLBACK(_on_process_refreshed), NULL);
-    g_signal_connect (test_auth_session, "state-changed", G_CALLBACK(_on_state_changed), NULL);
     
-    gsignond_plugin_proxy_process(proxy, GSIGNOND_AUTH_SESSION_IFACE(test_auth_session), data, "password");
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password", proxy);
     fail_if(testing_proxy_process_cancel);
     
     gsignond_dictionary_unref(data);
@@ -315,18 +279,11 @@ START_TEST (test_pluginproxy_process_queue)
     gsignond_session_data_set_username(data, "megauser");
     gsignond_session_data_set_secret(data, "megapassword");
 
-    GSignondTestAuthSession* test_auth_session = g_object_new(gsignond_test_auth_session_get_type(), NULL);
+    GSignondAuthSession* test_auth_session = g_object_new(gsignond_auth_session_get_type(), NULL);
     
     testing_proxy_process_queue = TRUE;
-    g_signal_connect (test_auth_session, "process-error", G_CALLBACK(_on_process_error), NULL);
-    g_signal_connect (test_auth_session, "process-result", G_CALLBACK(_on_process_result), proxy);
-    g_signal_connect (test_auth_session, "process-store", G_CALLBACK(_on_process_store), NULL);
-    g_signal_connect (test_auth_session, "process-user-action-required", 
-                      G_CALLBACK(_on_process_user_action_required), NULL);
-    g_signal_connect (test_auth_session, "process-refreshed", G_CALLBACK(_on_process_refreshed), NULL);
-    g_signal_connect (test_auth_session, "state-changed", G_CALLBACK(_on_state_changed), NULL);
     
-    gsignond_plugin_proxy_process(proxy, GSIGNOND_AUTH_SESSION_IFACE(test_auth_session), data, "password");
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password", proxy);
     fail_if(testing_proxy_process_queue);
     fail_if(proxy_process_queue_results < 3);
 
@@ -350,18 +307,11 @@ START_TEST (test_pluginproxy_process_queue_cancel)
     gsignond_session_data_set_username(data, "megauser");
     gsignond_session_data_set_secret(data, "megapassword");
 
-    GSignondTestAuthSession* test_auth_session = g_object_new(gsignond_test_auth_session_get_type(), NULL);
+    GSignondAuthSession* test_auth_session = g_object_new(gsignond_auth_session_get_type(), NULL);
     
     testing_proxy_process_queue_cancel = TRUE;
-    g_signal_connect (test_auth_session, "process-error", G_CALLBACK(_on_process_error), NULL);
-    g_signal_connect (test_auth_session, "process-result", G_CALLBACK(_on_process_result), proxy);
-    g_signal_connect (test_auth_session, "process-store", G_CALLBACK(_on_process_store), NULL);
-    g_signal_connect (test_auth_session, "process-user-action-required", 
-                      G_CALLBACK(_on_process_user_action_required), NULL);
-    g_signal_connect (test_auth_session, "process-refreshed", G_CALLBACK(_on_process_refreshed), NULL);
-    g_signal_connect (test_auth_session, "state-changed", G_CALLBACK(_on_state_changed), NULL);
     
-    gsignond_plugin_proxy_process(proxy, GSIGNOND_AUTH_SESSION_IFACE(test_auth_session), data, "password");
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password", proxy);
     fail_if(testing_proxy_process_queue_cancel);
     fail_if(proxy_process_queue_cancel_results != 10);
 
@@ -404,19 +354,22 @@ START_TEST (test_pluginproxyfactory_get)
     GSignondPluginProxyFactory* factory = gsignond_plugin_proxy_factory_new(config);
     fail_if(factory == NULL);
     
-    fail_if(gsignond_plugin_proxy_factory_get_plugin(factory, 123, "absentplugin") != NULL);
+    fail_if(gsignond_plugin_proxy_factory_get_plugin(factory, "absentplugin") != NULL);
 
     GSignondPluginProxy* proxy1 = gsignond_plugin_proxy_factory_get_plugin(
-        factory, 123, "password");
+        factory, "password");
     GSignondPluginProxy* proxy2 = gsignond_plugin_proxy_factory_get_plugin(
-        factory, 456, "password");
+        factory, "password");
     GSignondPluginProxy* proxy3 = gsignond_plugin_proxy_factory_get_plugin(
-        factory, 123, "password");
+        factory, "password");
     fail_if(proxy1 == NULL || proxy2 == NULL || proxy3 == NULL);
-    fail_if(proxy1 != proxy3 || proxy1 == proxy2);
+    fail_if(proxy1 != proxy3 || proxy1 != proxy2);
     check_plugin_proxy(proxy1);
-    check_plugin_proxy(proxy2);
 
+    g_object_unref(proxy1);
+    g_object_unref(proxy2);
+    g_object_unref(proxy3);    
+    
     g_object_unref(factory);
     g_object_unref(config);
 }
@@ -432,9 +385,9 @@ START_TEST (test_pluginproxyfactory_add)
 
     GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(config, "password");
     fail_if (proxy == NULL);
-    fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, 123, proxy) == FALSE);
-    fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, 123, proxy) == TRUE);
-    fail_if(gsignond_plugin_proxy_factory_get_plugin(factory, 123, "password") != proxy);
+    fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, proxy) == FALSE);
+    fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, proxy) == TRUE);
+    fail_if(gsignond_plugin_proxy_factory_get_plugin(factory, "password") != proxy);
 
     g_object_unref(proxy);
     g_object_unref(factory);

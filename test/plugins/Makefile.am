@@ -38,7 +38,6 @@ pluginproxytest_CFLAGS = \
 pluginproxytest_LDADD = \
     $(top_builddir)/src/common/libgsignond-common.la \
     $(top_builddir)/src/daemon/plugins/libgsignond-plugins.la \
-    $(top_srcdir)/src/daemon/gsignond-gsignond-auth-session-iface.o \
     $(GSIGNOND_LIBS) \
     $(CHECK_LIBS)
     
