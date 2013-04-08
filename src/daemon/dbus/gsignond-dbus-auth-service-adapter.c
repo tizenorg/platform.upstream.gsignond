@@ -46,6 +46,9 @@ struct _GSignondDbusAuthServiceAdapterPrivate
     GSignondDbusAuthService *dbus_auth_service;
     GSignondDaemon  *auth_service;
     GList *identities;
+#ifndef USE_P2P
+    GHashTable *caller_watchers; //(dbus_caller:watcher_id)
+#endif
 };
 
 G_DEFINE_TYPE (GSignondDbusAuthServiceAdapter, gsignond_dbus_auth_service_adapter, GSIGNOND_TYPE_DISPOSABLE)
@@ -141,6 +144,13 @@ _dispose (GObject *object)
         self->priv->connection = NULL;
     }
 
+#ifndef USE_P2P
+    if (self->priv->caller_watchers) {
+        g_hash_table_unref (self->priv->caller_watchers);
+        self->priv->caller_watchers = NULL;
+    }
+#endif
+
     G_OBJECT_CLASS (gsignond_dbus_auth_service_adapter_parent_class)->dispose (object);
 }
 
@@ -191,7 +201,12 @@ gsignond_dbus_auth_service_adapter_init (GSignondDbusAuthServiceAdapter *self)
 
     self->priv->connection = 0;
     self->priv->auth_service = 0;
+    self->priv->identities = NULL;
     self->priv->dbus_auth_service = gsignond_dbus_auth_service_skeleton_new ();
+#ifndef USE_P2P
+    self->priv->caller_watchers = g_hash_table_new_full (g_str_hash, g_str_equal, 
+                                g_free, (GDestroyNotify)g_bus_unwatch_name);
+#endif
 
     g_signal_connect_swapped (self->priv->dbus_auth_service,
         "handle-register-new-identity", G_CALLBACK (_handle_register_new_identity), self);
@@ -209,13 +224,39 @@ gsignond_dbus_auth_service_adapter_init (GSignondDbusAuthServiceAdapter *self)
 
 #ifndef USE_P2P
 static void
+_clear_cache_for_name (gpointer data, gpointer user_data)
+{
+    g_return_if_fail (user_data);
+    g_return_if_fail (data && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (data));
+    
+    const gchar *caller = (const gchar *)user_data;
+    GSignondDbusIdentityAdapter *dbus_identity = GSIGNOND_DBUS_IDENTITY_ADAPTER (data);
+    const gchar *identity_owner = g_object_get_data (G_OBJECT (dbus_identity), "dbus-client-name");
+
+    if (g_strcmp0 (identity_owner, caller) == 0) {
+        DBG ("removing dbus identity '%p' from cache", dbus_identity);
+        g_object_unref (dbus_identity);
+    }
+}
+
+static void
 _on_connnection_lost (GDBusConnection *conn, const char *peer_name, gpointer user_data)
 {
     (void) conn;
-    DBG ("(-)peer disappeared : %s, disposing identity object '%p'", peer_name, user_data);
-    g_object_unref (G_OBJECT (user_data));
+    g_return_if_fail (peer_name);
+    g_return_if_fail (user_data && GSIGNOND_IS_DBUS_AUTH_SERVICE_ADAPTER(user_data));
+
+    GSignondDbusAuthServiceAdapter *self = GSIGNOND_DBUS_AUTH_SERVICE_ADAPTER (user_data);
+    DBG ("(-)peer disappeared : %s", peer_name);
+
+    g_list_foreach (self->priv->identities, _clear_cache_for_name, (gpointer)peer_name);
+
+    if (g_hash_table_contains (self->priv->caller_watchers, peer_name)) {
+        g_hash_table_remove (self->priv->caller_watchers, (gpointer)peer_name);
+    }
 }
 #endif
+
 static void
 _on_identity_disposed (gpointer data, GObject *object)
 {
@@ -228,6 +269,38 @@ _on_identity_disposed (gpointer data, GObject *object)
         gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
         gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
     }
+}
+
+static GSignondDbusIdentityAdapter *
+_create_and_cache_dbus_identity (GSignondDbusAuthServiceAdapter *self,
+                                 GSignondIdentity *identity,
+                                 const gchar *app_context,
+                                 GDBusConnection *connection,
+                                 const gchar *sender)
+{
+    GSignondDbusIdentityAdapter *dbus_identity = NULL; 
+    guint identity_timeout = gsignond_daemon_get_identity_timeout (self->priv->auth_service);
+
+    dbus_identity = gsignond_dbus_identity_adapter_new_with_connection (
+                            g_object_ref (connection), identity, app_context, identity_timeout);
+
+    /* keep alive till this identity object gets disposed */
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
+    self->priv->identities = g_list_append (self->priv->identities, dbus_identity);
+    g_object_weak_ref (G_OBJECT (dbus_identity), _on_identity_disposed, self);
+#ifndef USE_P2P
+    g_object_set_data (G_OBJECT(dbus_identity), "dbus-client-name", (gpointer)g_strdup(sender));
+    if (!g_hash_table_contains (self->priv->caller_watchers, sender)) {
+        guint watcher_id = g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 
+                                        NULL, _on_connnection_lost, self, NULL);
+        g_hash_table_insert (self->priv->caller_watchers, 
+                             (gpointer)g_strdup (sender),
+                             GUINT_TO_POINTER(watcher_id));
+    }
+#endif
+
+    return dbus_identity;
 }
 
 static gboolean
@@ -262,21 +335,7 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
     identity = gsignond_daemon_register_new_identity (self->priv->auth_service, &sec_context, &error);
 
     if (identity) {
-        GSignondDbusIdentityAdapter *dbus_identity = NULL;
-        guint identity_timeout = gsignond_daemon_get_identity_timeout (self->priv->auth_service);
- 
-        dbus_identity = gsignond_dbus_identity_adapter_new_with_connection (
-                            g_object_ref (connection), identity, app_context, identity_timeout);
-#ifndef USE_P2P
-        g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 
-                                        NULL, _on_connnection_lost, dbus_identity, NULL);
-#endif
-
-        self->priv->identities = g_list_append (self->priv->identities, dbus_identity);
-        g_object_weak_ref (G_OBJECT (dbus_identity), _on_identity_disposed, self);
-
-        /* keep alive till this identity object gets disposed */
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+        GSignondDbusIdentityAdapter *dbus_identity = _create_and_cache_dbus_identity (self, identity, app_context, connection, sender);
 
         gsignond_dbus_auth_service_complete_register_new_identity (self->priv->dbus_auth_service,
             invocation, gsignond_dbus_identity_adapter_get_object_path (dbus_identity));
@@ -321,24 +380,10 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
     identity = gsignond_daemon_get_identity (self->priv->auth_service, id, &sec_context, &error);
 
     if (identity) {
-        GSignondDbusIdentityAdapter *dbus_identity = NULL;
         GSignondIdentityInfo *info = NULL;
-        guint identity_timeout = 0;
+        GSignondDbusIdentityAdapter *dbus_identity = _create_and_cache_dbus_identity (self, identity, app_context, connection, sender);
 
-        identity_timeout = gsignond_daemon_get_identity_timeout (self->priv->auth_service);
-        dbus_identity = gsignond_dbus_identity_adapter_new_with_connection (
-                            g_object_ref(connection), identity, app_context, identity_timeout);
         info = gsignond_identity_get_identity_info (identity);
-#ifndef USE_P2P
-        g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 
-                                        NULL, _on_connnection_lost, dbus_identity, NULL);
-#endif
-        self->priv->identities = g_list_append (self->priv->identities, dbus_identity);
-        g_object_weak_ref (G_OBJECT (dbus_identity), _on_identity_disposed, self);
-
-        /* keep alive till this identity object gets disposed */
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
-
         gsignond_dbus_auth_service_complete_get_identity (self->priv->dbus_auth_service,
             invocation, gsignond_dbus_identity_adapter_get_object_path (dbus_identity),
             gsignond_dictionary_to_variant (info));
