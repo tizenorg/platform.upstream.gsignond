@@ -95,7 +95,7 @@ gboolean
 gsignond_session_data_get_ui_policy (GSignondSessionData *data,
                                      guint32 *ui_policy)
 {
-    return gsignond_dictionary_get_uint32 (data, "UIPolicy", ui_policy);
+    return gsignond_dictionary_get_uint32 (data, "UiPolicy", ui_policy);
 }
 
 void
