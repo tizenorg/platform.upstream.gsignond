@@ -1,7 +1,7 @@
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
 Version: 0.0.0
-Release: 6
+Release: 8
 Group: System/Daemons
 License: LGPL
 Source: %{name}-%{version}.tar.bz2
@@ -45,8 +45,8 @@ autoreconf --install --force
 
 
 %build
-%configure
-make %{?_smp_mflags}
+%configure --enable-dbus-type=p2p
+make #%{?_smp_mflags}
 
 
 %install
@@ -67,7 +67,7 @@ rm -rf %{buildroot}
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
 %{_libdir}/%{name}/plugins/*.so*
-%{_datadir}/dbus-1/services/*SingleSignOn*.service
+#%{_datadir}/dbus-1/services/*SingleSignOn*.service
 %exclude %{_libdir}/gsignond/extensions/*.la
 %exclude %{_libdir}/gsignond/plugins/*.la
 
@@ -79,6 +79,7 @@ rm -rf %{buildroot}
 %{_libdir}/lib%{name}-*.la
 %{_libdir}/pkgconfig/%{name}.pc
 %{_datadir}/dbus-1/interfaces/*SingleSignOn*.xml
+%{_datadir}/dbus-1/interfaces/*SSO*.xml
 
 
 %changelog
