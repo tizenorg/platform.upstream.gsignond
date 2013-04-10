@@ -44,6 +44,12 @@ if test "x$gtestdbus" = xyes; then
     AC_DEFINE(HAVE_GTESTDBUS, [1], [Define if GTestDBus exists.])
 fi
 
+PKG_CHECK_MODULES([LIBSMACK], libsmack >= 1.0, [libsmack=yes], [libsmack=no])
+AM_CONDITIONAL(HAVE_LIBSMACK, [test x$libsmack = xyes])
+if test "x$libsmack" = xyes; then
+    AC_DEFINE(HAVE_LIBSMACK, [1], [Define if libsmack exists.])
+fi
+
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
 AC_ARG_ENABLE(dbus-type,
@@ -96,6 +102,7 @@ src/daemon/dbus/services/com.google.code.AccountsSSO.gSingleSignOn.service
 src/daemon/plugins/Makefile
 src/extensions/Makefile
 src/extensions/test/Makefile
+src/extensions/tizen/Makefile
 src/plugins/Makefile
 src/plugins/password/Makefile
 src/plugins/ssotest/Makefile

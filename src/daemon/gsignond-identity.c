@@ -76,7 +76,9 @@ static void _on_session_close (gpointer data, GObject *session);
 { \
     GSignondAccessControlManager *acm = gsignond_daemon_get_access_control_manager (identity->priv->owner); \
     GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (identity->priv->info); \
-    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
+    GSignondSecurityContext *owner = gsignond_identity_info_get_owner (identity->priv->info); \
+    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, owner, acl); \
+    gsignond_security_context_free (owner); \
     gsignond_security_context_list_free (acl); \
     if (!valid) { \
         WARN ("cannot access identity."); \

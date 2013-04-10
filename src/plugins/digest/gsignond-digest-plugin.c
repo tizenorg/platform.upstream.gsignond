@@ -360,25 +360,24 @@ gsignond_digest_plugin_init (GSignondDigestPlugin *self)
     priv->initialized = FALSE;
     priv->session_data = NULL;
 
-    gint fd;
+    int fd;
 
     fd = open ("/dev/urandom", O_RDONLY);
     if (fd < 0)
         return;
-    if (read (fd, priv->key, sizeof (priv->key)) != sizeof (priv->key)) {
-        close(fd);
-        return;
-    }
+    if (read (fd, priv->key, sizeof (priv->key)) != sizeof (priv->key))
+        goto init_exit;
     if (read (fd, priv->entropy, sizeof(priv->entropy)) !=
-        sizeof (priv->entropy)) {
-        close(fd);
-        return;
-    }
+        sizeof (priv->entropy))
+        goto init_exit;
 
     priv->rand = g_rand_new ();
     priv->serial = 0;
 
     priv->initialized = TRUE;
+
+init_exit:
+    close (fd);
 }
 
 enum

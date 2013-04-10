@@ -187,6 +187,7 @@ _init_extensions (GSignondDaemon *self)
     gboolean symfound;
     const gchar *ext_path;
     const gchar *ext_name;
+    gchar *mod_name;
     gchar *mod_filename;
     gchar *initf_name;
     GSignondExtensionInit ext_init;
@@ -198,7 +199,9 @@ _init_extensions (GSignondDaemon *self)
     if (ext_name && !ext_path) return FALSE;
 
     if (ext_name && g_strcmp0 (ext_name, "default") != 0) {
-        mod_filename = g_module_build_path (ext_path, ext_name);
+        mod_name = g_strdup_printf ("extension-%s", ext_name);
+        mod_filename = g_module_build_path (ext_path, mod_name);
+        g_free (mod_name);
         if (!mod_filename) return FALSE;
         DBG ("Loading extension '%s'", mod_filename);
         self->priv->extension_module =
@@ -425,7 +428,9 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
 { \
     GSignondAccessControlManager *acm = daemon->priv->acm; \
     GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (info); \
-    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
+    GSignondSecurityContext *owner = gsignond_identity_info_get_owner (info); \
+    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, owner, acl); \
+    gsignond_security_context_free (owner); \
     gsignond_security_context_list_free (acl); \
     if (!valid) { \
         WARN ("identity access check failed"); \

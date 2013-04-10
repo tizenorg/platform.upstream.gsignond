@@ -75,7 +75,9 @@ G_DEFINE_TYPE (GSignondAuthSession, gsignond_auth_session, G_TYPE_OBJECT)
 { \
     GSignondAccessControlManager *acm = gsignond_get_access_control_manager(); \
     GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (info); \
-    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, acl); \
+    GSignondSecurityContext *owner = gsignond_identity_info_get_owner (info); \
+    gboolean valid = gsignond_access_control_manager_peer_is_allowed_to_use_identity (acm, ctx, owner, acl); \
+    gsignond_security_context_free (owner); \
     gsignond_security_context_list_free (acl); \
     if (!valid) { \
         WARN ("security check failed"); \

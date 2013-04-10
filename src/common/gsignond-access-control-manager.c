@@ -109,10 +109,12 @@ _security_context_of_peer (GSignondAccessControlManager *self,
 static gboolean
 _peer_is_allowed_to_use_identity (GSignondAccessControlManager *self,
                                 const GSignondSecurityContext *peer_ctx,
+                                const GSignondSecurityContext *identity_owner,
                                 const GSignondSecurityContextList *identity_acl)
 {
     (void) self;
     (void) peer_ctx;
+    (void) identity_owner;
     (void) identity_acl;
 
     return TRUE;
@@ -211,6 +213,7 @@ gsignond_access_control_manager_security_context_of_peer (
  * gsignond_access_control_manager_peer_is_allowed_to_use_identity:
  * @self: object instance.
  * @peer_ctx: security context of the peer connection.
+ * @identity_owner: security context of the identity owner.
  * @identity_acl: access control list for the identity in question.
  *
  * Checks if specified peer is allowed to access the specified identity.
@@ -221,10 +224,11 @@ gboolean
 gsignond_access_control_manager_peer_is_allowed_to_use_identity (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
+                            const GSignondSecurityContext *identity_owner,
                             const GSignondSecurityContextList *identity_acl)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        peer_is_allowed_to_use_identity (self, peer_ctx, identity_acl);
+        peer_is_allowed_to_use_identity (self, peer_ctx, identity_owner, identity_acl);
 }
 
 /**

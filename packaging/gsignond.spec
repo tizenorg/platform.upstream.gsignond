@@ -15,6 +15,7 @@ BuildRequires: pkgconfig(gio-2.0)
 BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(gmodule-2.0)
 BuildRequires: pkgconfig(sqlite3)
+BuildRequires: pkgconfig(libsmack)
 
 
 %description

@@ -3,9 +3,10 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012-2013 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *
  * Contact: Jussi Laako <jussi.laako@linux.intel.com>
+ * Contact: Elena Reshetova <elena.reshetova@linux.intel.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,53 +24,53 @@
  * 02110-1301 USA
  */
 
-#ifndef _GSIGNOND_ACCESS_CONTROL_MANAGER_H_
-#define _GSIGNOND_ACCESS_CONTROL_MANAGER_H_
+#ifndef _TIZEN_ACCESS_CONTROL_MANAGER_H_
+#define _TIZEN_ACCESS_CONTROL_MANAGER_H_
 
 #include <glib-object.h>
-
-#include <gsignond/gsignond-config.h>
-#include <gsignond/gsignond-security-context.h>
+#include <gsignond/gsignond-extension-interface.h>
 
 G_BEGIN_DECLS
 
-#define GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER \
-    (gsignond_access_control_manager_get_type ())
-#define GSIGNOND_ACCESS_CONTROL_MANAGER(obj) \
-    (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER, \
-                                 GSignondAccessControlManager))
-#define GSIGNOND_IS_ACCESS_CONTROL_MANAGER(obj) \
-    (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER))
-#define GSIGNOND_ACCESS_CONTROL_MANAGER_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_CAST ((klass), GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER, \
-                              GSignondAccessControlManagerClass))
-#define GSIGNOND_IS_ACCESS_CONTROL_MANAGER_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_TYPE ((klass), GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER))
-#define GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS(obj) \
-    (G_TYPE_INSTANCE_GET_CLASS ((obj), GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER, \
-                                GSignondAccessControlManagerClass))
+#define EXTENSION_TYPE_TIZEN_ACCESS_CONTROL_MANAGER \
+    (extension_tizen_access_control_manager_get_type ())
+#define EXTENSION_TIZEN_ACCESS_CONTROL_MANAGER(obj) \
+    (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
+                                 EXTENSION_TYPE_TIZEN_ACCESS_CONTROL_MANAGER, \
+                                 ExtensionTizenAccessControlManager))
+#define EXTENSION_IS_TIZEN_ACCESS_CONTROL_MANAGER(obj) \
+    (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
+                                 EXTENSION_TYPE_TIZEN_ACCESS_CONTROL_MANAGER))
+#define EXTENSION_TIZEN_ACCESS_CONTROL_MANAGER_CLASS(klass) \
+    (G_TYPE_CHECK_CLASS_CAST ((klass), \
+                              EXTENSION_TYPE_TIZEN_ACCESS_CONTROL_MANAGER, \
+                              ExtensionTizenAccessControlManagerClass))
+#define EXTENSION_IS_TIZEN_ACCESS_CONTROL_MANAGER_CLASS(klass) \
+    (G_TYPE_CHECK_CLASS_TYPE ((klass), \
+                              EXTENSION_TYPE_TIZEN_ACCESS_CONTROL_MANAGER))
+#define EXTENSION_TIZEN_ACCESS_CONTROL_MANAGER_GET_CLASS(obj) \
+    (G_TYPE_INSTANCE_GET_CLASS ((obj), \
+                                EXTENSION_TYPE_TIZEN_ACCESS_CONTROL_MANAGER, \
+                                ExtensionTizenAccessControlManagerClass))
 
-typedef struct _GSignondAccessControlManager
-               GSignondAccessControlManager;
-typedef struct _GSignondAccessControlManagerClass
-               GSignondAccessControlManagerClass;
-typedef struct _GSignondAccessControlManagerPrivate
-               GSignondAccessControlManagerPrivate;
+typedef struct _ExtensionTizenAccessControlManager
+    ExtensionTizenAccessControlManager;
+typedef struct _ExtensionTizenAccessControlManagerClass
+    ExtensionTizenAccessControlManagerClass;
+typedef struct _ExtensionTizenAccessControlManagerPrivate
+    ExtensionTizenAccessControlManagerPrivate;
 
-struct _GSignondAccessControlManager
+struct _ExtensionTizenAccessControlManager
 {
-    GObject parent_instance;
-    GSignondConfig *config;
-
-    /* private */
-    GSignondAccessControlManagerPrivate *priv;
+    GSignondAccessControlManager parent_instance;
+    ExtensionTizenAccessControlManagerPrivate *priv;
 };
 
-struct _GSignondAccessControlManagerClass
+struct _ExtensionTizenAccessControlManagerClass
 {
-    GObjectClass parent_class;
-
-    /**
+    GSignondAccessControlManagerClass parent_class;
+    
+     /**
      * security_context_of_peer:
      *
      * See #gsignond_access_control_manager_security_context_of_peer.
@@ -98,15 +99,7 @@ struct _GSignondAccessControlManagerClass
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContext *identity_owner);
-    /**
-     * acl_is_valid:
-     *
-     * See #gsignond_access_control_manager_acl_is_valid.
-     */
-    gboolean (*acl_is_valid) (
-                            GSignondAccessControlManager *self,
-                            const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContextList *identity_acl);
+
     /**
      * security_context_of_keychain:
      *
@@ -116,40 +109,33 @@ struct _GSignondAccessControlManagerClass
                             GSignondAccessControlManager *self);
 };
 
-GType gsignond_access_control_manager_get_type ();
+GType extension_tizen_access_control_manager_get_type ();
 
 void
-gsignond_access_control_manager_security_context_of_peer (
+extension_tizen_access_control_manager_security_context_of_peer (
                             GSignondAccessControlManager *self,
                             GSignondSecurityContext *peer_ctx,
                             int peer_fd, const gchar *peer_service,
                             const gchar *peer_app_ctx);
 
 gboolean
-gsignond_access_control_manager_peer_is_allowed_to_use_identity (
+extension_tizen_access_control_manager_peer_is_allowed_to_use_identity (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContext *identity_owner,
                             const GSignondSecurityContextList *identity_acl);
 
 gboolean
-gsignond_access_control_manager_peer_is_owner_of_identity (
+extension_tizen_access_control_manager_peer_is_owner_of_identity (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContext *identity_owner);
 
-gboolean
-gsignond_access_control_manager_acl_is_valid (
-                            GSignondAccessControlManager *self,
-                            const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContextList *identity_acl);
-
 GSignondSecurityContext *
-gsignond_access_control_manager_security_context_of_keychain (
+extension_tizen_access_control_manager_security_context_of_keychain (
                             GSignondAccessControlManager *self);
-
 
 G_END_DECLS
 
-#endif  /* _GSIGNOND_ACCESS_CONTROL_MANAGER_H_ */
+#endif  /* _TIZEN_ACCESS_CONTROL_MANAGER_H_ */
 
