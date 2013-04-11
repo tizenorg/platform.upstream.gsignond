@@ -27,9 +27,13 @@
 
 #include <glib.h>
 
-#define INFO(frmt, args...) g_message("%s:%d  " frmt , __FILE__, __LINE__, ##args)
-#define ERR(frmt, args...)  g_error("%s:%d  " frmt , __FILE__, __LINE__, ##args)
-#define WARN(frmt, args...)  g_warning("%s:%d  " frmt , __FILE__, __LINE__, ##args)
-#define DBG(frmt, args...)  g_debug("%s:%d  " frmt , __FILE__, __LINE__, ##args)
+#define INFO(frmt, args...) g_message("%s:%d %s " frmt , __FILE__, __LINE__, \
+        __PRETTY_FUNCTION__, ##args)
+#define ERR(frmt, args...)  g_error("%s:%d %s " frmt , __FILE__, __LINE__, \
+        __PRETTY_FUNCTION__, ##args)
+#define WARN(frmt, args...)  g_warning("%s:%d %s " frmt , __FILE__, __LINE__, \
+        __PRETTY_FUNCTION__, ##args)
+#define DBG(frmt, args...)  g_debug("%s:%d %s " frmt , __FILE__, __LINE__, \
+        __PRETTY_FUNCTION__, ##args)
 
 #endif /* __GSIGNOND_LOG_H_ */

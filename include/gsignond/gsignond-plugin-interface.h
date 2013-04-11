@@ -77,7 +77,6 @@ struct _GSignondPluginInterface {
     GTypeInterface parent;
 
     void (*cancel) (GSignondPlugin *self);
-    void (*abort) (GSignondPlugin *self);
     void (*request_initial) (GSignondPlugin *self, 
                      GSignondSessionData *session_data, 
                      const gchar *mechanism);
@@ -94,8 +93,6 @@ GType gsignond_plugin_get_type (void);
 /* Methods */
 void 
 gsignond_plugin_cancel (GSignondPlugin *self);
-void 
-gsignond_plugin_abort (GSignondPlugin *self);
 void 
 gsignond_plugin_request_initial (GSignondPlugin *self, 
                               GSignondSessionData *session_data, 

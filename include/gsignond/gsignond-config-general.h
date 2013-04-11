@@ -35,6 +35,8 @@
                                                 "/ExtensionsDir"
 #define GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR     GSIGNOND_CONFIG_GENERAL \
                                                 "/PluginsDir"
+#define GSIGNOND_CONFIG_GENERAL_BIN_DIR         GSIGNOND_CONFIG_GENERAL \
+                                                "/BinDir"
 #define GSIGNOND_CONFIG_GENERAL_EXTENSION       GSIGNOND_CONFIG_GENERAL \
                                                 "/Extension"
 #define GSIGNOND_CONFIG_GENERAL_SECURE_DIR      GSIGNOND_CONFIG_GENERAL \

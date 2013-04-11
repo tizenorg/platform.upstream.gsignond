@@ -34,5 +34,6 @@
                                                 "/IdentityTimeout"
 #define GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT GSIGNOND_CONFIG_DBUS_TIMEOUTS \
                                                   "/AuthSessionTimeout"
-
+#define GSIGNOND_CONFIG_DBUS_PLUGIN_TIMEOUT     GSIGNOND_CONFIG_DBUS_TIMEOUTS \
+                                                  "/PluginTimeout"
 #endif /* __GSIGNOND_CONFIG_DBUS_H_ */

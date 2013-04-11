@@ -86,9 +86,7 @@ _load_config (GSignondConfig *self)
                 def_config = g_build_filename (*sysconfdirs,
                                                "gsignond/gsignond.conf",
                                                NULL);
-                DBG ("try to load config from %s", def_config);
                 if (g_access (def_config, R_OK) == 0) {
-                    DBG ("use config from %s", def_config);
                     self->priv->config_file_path = def_config;
                     break;
                 }
@@ -203,6 +201,12 @@ _load_environment (GSignondConfig *self)
                                     GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
                                     e_val);
 
+    e_val = g_getenv ("SSO_BIN_DIR");
+    if (e_val)
+        gsignond_config_set_string (self,
+                                    GSIGNOND_CONFIG_GENERAL_BIN_DIR,
+                                    e_val);
+
     e_val = g_getenv ("SSO_EXTENSION");
     if (e_val)
         gsignond_config_set_string (self,
@@ -313,6 +317,9 @@ gsignond_config_init (GSignondConfig *self)
     gsignond_config_set_string (self,
                                 GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
                                 (GSIGNOND_EXTENSIONS_DIR));
+    gsignond_config_set_string (self,
+                             (GSIGNOND_CONFIG_GENERAL_BIN_DIR),
+                             (GSIGNOND_BIN_DIR));
 
     gchar *default_data_path =
         g_build_filename (g_get_user_data_dir (), "gsignond", NULL);

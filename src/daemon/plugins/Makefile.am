@@ -1,3 +1,5 @@
+SUBDIRS = plugind
+
 lib_LTLIBRARIES = libgsignond-plugins.la
 
 libgsignond_plugins_la_CPPFLAGS = \
@@ -8,10 +10,12 @@ libgsignond_plugins_la_CPPFLAGS = \
 
 libgsignond_plugins_la_LIBADD =    \
         $(top_srcdir)/src/common/libgsignond-common.la \
+        $(top_srcdir)/src/daemon/dbus/libgsignond-dbus-glue.la \
         $(GSIGNOND_LIBS)
 
 libgsignond_plugins_la_SOURCES = \
    gsignond-plugin-proxy.c \
-   gsignond-plugin-proxy-factory.c
+   gsignond-plugin-proxy-factory.c \
+   gsignond-plugin-remote.c
 
 CLEANFILES = 

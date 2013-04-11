@@ -29,21 +29,32 @@
 #include <gmodule.h>
 
 GSignondPlugin*
-gsignond_load_plugin(GSignondConfig* config, gchar* plugin_type)
+gsignond_load_plugin(
+        GSignondConfig* config,
+        gchar* plugin_type)
 {
     gchar* plugin_filename = g_module_build_path (
-        gsignond_config_get_string (config, 
-        GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), 
-        plugin_type);
+            gsignond_config_get_string (config,
+                    GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), plugin_type);
+    GSignondPlugin *plugin = gsignond_load_plugin_with_filename (plugin_type,
+            plugin_filename);
+    g_free(plugin_filename);
+    return plugin;
+}
+
+GSignondPlugin*
+gsignond_load_plugin_with_filename(
+        gchar *plugin_type,
+        gchar *plugin_filename)
+{
     DBG("Loading plugin %s", plugin_filename);
     GModule* plugin_module = g_module_open (plugin_filename, 
-        G_MODULE_BIND_LOCAL);
-    g_free(plugin_filename);
+            G_MODULE_BIND_LOCAL);
     if (plugin_module == NULL) {
         DBG("Plugin couldn't be opened: %s", g_module_error());
         return NULL;
     }
-    
+
     gchar* plugin_get_type = g_strdup_printf("gsignond_%s_plugin_get_type",
         plugin_type);
     gpointer p;

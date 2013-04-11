@@ -114,7 +114,16 @@ gsignond_concat_domain_and_error (
         const gchar *str2);
 
 GString*
-gsignond_prepend_domain_to_error_msg (const GError *err);
+gsignond_prepend_domain_to_error_msg (
+        const GError *err);
+
+GError *
+gsignond_error_new_from_variant (
+        GVariant *var);
+
+GVariant *
+gsignond_error_to_variant (
+        GError *error);
 
 #define gsignond_get_gerror_for_id(err, message, args...) \
     g_error_new (gsignond_error_quark(), err, message, ##args);

@@ -33,6 +33,7 @@ libgsignond_common_la_CPPFLAGS = \
     $(GSIGNOND_CFLAGS) \
     -DGSIGNOND_PLUGINS_DIR='"$(pluginsdir)"' \
     -DGSIGNOND_EXTENSIONS_DIR='"$(extensionsdir)"' \
+    -DGSIGNOND_BIN_DIR='"$(bindir)"' \
     $(NULL)
 
 libgsignond_common_la_DEPENDENCIES = \
@@ -59,6 +60,7 @@ libgsignond_common_la_SOURCES = \
     gsignond-signonui-data.c \
     gsignond-plugin-loader.c \
     gsignond-utils.c \
+    gsignond-pipe-stream.c \
     $(BUILT_SOURCES) \
     $(NULL)
 

@@ -164,12 +164,6 @@ gsignond_digest_plugin_cancel (GSignondPlugin *self)
 }
 
 static void
-gsignond_digest_plugin_abort (GSignondPlugin *self)
-{
-
-}
-
-static void
 gsignond_digest_plugin_request (
     GSignondPlugin *self,
     GSignondSessionData *session_data)
@@ -343,7 +337,6 @@ static void
 gsignond_plugin_interface_init (GSignondPluginInterface *iface)
 {
     iface->cancel = gsignond_digest_plugin_cancel;
-    iface->abort = gsignond_digest_plugin_abort;
     iface->request_initial = gsignond_digest_plugin_request_initial;
     iface->request = gsignond_digest_plugin_request;
     iface->user_action_finished = gsignond_digest_plugin_user_action_finished;

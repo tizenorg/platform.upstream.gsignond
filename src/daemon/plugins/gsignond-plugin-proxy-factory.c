@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <gsignond/gsignond-log.h>
 #include <gsignond/gsignond-plugin-loader.h>
+#include "gsignond-plugin-remote.h"
 
 G_DEFINE_TYPE (GSignondPluginProxyFactory, gsignond_plugin_proxy_factory, G_TYPE_OBJECT);
 
@@ -87,7 +88,6 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
                 if (g_strcmp0 (plugin_type, plugin_name) == 0) {
                     *method_iter = plugin_type;
                     method_iter++;
-                    DBG ("method %s (%p)", plugin_type, plugin);
                     g_hash_table_insert(self->mechanisms,
                         plugin_type, mechanisms);
                 } else {
@@ -115,11 +115,6 @@ gsignond_plugin_proxy_factory_constructor (GType                  gtype,
         gtype, n_properties, properties);
   }
   
-  /* update the object state depending on constructor properties */
-  GSignondPluginProxyFactory* self = GSIGNOND_PLUGIN_PROXY_FACTORY(obj);
-  
-  _enumerate_plugins(self);
-
   return obj;
 }
 
@@ -293,7 +288,10 @@ const gchar**
 gsignond_plugin_proxy_factory_get_plugin_types(
    GSignondPluginProxyFactory* factory)
 {
-    return (gpointer)factory->methods;
+	if (factory->methods == NULL) {
+		_enumerate_plugins (factory);
+	}
+    return (const gchar**)factory->methods;
 }
    
 const gchar**
@@ -302,5 +300,20 @@ gsignond_plugin_proxy_factory_get_plugin_mechanisms(
 {
     g_return_val_if_fail(factory->mechanisms, NULL);
 
-    return g_hash_table_lookup(factory->mechanisms, plugin_type);
+    const gchar **mechanisms = NULL;
+    mechanisms = g_hash_table_lookup(factory->mechanisms, plugin_type);
+    if (mechanisms == NULL) {
+    	GSignondPlugin* plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new (
+    	        factory->config, plugin_type));
+    	if (plugin != NULL) {
+    		gchar **mechs = NULL;
+    		g_object_get (plugin, "mechanisms", &mechs, NULL);
+    		if (mechs != NULL) {
+    			g_hash_table_insert(factory->mechanisms, g_strdup(plugin_type),
+    			        mechs);
+    			mechanisms = (const gchar **)mechs;
+    		}
+    	}
+    }
+    return mechanisms;
 }

@@ -76,15 +76,13 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
         2, GSIGNOND_TYPE_PLUGIN_STATE, G_TYPE_STRING);
 
-    g_object_interface_install_property (g_class,
-	g_param_spec_string ("type", "Type", "Plugin type", "none", 
-                             G_PARAM_READABLE|G_PARAM_STATIC_STRINGS));
+    g_object_interface_install_property (g_class, g_param_spec_string ("type",
+            "Type", "Plugin type", "none",
+            G_PARAM_READABLE|G_PARAM_STATIC_STRINGS));
 
-     g_object_interface_install_property (g_class,
-        g_param_spec_boxed ("mechanisms", "Mechanisms", 
-                            "List of plugin mechanisms", 
-                            G_TYPE_STRV, G_PARAM_READABLE|
-                                         G_PARAM_STATIC_STRINGS));
+    g_object_interface_install_property (g_class, g_param_spec_boxed (
+            "mechanisms", "Mechanisms", "List of plugin mechanisms",
+            G_TYPE_STRV, G_PARAM_READABLE|G_PARAM_STATIC_STRINGS));
     
 }
 
@@ -95,20 +93,14 @@ void gsignond_plugin_cancel (GSignondPlugin *self)
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->cancel (self);
 }
 
-void gsignond_plugin_abort (GSignondPlugin *self)
-{
-    g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
-    
-    GSIGNOND_PLUGIN_GET_INTERFACE (self)->abort (self);
-}
-
 void gsignond_plugin_request_initial (GSignondPlugin *self, 
                               GSignondSessionData *session_data, 
                               const gchar *mechanism)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
-    GSIGNOND_PLUGIN_GET_INTERFACE (self)->request_initial (self, session_data, mechanism);
+    GSIGNOND_PLUGIN_GET_INTERFACE (self)->request_initial (self, session_data,
+            mechanism);
 }
 
 void gsignond_plugin_request (GSignondPlugin *self, 
@@ -171,8 +163,8 @@ void gsignond_plugin_refreshed (GSignondPlugin *self,
     g_signal_emit (self, signals[REFRESHED], 0, ui_data);
 }
 
-void gsignond_plugin_status_changed (GSignondPlugin *self, GSignondPluginState state, 
-                                     const gchar *message)
+void gsignond_plugin_status_changed (GSignondPlugin *self,
+        GSignondPluginState state, const gchar *message)
 {
     g_signal_emit (self, signals[STATUS_CHANGED], 0, state, message);
 }

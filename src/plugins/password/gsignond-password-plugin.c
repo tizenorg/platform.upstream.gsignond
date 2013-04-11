@@ -43,11 +43,6 @@ static void gsignond_password_plugin_cancel (GSignondPlugin *self)
     g_error_free(error);
 }
 
-static void gsignond_password_plugin_abort (GSignondPlugin *self)
-{
-    
-}
-
 static void gsignond_password_plugin_request (
     GSignondPlugin *self, GSignondSessionData *session_data)
 {
@@ -136,7 +131,6 @@ static void
 gsignond_plugin_interface_init (GSignondPluginInterface *iface)
 {
     iface->cancel = gsignond_password_plugin_cancel;
-    iface->abort = gsignond_password_plugin_abort;
     iface->request_initial = gsignond_password_plugin_request_initial;
     iface->request = gsignond_password_plugin_request;
     iface->user_action_finished = gsignond_password_plugin_user_action_finished;

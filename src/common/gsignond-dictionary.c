@@ -24,6 +24,7 @@
  */
 
 #include <gsignond/gsignond-dictionary.h>
+#include <gsignond/gsignond-log.h>
 
 /**
  * gsignond_dictionary_new_from_variant:
@@ -170,7 +171,6 @@ gsignond_dictionary_set (GSignondDictionary *dict,
     g_return_val_if_fail (value != NULL, FALSE);
 
     g_variant_ref_sink(value);
-    
     g_hash_table_replace (
             dict,
             g_strdup(key),

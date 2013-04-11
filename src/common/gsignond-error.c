@@ -110,3 +110,49 @@ gsignond_prepend_domain_to_error_msg (const GError *err)
     return msg;
 }
 
+/**
+ * gsignond_error_new_from_variant:
+ * @var: instance of #GVariant
+ *
+ * Converts the GVariant to GError.
+ *
+ * Returns: (transfer full) #GError object if successful, NULL otherwise.
+ */
+GError *
+gsignond_error_new_from_variant (
+        GVariant *var)
+{
+    GError *error = NULL;
+    gchar *message;
+    GQuark domain;
+    gint code;
+
+    if (!var) {
+        return NULL;
+    }
+
+    g_variant_get (var, "(uis)", &domain, &code, &message);
+    error = g_error_new_literal (domain, code, message);
+    g_free (message);
+    return error;
+}
+
+/**
+ * gsignond_error_to_variant:
+ * @error: instance of #GError
+ *
+ * Converts the GError to GVariant.
+ *
+ * Returns: (transfer full) #GVariant object if successful, NULL otherwise.
+ */
+GVariant *
+gsignond_error_to_variant (
+        GError *error)
+{
+    if (!error) {
+        return NULL;
+    }
+
+    return g_variant_new ("(uis)", error->domain, error->code, error->message);
+}
+

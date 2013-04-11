@@ -63,11 +63,6 @@ static void gsignond_ssotest_plugin_cancel (GSignondPlugin *plugin)
     self->priv->is_canceled = TRUE;
 }
 
-static void gsignond_ssotest_plugin_abort (GSignondPlugin *plugin)
-{
-    g_return_if_fail (GSIGNOND_IS_SSOTEST_PLUGIN (plugin));
-}
-
 static void gsignond_ssotest_plugin_request_initial (
     GSignondPlugin *plugin, GSignondSessionData *session_data, 
     const gchar *mechanism)
@@ -86,8 +81,7 @@ static void gsignond_ssotest_plugin_request_initial (
             gsignond_plugin_status_changed (GSIGNOND_PLUGIN (self),
                                             GSIGNOND_PLUGIN_STATE_WAITING,
                                             "hello from the test plugin");
-            INFO ("Signal is sent");
-            g_usleep (1000 * 1000 / 10);
+            g_usleep (1000 * 1000 / 100);
             g_main_context_iteration (NULL, FALSE);
         }
     }
@@ -205,7 +199,6 @@ static void
 gsignond_plugin_interface_init (GSignondPluginInterface *iface)
 {
     iface->cancel = gsignond_ssotest_plugin_cancel;
-    iface->abort = gsignond_ssotest_plugin_abort;
     iface->request_initial = gsignond_ssotest_plugin_request_initial;
     iface->user_action_finished = gsignond_ssotest_plugin_user_action_finished;
     iface->refresh = gsignond_ssotest_plugin_refresh;

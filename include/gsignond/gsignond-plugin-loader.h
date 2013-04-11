@@ -32,8 +32,16 @@
 G_BEGIN_DECLS
 
 GSignondPlugin*
-gsignond_load_plugin(GSignondConfig* config, gchar* plugin_type);
+gsignond_load_plugin(
+        GSignondConfig* config,
+        gchar* plugin_type);
+
+GSignondPlugin*
+gsignond_load_plugin_with_filename(
+        gchar *plugin_type,
+        gchar *plugin_filename);
 
 G_END_DECLS
 
 #endif /* _GSIGNOND_PLUGIN_LOADER_H_ */
+

@@ -32,13 +32,21 @@
 #include <gsignond/gsignond-plugin-interface.h>
 #include <gsignond/gsignond-config.h>
 
-#define GSIGNOND_TYPE_PLUGIN_PROXY             (gsignond_plugin_proxy_get_type ())
-#define GSIGNOND_PLUGIN_PROXY(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSIGNOND_TYPE_PLUGIN_PROXY, GSignondPluginProxy))
-#define GSIGNOND_IS_PLUGIN_PROXY(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSIGNOND_TYPE_PLUGIN_PROXY))
-#define GSIGNOND_PLUGIN_PROXY_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), GSIGNOND_TYPE_PLUGIN_PROXY, GSignondPluginProxyClass))
-#define GSIGNOND_IS_PLUGIN_PROXY_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), GSIGNOND_TYPE_PLUGIN_PROXY))
-#define GSIGNOND_PLUGIN_PROXY_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), GSIGNOND_TYPE_PLUGIN_PROXY, GSignondPluginProxyClass))
-
+#define GSIGNOND_TYPE_PLUGIN_PROXY \
+    (gsignond_plugin_proxy_get_type ())
+#define GSIGNOND_PLUGIN_PROXY(obj) \
+    (G_TYPE_CHECK_INSTANCE_CAST ((obj), GSIGNOND_TYPE_PLUGIN_PROXY, \
+            GSignondPluginProxy))
+#define GSIGNOND_IS_PLUGIN_PROXY(obj) \
+    (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GSIGNOND_TYPE_PLUGIN_PROXY))
+#define GSIGNOND_PLUGIN_PROXY_CLASS(klass) \
+    (G_TYPE_CHECK_CLASS_CAST ((klass), GSIGNOND_TYPE_PLUGIN_PROXY, \
+            GSignondPluginProxyClass))
+#define GSIGNOND_IS_PLUGIN_PROXY_CLASS(klass) \
+    (G_TYPE_CHECK_CLASS_TYPE ((klass), GSIGNOND_TYPE_PLUGIN_PROXY))
+#define GSIGNOND_PLUGIN_PROXY_GET_CLASS(obj) \
+    (G_TYPE_INSTANCE_GET_CLASS ((obj), GSIGNOND_TYPE_PLUGIN_PROXY, \
+            GSignondPluginProxyClass))
 
 typedef struct _GSignondPluginProxy        GSignondPluginProxy;
 typedef struct _GSignondPluginProxyClass   GSignondPluginProxyClass;
@@ -57,24 +65,32 @@ struct _GSignondPluginProxyClass
     GObjectClass parent_class;
 };
 
-GType gsignond_plugin_proxy_get_type (void);
+GType
+gsignond_plugin_proxy_get_type (void);
 
 GSignondPluginProxy* 
-gsignond_plugin_proxy_new(GSignondConfig *config, const gchar* plugin_type);
-
+gsignond_plugin_proxy_new(
+        GSignondConfig *config,
+        const gchar* plugin_type);
 
 void 
-gsignond_plugin_proxy_cancel (GSignondPluginProxy *self, 
-                        GSignondAuthSession* session);
-void gsignond_plugin_proxy_process (GSignondPluginProxy *self, 
-                              GSignondAuthSession* session,
-                              GSignondSessionData *session_data, 
-                              const gchar *mechanism,
-                              gpointer userdata);
-void gsignond_plugin_proxy_user_action_finished (GSignondPluginProxy *self, 
-                                           GSignondSignonuiData *ui_data);
-void gsignond_plugin_proxy_refresh (GSignondPluginProxy *self, 
-                              GSignondSignonuiData *ui_data);
-
+gsignond_plugin_proxy_cancel (
+        GSignondPluginProxy *self,
+        GSignondAuthSession* session);
+void
+gsignond_plugin_proxy_process (
+        GSignondPluginProxy *self,
+        GSignondAuthSession* session,
+        GSignondSessionData *session_data,
+        const gchar *mechanism,
+        gpointer userdata);
+void
+gsignond_plugin_proxy_user_action_finished (
+        GSignondPluginProxy *self,
+        GSignondSignonuiData *ui_data);
+void
+gsignond_plugin_proxy_refresh (
+        GSignondPluginProxy *self,
+        GSignondSignonuiData *ui_data);
 
 #endif /* __GSIGNOND_PLUGIN_PROXY_H__ */
