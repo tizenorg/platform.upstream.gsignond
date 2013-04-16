@@ -93,6 +93,22 @@ gboolean
 gsignond_dictionary_set_uint32 (GSignondDictionary *dict, const gchar *key,
                                 guint32 value);
 
+gboolean
+gsignond_dictionary_get_int64 (GSignondDictionary *dict, const gchar *key,
+                               gint64 *value);
+
+gboolean
+gsignond_dictionary_set_int64 (GSignondDictionary *dict, const gchar *key,
+                               gint64 value);
+
+gboolean
+gsignond_dictionary_get_uint64 (GSignondDictionary *dict, const gchar *key,
+                                guint64 *value);
+
+gboolean
+gsignond_dictionary_set_uint64 (GSignondDictionary *dict, const gchar *key,
+                                guint64 value);
+
 const gchar *
 gsignond_dictionary_get_string (GSignondDictionary *dict, const gchar *key);
 

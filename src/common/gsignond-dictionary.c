@@ -273,6 +273,69 @@ gsignond_dictionary_set_uint32 (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
+ * gsignond_dictionary_get_int64:
+ *
+ * Overload, see #gsignond_dictionary_get for details.
+ */
+gboolean
+gsignond_dictionary_get_int64 (GSignondDictionary *dict, const gchar *key,
+                               gint64 *value)
+{
+    GVariant *variant = gsignond_dictionary_get (dict, key);
+
+    if (variant == NULL)
+        return FALSE;
+
+    if (value)
+        *value = g_variant_get_int64 (variant);
+    return TRUE;
+}
+
+/**
+ * gsignon_dictionary_set_int32:
+ *
+ * Overload, see #gsignond_dictionary_set for details.
+ */
+gboolean
+gsignond_dictionary_set_int64 (GSignondDictionary *dict, const gchar *key,
+                               gint64 value)
+{
+    return gsignond_dictionary_set (dict, key, g_variant_new_int64 (value));
+}
+
+/**
+ * gsignond_dictionary_get_guint32:
+ *
+ * Overload, see #gsignond_dictionary_get for details.
+ */
+gboolean
+gsignond_dictionary_get_uint64 (GSignondDictionary *dict, const gchar *key,
+                                guint64 *value)
+{
+    GVariant *variant = gsignond_dictionary_get (dict, key);
+
+    if (variant == NULL)
+        return FALSE;
+
+    if (value)
+        *value = g_variant_get_uint64 (variant);
+    return TRUE;
+}
+
+/**
+ * gsignon_dictionary_set_guint32:
+ *
+ * Overload, see #gsignond_dictionary_set for details.
+ */
+gboolean
+gsignond_dictionary_set_uint64 (GSignondDictionary *dict, const gchar *key,
+                                guint64 value)
+{
+    return gsignond_dictionary_set (dict, key, g_variant_new_uint64 (value));
+}
+
+
+/**
  * gsignond_dictionary_get_string:
  *
  * Overload, see #gsignond_dictionary_get for details.
