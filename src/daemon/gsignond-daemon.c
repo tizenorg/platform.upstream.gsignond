@@ -247,6 +247,8 @@ _init_storage (GSignondDaemon *self)
 
     storage_location = gsignond_storage_manager_mount_filesystem (
                                                    self->priv->storage_manager);
+    if (storage_location == NULL)
+        return FALSE;
     gsignond_config_set_string(self->priv->config, 
         GSIGNOND_CONFIG_GENERAL_SECURE_DIR, storage_location);                                                 
 

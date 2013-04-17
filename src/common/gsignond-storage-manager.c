@@ -56,8 +56,8 @@ _set_config (GSignondStorageManager *self, GSignondConfig *config)
     self->config = config;
 
     self->location = g_strdup (gsignond_config_get_string (
-                                           self->config,
-                                           GSIGNOND_CONFIG_GENERAL_SECURE_DIR));
+                                        self->config,
+                                        GSIGNOND_CONFIG_GENERAL_SECURE_DIR));
     if (!self->location)
         self->location = g_build_filename (g_get_user_data_dir (),
                                            "gsignond", NULL);

@@ -50,6 +50,12 @@ if test "x$libsmack" = xyes; then
     AC_DEFINE(HAVE_LIBSMACK, [1], [Define if libsmack exists.])
 fi
 
+PKG_CHECK_MODULES([LIBECRYPTFS], libecryptfs >= 96, [libecryptfs=yes], [libecryptfs=no])
+AM_CONDITIONAL(HAVE_LIBECRYPTFS, [test x$libecryptfs = xyes])
+if test "x$libecryptfs" = xes; then
+    AC_DEFINE(HAVE_LIBECRYPTFS, [1], [Define if libecryptfs exists.])
+fi
+
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
 AC_ARG_ENABLE(dbus-type,

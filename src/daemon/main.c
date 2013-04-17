@@ -111,6 +111,13 @@ int main (int argc, char **argv)
         {NULL }
     };
 
+    DBG ("before: real uid %d effective uid %d", getuid (), geteuid ());
+    setreuid (-1, getuid());
+    DBG ("after: real uid %d effective uid %d", getuid (), geteuid ());
+    DBG ("before: real gid %d effective gid %d", getgid (), getegid ());
+    setregid (-1, getgid());
+    DBG ("after: real gid %d effective gid %d", getgid (), getegid ());
+
     g_type_init ();
 
     opt_context = g_option_context_new ("SSO daemon");

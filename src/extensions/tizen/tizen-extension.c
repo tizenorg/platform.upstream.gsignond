@@ -48,7 +48,7 @@ _get_extension_version (GSignondExtension *self)
 {
     (void) self;
 
-    return 0x01020304;
+    return 0x01000000;
 }
 
 static GSignondStorageManager *

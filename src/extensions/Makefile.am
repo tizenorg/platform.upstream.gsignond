@@ -1,4 +1,6 @@
 SUBDIRS = test
 if HAVE_LIBSMACK
+if HAVE_LIBECRYPTFS
 SUBDIRS += tizen
+endif
 endif

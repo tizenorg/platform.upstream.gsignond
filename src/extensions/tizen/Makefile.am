@@ -5,11 +5,13 @@ libextension_tizen_la_CPPFLAGS = \
 	-I$(top_srcdir) \
 	-I$(top_srcdir)/include \
 	$(GSIGNOND_CFLAGS) \
-	$(LIBSMACK_CFLAGS)
+	$(LIBSMACK_CFLAGS) \
+	$(LIBECRYPTFS_CFLAGS)
 
 libextension_tizen_la_LIBADD = \
 	$(GSIGNOND_LIBS) \
-	$(LIBSMACK_LIBS)
+	$(LIBSMACK_LIBS) \
+	$(LIBECRYPTFS_LIBS)
 
 libextension_tizen_la_SOURCES = \
 	tizen-access-control-manager.c \
