@@ -61,7 +61,7 @@ struct _GSignondDbusAuthServiceAdapterClass
 GType gsignond_dbus_auth_service_adapter_get_type (void) G_GNUC_CONST;
 
 GSignondDbusAuthServiceAdapter *
-gsignond_dbus_auth_service_adapter_new_with_connection (GDBusConnection *conneciton,
+gsignond_dbus_auth_service_adapter_new_with_connection (GDBusConnection *connection,
                                                         GSignondDaemon *daemon);
 
 #ifndef USE_P2P

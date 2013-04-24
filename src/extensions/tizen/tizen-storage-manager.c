@@ -35,6 +35,7 @@
 
 #include "tizen-storage-manager.h"
 #include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-utils.h"
 
 #define EXTENSION_TIZEN_STORAGE_MANAGER_GET_PRIVATE(obj) \
     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
@@ -177,40 +178,6 @@ _initialize_storage (GSignondStorageManager *parent)
 }
 
 static gboolean
-_delete_storage (GSignondStorageManager *parent)
-{
-    ExtensionTizenStorageManager *self =
-        EXTENSION_TIZEN_STORAGE_MANAGER (parent);
-    ExtensionTizenStorageManagerPrivate *priv = self->priv;
-
-    g_return_val_if_fail (priv->cdir, FALSE);
-
-    gboolean retval = FALSE;
-    const gchar *filename;
-    GDir *storage_dir;
-
-    storage_dir = g_dir_open (priv->cdir, 0, NULL);
-    if (!storage_dir)
-        goto _delete_exit;
-    while ((filename = g_dir_read_name (storage_dir)) != NULL) {
-        DBG ("remove file %s", filename);
-        g_remove (filename);
-    }
-    g_dir_close (storage_dir);
-    DBG ("remove directory %s", priv->cdir);
-    if (g_rmdir (priv->cdir))
-        goto _delete_exit;
-    DBG ("remove directory %s", parent->location);
-    if (g_rmdir (parent->location))
-        goto _delete_exit;
-
-    retval = TRUE;
-
-_delete_exit:
-    return retval;
-}
-
-static gboolean
 _storage_is_initialized (GSignondStorageManager *parent)
 {
     ExtensionTizenStorageManager *self =
@@ -304,6 +271,20 @@ _filesystem_is_mounted (GSignondStorageManager *parent)
     endmntent(mntf);
 
     return retval;
+}
+
+static gboolean
+_delete_storage (GSignondStorageManager *parent)
+{
+    ExtensionTizenStorageManager *self =
+        EXTENSION_TIZEN_STORAGE_MANAGER (parent);
+    ExtensionTizenStorageManagerPrivate *priv = self->priv;
+
+    g_return_val_if_fail (priv->cdir, FALSE);
+    g_return_val_if_fail (!_filesystem_is_mounted(parent), FALSE);
+
+    return (gsignond_wipe_directory (priv->cdir) &&
+            gsignond_wipe_directory (parent->location));
 }
 
 static void

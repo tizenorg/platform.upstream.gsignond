@@ -533,7 +533,7 @@ gsignond_dbus_auth_service_adapter_new_with_connection (GDBusConnection *bus_con
         g_object_unref (adapter);
         return NULL;
     }
-    DBG("(+) started auth service '%p' at path '%s' on conneciton '%p'", adapter, GSIGNOND_DAEMON_OBJECTPATH, bus_connection);
+    DBG("(+) started auth service '%p' at path '%s' on connection '%p'", adapter, GSIGNOND_DAEMON_OBJECTPATH, bus_connection);
 
     timeout = gsignond_daemon_get_timeout (adapter->priv->auth_service);
     if (timeout) {

@@ -28,6 +28,7 @@
 #include <glib/gstdio.h>
 
 #include "gsignond/gsignond-storage-manager.h"
+#include "gsignond/gsignond-utils.h"
 
 #define GSIGNOND_STORAGE_MANAGER_GET_PRIVATE(obj) \
     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
@@ -143,23 +144,10 @@ _initialize_storage (GSignondStorageManager *self)
 static gboolean
 _delete_storage (GSignondStorageManager *self)
 {
-    const gchar *filename;
-    GDir *storage_dir;
-
     g_return_val_if_fail (self != NULL, FALSE);
     g_return_val_if_fail (self->location, FALSE);
 
-    storage_dir = g_dir_open (self->location, 0, NULL);
-    if (!storage_dir)
-        return FALSE;
-    while ((filename = g_dir_read_name (storage_dir)) != NULL) {
-        g_remove (filename);
-    }
-    g_dir_close (storage_dir);
-    if (g_rmdir (self->location))
-        return FALSE;
-
-    return TRUE;
+    return gsignond_wipe_directory (self->location);
 }
 
 static gboolean
