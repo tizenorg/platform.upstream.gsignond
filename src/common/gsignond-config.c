@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <glib/gstdio.h>
 
+#include "config.h"
+
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-config-general.h"
 #include "gsignond/gsignond-config-db.h"
@@ -46,54 +48,53 @@ struct _GSignondConfigPrivate
 G_DEFINE_TYPE (GSignondConfig, gsignond_config, G_TYPE_OBJECT);
 
 
-static gboolean gsignond_config_load (GSignondConfig *config);
-static void gsignond_config_load_environment (GSignondConfig *config);
+static gboolean gsignond_config_load (GSignondConfig *self);
+static void gsignond_config_load_environment (GSignondConfig *self);
 
 gint
-gsignond_config_get_integer (GSignondConfig *config, const gchar *key)
+gsignond_config_get_integer (GSignondConfig *self, const gchar *key)
 {
-    const gchar *str_value = gsignond_config_get_string(config, key);
+    const gchar *str_value = gsignond_config_get_string (self, key);
     return (gint) (str_value ? atoi (str_value) : 0);
 }
 
 void
-gsignond_config_set_integer (GSignondConfig *config, const gchar *key,
+gsignond_config_set_integer (GSignondConfig *self, const gchar *key,
                              gint value) 
 {
     gchar *s_value = 0;
-    g_return_if_fail (config && GSIGNOND_IS_CONFIG(config));
+    g_return_if_fail (self && GSIGNOND_IS_CONFIG (self));
 
     s_value = g_strdup_printf ("%d", value);
     if (!s_value) return;
 
-    gsignond_config_set_string (config,
-                          (gpointer) key,
-                          s_value);
+    gsignond_config_set_string (self, (gpointer) key, s_value);
 
     g_free (s_value);
 
 }
 
 const gchar*
-gsignond_config_get_string (GSignondConfig *config, const gchar *key)
+gsignond_config_get_string (GSignondConfig *self, const gchar *key)
 {
-    g_return_val_if_fail (config && GSIGNOND_IS_CONFIG(config), NULL);
+    g_return_val_if_fail (self && GSIGNOND_IS_CONFIG (self), NULL);
 
-    GVariant* value = gsignond_dictionary_get (config->priv->config_table, (gpointer)key);
+    GVariant* value = gsignond_dictionary_get (self->priv->config_table,
+                                               (gpointer) key);
     if (!value) return NULL;
 
-    return g_variant_get_string(value, NULL);
+    return g_variant_get_string (value, NULL);
 }
 
 void
-gsignond_config_set_string (GSignondConfig *config, const gchar *key,
+gsignond_config_set_string (GSignondConfig *self, const gchar *key,
                              const gchar *value) 
 {
-    g_return_if_fail (config && GSIGNOND_IS_CONFIG(config));
+    g_return_if_fail (self && GSIGNOND_IS_CONFIG (self));
 
-    gsignond_dictionary_set (config->priv->config_table,
-                          (gpointer) key,
-                          g_variant_new_string(value));
+    gsignond_dictionary_set (self->priv->config_table,
+                             (gpointer) key,
+                             g_variant_new_string (value));
 
 }
 
@@ -138,11 +139,22 @@ gsignond_config_init (GSignondConfig *self)
     self->priv->config_table = gsignond_dictionary_new();
     
     gsignond_config_set_string (self,
-                             (GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR),
-                             (GSIGNOND_PLUGINS_DIR));
+                                GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR,
+                                (GSIGNOND_PLUGINS_DIR));
     gsignond_config_set_string (self,
-                             (GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR),
-                             (GSIGNOND_EXTENSIONS_DIR));
+                                GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
+                                (GSIGNOND_EXTENSIONS_DIR));
+
+    gchar *default_data_path =
+        g_build_filename (g_get_user_data_dir (), "gsignond", NULL);
+    gsignond_config_set_string (self,
+                                GSIGNOND_CONFIG_GENERAL_STORAGE_PATH,
+                                default_data_path);
+    gsignond_config_set_string (self,
+                                GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
+                                default_data_path);
+    g_free (default_data_path);
+
     gsignond_config_load (self);
 }
 
@@ -254,7 +266,7 @@ gsignond_config_load (GSignondConfig *self)
 }
 
 static void
-gsignond_config_load_environment (GSignondConfig *config)
+gsignond_config_load_environment (GSignondConfig *self)
 {
     const char *e_val = 0;
     guint timeout = 0;
@@ -262,56 +274,55 @@ gsignond_config_load_environment (GSignondConfig *config)
     
     e_val = g_getenv ("SSO_DAEMON_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT,
                                     (gpointer) e_val);
 
     e_val = g_getenv ("SSO_IDENTITY_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT,
                                     (gpointer) e_val);
 
     e_val = g_getenv ("SSO_AUTHSESSION_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT,
                                     (gpointer) e_val);
 
     e_val = g_getenv ("SSO_LOGGING_LEVEL");
     if (e_val && (level = atoi(e_val)))
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_GENERAL_LOG_LEVEL,
                                     (gpointer) e_val);
-        //set_logging_level (level);
     
     e_val = g_getenv ("SSO_PLUGINS_DIR");
     if (e_val) 
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR,
                                     (gpointer) e_val);
 
     e_val = g_getenv ("SSO_EXTENSIONS_DIR");
     if (e_val) 
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
                                     (gpointer) e_val);
 
     e_val = g_getenv ("SSO_EXTENSION");
     if (e_val)
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_GENERAL_EXTENSION,
                                     (gpointer) e_val);
 
     e_val = g_getenv ("SSO_STORAGE_PATH");
     if (e_val)
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_GENERAL_STORAGE_PATH,
                                     (gpointer) e_val);
 
     e_val = g_getenv ("SSO_SECRET_PATH");
     if (e_val)
-        gsignond_config_set_string (config,
+        gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
                                     (gpointer) e_val);
 }

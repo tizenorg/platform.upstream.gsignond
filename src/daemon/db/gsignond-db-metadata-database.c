@@ -493,7 +493,6 @@ _gsignond_db_metadata_database_open (
         int flags)
 {
     const gchar *dir = NULL;
-    gchar *db_dir = NULL;
     gchar *db_filename = NULL;
     gboolean ret = FALSE;
     gint dir_created = 0;
@@ -509,28 +508,24 @@ _gsignond_db_metadata_database_open (
     dir = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
     if (!dir) {
-        dir = g_get_user_data_dir ();
-        if (!dir) {
-            DBG ("Invalid Metadata DB directory");
-            return FALSE;
-        }
+        DBG ("Invalid Metadata DB directory");
+        return FALSE;
     }
-    db_filename = g_build_filename (dir, "gsignond", filename, NULL);
+    db_filename = g_build_filename (dir, filename, NULL);
     if (!db_filename) {
         DBG ("Invalid Metadata DB filename");
         return FALSE;
     }
 
-    db_dir = g_path_get_dirname (db_filename);
-    dir_created = g_mkdir_with_parents (db_dir, S_IRWXU);
-    g_free (db_dir);
+    dir_created = g_mkdir_with_parents (dir, S_IRWXU);
     if (dir_created != 0) {
         DBG ("Metadata DB directory does not exist");
-        g_free (db_filename);
-        return FALSE;
+        goto _open_exit;
     }
 
     ret = gsignond_db_sql_database_open (obj, db_filename, flags);
+
+_open_exit:
     g_free (db_filename);
     return ret;
 }

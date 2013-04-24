@@ -175,11 +175,8 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     dir = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     if (!dir) {
-        dir = g_get_user_data_dir ();
-        if (!dir) {
-            DBG("No directory specified in config object for secret db...");
-            return FALSE;
-        }
+        DBG("No directory specified in config object for secret db...");
+        return FALSE;
     }
     filename = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME);
