@@ -1,4 +1,8 @@
 TESTS = dbtest
+TESTS_ENVIRONMENT=
+VALGRIND_TESTS_DISABLE=
+include $(top_srcdir)/test/valgrind_common.mk
+
 check_PROGRAMS = dbtest
 dbtest_SOURCES = dbtest.c
 dbtest_CFLAGS = \

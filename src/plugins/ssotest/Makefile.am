@@ -18,4 +18,9 @@ libssotest_la_SOURCES = \
     gsignond-ssotest-plugin.c \
     $(NULL)
 
-CLEANFILES = 
+all-local: slink
+
+slink:
+	ln -sf $(top_builddir)/src/plugins/ssotest/.libs/libssotest.so ../.libs/libssotest.so
+    
+

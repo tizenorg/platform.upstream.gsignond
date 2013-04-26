@@ -3,6 +3,10 @@ TESTS = daemontest
 else
 TESTS = test-daemon-setup.sh
 endif
+TESTS_ENVIRONMENT=
+VALGRIND_TESTS_DISABLE=
+include $(top_srcdir)/test/valgrind_common.mk
+
 check_PROGRAMS = daemontest
 
 daemontest_SOURCES = daemon-test.c
@@ -24,3 +28,4 @@ daemontest_LDADD = \
     $(CHECK_LIBS)
 
 EXTRA_DIST = "$(top_builddir)/test/daemon/services/com.google.code.AccountsSSO.SingleSignOn.service.in"
+

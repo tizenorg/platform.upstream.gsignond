@@ -18,4 +18,8 @@ libdigest_la_SOURCES = \
     gsignond-digest-plugin.c \
     $(NULL)
 
-CLEANFILES = 
+all-local: slink
+
+slink:
+	ln -sf $(top_builddir)/src/plugins/digest/.libs/libdigest.so ../.libs/libdigest.so
+

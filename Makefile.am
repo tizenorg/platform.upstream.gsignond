@@ -5,3 +5,5 @@ pkgconfig_DATA = gsignond.pc
 
 SUBDIRS = src test
 
+valgrind:
+	cd test; make valgrind

@@ -18,4 +18,7 @@ libpassword_la_SOURCES = \
     gsignond-password-plugin.c \
     $(NULL)
 
-CLEANFILES = 
+all-local: slink
+
+slink:
+	ln -sf $(top_builddir)/src/plugins/password/.libs/libpassword.so ../.libs/libpassword.so

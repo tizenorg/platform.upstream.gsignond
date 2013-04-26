@@ -8,7 +8,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.11 -Wall nostdinc silent-rules subdir-objects])
+AM_INIT_AUTOMAKE([1.11 nostdinc silent-rules subdir-objects -Wno-portability])
 
 # Checks for programs.
 AC_PROG_CC

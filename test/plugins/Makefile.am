@@ -1,6 +1,8 @@
 TESTS = digestplugintest passwordplugintest pluginproxytest
-TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/password/.libs
-
+TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs
+VALGRIND_TESTS_DISABLE =
+include $(top_srcdir)/test/valgrind_common.mk
+    
 check_PROGRAMS = digestplugintest passwordplugintest pluginproxytest
 digestplugintest_SOURCES = digestplugintest.c
 digestplugintest_CFLAGS = \
@@ -40,4 +42,6 @@ pluginproxytest_LDADD = \
     $(top_builddir)/src/daemon/plugins/libgsignond-plugins.la \
     $(GSIGNOND_LIBS) \
     $(CHECK_LIBS)
-    
+
+
+

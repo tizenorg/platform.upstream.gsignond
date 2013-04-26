@@ -1,5 +1,7 @@
 TESTS = commontest
-TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/password/.libs
+TESTS_ENVIRONMENT=
+VALGRIND_TESTS_DISABLE=
+include $(top_srcdir)/test/valgrind_common.mk
 
 check_PROGRAMS = commontest
 commontest_SOURCES = commontest.c
