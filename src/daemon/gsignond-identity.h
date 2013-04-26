@@ -116,6 +116,9 @@ gsignond_identity_remove (GSignondIdentity *identity,
                           GError **error);
 
 gboolean
+gsignond_identity_clear (GSignondIdentity *identity);
+
+gboolean
 gsignond_identity_sign_out (GSignondIdentity *identity,
                             const GSignondSecurityContext *ctx,
                             GError **error);

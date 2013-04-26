@@ -783,22 +783,39 @@ gsignond_identity_remove (GSignondIdentity *identity,
     if (!(identity && GSIGNOND_IS_IDENTITY (identity))) {
         WARN ("assertion (identity && GSIGNOND_IS_IDENTITY(identity)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
-        return 0;
+        return FALSE;
     }
     gboolean is_removed = FALSE;
     
     VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, FALSE);
 
+    is_removed = gsignond_identity_clear (identity);
+
+    if (!is_removed && error)
+        *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_REMOVE_FAILED, "failed to remove identity");
+
+    return is_removed;
+}
+
+
+gboolean
+gsignond_identity_clear (GSignondIdentity *identity)
+{
+    if (!(identity && GSIGNOND_IS_IDENTITY (identity))) {
+        WARN ("assertion (identity && GSIGNOND_IS_IDENTITY(identity)) failed");
+        return FALSE;
+    }
+    gboolean is_removed = FALSE;
+    
     is_removed = gsignond_daemon_remove_identity (identity->priv->owner, 
                     gsignond_identity_info_get_id (identity->priv->info));
 
     if (is_removed)
         g_signal_emit (identity, signals[SIG_INFO_UPDATED], 0, GSIGNOND_IDENTITY_REMOVED);
-    else if (error)
-        *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_REMOVE_FAILED, "failed to remove identity");
 
     return is_removed;
 }
+
 
 guint32
 gsignond_identity_add_reference (GSignondIdentity *identity,
