@@ -13,6 +13,10 @@ AM_INIT_AUTOMAKE([1.11 nostdinc silent-rules subdir-objects -Wno-portability])
 # Checks for programs.
 AC_PROG_CC
 AM_PROG_AR
+AX_CHECK_GNU_MAKE
+if test "x$ifGNUmake" = "x#" ; then
+	AC_MSG_ERROR("GNUmake is required")
+fi
 
 #libtool
 LT_PREREQ([2.2])
