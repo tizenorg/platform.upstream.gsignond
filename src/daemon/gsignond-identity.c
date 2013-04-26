@@ -806,12 +806,19 @@ gsignond_identity_clear (GSignondIdentity *identity)
         return FALSE;
     }
     gboolean is_removed = FALSE;
-    
-    is_removed = gsignond_daemon_remove_identity (identity->priv->owner, 
-                    gsignond_identity_info_get_id (identity->priv->info));
+
+    if (gsignond_identity_info_get_is_identity_new (identity->priv->info))
+        is_removed = TRUE;
+    else
+        is_removed = gsignond_daemon_remove_identity (
+                       identity->priv->owner, 
+                       gsignond_identity_info_get_id (identity->priv->info));
 
     if (is_removed)
         g_signal_emit (identity, signals[SIG_INFO_UPDATED], 0, GSIGNOND_IDENTITY_REMOVED);
+    else
+        WARN ("request to remove identity %u failed",
+              gsignond_identity_info_get_id (identity->priv->info));
 
     return is_removed;
 }

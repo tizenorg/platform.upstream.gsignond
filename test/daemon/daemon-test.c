@@ -258,6 +258,33 @@ START_TEST(test_identity_get_identity)
 }
 END_TEST
 
+START_TEST(test_clear_database)
+{
+    GError *error = 0;
+    gboolean res, ret;
+    GSignondDbusAuthService *auth_service = 0;
+ 
+    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        GSIGNOND_SERVICE,
+        GSIGNOND_DAEMON_OBJECTPATH,
+        NULL, &error);
+
+    fail_if (auth_service == NULL);
+
+    res = gsignond_dbus_auth_service_call_clear_sync (
+        auth_service,
+        &ret,
+        NULL,
+        &error);
+
+    g_object_unref (auth_service);
+
+    fail_if (res == FALSE || ret == FALSE, "Failed to wipe databases");
+}
+END_TEST
+
 Suite* daemon_suite (void)
 {
     Suite *s = suite_create ("Gsignon daemon");
@@ -270,6 +297,7 @@ Suite* daemon_suite (void)
     tcase_add_test (tc, test_register_new_identity_with_no_app_context);
     tcase_add_test (tc, test_identity_store);
     tcase_add_test (tc, test_identity_get_identity);
+    tcase_add_test (tc, test_clear_database);
 
     suite_add_tcase (s, tc);
     

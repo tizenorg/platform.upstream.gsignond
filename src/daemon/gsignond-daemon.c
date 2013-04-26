@@ -31,6 +31,7 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-extension-interface.h"
+#include "gsignond/gsignond-utils.h"
 #include "daemon/gsignond-identity.h"
 #include "daemon/db/gsignond-db-credentials-database.h"
 
@@ -269,6 +270,14 @@ _open_database (GSignondDaemon *self)
                                                                 self->priv->db);
 }
 
+static gboolean
+_clear_identity (gpointer idp, gpointer identityp, gpointer user_data)
+{
+    (void) user_data;
+
+    return gsignond_identity_clear (GSIGNOND_IDENTITY (identityp));
+}
+
 static void
 gsignond_daemon_init (GSignondDaemon *self)
 {
@@ -337,7 +346,7 @@ gsignond_daemon_store_identity (GSignondDaemon *daemon, GSignondIdentity *identi
     id = gsignond_db_credentials_database_update_identity (daemon->priv->db, info);
 
     if (was_new_identity && id) {
-        g_hash_table_insert (daemon->priv->identities, GINT_TO_POINTER(id), identity);
+        g_hash_table_insert (daemon->priv->identities, GUINT_TO_POINTER(id), identity);
         g_object_weak_ref (G_OBJECT (identity), _on_identity_disposed, daemon);
     }
 
@@ -541,7 +550,47 @@ gsignond_daemon_clear (GSignondDaemon *self, GError **error)
         return FALSE;
     }
 
-    return FALSE;
+    gboolean retval = TRUE;
+    GSignondDaemonPrivate *priv = self->priv;
+
+    DBG ("destroy all identities");
+    g_hash_table_foreach_remove (priv->identities, _clear_identity, self);
+    if (g_hash_table_size (priv->identities) > 0) {
+        WARN ("g_hash_table_foreach_remove(identities) failed for some items");
+        retval = FALSE;
+    }
+
+    DBG ("close databases");
+    if (!gsignond_db_credentials_database_close_secret_storage (priv->db)) {
+        WARN ("gsignond_db_credentials_database_close_secret_storage() failed");
+        retval = FALSE;
+    }   
+    g_object_unref (priv->db);
+    priv->db = NULL;
+
+    DBG ("clear data");
+    if (!gsignond_storage_manager_delete_storage (priv->storage_manager)) {
+        WARN ("gsignond_storage_manager_delete_storage() failed");
+        retval = FALSE;
+    }
+    if (!gsignond_wipe_directory (gsignond_config_get_string (priv->config,
+                                                              GSIGNOND_CONFIG_GENERAL_STORAGE_PATH))) {
+        WARN ("gsignond_wipe_directory() failed");
+        retval = FALSE;
+    }
+
+    DBG ("re-create storage");
+    if (!_init_storage (self)) {
+        WARN ("_init_storage() failed");
+        retval = FALSE;
+    }
+
+    if (!_open_database (self)) {
+        WARN ("_open_database() failed");
+        retval = FALSE;
+    }
+
+    return retval;
 }
 
 /**

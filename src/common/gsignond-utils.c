@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 
 #include "gsignond/gsignond-utils.h"
+#include "gsignond/gsignond-log.h"
 
 
 static size_t pagesize = 0;
@@ -108,8 +109,10 @@ gsignond_wipe_file (const gchar *filename)
     memset (wipebuf, 0x00, pagesize);
 
     /* remove the file and set return value on success */
-    if (unlink (filename) == 0)
+    if (unlink (filename) == 0) {
         retval = TRUE;
+        DBG ("successfully wiped file %s", filename);
+    }
 
 _wipe_exit:
     g_free (wipebuf);
@@ -129,11 +132,13 @@ gsignond_wipe_directory (const gchar *dirname)
     gchar *filepath;
     GDir *dirctx;
 
+    DBG ("wipe directory %s", dirname);
     dirctx = g_dir_open (dirname, 0, NULL);
     if (!dirctx)
         return FALSE;
     while ((filename = g_dir_read_name (dirctx))) {
         filepath = g_build_filename (dirname, filename, NULL);
+        DBG ("wipe file %s", filepath);
         wiperes = gsignond_wipe_file (filepath);
         g_free (filepath);
         if (!wiperes)

@@ -615,7 +615,6 @@ _handle_remove (GSignondDbusIdentityAdapter   *self,
     else {
         gsignond_dbus_identity_complete_remove (self->priv->dbus_identity, invocation);
 
-        gsignond_disposable_delete_later (GSIGNOND_DISPOSABLE (self));
     }
 
     return TRUE;
@@ -738,6 +737,9 @@ _emit_info_updated (GSignondIdentity *identity,
     GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (userdata);
 
     gsignond_dbus_identity_emit_info_updated (self->priv->dbus_identity, change);
+
+    if (change == GSIGNOND_IDENTITY_REMOVED)
+        gsignond_disposable_delete_later (GSIGNOND_DISPOSABLE (self));
 }
 
 const gchar *
