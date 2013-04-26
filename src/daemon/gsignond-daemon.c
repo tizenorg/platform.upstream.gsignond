@@ -90,14 +90,19 @@ _dispose (GObject *object)
 {
     GSignondDaemon *self = GSIGNOND_DAEMON(object);
 
+    if (self->priv->ui) {
+        g_object_unref (self->priv->ui);
+        self->priv->ui = NULL;
+    }
+
     if (self->priv->plugin_proxy_factory) {
         g_object_unref (self->priv->plugin_proxy_factory);
         self->priv->plugin_proxy_factory = NULL;
     }
 
-    if (self->priv->config) {
-        g_object_unref (self->priv->config);
-        self->priv->config = NULL;
+    if (self->priv->identities) {
+        g_hash_table_unref (self->priv->identities);
+        self->priv->identities = NULL;
     }
 
     if (self->priv->db) {
@@ -131,14 +136,9 @@ _dispose (GObject *object)
         self->priv->extension_module = NULL;
     }
 
-    if (self->priv->identities) {
-        g_hash_table_unref (self->priv->identities);
-        self->priv->identities = NULL;
-    }
-
-    if (self->priv->ui) {
-        g_object_unref (self->priv->ui);
-        self->priv->ui = NULL;
+    if (self->priv->config) {
+        g_object_unref (self->priv->config);
+        self->priv->config = NULL;
     }
 
     G_OBJECT_CLASS (gsignond_daemon_parent_class)->dispose (object);
