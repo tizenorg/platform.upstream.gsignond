@@ -178,9 +178,9 @@ gsignond_config_load (GSignondConfig *self)
         if (g_access (def_config, R_OK) == 0) {
             self->priv->config_file_path = def_config;
         } else {
+            g_free (def_config);
             sysconfdirs = g_get_system_config_dirs ();
             while (*sysconfdirs != NULL) {
-                g_free (def_config);
                 def_config = g_build_filename (*sysconfdirs,
                                                "gsignond/gsignond.conf",
                                                NULL);
@@ -188,6 +188,7 @@ gsignond_config_load (GSignondConfig *self)
                     self->priv->config_file_path = def_config;
                     break;
                 }
+                g_free (def_config);
                 sysconfdirs++;
             }
         }
