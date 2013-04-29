@@ -46,7 +46,7 @@ struct _GSignondDbusAuthSessionAdapterPrivate
     GSignondAuthSession *session;
     gchar *app_context;
     gboolean is_process_active;
-    GSignondSecurityContext ctx;
+    GSignondSecurityContext *ctx;
 };
 
 G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapter, GSIGNOND_TYPE_DISPOSABLE)
@@ -67,7 +67,7 @@ G_DEFINE_TYPE (GSignondDbusAuthSessionAdapter, gsignond_dbus_auth_session_adapte
     }\
     gsignond_access_control_manager_security_context_of_peer( \
             acm, \
-            &priv->ctx, \
+            priv->ctx, \
             fd, \
             sender, \
             priv->app_context); \
@@ -166,6 +166,11 @@ gsignond_dbus_auth_session_adapter_finalize (GObject *object)
 {
     GSignondDbusAuthSessionAdapter *self = GSIGNOND_DBUS_AUTH_SESSION_ADAPTER (object);
 
+    if (self->priv->ctx) {
+        gsignond_security_context_free (self->priv->ctx);
+        self->priv->ctx = NULL;
+    }
+
     if (self->priv->app_context) {
         g_free (self->priv->app_context);
         self->priv->app_context = NULL;
@@ -221,6 +226,7 @@ gsignond_dbus_auth_session_adapter_init (GSignondDbusAuthSessionAdapter *self)
     self->priv->app_context = 0;
     self->priv->is_process_active = FALSE;
     self->priv->dbus_auth_session = gsignond_dbus_auth_session_skeleton_new ();
+    self->priv->ctx = gsignond_security_context_new ();
 
     g_signal_connect_swapped (self->priv->dbus_auth_session,
         "handle-query-available-mechanisms", 
@@ -243,7 +249,7 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     mechanisms = gsignond_auth_session_query_available_mechanisms (
-        self->priv->session, wanted_mechanisms, &self->priv->ctx, &error);
+        self->priv->session, wanted_mechanisms, self->priv->ctx, &error);
 
     if (mechanisms) {
         gsignond_dbus_auth_session_complete_query_available_mechanisms (
@@ -340,7 +346,7 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
     info = _auth_session_dbus_info_new (self, invocation);
     self->priv->is_process_active = TRUE;
     if (!gsignond_auth_session_process (self->priv->session, data, mechanisms, 
-                &self->priv->ctx, _on_process_done, 
+                self->priv->ctx, _on_process_done,
                 _emit_state_changed, info, &error)) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
@@ -371,7 +377,7 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
     
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    if (gsignond_auth_session_cancel (self->priv->session, &self->priv->ctx, &error))
+    if (gsignond_auth_session_cancel (self->priv->session, self->priv->ctx, &error))
         gsignond_dbus_auth_session_complete_cancel (self->priv->dbus_auth_session, invocation);
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);

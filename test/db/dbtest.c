@@ -37,7 +37,6 @@
 #include "daemon/gsignond-daemon.h"
 #include "daemon/db/gsignond-db-metadata-database.h"
 #include "daemon/db/gsignond-db-credentials-database.h"
-#include "daemon/db/gsignond-db-secret-cache.h"
 
 static GSequence*
 _sequence_new (gchar *data)
@@ -335,7 +334,9 @@ START_TEST (test_identity_info)
 
     fail_unless (gsignond_identity_info_check_method_mechanism (
             identity, "method1", "mech21", &allowmech) == FALSE);
-
+    if (allowmech) {
+        g_free (allowmech);allowmech = NULL;
+    }
     /*acl*/
     ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
     ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
@@ -345,6 +346,7 @@ START_TEST (test_identity_info)
     ctx_list = g_list_append (ctx_list,ctx3);
     fail_unless (gsignond_identity_info_set_access_control_list (
             identity, ctx_list) == TRUE);
+
     list = gsignond_identity_info_get_access_control_list (identity);
     fail_if (list == NULL);
     list2 = g_list_nth (list, 0);
@@ -383,66 +385,9 @@ START_TEST (test_identity_info)
     gsignond_identity_info_unref (identity2);
     fail_unless (gsignond_identity_info_compare (identity, identity) == TRUE);
 
+    gsignond_security_context_list_free (ctx_list); ctx_list = NULL;
+
     gsignond_identity_info_unref (identity);
-}
-END_TEST
-
-START_TEST (test_secret_cache)
-{
-    GSignondConfig *config = NULL;
-    GSignondSecretStorage *storage =NULL;
-    GHashTable *data = NULL;
-    GHashTable *data2 = NULL;
-    GSignondDbSecretCache *cache = NULL;
-    GSignondCredentials *creds = NULL, *creds2;
-
-    cache = gsignond_db_secret_cache_new();
-    fail_if (cache == NULL);
-
-    creds = gsignond_credentials_new ();
-    gsignond_credentials_set_data (creds, 0, "username2", "password2");
-
-    fail_unless (gsignond_db_secret_cache_get_credentials (cache, 1) == NULL);
-    fail_unless (gsignond_db_secret_cache_get_data (cache, 1, 5) == NULL);
-
-    fail_unless (gsignond_db_secret_cache_update_credentials (
-            cache, creds, TRUE) == TRUE);
-
-    gsignond_credentials_set_id (creds, 1);
-    fail_unless (gsignond_db_secret_cache_update_credentials (
-            cache, creds, TRUE) == TRUE);
-
-    creds2 = gsignond_db_secret_cache_get_credentials (cache, 1);
-    fail_if (creds2 == NULL);
-    fail_unless (gsignond_credentials_equal (creds, creds2) == TRUE);
-    g_object_unref (creds);
-
-    data = g_hash_table_new_full ((GHashFunc)g_str_hash,
-            (GEqualFunc)g_str_equal,
-            (GDestroyNotify)NULL,
-            (GDestroyNotify)g_bytes_unref);
-    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
-    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
-    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
-    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
-    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
-    fail_unless (gsignond_db_secret_cache_update_data (
-            cache, 1, 5, data) == TRUE);
-    g_hash_table_unref (data);
-
-    data2 = gsignond_db_secret_cache_get_data (cache, 1, 5);
-    fail_if (data2 == NULL);
-    g_hash_table_unref (data2);
-
-    config = gsignond_config_new ();
-    storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
-            "config", config, NULL);
-    g_object_unref (config);
-    gsignond_secret_storage_open_db (storage);
-    fail_unless (gsignond_db_secret_cache_write_to_storage (
-            cache, storage) == TRUE);
-    g_object_unref (storage);
-    g_object_unref (cache);
 }
 END_TEST
 
@@ -1097,7 +1042,6 @@ Suite* db_suite (void)
 
     TCase *tc_core = tcase_create ("Tests");
     tcase_add_test (tc_core, test_identity_info);
-    tcase_add_test (tc_core, test_secret_cache);
     tcase_add_test (tc_core, test_secret_database);
     tcase_add_test (tc_core, test_secret_storage);
     tcase_add_test (tc_core, test_metadata_database);

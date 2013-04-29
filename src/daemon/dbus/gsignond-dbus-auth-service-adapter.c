@@ -309,12 +309,12 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
                                const gchar *app_context,
                                gpointer user_data)
 {
-    GSignondSecurityContext sec_context = {0, 0};
     GSignondIdentity *identity = NULL;
     GError *error = NULL;
     GDBusConnection *connection = NULL;
     const gchar *sender = NULL;
     int fd = -1;
+    GSignondSecurityContext *sec_context = gsignond_security_context_new ();
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SERVICE_ADAPTER(self), FALSE);
 
@@ -327,12 +327,12 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
 
     gsignond_access_control_manager_security_context_of_peer(
             gsignond_daemon_get_access_control_manager (self->priv->auth_service),
-            &sec_context,
+            sec_context,
             fd,
             sender,
             app_context);
 
-    identity = gsignond_daemon_register_new_identity (self->priv->auth_service, &sec_context, &error);
+    identity = gsignond_daemon_register_new_identity (self->priv->auth_service, sec_context, &error);
 
     if (identity) {
         GSignondDbusIdentityAdapter *dbus_identity = _create_and_cache_dbus_identity (self, identity, app_context, connection, sender);
@@ -346,6 +346,7 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
         
         gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
     }
+    gsignond_security_context_free (sec_context);
 
     return TRUE;
 }
@@ -357,12 +358,12 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
                       const gchar *app_context,
                       gpointer user_data)
 {
-    GSignondSecurityContext sec_context = {0, 0};
     GSignondIdentity *identity = NULL;
     GError *error = NULL;
     GDBusConnection *connection = NULL;
     const gchar *sender =  NULL;
     int fd = -1;
+    GSignondSecurityContext *sec_context = gsignond_security_context_new ();
 
     connection = g_dbus_method_invocation_get_connection (invocation);
 #ifdef USE_P2P
@@ -372,12 +373,12 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
 #endif
     gsignond_access_control_manager_security_context_of_peer(
             gsignond_daemon_get_access_control_manager (self->priv->auth_service),
-            &sec_context,
+            sec_context,
             fd,
             sender,
             app_context);
 
-    identity = gsignond_daemon_get_identity (self->priv->auth_service, id, &sec_context, &error);
+    identity = gsignond_daemon_get_identity (self->priv->auth_service, id, sec_context, &error);
 
     if (identity) {
         GSignondIdentityInfo *info = NULL;
@@ -394,6 +395,7 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
 
         gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
     }
+    gsignond_security_context_free (sec_context);
 
     return TRUE;
 }

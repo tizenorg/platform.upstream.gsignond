@@ -76,7 +76,7 @@ struct _GSignondDbusIdentityAdapterPrivate
     GSignondDbusIdentity *dbus_identity;
     GSignondIdentity  *identity;
     gchar *app_context;
-    GSignondSecurityContext sec_context;
+    GSignondSecurityContext *sec_context;
     GList *sessions;
     /* signal handler ids */
     guint info_updated_handler_id;
@@ -104,7 +104,7 @@ G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIG
         }\
         gsignond_access_control_manager_security_context_of_peer( \
             acm, \
-            &priv->sec_context, \
+            priv->sec_context, \
             fd, \
             sender, \
             priv->app_context); \
@@ -261,6 +261,11 @@ gsignond_dbus_identity_adapter_finalize (GObject *object)
 {
     GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (object);
 
+    if (self->priv->sec_context) {
+        gsignond_security_context_free (self->priv->sec_context);
+        self->priv->sec_context = NULL;
+    }
+
     if (self->priv->sessions) {
         g_list_free (self->priv->sessions);
         self->priv->sessions = NULL;
@@ -319,6 +324,7 @@ gsignond_dbus_identity_adapter_init (GSignondDbusIdentityAdapter *self)
     self->priv->identity = 0;
     self->priv->app_context = 0;
     self->priv->dbus_identity = gsignond_dbus_identity_skeleton_new();
+    self->priv->sec_context = gsignond_security_context_new ();
 
     g_signal_connect_swapped (self->priv->dbus_identity,
             "handle-request-credentials-update", G_CALLBACK (_handle_request_credentials_update), self);
@@ -378,7 +384,7 @@ _handle_request_credentials_update (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
     
-    gsignond_identity_request_credentials_update (self->priv->identity, message, &self->priv->sec_context, &error);
+    gsignond_identity_request_credentials_update (self->priv->identity, message, self->priv->sec_context, &error);
     if (error) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
@@ -407,7 +413,7 @@ _handle_get_info (GSignondDbusIdentityAdapter *self,
     PREPARE_SECURITY_CONTEXT (self, invocation);
     
     identity_data = gsignond_identity_get_info (self->priv->identity, 
-        &self->priv->sec_context, &error);
+        self->priv->sec_context, &error);
 
     if (identity_data) {
         gsignond_dbus_identity_complete_get_info (
@@ -450,7 +456,7 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    session = gsignond_identity_get_auth_session (self->priv->identity, method, &self->priv->sec_context, &error);
+    session = gsignond_identity_get_auth_session (self->priv->identity, method, self->priv->sec_context, &error);
 
     if (session) {
         guint timeout =gsignond_identity_get_auth_session_timeout (self->priv->identity);
@@ -513,7 +519,7 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    gsignond_identity_verify_user (self->priv->identity, params, &self->priv->sec_context, &error);
+    gsignond_identity_verify_user (self->priv->identity, params, self->priv->sec_context, &error);
 
     if (error) {
         g_dbus_method_invocation_return_gerror (invocation, error);
@@ -570,7 +576,7 @@ _handle_verify_secret (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
     
-    gsignond_identity_verify_secret (self->priv->identity, secret, &self->priv->sec_context, &error);
+    gsignond_identity_verify_secret (self->priv->identity, secret, self->priv->sec_context, &error);
 
     if (error) {
         g_dbus_method_invocation_return_gerror (invocation, error);
@@ -600,7 +606,7 @@ _handle_remove (GSignondDbusIdentityAdapter   *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    if (!gsignond_identity_remove (self->priv->identity, &self->priv->sec_context, &error)) {
+    if (!gsignond_identity_remove (self->priv->identity, self->priv->sec_context, &error)) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
 
@@ -627,7 +633,7 @@ _handle_sign_out (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    res = gsignond_identity_sign_out (self->priv->identity, &self->priv->sec_context, &error);
+    res = gsignond_identity_sign_out (self->priv->identity, self->priv->sec_context, &error);
 
     if (!error) {
         gsignond_dbus_identity_complete_sign_out (self->priv->dbus_identity, invocation, res);
@@ -655,7 +661,7 @@ _handle_store (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    id = gsignond_identity_store (self->priv->identity, info, &self->priv->sec_context, &error);
+    id = gsignond_identity_store (self->priv->identity, info, self->priv->sec_context, &error);
 
     if (id) {
         gsignond_dbus_identity_complete_store (self->priv->dbus_identity, invocation, id);
@@ -682,7 +688,7 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    id = gsignond_identity_add_reference (self->priv->identity, reference, &self->priv->sec_context, &error);
+    id = gsignond_identity_add_reference (self->priv->identity, reference, self->priv->sec_context, &error);
 
     if (id) {
         gsignond_dbus_identity_complete_add_reference (self->priv->dbus_identity, invocation, id);
@@ -710,7 +716,7 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
 
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
-    id = gsignond_identity_remove_reference (self->priv->identity, reference, &self->priv->sec_context, &error);
+    id = gsignond_identity_remove_reference (self->priv->identity, reference, self->priv->sec_context, &error);
 
     if (id) {
         gsignond_dbus_identity_complete_remove_reference (self->priv->dbus_identity, invocation, id);

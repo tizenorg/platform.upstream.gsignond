@@ -738,17 +738,19 @@ gsignond_identity_store (GSignondIdentity *identity,
     if (!contexts) {
         contexts = gsignond_identity_info_get_access_control_list (identity->priv->info);
         gsignond_identity_info_set_access_control_list (identity_info, contexts);
-        gsignond_security_context_list_free (contexts);
     }
     else {
         VALIDATE_IDENTITY_WRITE_ACL (identity, ctx, 0);
     }
+    gsignond_security_context_list_free (contexts);
    
     owner = gsignond_identity_info_get_owner (identity_info);
     if (!owner) {
         owner = gsignond_identity_info_get_owner (identity->priv->info);
         gsignond_identity_info_set_owner (identity_info, owner);
     }
+    gsignond_security_context_free (owner);
+
 
     /* update object cache */
     if (identity->priv->info)

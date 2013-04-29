@@ -124,8 +124,8 @@ int main (int argc, char **argv)
     main_loop = g_main_loop_new (NULL, FALSE);
 
     _server = gsignond_dbus_server_new ();
+    g_option_context_free (opt_context);
     if (!_server) {
-        g_option_context_free (opt_context);
         return -1;
     }
     g_object_weak_ref (G_OBJECT (_server), _on_server_closed, main_loop);

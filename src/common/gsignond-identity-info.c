@@ -795,8 +795,8 @@ gsignond_identity_info_get_mechanisms (
                 g_free (vmechanisms);
                 break;
             }
-            g_free (vmethod);
-            g_free (vmechanisms);
+            g_free (vmethod); vmethod = NULL;
+            g_strfreev (vmechanisms); vmechanisms = NULL;
         }
     }
     return mechanisms;
@@ -818,16 +818,17 @@ gsignond_identity_info_remove_method (
     g_assert (info != NULL);
 
     GHashTable *methods = NULL;
+    gboolean ret = FALSE;
 
     g_return_val_if_fail (method != NULL, FALSE);
 
     methods = gsignond_identity_info_get_methods (info);
     if (methods && g_hash_table_remove (methods, method)) {
-        return gsignond_identity_info_set_methods (info, methods);
+        ret = gsignond_identity_info_set_methods (info, methods);
     }
     if (methods)
         g_hash_table_unref (methods);
-    return FALSE;
+    return ret;
 }
 
 /**
@@ -1059,6 +1060,7 @@ gsignond_identity_info_check_method_mechanism (
     split_mechs = g_strsplit (mechanism, space, 0);
     if (g_strv_length (split_mechs) <= 1 ) {
         g_sequence_free (mechanisms);
+        if (split_mechs) g_strfreev (split_mechs);
         return FALSE;
     }
 
