@@ -526,14 +526,43 @@ gsignond_daemon_query_mechanisms (GSignondDaemon *daemon, const gchar *method, G
     return mechanisms;
 }
 
+static gboolean
+_check_keychain_access (GSignondDaemon *self,
+                        const GSignondSecurityContext *ctx,
+                        GError **error)
+{
+    GSignondAccessControlManager *acm = self->priv->acm;
+    GSignondSecurityContext *keychain =
+        gsignond_access_control_manager_security_context_of_keychain (acm);
+    gboolean has_access =
+        (gsignond_security_context_compare (keychain, ctx) == 0);
+    gsignond_security_context_free (keychain);
+    if (!has_access) {
+        WARN ("keychain access check failed");
+        if (error) {
+            *error = gsignond_get_gerror_for_id (
+                                    GSIGNOND_ERROR_PERMISSION_DENIED,
+                                    "Can not access keychain functionality");
+        }
+    }
+    return has_access;
+}
+
 GList *
-gsignond_daemon_query_identities (GSignondDaemon *self, GVariant *filter, GError **error)
+gsignond_daemon_query_identities (GSignondDaemon *self,
+                                  GVariant *filter,
+                                  const GSignondSecurityContext *ctx,
+                                  GError **error)
 {
     if (!self || !GSIGNOND_IS_DAEMON (self)) {
         WARN ("assertion (self && GSIGNOND_IS_DAEMON(self)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
     }
+
+    if (!_check_keychain_access (self, ctx, error))
+        return FALSE;
+
     (void)filter;
 
     if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Not supported");
@@ -542,13 +571,18 @@ gsignond_daemon_query_identities (GSignondDaemon *self, GVariant *filter, GError
 }
 
 gboolean 
-gsignond_daemon_clear (GSignondDaemon *self, GError **error)
+gsignond_daemon_clear (GSignondDaemon *self,
+                       const GSignondSecurityContext *ctx,
+                       GError **error)
 {
     if (!self || !GSIGNOND_IS_DAEMON (self)) {
         WARN ("assertion (self && GSIGNOND_IS_DAEMON(self)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
+
+    if (!_check_keychain_access (self, ctx, error))
+        return FALSE;
 
     gboolean retval = TRUE;
     GSignondDaemonPrivate *priv = self->priv;

@@ -92,7 +92,10 @@ extension_tizen_access_control_manager_security_context_of_peer (
         smack_new_label_from_socket(peer_fd, &label);
         if (label) 
         {
-            peer_ctx = gsignond_security_context_new_from_values ((const gchar*)label, peer_app_ctx);
+            gsignond_security_context_set_system_context (peer_ctx,
+                                                          (const gchar *) label);
+            gsignond_security_context_set_application_context (peer_ctx,
+                                                               peer_app_ctx);
         }
         
         return;
@@ -144,9 +147,13 @@ extension_tizen_access_control_manager_security_context_of_peer (
         g_variant_get (response, "s", &label);
         g_print ("Obtained label from dbus: %s\n", label);
         
-        if (label)
-            peer_ctx = gsignond_security_context_new_from_values ((const gchar*)label, peer_app_ctx);
-            
+        if (label) {
+            gsignond_security_context_set_system_context (peer_ctx,
+                                                          (const gchar *) label);
+            gsignond_security_context_set_application_context (peer_ctx,
+                                                               peer_app_ctx);
+        }
+
         g_object_unref (proxy);
         return;
     } 
@@ -187,7 +194,7 @@ extension_tizen_access_control_manager_peer_is_owner_of_identity (
 {
     (void) self;
 
-    return gsignond_security_context_compare(peer_ctx, identity_owner);
+    return (gsignond_security_context_compare(peer_ctx, identity_owner) == 0);
 }
 
 GSignondSecurityContext *

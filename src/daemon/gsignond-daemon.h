@@ -85,10 +85,13 @@ gsignond_daemon_query_mechanisms (GSignondDaemon *daemon,
 GList *
 gsignond_daemon_query_identities (GSignondDaemon *daemon,
                                   GVariant *filter,
+                                  const GSignondSecurityContext *ctx,
                                   GError **error);
 
 gboolean 
-gsignond_daemon_clear (GSignondDaemon *daemon, GError **error);
+gsignond_daemon_clear (GSignondDaemon *daemon,
+                       const GSignondSecurityContext *ctx,
+                       GError **error);
 
 guint32
 gsignond_daemon_store_identity (GSignondDaemon *daemon, GSignondIdentity *identity);

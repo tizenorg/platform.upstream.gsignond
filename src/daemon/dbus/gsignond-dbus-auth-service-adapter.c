@@ -464,8 +464,30 @@ _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
 {
     GList *identities = NULL;
     GError *error = NULL;
+    GSignondSecurityContext *sec_context;
+    const gchar *sender =  NULL;
+    int fd = -1;
 
-    identities = gsignond_daemon_query_identities (self->priv->auth_service, filter, &error);
+#ifdef USE_P2P
+    GDBusConnection *connection = NULL;
+    connection = g_dbus_method_invocation_get_connection (invocation);
+    fd = g_socket_get_fd (g_socket_connection_get_socket (G_SOCKET_CONNECTION (g_dbus_connection_get_stream(connection))));
+#else
+    sender = g_dbus_method_invocation_get_sender (invocation);
+#endif
+    sec_context = gsignond_security_context_new ();
+    gsignond_access_control_manager_security_context_of_peer(
+            gsignond_daemon_get_access_control_manager (self->priv->auth_service),
+            sec_context,
+            fd,
+            sender, "");
+
+    identities = gsignond_daemon_query_identities (self->priv->auth_service,
+                                                   filter,
+                                                   sec_context,
+                                                   &error);
+
+    gsignond_security_context_free (sec_context);
 
     if (identities) {
         GVariantBuilder builder;
@@ -499,8 +521,29 @@ _handle_clear (GSignondDbusAuthServiceAdapter *self,
 {
     gboolean res ;
     GError *error = NULL;
+    GSignondSecurityContext *sec_context;
+    const gchar *sender =  NULL;
+    int fd = -1;
 
-    res = gsignond_daemon_clear (self->priv->auth_service, &error);
+#ifdef USE_P2P
+    GDBusConnection *connection = NULL;
+    connection = g_dbus_method_invocation_get_connection (invocation);
+    fd = g_socket_get_fd (g_socket_connection_get_socket (G_SOCKET_CONNECTION (g_dbus_connection_get_stream(connection))));
+#else
+    sender = g_dbus_method_invocation_get_sender (invocation);
+#endif
+    sec_context = gsignond_security_context_new ();
+    gsignond_access_control_manager_security_context_of_peer(
+            gsignond_daemon_get_access_control_manager (self->priv->auth_service),
+            sec_context,
+            fd,
+            sender, "");
+
+    res = gsignond_daemon_clear (self->priv->auth_service,
+                                 sec_context,
+                                 &error);
+
+    gsignond_security_context_free (sec_context);
 
     if (!error)
         gsignond_dbus_auth_service_complete_clear (self->priv->dbus_auth_service, invocation, res);
