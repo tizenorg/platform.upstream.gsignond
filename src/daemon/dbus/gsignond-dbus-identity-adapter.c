@@ -641,7 +641,7 @@ _handle_sign_out (GSignondDbusIdentityAdapter *self,
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
     }
-        
+
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
 
     return TRUE;
@@ -740,6 +740,12 @@ _emit_info_updated (GSignondIdentity *identity,
 
     if (change == GSIGNOND_IDENTITY_REMOVED)
         gsignond_disposable_delete_later (GSIGNOND_DISPOSABLE (self));
+    else if (change == GSIGNOND_IDENTITY_SIGNED_OUT && self->priv->sessions) {
+        /* destroy all sessions on this identity as it's signed out */
+        g_list_foreach (self->priv->sessions, _destroy_session, NULL);
+        g_list_free (self->priv->sessions);
+        self->priv->sessions = NULL;
+    }
 }
 
 const gchar *

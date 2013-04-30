@@ -377,6 +377,22 @@ gsignond_daemon_remove_identity_reference (GSignondDaemon *daemon, guint32 ident
     return gsignond_db_credentials_database_remove_reference (daemon->priv->db, identity_id, owner, reference);
 }
 
+gboolean
+gsignond_daemon_store_identity_data (GSignondDaemon *daemon, guint32 identity_id, const gchar *method, GHashTable *data)
+{
+    g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), FALSE);
+
+    return gsignond_db_credentials_database_update_data (daemon->priv->db, identity_id, method, data);
+}
+
+gboolean
+gsignond_daemon_clear_identity_data (GSignondDaemon *daemon, guint32 identity_id)
+{
+    g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), FALSE);
+
+    return gsignond_db_credentials_database_remove_data (daemon->priv->db, identity_id, NULL);
+}
+
 GSignondIdentity *
 gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
                                        const GSignondSecurityContext *ctx,

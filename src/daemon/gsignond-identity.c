@@ -34,6 +34,7 @@
 #include "gsignond-auth-session.h"
 #include "gsignond/gsignond-config-dbus.h"
 #include "gsignond/gsignond-signonui.h"
+#include "common/gsignond-identity-info-internal.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 
 enum 
@@ -44,9 +45,6 @@ enum
 };
 
 enum {
-    SIG_VERIFY_USER,
-    SIG_VERIFY_SECRET,
-    SIG_SIGNOUT,
     SIG_USER_VERIFIED,
     SIG_SECRET_VERIFIED,
     SIG_CREDENTIALS_UPDATED,
@@ -222,15 +220,6 @@ gsignond_identity_class_init (GSignondIdentityClass *klass)
     
     g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
-    signals[SIG_SIGNOUT] = g_signal_new ("signout",
-                  GSIGNOND_TYPE_IDENTITY,
-                  G_SIGNAL_RUN_FIRST | G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                  0,
-                  NULL, NULL,
-                  NULL,
-                  G_TYPE_BOOLEAN,
-                  0,
-                  G_TYPE_NONE);
     signals[SIG_USER_VERIFIED] =  g_signal_new ("user-verified",
                 GSIGNOND_TYPE_IDENTITY,
                 G_SIGNAL_RUN_LAST,
@@ -693,18 +682,25 @@ gsignond_identity_sign_out (GSignondIdentity *identity,
         return FALSE;
     }
     gboolean success = FALSE;
+    guint32 identity_id = GSIGNOND_IDENTITY_INFO_NEW_IDENTITY;
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
 
-    /*
-     * TODO: close all auth_sessions and emit "identity-signed-out"
-     */
-    g_signal_emit (identity,
-                   signals[SIG_SIGNOUT],
-                   0,
-                   &success);
+    identity_id = gsignond_identity_info_get_id (identity->priv->info);
 
-    if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Not supported");
+    if (identity_id == GSIGNOND_IDENTITY_INFO_NEW_IDENTITY) {
+        /* TODO; clear the cached secret for unstored identity */
+        success = TRUE;
+    }
+    else {
+        success = gsignond_daemon_clear_identity_data (identity->priv->owner, identity_id);
+    }
+    if(!success) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Failed to clear data");
+        return FALSE;
+    }
+
+    g_signal_emit (identity, signals[SIG_INFO_UPDATED], 0, GSIGNOND_IDENTITY_SIGNED_OUT, NULL);
 
     return success;
 }
