@@ -175,13 +175,6 @@ gsignond_identity_info_set_identity_type (
         guint32 type);
 
 gboolean
-gsignond_identity_info_check_method_mechanism (
-        GSignondIdentityInfo *info,
-        const gchar *method,
-        const gchar *mechanism,
-        gchar **allowed_mechanisms);
-
-gboolean
 gsignond_identity_info_compare (
         GSignondIdentityInfo *info,
         GSignondIdentityInfo *other);

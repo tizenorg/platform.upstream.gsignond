@@ -193,7 +193,6 @@ START_TEST (test_identity_info)
     GSignondSecurityContext *ctx, *ctx1, *ctx2, *ctx3 ;
     GHashTable *methods = NULL, *methods2;
     GSequence *seq1 = NULL, *seq_realms, *seq21, *mechs;
-    gchar *allowmech;
     GList *list2;
 
     identity = gsignond_identity_info_new ();
@@ -315,28 +314,6 @@ START_TEST (test_identity_info)
     fail_unless (gsignond_identity_info_remove_method (
             identity, "method4") == TRUE);
 
-    allowmech = NULL;
-    fail_unless (gsignond_identity_info_check_method_mechanism (
-            identity, "method4", "mech567", &allowmech) == TRUE);
-
-    allowmech = NULL;
-    fail_unless (gsignond_identity_info_check_method_mechanism (
-            identity, "method1", "mech11", &allowmech) == TRUE);
-    fail_if (allowmech == NULL);
-
-    fail_unless (g_strcmp0 (allowmech, "mech11") == 0);
-    g_free (allowmech);allowmech = NULL;
-
-    fail_unless (gsignond_identity_info_check_method_mechanism (
-            identity, "method1", "mech11 mech12", &allowmech) == TRUE);
-    fail_unless (g_strcmp0 (allowmech, "mech11 mech12") == 0);
-    g_free (allowmech);allowmech = NULL;
-
-    fail_unless (gsignond_identity_info_check_method_mechanism (
-            identity, "method1", "mech21", &allowmech) == FALSE);
-    if (allowmech) {
-        g_free (allowmech);allowmech = NULL;
-    }
     /*acl*/
     ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
     ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
