@@ -106,10 +106,13 @@ gboolean
 gsignond_daemon_remove_identity_reference (GSignondDaemon *daemon, guint32 identity_id, const GSignondSecurityContext *owner, const gchar *ref);
 
 gboolean
-gsignond_daemon_store_identity_data (GSignondDaemon *daemon, guint32 identity_id, const gchar *method, GHashTable *data);
+gsignond_daemon_store_identity_data (GSignondDaemon *daemon, guint32 identity_id, const gchar *method, GSignondDictionary *data);
 
 gboolean
 gsignond_daemon_clear_identity_data (GSignondDaemon *daemon, guint32 identity_id);
+
+GSignondDictionary *
+gsignond_daemon_load_identity_data (GSignondDaemon *daemon, guint32 identity_id, const gchar *method);
 
 guint
 gsignond_daemon_get_timeout (GSignondDaemon *self) G_GNUC_CONST;

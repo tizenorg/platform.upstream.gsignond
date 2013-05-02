@@ -119,7 +119,7 @@ gsignond_plugin_response_final (GSignondPlugin *self,
                              GSignondSessionData *session_data);
 void 
 gsignond_plugin_store (GSignondPlugin *self, 
-                            GSignondSessionData *session_data);
+                       GSignondDictionary *token_data);
 void 
 gsignond_plugin_error (GSignondPlugin *self, GError *error);
 void 

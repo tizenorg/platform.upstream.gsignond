@@ -378,7 +378,7 @@ gsignond_daemon_remove_identity_reference (GSignondDaemon *daemon, guint32 ident
 }
 
 gboolean
-gsignond_daemon_store_identity_data (GSignondDaemon *daemon, guint32 identity_id, const gchar *method, GHashTable *data)
+gsignond_daemon_store_identity_data (GSignondDaemon *daemon, guint32 identity_id, const gchar *method, GSignondDictionary *data)
 {
     g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), FALSE);
 
@@ -391,6 +391,16 @@ gsignond_daemon_clear_identity_data (GSignondDaemon *daemon, guint32 identity_id
     g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), FALSE);
 
     return gsignond_db_credentials_database_remove_data (daemon->priv->db, identity_id, NULL);
+}
+
+GSignondDictionary *
+gsignond_daemon_load_identity_data (GSignondDaemon *daemon, guint32 identity_id, const gchar *method)
+{
+    g_return_val_if_fail (daemon && GSIGNOND_IS_DAEMON (daemon), NULL);
+    g_return_val_if_fail (identity_id, NULL);
+    g_return_val_if_fail (method, NULL);
+
+    return gsignond_db_credentials_database_load_data (daemon->priv->db, identity_id, method);
 }
 
 GSignondIdentity *

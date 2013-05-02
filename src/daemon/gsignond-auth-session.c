@@ -398,8 +398,8 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
             NULL,
             G_TYPE_NONE,
             1,
-            GSIGNOND_TYPE_SESSION_DATA);
-    
+            GSIGNOND_TYPE_DICTIONARY);
+
     signals[SIG_PROCESS_USER_ACTION_REQUIRED] =  g_signal_new ("process-user-action-required",
             GSIGNOND_TYPE_AUTH_SESSION,
             G_SIGNAL_RUN_LAST,
@@ -488,9 +488,9 @@ gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
 
 void 
 gsignond_auth_session_notify_store (GSignondAuthSession *self, 
-                                    GSignondSessionData *session_data)
+                                    GSignondDictionary *token_data)
 {
-    g_signal_emit (self, signals[SIG_PROCESS_STORE], 0, session_data);
+    g_signal_emit (self, signals[SIG_PROCESS_STORE], 0, token_data);
 }
 
 void 

@@ -74,7 +74,7 @@ static void gsignond_plugin_proxy_response_callback(GSignondPlugin* plugin,
                                                   GSignondSessionData* result,
                                                   gpointer user_data);
 static void gsignond_plugin_proxy_store_callback(GSignondPlugin* plugin, 
-                                                  GSignondSessionData* result,
+                                                  GSignondDictionary* token_data,
                                                   gpointer user_data);
 static void gsignond_plugin_proxy_refreshed_callback(GSignondPlugin* plugin, 
                                                   GSignondSessionData* result,
@@ -518,7 +518,7 @@ gsignond_plugin_proxy_response_callback(GSignondPlugin *plugin,
 
 static void
 gsignond_plugin_proxy_store_callback (GSignondPlugin *plugin, 
-                                      GSignondSessionData *result,
+                                      GSignondDictionary *token_data,
                                       gpointer user_data)
 {    
     GSignondPluginProxy *self = GSIGNOND_PLUGIN_PROXY (user_data);
@@ -529,7 +529,7 @@ gsignond_plugin_proxy_store_callback (GSignondPlugin *plugin,
             in plugin proxy", priv->plugin_type);
         return;
     }
-    gsignond_auth_session_notify_store (priv->active_session, result);
+    gsignond_auth_session_notify_store (priv->active_session, token_data);
 }
 
 static void

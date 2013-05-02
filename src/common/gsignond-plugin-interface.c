@@ -56,7 +56,7 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
 
     signals[STORE] = g_signal_new ("store", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        1, GSIGNOND_TYPE_SESSION_DATA);
+        1, GSIGNOND_TYPE_DICTIONARY);
 
     signals[ERROR] = g_signal_new ("error", G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
@@ -149,9 +149,9 @@ void gsignond_plugin_response_final (GSignondPlugin *self,
 }
 
 void gsignond_plugin_store (GSignondPlugin *self, 
-                            GSignondSessionData *session_data)
+                            GSignondDictionary *token_data)
 {
-    g_signal_emit (self, signals[STORE], 0, session_data);
+    g_signal_emit (self, signals[STORE], 0, token_data);
 }
 
 void gsignond_plugin_error (GSignondPlugin *self, GError *error)

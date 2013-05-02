@@ -28,6 +28,7 @@
 
 #include <glib-object.h>
 
+#include <gsignond/gsignond-dictionary.h>
 #include <gsignond/gsignond-identity-info.h>
 #include <gsignond/gsignond-signonui-data.h>
 #include <gsignond/gsignond-session-data.h>
@@ -129,7 +130,7 @@ gsignond_auth_session_notify_state_changed (GSignondAuthSession *self,
 
 void 
 gsignond_auth_session_notify_store (GSignondAuthSession *self, 
-                                    GSignondSessionData *session_data);
+                                    GSignondDictionary *token_data);
 
 void 
 gsignond_auth_session_notify_user_action_required (GSignondAuthSession *self, 

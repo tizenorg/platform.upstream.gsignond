@@ -367,6 +367,24 @@ _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui
             ui_data, _on_user_action_completed, _on_refresh_requested, session);
 }
 
+static void
+_on_store_token (GSignondAuthSession *session, GSignondDictionary *token_data, gpointer userdata)
+{
+    GSignondIdentity *identity = GSIGNOND_IDENTITY (userdata);
+    guint32 identity_id = GSIGNOND_IDENTITY_INFO_NEW_IDENTITY;
+
+    g_return_if_fail (identity && session && GSIGNOND_IS_AUTH_SESSION (session));
+
+    identity_id = gsignond_identity_info_get_id (identity->priv->info);
+
+    if (identity_id == GSIGNOND_IDENTITY_INFO_NEW_IDENTITY)
+        /* TODO; cache token */
+        ;
+    else
+        gsignond_daemon_store_identity_data (identity->priv->owner, identity_id, 
+            gsignond_auth_session_get_method (session), token_data);
+}
+
 static gboolean
 _compare_session_by_pointer (gpointer key, gpointer value, gpointer dead_object)
 {
@@ -454,6 +472,7 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
     /* Handle 'ui' signanls on session */
     g_signal_connect (session, "process-user-action-required", G_CALLBACK (_on_user_action_required), identity);
     g_signal_connect (session, "process-refreshed", G_CALLBACK (_on_refresh_dialog), identity);
+    g_signal_connect (session, "process-store", G_CALLBACK (_on_store_token), identity);
 
     g_hash_table_insert (identity->priv->auth_sessions, g_strdup (method), session);
     g_object_weak_ref (G_OBJECT (session), _on_session_close, identity);
