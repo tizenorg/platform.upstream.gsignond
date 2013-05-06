@@ -1,9 +1,9 @@
 TESTS = commontest
 TESTS_ENVIRONMENT=
 VALGRIND_TESTS_DISABLE=
-include $(top_srcdir)/test/valgrind_common.mk
 
 check_PROGRAMS = commontest
+include $(top_srcdir)/test/valgrind_common.mk
 commontest_SOURCES = commontest.c
 commontest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \

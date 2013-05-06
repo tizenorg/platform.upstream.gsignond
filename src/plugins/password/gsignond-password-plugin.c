@@ -91,6 +91,7 @@ static void gsignond_password_plugin_user_action_finished (
                                 "userActionFinished did not return an error value");
         gsignond_plugin_error (self, error); 
         g_error_free(error);
+        return;
     }
     const gchar* username = gsignond_signonui_data_get_username(session_data);
     const gchar* secret = gsignond_signonui_data_get_password(session_data);

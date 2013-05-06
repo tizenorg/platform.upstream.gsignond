@@ -381,7 +381,7 @@ gsignond_plugin_daemon_new (
     daemon->priv->plugin_type = g_strdup (plugin_type);
 
     /* Create dbus connection */
-    stream = gsignond_pipe_stream_new (0, 1);
+    stream = gsignond_pipe_stream_new (0, 1, FALSE);
     daemon->priv->connection = g_dbus_connection_new_sync (G_IO_STREAM (stream),
             NULL, G_DBUS_CONNECTION_FLAGS_NONE, NULL, NULL, NULL);
     g_object_unref (stream);

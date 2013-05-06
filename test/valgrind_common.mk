@@ -13,8 +13,8 @@ SUPPRESSIONS = $(top_srcdir)/test/valgrind.supp
 	--error-exitcode=1 \
 	./$*
 
-valgrind: $(TESTS)
-	for t in $(filter-out $(VALGRIND_TESTS_DISABLE),$(TESTS)); do \
+valgrind: $(check_PROGRAMS)
+	for t in $(filter-out $(VALGRIND_TESTS_DISABLE),$(check_PROGRAMS)); do \
 		$(MAKE) $$t.valgrind; \
 	done;
 

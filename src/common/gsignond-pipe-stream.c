@@ -57,25 +57,28 @@ _gsignond_pipe_stream_dispose (GObject *gobject)
 {
     g_return_if_fail (GSIGNOND_IS_PIPE_STREAM (gobject));
 
-    GSignondPipeStream *stream = GSIGNOND_PIPE_STREAM (gobject);
-
-    if (stream->priv->input_stream) {
-        g_object_unref (stream->priv->input_stream);
-        stream->priv->input_stream = NULL;
-    }
-
-    if (stream->priv->output_stream) {
-        g_object_unref (stream->priv->output_stream);
-        stream->priv->output_stream = NULL;
-    }
-
     /* Chain up to the parent class */
     G_OBJECT_CLASS (gsignond_pipe_stream_parent_class)->dispose (gobject);
+
 }
 
 static void
 _gsignond_pipe_stream_finalize (GObject *gobject)
 {
+    GSignondPipeStream *stream = GSIGNOND_PIPE_STREAM (gobject);
+
+    /* g_io_stream needs streams to be valid in its dispose still
+     */
+    if (stream->priv->input_stream) {
+        g_clear_object (&stream->priv->input_stream);
+        stream->priv->input_stream = NULL;
+    }
+
+    if (stream->priv->output_stream) {
+        g_clear_object (&stream->priv->output_stream);
+        stream->priv->output_stream = NULL;
+    }
+
     G_OBJECT_CLASS (gsignond_pipe_stream_parent_class)->finalize (gobject);
 }
 
@@ -106,15 +109,16 @@ gsignond_pipe_stream_init (GSignondPipeStream *self)
 GSignondPipeStream *
 gsignond_pipe_stream_new (
         gint in_fd,
-        gint out_fd)
+        gint out_fd,
+        gboolean close_fds)
 {
     GSignondPipeStream *stream = GSIGNOND_PIPE_STREAM (g_object_new (
             GSIGNOND_TYPE_PIPE_STREAM, NULL));
     if (stream) {
-        stream->priv->input_stream = (GInputStream *)
-                    g_unix_input_stream_new (in_fd, TRUE);
-        stream->priv->output_stream = (GOutputStream *)
-                    g_unix_output_stream_new (out_fd, TRUE);
+        stream->priv->input_stream = G_INPUT_STREAM (
+                g_unix_input_stream_new (in_fd, close_fds));
+        stream->priv->output_stream = G_OUTPUT_STREAM (
+                g_unix_output_stream_new (out_fd, close_fds));
     }
     return stream;
 }

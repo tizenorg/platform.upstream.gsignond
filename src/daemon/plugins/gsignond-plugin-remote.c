@@ -28,6 +28,7 @@
 #include "gsignond/gsignond-pipe-stream.h"
 #include "gsignond/gsignond-plugin-interface.h"
 #include "daemon/dbus/gsignond-dbus.h"
+#include "gsignond-plugin-remote-private.h"
 #include "gsignond-plugin-remote.h"
 
 enum
@@ -36,29 +37,6 @@ enum
     PROP_TYPE,
     PROP_MECHANISMS,
     N_PROPERTIES
-};
-
-//static GParamSpec *properties[N_PROPERTIES];
-
-struct _GSignondPluginRemotePrivate
-{
-    GDBusConnection   *connection;
-    GSignondDbusRemotePlugin *dbus_plugin_proxy;
-    GIOChannel *err_watch_ch;
-    gchar *plugin_type;
-    gchar **plugin_mechanisms;
-    GPid cpid;
-    guint child_watch_id;
-    guint err_watch_id;
-
-    /* Signals */
-    guint signal_response;
-    guint signal_response_final;
-    guint signal_store;
-    guint signal_error;
-    guint signal_user_action_required;
-    guint signal_refreshed;
-    guint signal_status_changed;
 };
 
 static void
@@ -107,7 +85,10 @@ gsignond_plugin_remote_get_property (
                 if (error) {
                     DBG ("Plugin type retrieval error :: %s", error->message);
                     g_error_free (error);
-                    self->priv->plugin_type = NULL;
+                    if (self->priv->plugin_type) {
+                        g_free (self->priv->plugin_type);
+                        self->priv->plugin_type = NULL;
+                    }
                 }
             }
             g_value_set_string (value, self->priv->plugin_type);
@@ -123,7 +104,10 @@ gsignond_plugin_remote_get_property (
                     DBG ("Plugin mechanisms retrieval error :: %s",
                             error->message);
                     g_error_free (error);
-                    self->priv->plugin_mechanisms = NULL;
+                    if (self->priv->plugin_mechanisms) {
+                        g_strfreev (self->priv->plugin_mechanisms);
+                        self->priv->plugin_mechanisms = NULL;
+                    }
                 }
             }
             g_value_set_boxed (value, self->priv->plugin_mechanisms);
@@ -519,14 +503,22 @@ _error_watch_cb (
 
     GSignondPluginRemote *plugin = (GSignondPluginRemote*)data;
 
-    if (condition == G_IO_HUP || condition == G_IO_ERR ||
-            condition == G_IO_NVAL) {
+    if (condition == G_IO_HUP || condition == G_IO_NVAL) {
         g_io_channel_shutdown (plugin->priv->err_watch_ch, FALSE, NULL);
         g_io_channel_unref (plugin->priv->err_watch_ch);
         plugin->priv->err_watch_ch = NULL;
         g_source_remove (plugin->priv->err_watch_id);
         DBG ("Plugind (%s) is down",
                 plugin->priv->plugin_type ? plugin->priv->plugin_type : "");
+
+        if (plugin->priv->cpid > 0 &&
+            kill (plugin->priv->cpid, 0) != 0) {
+            if (plugin->priv->child_watch_id) {
+                g_source_remove (plugin->priv->child_watch_id);
+                plugin->priv->child_watch_id = 0;
+            }
+            plugin->priv->cpid = 0;
+        }
         return FALSE;
     }
 
@@ -594,7 +586,7 @@ gsignond_plugin_remote_new (
             GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), plugin_type);
     argv[2] = g_strdup(plugin_type);
     ret = g_spawn_async_with_pipes (NULL, argv, NULL,
-            G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH, NULL,
+            G_SPAWN_DO_NOT_REAP_CHILD, NULL,
             NULL, &cpid, &cin_fd, &cout_fd, &cerr_fd, &error);
     g_strfreev (argv);
     if (ret == FALSE || (kill(cpid, 0) != 0)) {
@@ -614,7 +606,7 @@ gsignond_plugin_remote_new (
             plugin_type);
 
     /* Create dbus connection */
-    stream = gsignond_pipe_stream_new (cout_fd, cin_fd);
+    stream = gsignond_pipe_stream_new (cout_fd, cin_fd, TRUE);
     plugin->priv->connection = g_dbus_connection_new_sync (G_IO_STREAM (stream),
             NULL, G_DBUS_CONNECTION_FLAGS_NONE, NULL, NULL, NULL);
     g_object_unref (stream);

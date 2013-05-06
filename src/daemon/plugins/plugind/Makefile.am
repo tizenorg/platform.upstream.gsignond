@@ -1,11 +1,26 @@
 SUBDIRS=
 NULL=
 
+lib_LTLIBRARIES = libgsignond-plugind-daemon.la
+
+libgsignond_plugind_daemon_la_CPPFLAGS = \
+    -I$(top_srcdir) \
+    -I$(top_srcdir)/src \
+    -I$(top_srcdir)/include \
+    $(GSIGNOND_CFLAGS)
+
+libgsignond_plugind_daemon_la_LIBADD =    \
+        $(top_srcdir)/src/common/libgsignond-common.la \
+        $(top_srcdir)/src/daemon/dbus/libgsignond-dbus-glue.la \
+        $(GSIGNOND_LIBS)
+
+libgsignond_plugind_daemon_la_SOURCES = \
+   gsignond-plugin-daemon.c
+
 bin_PROGRAMS = gsignond-plugind
 
 gsignond_plugind_SOURCES = \
     main.c \
-    gsignond-plugin-daemon.c \
     $(NULL)
 
 gsignond_plugind_CFLAGS = \
@@ -16,8 +31,7 @@ gsignond_plugind_CFLAGS = \
     $(NULL)
 
 gsignond_plugind_LDADD = \
-    $(top_srcdir)/src/common/libgsignond-common.la \
-    $(top_srcdir)/src/daemon/dbus/libgsignond-dbus-glue.la \
+    $(top_srcdir)/src/daemon/plugins/plugind/libgsignond-plugind-daemon.la \
     $(GSIGNOND_LIBS) \
     $(NULL)
 

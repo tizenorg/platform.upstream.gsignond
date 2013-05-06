@@ -57,10 +57,6 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
     g_dir_rewind(plugin_dir);
     
     self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
-    self->mechanisms = g_hash_table_new_full((GHashFunc)g_str_hash,
-                                             (GEqualFunc)g_str_equal,
-                                             (GDestroyNotify)g_free,
-                                             (GDestroyNotify)g_strfreev);
 
     DBG ("enumerate plugins in %s (factory=%p)",
          gsignond_config_get_string (self->config,
@@ -76,8 +72,8 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
             g_str_has_suffix(plugin_soname, ".so")) {
             gchar* plugin_name = g_strndup(plugin_soname+3, 
                 strlen(plugin_soname) - 6);
-            GSignondPlugin* plugin = gsignond_load_plugin(
-                self->config, plugin_name);
+            GSignondPlugin* plugin = GSIGNOND_PLUGIN (
+                    gsignond_plugin_remote_new (self->config, plugin_name));
             if (plugin != NULL) {
                 gchar* plugin_type;
                 gchar** mechanisms;
@@ -221,6 +217,11 @@ gsignond_plugin_proxy_factory_class_init (GSignondPluginProxyFactoryClass *klass
 static void
 gsignond_plugin_proxy_factory_init (GSignondPluginProxyFactory *self)
 {
+    self->mechanisms = g_hash_table_new_full((GHashFunc)g_str_hash,
+                                             (GEqualFunc)g_str_equal,
+                                             (GDestroyNotify)g_free,
+                                             (GDestroyNotify)g_strfreev);
+
     self->plugins = g_hash_table_new_full ((GHashFunc)g_str_hash,
                                            (GEqualFunc)g_str_equal,
                                            (GDestroyNotify)g_free,
@@ -303,17 +304,18 @@ gsignond_plugin_proxy_factory_get_plugin_mechanisms(
     const gchar **mechanisms = NULL;
     mechanisms = g_hash_table_lookup(factory->mechanisms, plugin_type);
     if (mechanisms == NULL) {
-    	GSignondPlugin* plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new (
-    	        factory->config, plugin_type));
-    	if (plugin != NULL) {
-    		gchar **mechs = NULL;
-    		g_object_get (plugin, "mechanisms", &mechs, NULL);
-    		if (mechs != NULL) {
-    			g_hash_table_insert(factory->mechanisms, g_strdup(plugin_type),
-    			        mechs);
-    			mechanisms = (const gchar **)mechs;
-    		}
-    	}
+        GSignondPlugin* plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new (
+                factory->config, plugin_type));
+        if (plugin != NULL) {
+            gchar **mechs = NULL;
+            g_object_get (plugin, "mechanisms", &mechs, NULL);
+            if (mechs != NULL) {
+                g_hash_table_insert(factory->mechanisms, g_strdup(plugin_type),
+                        mechs);
+                mechanisms = (const gchar **)mechs;
+            }
+            g_object_unref (plugin);
+        }
     }
     return mechanisms;
 }

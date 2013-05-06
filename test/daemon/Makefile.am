@@ -5,9 +5,9 @@ TESTS = test-daemon-setup.sh
 endif
 TESTS_ENVIRONMENT=
 VALGRIND_TESTS_DISABLE=
-include $(top_srcdir)/test/valgrind_common.mk
 
 check_PROGRAMS = daemontest
+include $(top_srcdir)/test/valgrind_common.mk
 
 daemontest_SOURCES = daemon-test.c
 

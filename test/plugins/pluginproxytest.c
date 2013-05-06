@@ -48,7 +48,7 @@ _stop_mainloop ()
 }
 
 static void
-_start_mainloop ()
+_run_mainloop ()
 {
     g_main_loop_run (main_loop);
 }
@@ -90,8 +90,6 @@ static void
 gsignond_auth_session_init (
         GSignondAuthSession *self)
 {
-
-    
 }
 
 static void
@@ -241,20 +239,23 @@ check_plugin_proxy(
 {
     gchar* ptype = NULL;
     gchar** pmechanisms = NULL;
+    gint i = 0;
 
     fail_if(proxy == NULL);
 
     g_object_get(proxy, "type", &ptype, "mechanisms", &pmechanisms, NULL);
     fail_unless(g_strcmp0(ptype, type) == 0);
-    if (pmechanisms == NULL) {
-        fail_unless (mechanisms[0] == NULL);
-    } else {
-        fail_unless(g_strcmp0(pmechanisms[0], mechanisms[0]) == 0);
-        fail_unless(pmechanisms[1] == NULL && mechanisms[1] == NULL);
-    }
-
     g_free(ptype);
-    g_strfreev(pmechanisms);
+
+    guint len = g_strv_length (pmechanisms);
+    fail_unless (len == g_strv_length (mechanisms));
+
+    for (i=0; i<len; i++) {
+        fail_unless(g_strcmp0(pmechanisms[i], mechanisms[i]) == 0);
+    }
+    if (pmechanisms) {
+        g_strfreev(pmechanisms);
+    }
 }
 
 START_TEST (test_pluginproxy_create)
@@ -302,7 +303,7 @@ START_TEST (test_pluginproxy_process)
     gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password",
             proxy);
 
-    _start_mainloop ();
+    _run_mainloop ();
 
     fail_if(testing_proxy_process);
     
@@ -334,7 +335,7 @@ START_TEST (test_pluginproxy_process_cancel)
     gsignond_plugin_proxy_process(proxy, test_auth_session, data, "mech1",
             proxy);
 
-    _start_mainloop ();
+    _run_mainloop ();
 
     fail_if(testing_proxy_process_cancel);
     
@@ -367,7 +368,7 @@ START_TEST (test_pluginproxy_process_queue)
     
     gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password",
             proxy);
-    _start_mainloop ();
+    _run_mainloop ();
 
     fail_if(testing_proxy_process_queue);
     fail_if(proxy_process_queue_results < 3);
@@ -398,7 +399,7 @@ START_TEST (test_pluginproxy_process_queue_cancel)
     gsignond_plugin_proxy_process(proxy, test_auth_session, data, "mech1",
             proxy);
 
-    _start_mainloop ();
+    _run_mainloop ();
 
     fail_if(testing_proxy_process_queue_cancel);
     fail_if(proxy_process_queue_cancel_results != 10);

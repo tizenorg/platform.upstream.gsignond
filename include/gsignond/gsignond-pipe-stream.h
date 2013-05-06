@@ -71,7 +71,8 @@ gsignond_pipe_stream_get_type (void);
 GSignondPipeStream *
 gsignond_pipe_stream_new (
         gint in_fd,
-        gint out_fd);
+        gint out_fd,
+        gboolean close_fds);
 
 G_END_DECLS
 

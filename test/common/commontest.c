@@ -25,11 +25,25 @@
 
 #include <check.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <glib-unix.h>
 #include <gsignond/gsignond-session-data.h>
 #include <gsignond/gsignond-plugin-loader.h>
 #include <gsignond/gsignond-error.h>
 #include <gsignond/gsignond-log.h>
+#include <gsignond/gsignond-pipe-stream.h>
 
+START_TEST (test_pipe_stream)
+{
+    GSignondPipeStream *stream = NULL;
+    gint pipefd[2];
+    fail_unless (pipe (pipefd) == 0);
+    stream = gsignond_pipe_stream_new (pipefd[0], pipefd[1], TRUE);
+    fail_if (stream == NULL);
+    g_object_unref (stream);
+}
+END_TEST
 
 START_TEST (test_session_data)
 {
@@ -114,13 +128,13 @@ START_TEST (test_plugin_loader)
 }
 END_TEST
 
-
 Suite* common_suite (void)
 {
     Suite *s = suite_create ("Common library");
     
     /* Core test case */
     TCase *tc_core = tcase_create ("Tests");
+    tcase_add_test (tc_core, test_pipe_stream);
     tcase_add_test (tc_core, test_session_data);
     tcase_add_test (tc_core, test_plugin_loader);
     suite_add_tcase (s, tc_core);
