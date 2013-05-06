@@ -210,7 +210,7 @@ gsignond_db_credentials_database_open_secret_storage (
 }
 
 /**
- * gsignond_db_credentials_database_open_secret_storage:
+ * gsignond_db_credentials_database_close_secret_storage:
  *
  * @self: instance of #GSignondDbCredentialsDatabase
  *
@@ -229,7 +229,7 @@ gsignond_db_credentials_database_close_secret_storage (
 }
 
 /**
- * gsignond_db_credentials_database_open_secret_storage:
+ * gsignond_db_credentials_database_is_open_secret_storage:
  *
  * @self: instance of #GSignondDbCredentialsDatabase
  *

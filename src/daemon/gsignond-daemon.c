@@ -250,7 +250,7 @@ _init_storage (GSignondDaemon *self)
                                                    self->priv->storage_manager);
     if (storage_location == NULL)
         return FALSE;
-    gsignond_config_set_string(self->priv->config, 
+    gsignond_config_set_string (self->priv->config, 
         GSIGNOND_CONFIG_GENERAL_SECURE_DIR, storage_location);                                                 
 
     return (storage_location != NULL);
@@ -561,7 +561,7 @@ gsignond_daemon_query_identities (GSignondDaemon *self,
     }
 
     if (!_check_keychain_access (self, ctx, error))
-        return FALSE;
+        return NULL;
 
     (void)filter;
 
@@ -591,6 +591,11 @@ gsignond_daemon_clear (GSignondDaemon *self,
     g_hash_table_foreach_remove (priv->identities, _clear_identity, self);
     if (g_hash_table_size (priv->identities) > 0) {
         WARN ("g_hash_table_foreach_remove(identities) failed for some items");
+        retval = FALSE;
+    }
+    DBG ("perform internal clear");
+    if (!gsignond_db_credentials_database_clear (priv->db)) {
+        WARN ("gsignond_db_credentials_database_clear() failed");
         retval = FALSE;
     }
 

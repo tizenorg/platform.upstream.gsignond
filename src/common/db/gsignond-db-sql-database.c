@@ -108,6 +108,7 @@ _gsignond_db_sql_database_close (GSignondDbSqlDatabase *self)
         gsignond_db_sql_database_update_error_from_db(self);
     }
     self->priv->db = NULL;
+    self->priv->db_version = 0;
 
     return TRUE;
 }
