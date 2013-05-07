@@ -416,6 +416,8 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
     GSignondAuthSession *session = NULL;
     GHashTable *supported_methods = NULL;
     gboolean method_available = FALSE;
+    guint32 identity_id ;
+    GSignondDictionary *token_data = NULL;
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
 
@@ -462,7 +464,14 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
         return NULL;
     }
 
-    session = gsignond_auth_session_new (identity->priv->info, method);
+    if ( (identity_id = gsignond_identity_info_get_id (identity->priv->info)) !=
+            GSIGNOND_IDENTITY_INFO_NEW_IDENTITY) {
+        token_data = gsignond_daemon_load_identity_data (identity->priv->owner, identity_id, method);
+    } else {
+        /* TODO : load cached token data for unsaved identity */
+    }
+
+    session = gsignond_auth_session_new (identity->priv->info, method, token_data);
 
     if (!session) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");

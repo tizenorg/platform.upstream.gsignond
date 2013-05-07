@@ -142,7 +142,8 @@ gsignond_auth_session_notify_refreshed (GSignondAuthSession *self,
 
 GSignondAuthSession * 
 gsignond_auth_session_new (GSignondIdentityInfo *info,
-                           const gchar *method);
+                           const gchar *method,
+                           GSignondDictionary *token_data);
 
 G_END_DECLS
 

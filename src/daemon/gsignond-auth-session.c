@@ -63,6 +63,7 @@ struct _GSignondAuthSessionPrivate
     GSignondPluginProxy *proxy;
     GSequence *available_mechanisms;
     GSignondIdentityInfo *identity_info;
+    GSignondDictionary *token_data;
 };
 
 G_DEFINE_TYPE (GSignondAuthSession, gsignond_auth_session, G_TYPE_OBJECT)
@@ -232,6 +233,14 @@ gsignond_auth_session_process (GSignondAuthSession *self,
         }
     }
 
+    /* pass token data to session data */
+    if (self->priv->token_data) {
+        GVariant *token_data = gsignond_dictionary_to_variant (self->priv->token_data);
+        /* FIXME: better add API GSignondSessionData to support(set/get) token data.
+                  That will be the cleaner solution */
+        gsignond_dictionary_set (session_data, "Token", token_data);
+    }
+
     _ProcessData * data = g_slice_new0 (_ProcessData);
     data->self = self;
     data->ready_cb = ready_cb;
@@ -333,6 +342,11 @@ _dispose (GObject *object)
     if (self->priv->identity_info) {
         g_hash_table_unref ((GHashTable *)self->priv->identity_info);
         self->priv->identity_info = NULL;
+    }
+
+    if (self->priv->token_data) {
+        gsignond_dictionary_unref (self->priv->token_data);
+        self->priv->token_data = NULL;
     }
 
     G_OBJECT_CLASS (gsignond_auth_session_parent_class)->dispose (object);
@@ -512,13 +526,14 @@ gsignond_auth_session_notify_refreshed (GSignondAuthSession *self,
  * gsignond_auth_session_new:
  * @info: instance of #GSignondIdentityInfo
  * @method: authentication method
+ * @token_data: (transfer full) stored token data stored for #method
  *
  * Creates instance of #GSignondAuthSession.
  *
  * Returns: (transfer full) newly created object 
  */
 GSignondAuthSession * 
-gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *method)
+gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *method, GSignondDictionary *token_data)
 {
     GSignondPluginProxy* proxy = NULL;
 
@@ -533,6 +548,7 @@ gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *method)
                       "method", method, NULL);
     auth_session->priv->proxy = proxy;
     auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
+    auth_session->priv->token_data = token_data;
 
     return auth_session;
 }
