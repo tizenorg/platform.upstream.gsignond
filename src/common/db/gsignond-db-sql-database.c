@@ -23,6 +23,10 @@
  * 02110-1301 USA
  */
 
+#include <sys/stat.h>
+
+#include <glib/gstdio.h>
+
 #include "gsignond/gsignond-log.h"
 #include "gsignond-db-error.h"
 #include "gsignond-db-sql-database.h"
@@ -86,6 +90,10 @@ _gsignond_db_sql_database_open (
         gsignond_db_sql_database_update_error_from_db(self);
         GSIGNOND_DB_SQL_DATABASE_GET_CLASS (self)->close (self);
         return FALSE;
+    }
+    if (flags & SQLITE_OPEN_CREATE) {
+        if (g_chmod (filename, S_IRUSR | S_IWUSR))
+            WARN ("setting file permissions on %s failed", filename);
     }
 
     if (!GSIGNOND_DB_SQL_DATABASE_GET_CLASS (self)->create (self)) {
