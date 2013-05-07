@@ -585,7 +585,6 @@ gsignond_db_credentials_database_remove_data (
 	guint32 method_id = 0;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), FALSE);
-    g_return_val_if_fail (method != NULL, FALSE);
 
     if (identity_id == 0 ||
     	!gsignond_db_credentials_database_is_open_secret_storage (self)) {
