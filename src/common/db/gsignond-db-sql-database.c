@@ -913,6 +913,7 @@ gsignond_db_sql_database_get_db_version (
         ret = sqlite3_step(sql_stmt);
         if (ret == SQLITE_ROW || ret == SQLITE_DONE) {
             db_version = sqlite3_column_int(sql_stmt, 0);
+            DBG ("database version %d", db_version);
             self->priv->db_version = db_version;
         }
         sqlite3_finalize(sql_stmt);

@@ -27,6 +27,7 @@
 
 #include <glib/gstdio.h>
 
+#include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-storage-manager.h"
 #include "gsignond/gsignond-utils.h"
 
@@ -56,12 +57,18 @@ _set_config (GSignondStorageManager *self, GSignondConfig *config)
     g_assert (self->config == NULL);
     self->config = config;
 
-    self->location = g_strdup (gsignond_config_get_string (
+    const gchar *secure_dir = gsignond_config_get_string (
                                         self->config,
-                                        GSIGNOND_CONFIG_GENERAL_SECURE_DIR));
-    if (!self->location)
+                                        GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+    if (secure_dir)
+        self->location = g_build_filename (secure_dir,
+                                           "gsignond.secret",
+                                           NULL);
+    else
         self->location = g_build_filename (g_get_user_data_dir (),
-                                           "gsignond", NULL);
+                                           "gsignond.secret",
+                                           NULL);
+    DBG ("secure dir %s", self->location);
 }
 
 static void

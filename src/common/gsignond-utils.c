@@ -23,6 +23,7 @@
  * 02110-1301 USA
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -131,6 +132,7 @@ gsignond_wipe_directory (const gchar *dirname)
     const gchar *filename;
     gchar *filepath;
     GDir *dirctx;
+    struct stat stat_entry;
 
     DBG ("wipe directory %s", dirname);
     dirctx = g_dir_open (dirname, 0, NULL);
@@ -138,8 +140,16 @@ gsignond_wipe_directory (const gchar *dirname)
         return FALSE;
     while ((filename = g_dir_read_name (dirctx))) {
         filepath = g_build_filename (dirname, filename, NULL);
-        DBG ("wipe file %s", filepath);
-        wiperes = gsignond_wipe_file (filepath);
+        if (lstat(filepath, &stat_entry))
+            goto _dir_exit;
+        if (S_ISDIR (stat_entry.st_mode) ||
+            S_ISLNK (stat_entry.st_mode)) {
+            DBG ("remove directory or link %s", filepath);
+            wiperes = (remove (filepath) == 0);
+        } else {
+            DBG ("wipe file %s", filepath);
+            wiperes = gsignond_wipe_file (filepath);
+        }
         g_free (filepath);
         if (!wiperes)
             goto _dir_exit;
