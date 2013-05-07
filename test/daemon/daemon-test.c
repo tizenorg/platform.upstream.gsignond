@@ -32,6 +32,7 @@
 #include <daemon/dbus/gsignond-dbus.h>
 #include <daemon/dbus/gsignond-dbus-auth-service-gen.h>
 #include <daemon/dbus/gsignond-dbus-identity-gen.h>
+#include <daemon/dbus/gsignond-dbus-auth-session-gen.h>
 #include <gsignond/gsignond-identity-info.h>
 #include <gsignond/gsignond-log.h>
 
@@ -56,6 +57,7 @@ setup_daemon (void)
     fail_if (g_setenv ("SSO_DAEMON_TIMEOUT", "60", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_AUTH_SESSION_TIMEOUT", "60", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
+    fail_if (g_setenv ("SSO_SECRET_PATH", "/tmp/gsignond", TRUE) == FALSE);
 
     dbus = g_test_dbus_new (G_TEST_DBUS_NONE);
     fail_unless (dbus != NULL, "could not create test dbus");
@@ -75,6 +77,7 @@ teardown_daemon (void)
     g_unsetenv ("SSO_DAEMON_TIMEOUT");
     g_unsetenv ("SSO_AUTH_SESSION_TIMEOUT");
     g_unsetenv ("SSO_STORAGE_PATH");
+    g_unsetenv ("SSO_SECRET_PATH");
 }
 #endif
 
@@ -285,6 +288,143 @@ START_TEST(test_clear_database)
 }
 END_TEST
 
+static void _on_session_unregistered (GSignondDbusAuthSession *sesssion, gpointer userdata)
+{
+    gboolean *out = (gboolean*) userdata;
+    g_return_if_fail (out);
+
+    *out = TRUE;
+}
+
+static void _on_identity_updated (GSignondDbusIdentity *identity, gint change_type, gpointer userdata)
+{
+    gboolean *out = (gboolean *)userdata;
+    g_return_if_fail (out);
+
+    if (change_type == 2 /* GSIGNOND_IDENTITY_SIGNED_OUT */) 
+        *out = TRUE;
+}
+
+static void _on_sign_out_reply (GSignondDbusIdentity *sender, GAsyncResult *reply, gpointer data)
+{
+    GError *error = NULL;
+    g_warning ("_on_sign_out_reply");
+
+    gboolean res = FALSE, ret = FALSE;
+    
+    ret = gsignond_dbus_identity_call_sign_out_finish (sender, &res, reply, &error);
+
+    fail_if (ret == FALSE, "failed to finish signout, %s", error ? error->message : "");
+    fail_if (res == FALSE, "failed to call signout on identity : %s", error ? error->message : "");
+
+    g_main_loop_quit ((GMainLoop *)data);
+}
+
+START_TEST(test_identity_signout)
+{
+    GError *error = 0;
+    gboolean res;
+    GSignondDbusAuthService *auth_service = 0;
+    GSignondDbusIdentity *identity = 0;
+    GSignondDbusAuthSession *auth_session = 0;
+    GVariant *identity_info = NULL;
+    gchar *identity_path = NULL;
+    gchar *session_path = NULL;
+    GVariantBuilder builder, method_builder;
+    int i;
+    guint id;
+    gchar* mechanisms [] = {"password", NULL};
+    gboolean identity_signed_out = FALSE;
+    gboolean session_unregistered = FALSE;
+    GMainLoop *loop = NULL;
+
+    loop = g_main_loop_new (NULL, FALSE);
+
+    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        GSIGNOND_SERVICE,
+        GSIGNOND_DAEMON_OBJECTPATH,
+        NULL, &error);
+
+    fail_if (auth_service == NULL);
+ 
+    res = gsignond_dbus_auth_service_call_register_new_identity_sync (
+        auth_service,
+        "",
+        &identity_path,
+        NULL,
+        &error);
+
+    fail_if (identity_path == NULL);
+
+    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+    
+    for (i=0; i < sizeof(data)/sizeof(struct IdentityData); i++) {
+        g_variant_builder_add (&builder, "{sv}", data[i].key, g_variant_new (data[i].type, data[i].value));
+    }
+
+    g_variant_builder_init (&method_builder, (const GVariantType *)"a{sas}");
+    g_variant_builder_add (&method_builder, "{s^as}", "password", mechanisms);
+
+    g_variant_builder_add (&builder, "{sv}", "AuthMethods", g_variant_builder_end (&method_builder));
+
+    identity_info = g_variant_builder_end (&builder);
+
+    fail_if (identity_info == NULL);
+
+    identity = gsignond_dbus_identity_proxy_new_for_bus_sync (
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        GSIGNOND_SERVICE,
+        identity_path,
+        NULL, &error);
+
+    res = gsignond_dbus_identity_call_store_sync (
+        identity,
+        identity_info,
+        &id,
+        NULL,
+        &error);
+
+    g_signal_connect (identity, "info-updated", G_CALLBACK(_on_identity_updated), &identity_signed_out);
+
+    fail_if (res == FALSE, "Failed to store identity");
+    fail_if (id == 0);
+
+    res = gsignond_dbus_identity_call_get_auth_session_sync (
+            identity, "password", &session_path, NULL, &error);
+
+    fail_if (res == FALSE, "Failed to create authentication session on identity for method 'password', error : %s",
+        error ? error->message : "");
+    fail_if (session_path == NULL, "(null) session_path");
+
+    auth_session = gsignond_dbus_auth_session_proxy_new_for_bus_sync (
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        GSIGNOND_SERVICE,
+        session_path,
+        NULL, &error);
+
+    fail_if (error != NULL, "failed to created session proxy for path '%s', error: %s", 
+        session_path, error ? error->message : "");
+    fail_if (auth_session == NULL, "(null) session object");
+
+    g_signal_connect (auth_session, "unregistered", G_CALLBACK (_on_session_unregistered), &session_unregistered);
+
+    /* Call SignOut on identity */
+    gsignond_dbus_identity_call_sign_out (identity, NULL, (GAsyncReadyCallback)_on_sign_out_reply, loop);
+
+    g_main_loop_run (loop);
+
+    fail_unless (session_unregistered == TRUE, "Session unregistred not reached");
+    fail_unless (identity_signed_out == TRUE, "Identity signed out signal not reached");
+
+    g_object_unref (auth_session);
+    g_object_unref (identity);
+}
+END_TEST
+
 Suite* daemon_suite (void)
 {
     Suite *s = suite_create ("Gsignon daemon");
@@ -298,6 +438,7 @@ Suite* daemon_suite (void)
     tcase_add_test (tc, test_identity_store);
     tcase_add_test (tc, test_identity_get_identity);
     tcase_add_test (tc, test_clear_database);
+    tcase_add_test (tc, test_identity_signout);
 
     suite_add_tcase (s, tc);
     
