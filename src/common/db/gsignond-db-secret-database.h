@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gsignond/gsignond-credentials.h>
+#include <gsignond/gsignond-dictionary.h>
 
 #include "gsignond-db-sql-database.h"
 
@@ -93,7 +94,7 @@ gsignond_db_secret_database_remove_credentials (
         GSignondDbSecretDatabase *self,
         const guint32 id);
 
-GHashTable *
+GSignondDictionary *
 gsignond_db_secret_database_load_data (
         GSignondDbSecretDatabase *self,
         const guint32 id,
@@ -104,7 +105,7 @@ gsignond_db_secret_database_update_data (
         GSignondDbSecretDatabase *self,
         const guint32 id,
         const guint32 method,
-        GHashTable *data);
+        GSignondDictionary *data);
 
 gboolean
 gsignond_db_secret_database_remove_data (

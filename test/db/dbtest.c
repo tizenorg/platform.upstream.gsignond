@@ -55,13 +55,17 @@ typedef struct {
 static void
 _compare_key_value(
         gchar *key,
-        GBytes *value,
+        GVariant *value,
         Data *user_data)
 {
-    GBytes *value2 = NULL;
-    value2 = (GBytes *)g_hash_table_lookup (user_data->table, key);
-    if (value2 && g_bytes_compare (value2, value) == 0)
+    GVariant *value2 = (GVariant *)g_hash_table_lookup (user_data->table, key);
+
+    if (value2 && g_variant_get_size (value2) == g_variant_get_size (value2)
+               && memcmp (g_variant_get_data (value2), 
+                          g_variant_get_data(value),
+                          g_variant_get_size(value2)) == 0) {
         return;
+    }
     user_data->status = 0;
 }
 
@@ -467,18 +471,15 @@ START_TEST (test_secret_database)
     data = g_hash_table_new_full ((GHashFunc)g_str_hash,
             (GEqualFunc)g_str_equal,
             (GDestroyNotify)NULL,
-            (GDestroyNotify)g_bytes_unref);
+            (GDestroyNotify)g_variant_unref);
     fail_if (data == NULL);
 
-    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
-    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
-    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
-    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
-    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
-
+    g_hash_table_insert (data,"key1",g_variant_new_string ("string_value"));
+    g_hash_table_insert (data,"key2",g_variant_new_double (12223.4223));
+    g_hash_table_insert (data,"key3",g_variant_new_uint16(20));
+    g_hash_table_insert (data,"key4",g_variant_new("^ay", "byte_value"));
     fail_unless (gsignond_db_secret_database_update_data (
             database, id, method, data) == TRUE);
-
     data2 = gsignond_db_secret_database_load_data (database, id, method);
     fail_if (data2 == NULL);
     input.table = data;
@@ -660,14 +661,13 @@ START_TEST (test_secret_storage)
     data = g_hash_table_new_full ((GHashFunc)g_str_hash,
             (GEqualFunc)g_str_equal,
             (GDestroyNotify)NULL,
-            (GDestroyNotify)g_bytes_unref);
+            (GDestroyNotify)g_variant_unref);
     fail_if (data == NULL);
 
-    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
-    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
-    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
-    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
-    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
+    g_hash_table_insert (data,"key1",g_variant_new_string ("string_value"));
+    g_hash_table_insert (data,"key2",g_variant_new_double (12223.4223));
+    g_hash_table_insert (data,"key3",g_variant_new_uint16(20));
+    g_hash_table_insert (data,"key4",g_variant_new("^ay", "byte_value"));
 
     fail_unless (gsignond_secret_storage_update_data (
             storage, id, method, data) == TRUE);
@@ -930,12 +930,11 @@ START_TEST (test_credentials_database)
     data = g_hash_table_new_full ((GHashFunc)g_str_hash,
             (GEqualFunc)g_str_equal,
             (GDestroyNotify)NULL,
-            (GDestroyNotify)g_bytes_unref);
-    g_hash_table_insert (data,"key1",g_bytes_new("value1", strlen ("value1")));
-    g_hash_table_insert (data,"key2",g_bytes_new("value2", strlen ("value2")));
-    g_hash_table_insert (data,"key3",g_bytes_new("value3", strlen ("value3")));
-    g_hash_table_insert (data,"key4",g_bytes_new("value4", strlen ("value4")));
-    g_hash_table_insert (data,"key5",g_bytes_new("value5", strlen ("value5")));
+            (GDestroyNotify)g_variant_unref);
+    g_hash_table_insert (data,"key1",g_variant_new_string ("string_value"));
+    g_hash_table_insert (data,"key2",g_variant_new_double (12223.4223));
+    g_hash_table_insert (data,"key3",g_variant_new_uint16(20));
+    g_hash_table_insert (data,"key4",g_variant_new("^ay", "byte_value"));
 
     fail_unless (gsignond_db_credentials_database_update_data (
             credentials_db, 0, "method1", data) == FALSE);

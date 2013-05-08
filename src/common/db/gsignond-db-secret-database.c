@@ -78,15 +78,16 @@ _gsignond_db_read_username_password (
 static gboolean
 _gsignond_db_read_key_value (
         sqlite3_stmt *stmt,
-        GHashTable* data)
+        GSignondDictionary* data)
 {
     gchar *key = NULL;
-    GBytes *value = NULL;
+    GVariant *value = NULL;
     key = g_strdup ((const gchar *)sqlite3_column_text (stmt, 0));
-    value = g_bytes_new ((gconstpointer) sqlite3_column_blob(stmt, 1),
-                         (gsize) sqlite3_column_bytes(stmt, 1));
+    value = g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, 
+        (gconstpointer) sqlite3_column_blob(stmt, 1),
+        (gsize) sqlite3_column_bytes(stmt, 1), sizeof(guchar));
 
-    g_hash_table_insert(data, key, value);
+    gsignond_dictionary_set (data, key, value);
     return TRUE;
 }
 
@@ -270,7 +271,7 @@ gsignond_db_secret_database_remove_credentials (
     return ret;
 }
 
-GHashTable *
+GSignondDictionary *
 gsignond_db_secret_database_load_data (
         GSignondDbSecretDatabase *self,
         const guint32 id,
@@ -278,15 +279,12 @@ gsignond_db_secret_database_load_data (
 {
     gchar *query = NULL;
     gint rows = 0;
-    GHashTable *data = NULL;
+    GSignondDictionary *data = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), NULL);
     RETURN_IF_NOT_OPEN (self, NULL);
 
-    data = g_hash_table_new_full ((GHashFunc)g_str_hash,
-                                  (GEqualFunc)g_str_equal,
-                                  (GDestroyNotify)g_free,
-                                  (GDestroyNotify)g_bytes_unref);
+    data = gsignond_dictionary_new ();
 
     query = sqlite3_mprintf (
             "SELECT key, value "
@@ -302,7 +300,7 @@ gsignond_db_secret_database_load_data (
 
     if (G_UNLIKELY (rows <= 0)) {
         DBG ("Load data from DB failed");
-        g_hash_table_destroy(data);
+        gsignond_dictionary_unref (data);
         data = NULL;
     }
 
@@ -314,13 +312,13 @@ gsignond_db_secret_database_update_data (
         GSignondDbSecretDatabase *self,
         const guint32 id,
         const guint32 method,
-        GHashTable *data)
+        GSignondDictionary *data)
 {
     gchar *query = NULL;
     gint ret = 0;
     GHashTableIter iter;
     gchar *key = NULL;
-    GBytes *value = NULL;
+    GVariant *value = NULL;
     guint32 data_counter = 0;
     GSignondDbSqlDatabase *parent = NULL;
 
@@ -352,7 +350,7 @@ gsignond_db_secret_database_update_data (
     g_hash_table_iter_init (&iter, data);
     while (g_hash_table_iter_next (&iter,(gpointer *) &key,
             (gpointer *) &value)) {
-        data_counter = data_counter + strlen (key) + g_bytes_get_size (value);
+        data_counter = data_counter + strlen (key) + g_variant_get_size(value);
         if (data_counter >= GSIGNOND_DB_MAX_DATA_STORAGE) {
             gsignond_db_sql_database_rollback_transaction (parent);
             DBG ("size limit is exceeded");
@@ -368,7 +366,7 @@ gsignond_db_secret_database_update_data (
     while (g_hash_table_iter_next (&iter, (gpointer *)&key,
             (gpointer *) &value )) {
         gsize val_size;
-        const gchar *value_data;
+        gconstpointer value_data;
         sqlite3_stmt *sql_stmt;
 
         ret = sqlite3_prepare_v2 (parent->priv->db, statement, -1,
@@ -379,13 +377,13 @@ gsignond_db_secret_database_update_data (
             gsignond_db_sql_database_rollback_transaction (parent);
             return FALSE;
         }
-        value_data = (const gchar *)g_bytes_get_data (value, &val_size);
+        value_data = g_variant_get_data (value);
+        val_size = g_variant_get_size (value);
 
         sqlite3_bind_int(sql_stmt, 1, (int)id);
         sqlite3_bind_int(sql_stmt, 2, (int)method);
         sqlite3_bind_text(sql_stmt, 3, key, -1, SQLITE_STATIC);
-        sqlite3_bind_blob(sql_stmt, 4, (const void*)value_data, (int)val_size,
-                SQLITE_STATIC);
+        sqlite3_bind_blob(sql_stmt, 4, value_data, (int)val_size, SQLITE_STATIC);
 
         ret = sqlite3_step (sql_stmt);
         if (G_UNLIKELY (ret != SQLITE_DONE)) {
@@ -436,7 +434,4 @@ gsignond_db_secret_database_remove_data (
 
     return ret;
 }
-
-
-
 
