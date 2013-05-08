@@ -107,6 +107,9 @@ gsignond_auth_session_refresh (GSignondAuthSession *self,
 const gchar *
 gsignond_auth_session_get_method (GSignondAuthSession *session);
 
+GSignondDictionary *
+gsignond_auth_session_get_token_data (GSignondAuthSession *session);
+
 GSignondAccessControlManager *
 gsignond_auth_session_get_acm (GSignondAuthSession *session);
 

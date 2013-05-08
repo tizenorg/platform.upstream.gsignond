@@ -378,6 +378,7 @@ gsignond_auth_session_init (GSignondAuthSession *self)
     self->priv->method = NULL;
     self->priv->proxy = NULL;
     self->priv->identity_info = NULL;
+    self->priv->token_data = NULL;
     self->priv->available_mechanisms = NULL;
 }
 
@@ -453,6 +454,14 @@ gsignond_auth_session_get_method (GSignondAuthSession *session)
     return session->priv->method;
 }
 
+GSignondDictionary *
+gsignond_auth_session_get_token_data (GSignondAuthSession *session)
+{
+    g_return_val_if_fail (session && GSIGNOND_IS_AUTH_SESSION (session), NULL);
+
+    return session->priv->token_data;
+}
+
 void
 gsignond_auth_session_notify_process_result (GSignondAuthSession *iface,
                                              GSignondSessionData *result,
@@ -504,6 +513,15 @@ void
 gsignond_auth_session_notify_store (GSignondAuthSession *self, 
                                     GSignondDictionary *token_data)
 {
+    g_return_if_fail (self && GSIGNOND_IS_AUTH_SESSION (self));
+    g_return_if_fail (token_data);
+
+    /* cache token data */
+    if (self->priv->token_data)
+        gsignond_dictionary_unref (self->priv->token_data);
+    self->priv->token_data = token_data;
+    gsignond_dictionary_ref (self->priv->token_data);
+
     g_signal_emit (self, signals[SIG_PROCESS_STORE], 0, token_data);
 }
 

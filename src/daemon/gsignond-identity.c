@@ -377,12 +377,10 @@ _on_store_token (GSignondAuthSession *session, GSignondDictionary *token_data, g
 
     identity_id = gsignond_identity_info_get_id (identity->priv->info);
 
-    if (identity_id == GSIGNOND_IDENTITY_INFO_NEW_IDENTITY)
-        /* TODO; cache token */
-        ;
-    else
+    if (identity_id != GSIGNOND_IDENTITY_INFO_NEW_IDENTITY) {
         gsignond_daemon_store_identity_data (identity->priv->owner, identity_id, 
             gsignond_auth_session_get_method (session), token_data);
+    }
 }
 
 static gboolean
@@ -467,11 +465,11 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
     if ( (identity_id = gsignond_identity_info_get_id (identity->priv->info)) !=
             GSIGNOND_IDENTITY_INFO_NEW_IDENTITY) {
         token_data = gsignond_daemon_load_identity_data (identity->priv->owner, identity_id, method);
-    } else {
-        /* TODO : load cached token data for unsaved identity */
-    }
+    } 
 
     session = gsignond_auth_session_new (identity->priv->info, method, token_data);
+
+    if (token_data) gsignond_dictionary_unref (token_data);
 
     if (!session) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
@@ -733,6 +731,21 @@ gsignond_identity_sign_out (GSignondIdentity *identity,
     return success;
 }
 
+typedef struct _{
+    GSignondDaemon *daemon;
+    guint32 identity_id;
+}_StoreCachedTokenCbInfo;
+static void
+_store_cached_token_data (const gchar *method, GSignondAuthSession *session, _StoreCachedTokenCbInfo *data)
+{
+    if (!data || !method || !session) return ;
+
+    GSignondDictionary *token_data = gsignond_auth_session_get_token_data (session);
+
+    if (token_data)
+        gsignond_daemon_store_identity_data (data->daemon, data->identity_id, method, token_data);
+}
+
 guint32
 gsignond_identity_store (GSignondIdentity *identity, 
                          const GVariant *info,
@@ -790,8 +803,12 @@ gsignond_identity_store (GSignondIdentity *identity,
                                                         "Failed to store identity");
     }
     else {
-        if (was_new_identity) 
+        if (was_new_identity) {
             _set_id (identity, id);
+            _StoreCachedTokenCbInfo data = { identity->priv->owner, id };
+            /* store any cached token data if available at auth sessions */
+            g_hash_table_foreach (identity->priv->auth_sessions, (GHFunc)_store_cached_token_data, (gpointer)&data);
+        }
 
         g_signal_emit (identity, signals[SIG_INFO_UPDATED], 0, GSIGNOND_IDENTITY_DATA_UPDATED);
     }
