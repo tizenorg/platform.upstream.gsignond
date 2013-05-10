@@ -58,6 +58,11 @@ G_DEFINE_TYPE (GSignondDbusServer, gsignond_dbus_server, G_TYPE_OBJECT)
 #define GSIGNOND_DBUS_SERVER_GET_PRIV(obj) \
     G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DBUS_SERVER, GSignondDbusServerPrivate)
 
+static void _on_connection_closed (GDBusConnection *connection,
+                       gboolean         remote_peer_vanished,
+                       GError          *error,
+                       gpointer         user_data);
+
 static void
 _set_property (GObject *object,
         guint property_id,
@@ -104,11 +109,19 @@ _get_property (GObject *object,
 }
 
 static void
+_clear_connection (gpointer connection, gpointer value, gpointer userdata)
+{
+    (void) value;
+    g_signal_handlers_disconnect_by_func (connection, _on_connection_closed, userdata);
+}
+
+static void
 _dispose (GObject *object)
 {
     GSignondDbusServer *self = GSIGNOND_DBUS_SERVER (object);
 
     if (self->priv->auth_services) {
+        g_hash_table_foreach (self->priv->auth_services, _clear_connection, self);
         g_hash_table_unref (self->priv->auth_services);
         self->priv->auth_services = NULL;
     }
