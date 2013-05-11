@@ -23,7 +23,7 @@
  * 02110-1301 USA
  */
 
-#include <config.h>
+#include "config.h"
 #include <check.h>
 #include <stdlib.h>
 #include <gio/gio.h>
@@ -35,6 +35,13 @@
 #include <daemon/dbus/gsignond-dbus-auth-session-gen.h>
 #include <gsignond/gsignond-identity-info.h>
 #include <gsignond/gsignond-log.h>
+
+#ifdef USE_P2P
+#  ifdef GSIGNOND_SERVICE
+#    undef GSIGNOND_SERVICE
+#  endif
+#  define GSIGNOND_SERVICE NULL
+#endif
 
 struct IdentityData {
     gchar *key;
@@ -97,21 +104,39 @@ gboolean validate_identity_info (GVariant *identity_info)
     return TRUE;
 }
 
+GDBusConnection * _get_bus_connection (GError **error)
+{
+#if USE_P2P
+    return g_dbus_connection_new_for_address_sync (
+        GSIGNOND_DBUS_ADDRESS,
+        G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
+        NULL,
+        NULL,
+        error);
+#else
+    return g_bus_get_sync (GSIGNOND_BUS_TYPE, NULL, error);
+#endif
+}
+
 START_TEST (test_register_new_identity)
 {
     GError *error = 0;
     gboolean res;
+    GDBusConnection *connection = NULL;
     GSignondDbusAuthService *auth_service = 0;
     gchar *identity_path = 0;
- 
-    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+
+    connection = _get_bus_connection (&error);
+    fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
+
+    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         GSIGNOND_DAEMON_OBJECTPATH,
         NULL, &error);
 
-    fail_if (auth_service == NULL);
+    fail_if (auth_service == NULL, "failed to get auth_service : %s", error ? error->message : "");
 
     res = gsignond_dbus_auth_service_call_register_new_identity_sync (
         auth_service,
@@ -122,7 +147,7 @@ START_TEST (test_register_new_identity)
 
     g_object_unref (auth_service);
 
-    fail_if (res == FALSE, "Failed to register identity");
+    fail_if (res == FALSE, "Failed to register identity : %s", error ? error->message : "");
     fail_if (identity_path == NULL);
     g_free (identity_path);
 }
@@ -134,9 +159,12 @@ START_TEST (test_register_new_identity_with_no_app_context)
     gboolean res;
     GSignondDbusAuthService *auth_service = 0;
     gchar *identity_path = NULL;
+    GDBusConnection *connection = _get_bus_connection (&error);
+    fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
+    fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
  
-    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         GSIGNOND_DAEMON_OBJECTPATH,
@@ -171,8 +199,12 @@ START_TEST (test_identity_store)
     int i;
     gchar* mechanisms [] = {"password", NULL};
 
-    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    GDBusConnection *connection = _get_bus_connection (&error);
+    fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
+    fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
+
+    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         GSIGNOND_DAEMON_OBJECTPATH,
@@ -204,8 +236,8 @@ START_TEST (test_identity_store)
 
     fail_if (identity_info == NULL);
 
-    identity = gsignond_dbus_identity_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    identity = gsignond_dbus_identity_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         identity_path,
@@ -234,9 +266,12 @@ START_TEST(test_identity_get_identity)
     gint id = 1 ; /* identity id created in test_identity_store */
     GVariant *identity_info = NULL;
     gchar *identity_path = 0;
+    GDBusConnection *connection = _get_bus_connection (&error);
+    fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
+    fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
 
-    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         GSIGNOND_DAEMON_OBJECTPATH,
@@ -266,9 +301,12 @@ START_TEST(test_clear_database)
     GError *error = 0;
     gboolean res, ret;
     GSignondDbusAuthService *auth_service = 0;
+    GDBusConnection *connection = _get_bus_connection (&error);
+    fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
+    fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
  
-    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         GSIGNOND_DAEMON_OBJECTPATH,
@@ -308,7 +346,6 @@ static void _on_identity_updated (GSignondDbusIdentity *identity, gint change_ty
 static void _on_sign_out_reply (GSignondDbusIdentity *sender, GAsyncResult *reply, gpointer data)
 {
     GError *error = NULL;
-    g_warning ("_on_sign_out_reply");
 
     gboolean res = FALSE, ret = FALSE;
     
@@ -337,11 +374,14 @@ START_TEST(test_identity_signout)
     gboolean identity_signed_out = FALSE;
     gboolean session_unregistered = FALSE;
     GMainLoop *loop = NULL;
+    GDBusConnection *connection = _get_bus_connection (&error);
+    fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
+    fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
 
     loop = g_main_loop_new (NULL, FALSE);
 
-    auth_service = gsignond_dbus_auth_service_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         GSIGNOND_DAEMON_OBJECTPATH,
@@ -373,8 +413,8 @@ START_TEST(test_identity_signout)
 
     fail_if (identity_info == NULL);
 
-    identity = gsignond_dbus_identity_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    identity = gsignond_dbus_identity_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         identity_path,
@@ -399,8 +439,8 @@ START_TEST(test_identity_signout)
         error ? error->message : "");
     fail_if (session_path == NULL, "(null) session_path");
 
-    auth_session = gsignond_dbus_auth_session_proxy_new_for_bus_sync (
-        G_BUS_TYPE_SESSION,
+    auth_session = gsignond_dbus_auth_session_proxy_new_sync (
+        connection,
         G_DBUS_PROXY_FLAGS_NONE,
         GSIGNOND_SERVICE,
         session_path,
@@ -465,4 +505,3 @@ int main (void)
 
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-  

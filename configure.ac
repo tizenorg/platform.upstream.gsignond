@@ -38,12 +38,6 @@ PKG_CHECK_MODULES([CHECK], [check >= 0.9.4], [have_check=yes], [have_check=no])
 AC_SUBST(CHECK_CFLAGS)
 AC_SUBST(CHECK_LIBS)
 
-PKG_CHECK_MODULES(GTestDBus, glib-2.0 >= 2.34, [gtestdbus=yes], [gtestdbus=no])
-AM_CONDITIONAL(HAVE_GTESTDBUS, [test x$gtestdbus = xyes])
-if test "x$gtestdbus" = xyes; then
-    AC_DEFINE(HAVE_GTESTDBUS, [1], [Define if GTestDBus exists.])
-fi
-
 PKG_CHECK_MODULES([LIBSMACK], libsmack >= 1.0, [libsmack=yes], [libsmack=no])
 AM_CONDITIONAL(HAVE_LIBSMACK, [test x$libsmack = xyes])
 if test "x$libsmack" = xyes; then
@@ -73,10 +67,17 @@ if test "x$enable_dbus_type" = "xp2p" ; then
 elif test "x$enable_dbus_type" = "xsession" ; then
     AC_DEFINE(GSIGNOND_BUS_TYPE, [G_BUS_TYPE_SESSION], [Use session bus])
     DBUS_SERVICES_DIR="`pkg-config --variable session_bus_services_dir dbus-1`"
+    
+    PKG_CHECK_MODULES(GTestDBus, gio-2.0 >= 2.34, [gtestdbus=yes], [gtestdbus=no])
+    if test "x$gtestdbus" = xyes; then
+       AC_DEFINE(HAVE_GTESTDBUS, [1], [Define if GTestDBus exists.])
+    fi
 elif test "x$enable_dbus_type" = "xsystem" ; then
     AC_DEFINE(GSIGNOND_BUS_TYPE, [G_BUS_TYPE_SYSTEM], [Use system bus])
     DBUS_SERVICES_DIR="`pkg-config --variable system_bus_services_dir dbus-1`"
 fi
+
+AM_CONDITIONAL(USE_GTESTDBUS, [test x$gtestdbus = xyes])
 
 AC_SUBST(DBUS_SERVICES_DIR)
 DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
@@ -118,6 +119,11 @@ test/Makefile
 test/common/Makefile
 test/db/Makefile
 test/daemon/Makefile
-test/daemon/services/com.google.code.AccountsSSO.gSingleSignOn.service
 test/plugins/Makefile
 ])
+
+if test x$gtestdbus = xyes; then
+    AC_OUTPUT([
+    test/daemon/services/com.google.code.AccountsSSO.gSingleSignOn.service
+    ])
+fi
