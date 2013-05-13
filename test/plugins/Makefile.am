@@ -1,5 +1,9 @@
 TESTS = digestplugintest passwordplugintest pluginproxytest pluginremotetest
-TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs
+
+TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
+SSO_BIN_DIR=$(top_builddir)/src/daemon/plugins/plugind/.libs \
+LD_LIBRARY_PATH=$(top_builddir)/src/daemon/plugins/plugind/.libs
+
 VALGRIND_TESTS_DISABLE =
     
 check_PROGRAMS = digestplugintest passwordplugintest pluginproxytest pluginremotetest

@@ -1,5 +1,5 @@
 TESTS = commontest
-TESTS_ENVIRONMENT=
+TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs
 VALGRIND_TESTS_DISABLE=
 
 check_PROGRAMS = commontest
