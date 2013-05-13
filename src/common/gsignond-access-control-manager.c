@@ -23,6 +23,7 @@
  * 02110-1301 USA
  */
 
+#include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-access-control-manager.h"
 
 #define GSIGNOND_ACCESS_CONTROL_MANAGER_GET_PRIVATE(obj) \
@@ -109,27 +110,47 @@ _security_context_of_peer (GSignondAccessControlManager *self,
 static gboolean
 _peer_is_allowed_to_use_identity (GSignondAccessControlManager *self,
                                 const GSignondSecurityContext *peer_ctx,
-                                const GSignondSecurityContext *identity_owner,
+                                const GSignondSecurityContext *owner_ctx,
                                 const GSignondSecurityContextList *identity_acl)
 {
-    (void) self;
-    (void) peer_ctx;
-    (void) identity_owner;
-    (void) identity_acl;
+    GSignondSecurityContext *acl_ctx;
 
-    return TRUE;
+    (void) self;
+    (void) owner_ctx;
+
+    for ( ; identity_acl != NULL; identity_acl = g_list_next (identity_acl)) {
+        acl_ctx = (GSignondSecurityContext *) identity_acl->data;
+        DBG ("ACL check [%p=(%s:%s)] vs [%p=(%s:%s)]",
+             acl_ctx,
+             gsignond_security_context_get_system_context (acl_ctx),
+             gsignond_security_context_get_application_context (acl_ctx),
+             peer_ctx,
+             gsignond_security_context_get_system_context (peer_ctx),
+             gsignond_security_context_get_application_context (peer_ctx));
+        if (gsignond_security_context_check (acl_ctx, peer_ctx)) {
+            DBG (" - ACL check passed");
+            return TRUE;
+        }
+    }
+    DBG (" - ACL check failed");
+    return FALSE;
 }
 
 static gboolean
 _peer_is_owner_of_identity (GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner)
+                            const GSignondSecurityContext *owner_ctx)
 {
     (void) self;
-    (void) peer_ctx;
-    (void) identity_owner;
 
-    return TRUE;
+    DBG ("Owner check [%p=(%s:%s)] vs [%p=(%s:%s)]",
+         owner_ctx,
+         gsignond_security_context_get_system_context (owner_ctx),
+         gsignond_security_context_get_application_context (owner_ctx),
+         peer_ctx,
+         gsignond_security_context_get_system_context (peer_ctx),
+         gsignond_security_context_get_application_context (peer_ctx));
+    return gsignond_security_context_check (owner_ctx, peer_ctx);
 }
 
 static gboolean
@@ -213,7 +234,7 @@ gsignond_access_control_manager_security_context_of_peer (
  * gsignond_access_control_manager_peer_is_allowed_to_use_identity:
  * @self: object instance.
  * @peer_ctx: security context of the peer connection.
- * @identity_owner: security context of the identity owner.
+ * @owner_ctx: security context of the identity owner.
  * @identity_acl: access control list for the identity in question.
  *
  * Checks if specified peer is allowed to access the specified identity.
@@ -224,18 +245,18 @@ gboolean
 gsignond_access_control_manager_peer_is_allowed_to_use_identity (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner,
+                            const GSignondSecurityContext *owner_ctx,
                             const GSignondSecurityContextList *identity_acl)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        peer_is_allowed_to_use_identity (self, peer_ctx, identity_owner, identity_acl);
+        peer_is_allowed_to_use_identity (self, peer_ctx, owner_ctx, identity_acl);
 }
 
 /**
  * gsignond_access_control_manager_peer_is_owner_of_identity:
  * @self: object instance.
  * @peer_ctx: security context of the peer connection.
- * @identity_owner: security context of the identity owner.
+ * @owner_ctx: security context of the identity owner.
  *
  * Checks if the specified peer is owner of the identity.
  *
@@ -245,10 +266,10 @@ gboolean
 gsignond_access_control_manager_peer_is_owner_of_identity (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner)
+                            const GSignondSecurityContext *owner_ctx)
 {
     return GSIGNOND_ACCESS_CONTROL_MANAGER_GET_CLASS (self)->
-        peer_is_owner_of_identity (self, peer_ctx, identity_owner);
+        peer_is_owner_of_identity (self, peer_ctx, owner_ctx);
 }
 
 /**

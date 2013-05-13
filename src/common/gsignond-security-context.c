@@ -304,9 +304,9 @@ gsignond_security_context_check (const GSignondSecurityContext *reference,
 {
     g_return_val_if_fail (reference != NULL && test != NULL, FALSE);
 
-    if (g_strcmp0(reference->sys_ctx, "*")) return TRUE;
-    if (g_strcmp0(reference->sys_ctx, test->app_ctx) == 0) {
-        if (g_strcmp0(reference->app_ctx, "*")) return TRUE;
+    if (g_strcmp0(reference->sys_ctx, "*") == 0) return TRUE;
+    if (g_strcmp0(reference->sys_ctx, test->sys_ctx) == 0) {
+        if (g_strcmp0(reference->app_ctx, "*") == 0) return TRUE;
         if (g_strcmp0(reference->app_ctx, test->app_ctx) == 0) return TRUE;
     }
 

@@ -87,7 +87,7 @@ struct _GSignondAccessControlManagerClass
     gboolean (*peer_is_allowed_to_use_identity) (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner,
+                            const GSignondSecurityContext *owner_ctx,
                             const GSignondSecurityContextList *identity_acl);
     /**
      * peer_is_owner_of_identity:
@@ -97,7 +97,7 @@ struct _GSignondAccessControlManagerClass
     gboolean (*peer_is_owner_of_identity) (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner);
+                            const GSignondSecurityContext *owner_ctx);
     /**
      * acl_is_valid:
      *
@@ -129,14 +129,14 @@ gboolean
 gsignond_access_control_manager_peer_is_allowed_to_use_identity (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner,
+                            const GSignondSecurityContext *owner_ctx,
                             const GSignondSecurityContextList *identity_acl);
 
 gboolean
 gsignond_access_control_manager_peer_is_owner_of_identity (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner);
+                            const GSignondSecurityContext *owner_ctx);
 
 gboolean
 gsignond_access_control_manager_acl_is_valid (
