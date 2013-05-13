@@ -69,44 +69,6 @@ struct _ExtensionTizenAccessControlManager
 struct _ExtensionTizenAccessControlManagerClass
 {
     GSignondAccessControlManagerClass parent_class;
-    
-     /**
-     * security_context_of_peer:
-     *
-     * See #gsignond_access_control_manager_security_context_of_peer.
-     */
-    void (*security_context_of_peer) (
-                            GSignondAccessControlManager *self,
-                            GSignondSecurityContext *peer_ctx,
-                            int peer_fd, const gchar *peer_service,
-                            const gchar *peer_app_ctx);
-    /**
-     * peer_is_allowed_to_use_identity:
-     *
-     * See #gsignond_access_control_manager_peer_is_allowed_to_use_identity.
-     */
-    gboolean (*peer_is_allowed_to_use_identity) (
-                            GSignondAccessControlManager *self,
-                            const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner,
-                            const GSignondSecurityContextList *identity_acl);
-    /**
-     * peer_is_owner_of_identity:
-     *
-     * See #gsignond_access_control_manager_peer_is_owner_of_identity.
-     */
-    gboolean (*peer_is_owner_of_identity) (
-                            GSignondAccessControlManager *self,
-                            const GSignondSecurityContext *peer_ctx,
-                            const GSignondSecurityContext *identity_owner);
-
-    /**
-     * security_context_of_keychain:
-     *
-     * See #gsignond_access_control_manager_security_context_of_keychain.
-     */
-    GSignondSecurityContext * (*security_context_of_keychain) (
-                            GSignondAccessControlManager *self);
 };
 
 GType extension_tizen_access_control_manager_get_type ();
