@@ -208,7 +208,10 @@ _init_extensions (GSignondDaemon *self)
         self->priv->extension_module =
             g_module_open (mod_filename, G_MODULE_BIND_LOCAL);
         g_free (mod_filename);
-        if (!self->priv->extension_module) return FALSE;
+        if (!self->priv->extension_module) {
+            DBG("failed to load module : %s", g_module_error());
+            return FALSE;
+        }
         initf_name = g_strdup_printf ("%s_extension_init", ext_name);
         symfound = g_module_symbol (self->priv->extension_module,
                                     initf_name,

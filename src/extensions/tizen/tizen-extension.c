@@ -30,10 +30,31 @@
 
 G_DEFINE_TYPE (ExtensionTizen, extension_tizen, GSIGNOND_TYPE_EXTENSION);
 
-static GSignondExtension *tizen_extension = NULL;
-static GSignondStorageManager *storage_manager_inst = NULL;
-static GSignondSecretStorage *secret_storage_inst = NULL;
-static GSignondAccessControlManager *access_control_manager_inst = NULL;
+#define EXTENSION_TIZEN_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), EXTENSION_TYPE_TIZEN, ExtensionTizenPrivate)
+
+struct _ExtensionTizenPrivate
+{
+    GSignondAccessControlManager *access_control_manager;
+    GSignondStorageManager *storage_manager;
+    GSignondSecretStorage *secret_storage;
+};
+
+static void
+_dispose (GObject *obj)
+{
+    ExtensionTizen *self = EXTENSION_TIZEN (obj);
+    if (!self) return;
+
+    ExtensionTizenPrivate *priv = self->priv;
+
+    if (priv) {
+        g_clear_object (&priv->access_control_manager);
+        g_clear_object (&priv->secret_storage);
+        g_clear_object (&priv->storage_manager);
+    }
+
+    G_OBJECT_CLASS (extension_tizen_parent_class)->dispose (obj);
+}
 
 static const gchar *
 _get_extension_name (GSignondExtension *self)
@@ -54,42 +75,48 @@ _get_extension_version (GSignondExtension *self)
 static GSignondStorageManager *
 _get_storage_manager (GSignondExtension *self, GSignondConfig *config)
 {
-    (void) self;
+    g_return_val_if_fail (self && EXTENSION_IS_TIZEN(self), NULL);
 
-    if (!storage_manager_inst) {
-        storage_manager_inst =
+    ExtensionTizenPrivate *priv = EXTENSION_TIZEN(self)->priv;
+
+    if (!priv->storage_manager) {
+        priv->storage_manager =
             g_object_new (EXTENSION_TYPE_TIZEN_STORAGE_MANAGER,
                           "config", config, NULL);
     }
-    return storage_manager_inst;
+    return priv->storage_manager;
 }
 
 static GSignondSecretStorage *
 _get_secret_storage (GSignondExtension *self, GSignondConfig *config)
 {
-    (void) self;
+    g_return_val_if_fail (self && EXTENSION_IS_TIZEN(self), NULL);
 
-    if (!secret_storage_inst) {
-        secret_storage_inst =
+    ExtensionTizenPrivate *priv = EXTENSION_TIZEN(self)->priv;
+
+    if (!priv->secret_storage) {
+        priv->secret_storage =
             g_object_new (EXTENSION_TYPE_TIZEN_SECRET_STORAGE,
                           "config", config, NULL);
     }
 
-    return secret_storage_inst;
+    return priv->secret_storage;
 }
 
 static GSignondAccessControlManager *
 _get_access_control_manager (GSignondExtension *self, GSignondConfig *config)
 {
-    (void) self;
+    g_return_val_if_fail (self && EXTENSION_IS_TIZEN(self), NULL);
 
-    if (!access_control_manager_inst) {
-        access_control_manager_inst =
+    ExtensionTizenPrivate *priv = EXTENSION_TIZEN(self)->priv;
+
+    if (!priv->access_control_manager) {
+        priv->access_control_manager =
             g_object_new (EXTENSION_TYPE_TIZEN_ACCESS_CONTROL_MANAGER,
                           "config", config, NULL);
     }
 
-    return access_control_manager_inst;
+    return priv->access_control_manager;
 }
 
 static void
@@ -97,6 +124,9 @@ extension_tizen_class_init (ExtensionTizenClass *klass)
 {
     GSignondExtensionClass *parent_class = GSIGNOND_EXTENSION_CLASS (klass);
 
+    g_type_class_add_private (G_OBJECT_CLASS(klass), sizeof (ExtensionTizenPrivate));
+
+    G_OBJECT_CLASS (klass)->dispose = _dispose;
     parent_class->get_extension_name = _get_extension_name;
     parent_class->get_extension_version = _get_extension_version;
     parent_class->get_storage_manager = _get_storage_manager;
@@ -107,14 +137,30 @@ extension_tizen_class_init (ExtensionTizenClass *klass)
 static void
 extension_tizen_init (ExtensionTizen *self)
 {
+    self->priv = EXTENSION_TIZEN_PRIV (self);
+
+    self->priv->storage_manager = NULL;
+    self->priv->secret_storage = NULL;
+    self->priv->access_control_manager = NULL;
+}
+
+static void
+_on_object_dispose (gpointer data, GObject *object)
+{
+    if (data) *(ExtensionTizen **)data = NULL;
 }
 
 GSignondExtension *
 tizen_extension_init ()
 {
+    static GSignondExtension *tizen_extension  = NULL;
+
     if (!tizen_extension) {
         tizen_extension = g_object_new (EXTENSION_TYPE_TIZEN, NULL);
+
+        g_object_weak_ref (G_OBJECT (tizen_extension), _on_object_dispose, &tizen_extension);
     }
+
     return tizen_extension;
 }
 

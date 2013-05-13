@@ -27,21 +27,25 @@
 
 G_DEFINE_TYPE (GSignondExtension, gsignond_extension, G_TYPE_OBJECT);
 
-static GSignondExtension *default_extension = NULL;
-static GSignondStorageManager *storage_manager_inst = NULL;
-static GSignondSecretStorage *secret_storage_inst = NULL;
-static GSignondAccessControlManager *access_control_manager_inst = NULL;
+#define GSIGNOND_EXTENSION_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_EXTENSION, GSignondExtensionPrivate)
+
+struct _GSignondExtensionPrivate 
+{
+    GSignondAccessControlManager *access_control_manager;
+    GSignondStorageManager *storage_manager;
+    GSignondSecretStorage *secret_storage;
+};
 
 static void
 _dispose (GObject *object)
 {
-    g_clear_object (&storage_manager_inst);
-    g_clear_object (&secret_storage_inst);
-    g_clear_object (&access_control_manager_inst);
+    GSignondExtensionPrivate *priv = GSIGNOND_EXTENSION (object)->priv;
+
+    g_clear_object (&priv->access_control_manager);
+    g_clear_object (&priv->secret_storage);
+    g_clear_object (&priv->storage_manager);
 
     G_OBJECT_CLASS (gsignond_extension_parent_class)->dispose (object);
-
-    default_extension = NULL;
 }
 
 static const gchar *
@@ -63,49 +67,59 @@ _get_extension_version (GSignondExtension *self)
 static GSignondStorageManager *
 _get_storage_manager (GSignondExtension *self, GSignondConfig *config)
 {
-    (void) self;
+    g_return_val_if_fail (self && GSIGNOND_IS_EXTENSION (self), NULL);
 
-    if (!storage_manager_inst) {
-        storage_manager_inst =
+    GSignondExtensionPrivate *priv = self->priv;
+
+    if (!priv->storage_manager) {
+        priv->storage_manager =
             g_object_new (GSIGNOND_TYPE_STORAGE_MANAGER,
                           "config", config, NULL);
     }
-    return storage_manager_inst;
+
+    return priv->storage_manager;
 }
 
 static GSignondSecretStorage *
 _get_secret_storage (GSignondExtension *self, GSignondConfig *config)
 {
-    (void) self;
+    g_return_val_if_fail (self && GSIGNOND_IS_EXTENSION (self), NULL);
 
-    if (!secret_storage_inst) {
-        secret_storage_inst =
+    GSignondExtensionPrivate *priv = self->priv;
+
+    if (!priv->secret_storage) {
+        priv->secret_storage =
             g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
                           "config", config, NULL);
     }
 
-    return secret_storage_inst;
+    return priv->secret_storage;
 }
 
 static GSignondAccessControlManager *
 _get_access_control_manager (GSignondExtension *self, GSignondConfig *config)
 {
-    (void) self;
+    g_return_val_if_fail (self && GSIGNOND_IS_EXTENSION (self), NULL);
 
-    if (!access_control_manager_inst) {
-        access_control_manager_inst =
+    GSignondExtensionPrivate *priv = self->priv;
+
+    if (!priv->access_control_manager) {
+        priv->access_control_manager =
             g_object_new (GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER,
                           "config", config, NULL);
     }
 
-    return access_control_manager_inst;
+    return priv->access_control_manager;
 }
-
 
 static void
 gsignond_extension_class_init (GSignondExtensionClass *klass)
 {
-    G_OBJECT_CLASS (klass)->dispose = _dispose;
+    GObjectClass *g_klass = G_OBJECT_CLASS (klass);
+
+    g_type_class_add_private (g_klass, sizeof (GSignondExtensionPrivate));
+
+    g_klass->dispose = _dispose;
     klass->get_extension_name = _get_extension_name;
     klass->get_extension_version = _get_extension_version;
     klass->get_storage_manager = _get_storage_manager;
@@ -116,14 +130,32 @@ gsignond_extension_class_init (GSignondExtensionClass *klass)
 static void
 gsignond_extension_init (GSignondExtension *self)
 {
+    self->priv = GSIGNOND_EXTENSION_PRIV (self);
+
+    self->priv->access_control_manager = NULL;
+    self->priv->storage_manager = NULL;
+    self->priv->secret_storage = NULL;
+}
+
+static void
+_on_extension_dispose (gpointer data, GObject *object)
+{
+    if (data) *(GSignondExtension **)data = NULL;
 }
 
 GSignondExtension * default_extension_init ()
 {
+    static GSignondExtension *default_extension = NULL;
+
     if (!default_extension) {
         default_extension =
             g_object_new (GSIGNOND_TYPE_EXTENSION, NULL);
+        
+        g_object_weak_ref (G_OBJECT (default_extension),
+                           _on_extension_dispose,
+                           &default_extension);
     }
+
     return default_extension;
 }
 
