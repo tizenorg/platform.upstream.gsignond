@@ -75,7 +75,7 @@ libgsignond_dbus_la_CPPFLAGS = \
     $(NULL)
 
 libgsignond_dbus_la_LIBADD = \
-    $(top_srcdir)/src/daemon/dbus/libgsignond-dbus-glue.la \
+    libgsignond-dbus-glue.la \
     $(GSIGNOND_LIBS) \
     $(NULL)
 
