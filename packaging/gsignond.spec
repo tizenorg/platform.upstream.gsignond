@@ -15,7 +15,6 @@ BuildRequires: pkgconfig(gio-2.0)
 BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(gmodule-2.0)
 BuildRequires: pkgconfig(sqlite3)
-BuildRequires: pkgconfig(libsmack)
 
 
 %description
@@ -46,8 +45,8 @@ autoreconf --install --force
 
 
 %build
-%configure --enable-dbus-type=p2p
-make #%{?_smp_mflags}
+%configure --enable-dbus-type=session
+make %{?_smp_mflags}
 
 
 %install
@@ -55,7 +54,9 @@ rm -rf %{buildroot}
 %make_install
 
 
-%post -p /sbin/ldconfig
+%post
+/sbin/ldconfig
+chmod u+s %{_bindir}/%{name}
 
 
 %postun -p /sbin/ldconfig
@@ -68,7 +69,7 @@ rm -rf %{buildroot}
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
 %{_libdir}/%{name}/plugins/*.so*
-#%{_datadir}/dbus-1/services/*SingleSignOn*.service
+%{_datadir}/dbus-1/services/*SingleSignOn*.service
 %exclude %{_libdir}/gsignond/extensions/*.la
 %exclude %{_libdir}/gsignond/plugins/*.la
 
