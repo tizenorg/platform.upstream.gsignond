@@ -60,7 +60,7 @@ gsignond_wipe_file (const gchar *filename)
         return FALSE;
 
     wipefd = open (filename, O_WRONLY | O_SYNC);
-    if (rngfd < 0)
+    if (wipefd < 0)
         goto _rng_exit;
     wipebuf = g_malloc (pagesize);
     if (fstat (wipefd, &filestat))
