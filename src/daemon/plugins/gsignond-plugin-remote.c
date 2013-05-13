@@ -151,6 +151,8 @@ gsignond_plugin_remote_dispose (GObject *object)
                 self->priv->signal_refreshed);
         g_signal_handler_disconnect (self->priv->dbus_plugin_proxy,
                 self->priv->signal_status_changed);
+        g_signal_handler_disconnect (self->priv->dbus_plugin_proxy,
+                self->priv->signal_plugin_ready);
         g_object_unref (self->priv->dbus_plugin_proxy);
         self->priv->dbus_plugin_proxy = NULL;
     }
@@ -204,14 +206,6 @@ gsignond_plugin_remote_class_init (GSignondPluginRemoteClass *klass)
 
 }
 
-/* signals */
-enum
-{
-    USER_ACTION_FINISHED_TRIGGERED,
-    LAST_SIGNAL
-};
-static guint task_signals[LAST_SIGNAL] = { 0 };
-
 static void
 gsignond_plugin_remote_init (GSignondPluginRemote *self)
 {
@@ -224,6 +218,7 @@ gsignond_plugin_remote_init (GSignondPluginRemote *self)
     self->priv->plugin_mechanisms = NULL;
     self->priv->cpid = 0;
     self->priv->child_watch_id = 0;
+    self->priv->plugin_ready = FALSE;
 
 }
 
@@ -334,8 +329,6 @@ _user_action_finished_async_cb (
     if (error) {
         gsignond_plugin_error (GSIGNOND_PLUGIN(self), error);
         g_error_free (error);
-    } else {
-        g_signal_emit (self, task_signals[USER_ACTION_FINISHED_TRIGGERED], 0);
     }
 }
 
@@ -393,10 +386,6 @@ gsignond_plugin_remote_interface_init (GSignondPluginInterface *iface)
     iface->request = gsignond_plugin_remote_request;
     iface->user_action_finished = gsignond_plugin_remote_user_action_finished;
     iface->refresh = gsignond_plugin_remote_refresh;
-
-    task_signals[USER_ACTION_FINISHED_TRIGGERED] = g_signal_new (
-            "user-action-finished-triggered", G_TYPE_FROM_CLASS (iface),
-            G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
 }
 
 static void
@@ -494,6 +483,16 @@ _status_changed_cb (
             (GSignondPluginState)status, message);
 }
 
+static void
+_plugin_ready_cb (
+        GSignondPluginRemote *self,
+        gpointer user_data)
+{
+    g_return_if_fail (self && GSIGNOND_IS_PLUGIN_REMOTE (self));
+
+    self->priv->plugin_ready = TRUE;
+}
+
 static gboolean
 _error_watch_cb (
         GIOChannel *channel,
@@ -577,6 +576,7 @@ gsignond_plugin_remote_new (
     GSignondPluginRemote *plugin = NULL;
     GSignondPipeStream *stream = NULL;
     gboolean ret = FALSE;
+    gint i;
 
     /* Spawn child process */
     argv = g_malloc0 ((3 + 1) * sizeof (gchar *));
@@ -651,6 +651,9 @@ gsignond_plugin_remote_new (
     plugin->priv->signal_status_changed = g_signal_connect_swapped (
             plugin->priv->dbus_plugin_proxy, "status-changed",
             G_CALLBACK(_status_changed_cb), plugin);
+    plugin->priv->signal_plugin_ready = g_signal_connect_swapped (
+            plugin->priv->dbus_plugin_proxy, "plugin-ready",
+            G_CALLBACK(_plugin_ready_cb), plugin);
 
     /* Create watch for error messages */
     plugin->priv->err_watch_ch = g_io_channel_unix_new (cerr_fd);
@@ -659,6 +662,21 @@ gsignond_plugin_remote_new (
     g_io_channel_set_close_on_unref (plugin->priv->err_watch_ch, TRUE);
     g_io_channel_set_flags (plugin->priv->err_watch_ch, G_IO_FLAG_NONBLOCK,
             NULL);
+
+    /* To avoid race condition, so that remote dbus object is up before it can
+     * be used
+     * */
+    for (i = 0; i < 100; i++) {
+        if (!plugin->priv->plugin_ready) {
+            g_usleep (10);
+            g_main_context_iteration (NULL, FALSE);
+        }
+    }
+
+    if (!plugin->priv->plugin_ready) {
+        g_object_unref (plugin);
+        return NULL;
+    }
 
     return plugin;
 }

@@ -441,6 +441,9 @@ gsignond_plugin_daemon_new (
     g_signal_connect (daemon->priv->connection, "closed",
             G_CALLBACK(_on_connection_closed), daemon);
 
+    gsignond_dbus_remote_plugin_emit_plugin_ready (
+            daemon->priv->dbus_remote_plugin);
+
     return daemon;
 }
 

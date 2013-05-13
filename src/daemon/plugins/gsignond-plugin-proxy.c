@@ -255,16 +255,6 @@ gsignond_plugin_proxy_status_changed_callback (
                                                 priv->active_process_userdata);
 }
 
-static void
-gsignond_plugin_proxy_user_action_finished_triggered_cb(
-        GSignondPluginRemote* plugin,
-        gpointer user_data)
-{
-    GSignondPluginProxy *self = GSIGNOND_PLUGIN_PROXY (user_data);
-
-    gsignond_plugin_proxy_process_queue (self);
-}
-
 static GObject *
 gsignond_plugin_proxy_constructor (
         GType                  gtype,
@@ -304,11 +294,6 @@ gsignond_plugin_proxy_constructor (
             gsignond_plugin_proxy_refreshed_callback), self);
         g_signal_connect(priv->plugin, "status-changed", G_CALLBACK(
             gsignond_plugin_proxy_status_changed_callback), self);
-
-        g_signal_connect(GSIGNOND_PLUGIN_REMOTE (priv->plugin),
-                "user-action-finished-triggered", G_CALLBACK(
-                gsignond_plugin_proxy_user_action_finished_triggered_cb),
-                self);
 
         g_object_get (priv->plugin, "type", &type, NULL);
         if (g_strcmp0 (type, priv->plugin_type) != 0) {
