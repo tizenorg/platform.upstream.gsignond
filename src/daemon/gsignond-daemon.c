@@ -411,7 +411,7 @@ gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
                                        const GSignondSecurityContext *ctx,
                                        GError **error) 
 {
-    if (!daemon || !GSIGNOND_IS_DAEMON (daemon)) {
+    if (!daemon || !GSIGNOND_IS_DAEMON (daemon) || !ctx) {
         WARN ("assertion failed (daemon && GSIGNOND_IS_DAEMON (daemon)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return NULL;
@@ -422,8 +422,7 @@ gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
     GSignondSecurityContext *owner = NULL;
     GSignondSecurityContextList *acl = NULL;
 
-    owner = ctx ? gsignond_security_context_copy (ctx)
-                : gsignond_security_context_new_from_values ("*", NULL);
+    owner = gsignond_security_context_copy (ctx);
 
     gsignond_identity_info_set_owner (info, owner);
 
@@ -482,7 +481,7 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
     } \
 }
     DBG("Get identity for id '%d'\n cache size : %d", id, g_hash_table_size(daemon->priv->identities));
-    identity = GSIGNOND_IDENTITY(g_hash_table_lookup (daemon->priv->identities, GINT_TO_POINTER(id)));
+    identity = GSIGNOND_IDENTITY(g_hash_table_lookup (daemon->priv->identities, GUINT_TO_POINTER(id)));
     if (identity) {
         identity_info = gsignond_identity_get_identity_info (identity);
         VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
@@ -512,7 +511,7 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
         return NULL;
     }
 
-    g_hash_table_insert (daemon->priv->identities, GINT_TO_POINTER(id), identity);
+    g_hash_table_insert (daemon->priv->identities, GUINT_TO_POINTER(id), identity);
     g_object_weak_ref (G_OBJECT (identity), _on_identity_disposed, daemon);
 
     DBG("created new identity '%p' for id '%d'", identity, id);
