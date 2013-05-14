@@ -42,7 +42,6 @@ struct _GSignondPluginRemotePrivate
     GPid cpid;
     guint child_watch_id;
     guint err_watch_id;
-    gboolean plugin_ready;
 
     /* Signals */
     guint signal_response;
@@ -52,7 +51,6 @@ struct _GSignondPluginRemotePrivate
     guint signal_user_action_required;
     guint signal_refreshed;
     guint signal_status_changed;
-    guint signal_plugin_ready;
 };
 
 G_END_DECLS

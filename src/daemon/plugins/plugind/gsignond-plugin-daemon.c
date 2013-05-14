@@ -383,7 +383,8 @@ gsignond_plugin_daemon_new (
     /* Create dbus connection */
     stream = gsignond_pipe_stream_new (0, 1, FALSE);
     daemon->priv->connection = g_dbus_connection_new_sync (G_IO_STREAM (stream),
-            NULL, G_DBUS_CONNECTION_FLAGS_NONE, NULL, NULL, NULL);
+            NULL, G_DBUS_CONNECTION_FLAGS_DELAY_MESSAGE_PROCESSING, NULL, NULL,
+            NULL);
     g_object_unref (stream);
 
     /* Create dbus object */
@@ -441,8 +442,7 @@ gsignond_plugin_daemon_new (
     g_signal_connect (daemon->priv->connection, "closed",
             G_CALLBACK(_on_connection_closed), daemon);
 
-    gsignond_dbus_remote_plugin_emit_plugin_ready (
-            daemon->priv->dbus_remote_plugin);
+    g_dbus_connection_start_message_processing (daemon->priv->connection);
 
     return daemon;
 }
