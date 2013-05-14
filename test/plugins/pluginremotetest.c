@@ -69,7 +69,10 @@ _run_mainloop ()
 static void
 _setup ()
 {
+#if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
+#endif
+
     if (main_loop == NULL) {
         main_loop = g_main_loop_new (NULL, FALSE);
     }
@@ -248,7 +251,6 @@ START_TEST (test_pluginremote_plugind_create)
 
     child_watch_id = g_child_watch_add (cpid,
             (GChildWatchFunc)_child_watch_cb, plugin);
-
     g_object_unref (plugin);
     g_object_unref (config);
 
@@ -553,8 +555,6 @@ Suite* pluginremote_suite (void)
 int main (void)
 {
     int number_failed;
-    
-    g_type_init();
     
     Suite *s = pluginremote_suite();
     SRunner *sr = srunner_create(s);

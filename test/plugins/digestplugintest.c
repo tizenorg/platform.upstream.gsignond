@@ -308,7 +308,9 @@ int main (void)
 {
     int number_failed;
 
-    g_type_init();
+#if !GLIB_CHECK_VERSION (2, 36, 0)
+    g_type_init ();
+#endif
 
     Suite *s = digestplugin_suite();
     SRunner *sr = srunner_create(s);

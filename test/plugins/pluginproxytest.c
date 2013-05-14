@@ -57,7 +57,9 @@ _run_mainloop ()
 static void
 _setup ()
 {
+#if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
+#endif
     if (main_loop == NULL) {
         main_loop = g_main_loop_new (NULL, FALSE);
     }

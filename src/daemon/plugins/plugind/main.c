@@ -129,7 +129,9 @@ int main (int argc, char **argv)
         {NULL}
     };
 
+#if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
+#endif
 
     g_log_set_default_handler (_default_log_handler, NULL);
 

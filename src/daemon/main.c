@@ -118,7 +118,9 @@ int main (int argc, char **argv)
     setregid (-1, getgid());
     DBG ("after: real gid %d effective gid %d", getgid (), getegid ());
 
+#if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
+#endif
 
     opt_context = g_option_context_new ("SSO daemon");
     g_option_context_add_main_entries (opt_context, opt_entries, NULL);
