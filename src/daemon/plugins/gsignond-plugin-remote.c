@@ -151,6 +151,7 @@ gsignond_plugin_remote_dispose (GObject *object)
                 self->priv->signal_refreshed);
         g_signal_handler_disconnect (self->priv->dbus_plugin_proxy,
                 self->priv->signal_status_changed);
+        g_object_unref (self->priv->dbus_plugin_proxy);
         self->priv->dbus_plugin_proxy = NULL;
     }
 
