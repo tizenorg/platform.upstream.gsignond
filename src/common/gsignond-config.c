@@ -86,7 +86,9 @@ _load_config (GSignondConfig *self)
                 def_config = g_build_filename (*sysconfdirs,
                                                "gsignond/gsignond.conf",
                                                NULL);
+                DBG ("try to load config from %s", def_config);
                 if (g_access (def_config, R_OK) == 0) {
+                    DBG ("use config from %s", def_config);
                     self->priv->config_file_path = def_config;
                     break;
                 }
