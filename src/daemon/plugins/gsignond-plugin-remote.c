@@ -564,6 +564,11 @@ gsignond_plugin_remote_new (
     GSignondPipeStream *stream = NULL;
     gboolean ret = FALSE;
 
+    /* This guarantees that writes to a pipe will never cause
+     * a process terminanation via SIGPIPE, and instead a proper
+     * error will be returned */
+    signal(SIGPIPE, SIG_IGN);
+
     /* Spawn child process */
     argv = g_malloc0 ((3 + 1) * sizeof (gchar *));
     argv[0] = g_build_filename (gsignond_config_get_string (config,
