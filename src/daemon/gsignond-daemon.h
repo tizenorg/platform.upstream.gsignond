@@ -28,8 +28,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include "gsignond-types.h"
 #include <gsignond/gsignond-access-control-manager.h>
-#include "gsignond-identity.h"
 #include "gsignond-signonui-proxy.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 
@@ -42,8 +42,6 @@ G_BEGIN_DECLS
 #define GSIGNOND_IS_DAEMON_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_DAEMON))
 #define GSIGNOND_DAEMON_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), GSIGNOND_TYPE_DAEMON, GSignondDaemonClass))
 
-typedef struct _GSignondDaemon GSignondDaemon;
-typedef struct _GSignondDaemonClass GSignondDaemonClass;
 typedef struct _GSignondDaemonPrivate GSignondDaemonPrivate;
 
 struct _GSignondDaemon

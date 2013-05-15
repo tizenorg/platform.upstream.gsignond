@@ -28,6 +28,7 @@
 
 #include <glib-object.h>
 
+#include "gsignond-types.h"
 #include <gsignond/gsignond-dictionary.h>
 #include <gsignond/gsignond-identity-info.h>
 #include <gsignond/gsignond-signonui-data.h>
@@ -52,8 +53,6 @@ G_BEGIN_DECLS
     (G_TYPE_INSTANCE_GET_CLASS((obj), GSIGNOND_TYPE_AUTH_SESSION, \
                                GSignondAuthSessionClass))
 
-typedef struct _GSignondAuthSession GSignondAuthSession;
-typedef struct _GSignondAuthSessionClass GSignondAuthSessionClass;
 typedef struct _GSignondAuthSessionPrivate GSignondAuthSessionPrivate;
 typedef void (*ProcessReadyCb) (GSignondSessionData *results, const GError *error, gpointer user_data);
 typedef void (*StateChangeCb) (gint state, const gchar *message, gpointer userdata);

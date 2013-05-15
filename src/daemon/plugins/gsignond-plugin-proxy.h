@@ -27,6 +27,8 @@
 #define __GSIGNOND_PLUGIN_PROXY_H__
 
 #include <glib-object.h>
+
+#include "daemon/gsignond-types.h"
 #include <gsignond/gsignond-plugin-interface.h>
 #include <gsignond/gsignond-config.h>
 
@@ -41,7 +43,6 @@
 typedef struct _GSignondPluginProxy        GSignondPluginProxy;
 typedef struct _GSignondPluginProxyClass   GSignondPluginProxyClass;
 typedef struct _GSignondPluginProxyPrivate GSignondPluginProxyPrivate;
-typedef struct _GSignondAuthSession        GSignondAuthSession;
 
 struct _GSignondPluginProxy
 {

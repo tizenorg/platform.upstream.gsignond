@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include "gsignond-types.h"
 #include <gsignond/gsignond-identity-info.h>
 #include <gsignond/gsignond-access-control-manager.h>
 
@@ -41,12 +42,7 @@ G_BEGIN_DECLS
 #define GSIGNOND_IS_IDENTITY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GSIGNOND_TYPE_IDENTITY))
 #define GSIGNOND_IDENTITY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), GSIGNOND_TYPE_IDENTITY, GSignondIdentityClass))
 
-typedef struct _GSignondIdentity GSignondIdentity;
-typedef struct _GSignondIdentityClass GSignondIdentityClass;
 typedef struct _GSignondIdentityPrivate GSignondIdentityPrivate;
-
-typedef struct _GSignondDaemon GSignondDaemon;
-typedef struct _GSignondAuthSession GSignondAuthSession;
 
 typedef enum {
     GSIGNOND_IDENTITY_DATA_UPDATED = 0,
