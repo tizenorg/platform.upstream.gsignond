@@ -66,6 +66,7 @@ chmod u+s %{_bindir}/%{name}
 %defattr(-,root,root,-)
 %doc AUTHORS COPYING.LIB INSTALL NEWS README
 %{_bindir}/%{name}
+%{_bindir}/%{name}-plugind
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
 %{_libdir}/%{name}/plugins/*.so*
