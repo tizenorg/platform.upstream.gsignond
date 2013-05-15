@@ -31,7 +31,7 @@ gsignond_plugind_CFLAGS = \
     $(NULL)
 
 gsignond_plugind_LDADD = \
-    $(top_srcdir)/src/daemon/plugins/plugind/libgsignond-plugind-daemon.la \
+    libgsignond-plugind-daemon.la \
     $(GSIGNOND_LIBS) \
     $(NULL)
 
