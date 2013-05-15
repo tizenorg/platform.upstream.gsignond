@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2013 Intel Corporation.
  *
+ * Contact: Imran Zaman <imran.zaman@linux.intel.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,7 +27,6 @@
 #define __GSIGNOND_TYPES_H_
 
 #include <glib.h>
-#include <glib-object.h>
 
 G_BEGIN_DECLS
 
