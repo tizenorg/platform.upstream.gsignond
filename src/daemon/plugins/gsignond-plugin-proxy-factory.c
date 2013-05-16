@@ -48,8 +48,10 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 {
     GDir* plugin_dir = g_dir_open(gsignond_config_get_string (self->config, 
         GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), 0, NULL);
-    if (plugin_dir == NULL)
+    if (plugin_dir == NULL) {
+        WARN ("plugin directory empty");
         return;
+    }
         
     int n_plugins = 0;
     while (g_dir_read_name(plugin_dir) != NULL)
@@ -227,6 +229,7 @@ gsignond_plugin_proxy_factory_init (GSignondPluginProxyFactory *self)
                                            (GDestroyNotify)g_free,
                                            (GDestroyNotify)g_object_unref);
 
+    self->methods = NULL;
 }
 
 GSignondPluginProxyFactory* 
