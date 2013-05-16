@@ -323,6 +323,10 @@ gsignond_db_credentials_database_load_identity (
  * gsignond_db_credentials_database_load_identities:
  *
  * @self: instance of #GSignondDbCredentialsDatabase
+ * @filter: (transfer none) filter to apply. Currently supported filters:
+ *   ("Owner":GSignondSecurtityContext *context) - Identities matched with this 'context'
+ *   ("Type":guint32 type) - Identities matched with 'type'
+ *   ("Caption":gchar *caption) - Identties matched/start with 'caption'
  *
  * Fetches the list of the identities.
  *
@@ -331,12 +335,13 @@ gsignond_db_credentials_database_load_identity (
  */
 GSignondIdentityInfoList *
 gsignond_db_credentials_database_load_identities (
-        GSignondDbCredentialsDatabase *self)
+        GSignondDbCredentialsDatabase *self,
+        GSignondDictionary *filter)
 {
     g_return_val_if_fail (GSIGNOND_DB_IS_CREDENTIALS_DATABASE (self), NULL);
 
 	return gsignond_db_metadata_database_get_identities (
-			self->priv->metadata_db);
+			self->priv->metadata_db, filter);
 }
 
 /**

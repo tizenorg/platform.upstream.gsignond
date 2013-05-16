@@ -111,7 +111,9 @@ gsignond_db_metadata_database_get_identity (
         const guint32 identity_id);
 
 GSignondIdentityInfoList *
-gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self);
+gsignond_db_metadata_database_get_identities (
+        GSignondDbMetadataDatabase *self,
+        GSignondDictionary *filter);
 
 gboolean
 gsignond_db_metadata_database_remove_identity (

@@ -1289,17 +1289,24 @@ gsignond_db_metadata_database_get_identity (
  * gsignond_db_metadata_database_get_identities:
  *
  * @self: instance of #GSignondDbMetadataDatabase
+ * @filter: (transfer none) filter to apply (supported filters: Owner, Type & Caption)
  *
- * Reads all the identities from the database into a list.
+ * Reads all the identities that are matched by applying @filter,
+ * from the database into a list.
  *
  * Returns: (transfer full) the list #GSignondIdentityInfoList if successful,
  * NULL otherwise. When done the list should be freed with
  * gsignond_identity_info_list_free
  */
 GSignondIdentityInfoList *
-gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
+gsignond_db_metadata_database_get_identities (
+        GSignondDbMetadataDatabase *self,
+        GSignondDictionary *filter)
 {
     GSignondIdentityInfoList *identities = NULL;
+    gchar *owner_query = NULL;
+    gchar *caption_query = NULL;
+    gchar *type_query = NULL;
     gchar *query = NULL;
     GArray *ids = NULL;
     gint i;
@@ -1307,7 +1314,45 @@ gsignond_db_metadata_database_get_identities (GSignondDbMetadataDatabase *self)
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), NULL);
 
-    query = sqlite3_mprintf ("SELECT id FROM credentials ORDER BY id");
+    if (filter) {
+        GVariant *owner_var = NULL;
+        const gchar *caption = NULL;
+        gint type = 0;
+        gboolean append_where = TRUE;
+
+        if ((owner_var = gsignond_dictionary_get (filter, "Owner"))) {
+    		GSignondSecurityContext *owner_ctx =
+        		 gsignond_security_context_from_variant(owner_var);
+    		owner_query = sqlite3_mprintf ("WHERE id IN "
+    			"(SELECT identity_id FROM owner WHERE secctx_id = "
+        		"(SELECT id FROM secctx WHERE sysctx=%Q AND appctx=%Q))",
+        		gsignond_security_context_get_system_context(owner_ctx),
+        		gsignond_security_context_get_application_context(owner_ctx));
+    		gsignond_security_context_free (owner_ctx);
+    		append_where = FALSE;
+    	}
+
+    	if ((caption = gsignond_dictionary_get_string (filter, "Caption"))) {
+    		caption_query = sqlite3_mprintf (" %s caption like '%s%%'",
+    				             append_where ? "WHERE" : "AND", caption);
+    		append_where = FALSE;
+    	}
+
+    	if (gsignond_dictionary_get_int32 (filter, "Type", &type)) {
+    		type_query = sqlite3_mprintf (" %s type = %d",
+    				append_where ? "WHERE" : "AND", type);
+    		append_where = FALSE;
+    	}
+    }
+
+    query = sqlite3_mprintf ("SELECT id FROM credentials %s%s%s ORDER BY id",
+    		owner_query ? owner_query : "",
+    		caption_query ? caption_query : "",
+    		type_query ? type_query : "");
+    sqlite3_free(owner_query);
+    sqlite3_free(caption_query);
+    sqlite3_free(type_query);
+
     ids = gsignond_db_sql_database_query_exec_int_array (
                 GSIGNOND_DB_SQL_DATABASE (self),
                 query);

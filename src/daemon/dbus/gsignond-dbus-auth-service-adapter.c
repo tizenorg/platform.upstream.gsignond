@@ -68,7 +68,9 @@ static gboolean _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *,
                                       const gchar *, gpointer);
 static gboolean _handle_query_identities (GSignondDbusAuthServiceAdapter *,
                                       GDBusMethodInvocation *,
-                                      GVariant*, gpointer);
+                                      GVariant*, 
+                                      const gchar *,
+                                      gpointer);
 static gboolean _handle_clear (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, gpointer);
 
 static void
@@ -452,19 +454,18 @@ static void
 _append_identity_info (gpointer data, gpointer user_data)
 {
     GVariantBuilder *builder = (GVariantBuilder *)user_data;
-    GSignondIdentity *identity = GSIGNOND_IDENTITY (data);
-    GSignondIdentityInfo *info = gsignond_identity_get_identity_info (identity);
 
-    g_variant_builder_add (builder, "@a{sv}", gsignond_dictionary_to_variant (info));
+    g_variant_builder_add (builder, "@a{sv}", gsignond_dictionary_to_variant ((GSignondIdentityInfo*)data));
 }
 
 static gboolean
 _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
                           GDBusMethodInvocation *invocation,
                           GVariant *filter,
+                          const gchar *app_context,
                           gpointer user_data)
 {
-    GList *identities = NULL;
+    GSignondIdentityInfoList *identities = NULL;
     GError *error = NULL;
     GSignondSecurityContext *sec_context;
     const gchar *sender =  NULL;
@@ -482,7 +483,7 @@ _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
             gsignond_daemon_get_access_control_manager (self->priv->auth_service),
             sec_context,
             fd,
-            sender, "");
+            sender, app_context);
 
     identities = gsignond_daemon_query_identities (self->priv->auth_service,
                                                    filter,
@@ -498,7 +499,7 @@ _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
 
         g_list_foreach(identities, _append_identity_info, &builder);
 
-        g_list_free (identities);
+        gsignond_identity_info_list_free (identities);
 
         gsignond_dbus_auth_service_complete_query_identities (
             self->priv->dbus_auth_service, invocation,

@@ -576,7 +576,7 @@ _check_keychain_access (GSignondDaemon *self,
     return has_access;
 }
 
-GList *
+GSignondIdentityInfoList *
 gsignond_daemon_query_identities (GSignondDaemon *self,
                                   GVariant *filter,
                                   const GSignondSecurityContext *ctx,
@@ -584,18 +584,32 @@ gsignond_daemon_query_identities (GSignondDaemon *self,
 {
     if (!self || !GSIGNOND_IS_DAEMON (self)) {
         WARN ("assertion (self && GSIGNOND_IS_DAEMON(self)) failed");
-        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN,
+        		                                        "Unknown error");
         return NULL;
     }
 
-    if (!_check_keychain_access (self, ctx, error))
-        return NULL;
+    GSignondIdentityInfoList *identities  = NULL;
+    GSignondDictionary *filter_map =
+    		gsignond_dictionary_new_from_variant (filter);
 
-    (void)filter;
+    if (!_check_keychain_access (self, ctx, NULL)) {
+    	/* Other than 'keychain' app, can only get identities owned by it. */
+    	gsignond_dictionary_set (filter_map, "Owner",
+    			gsignond_security_context_to_variant (ctx));
+    }
 
-    if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Not supported");
+    identities = gsignond_db_credentials_database_load_identities (
+                      self->priv->db, filter_map);
 
-    return NULL;
+    gsignond_dictionary_unref (filter_map);
+
+    if (!identities) {
+        if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN,
+        		                                        "Not found");
+    }
+
+    return identities;
 }
 
 gboolean 

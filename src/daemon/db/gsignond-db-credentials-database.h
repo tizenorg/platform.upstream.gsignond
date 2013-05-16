@@ -109,7 +109,8 @@ gsignond_db_credentials_database_load_identity (
 
 GSignondIdentityInfoList *
 gsignond_db_credentials_database_load_identities (
-        GSignondDbCredentialsDatabase *self);
+        GSignondDbCredentialsDatabase *self,
+        GSignondDictionary *filter);
 
 guint32
 gsignond_db_credentials_database_update_identity (

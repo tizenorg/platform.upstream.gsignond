@@ -20,6 +20,7 @@
     </method>
     <method name="queryIdentities">
       <arg name="identities" type="aa{sv}" direction="out"/>
+      <arg name="applicationContext" type="s" direction="in"/>
       <arg name="filter" type="a{sv}" direction="in"/>
     </method>
     <method name="clear">

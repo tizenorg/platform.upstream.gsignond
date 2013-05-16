@@ -30,6 +30,7 @@
 
 #include "gsignond-types.h"
 #include <gsignond/gsignond-access-control-manager.h>
+#include <gsignond/gsignond-identity-info.h>
 #include "gsignond-signonui-proxy.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 
@@ -80,7 +81,7 @@ gsignond_daemon_query_mechanisms (GSignondDaemon *daemon,
                                   const gchar *method,
                                   GError **error);
 
-GList *
+GSignondIdentityInfoList *
 gsignond_daemon_query_identities (GSignondDaemon *daemon,
                                   GVariant *filter,
                                   const GSignondSecurityContext *ctx,

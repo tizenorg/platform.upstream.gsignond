@@ -724,7 +724,7 @@ START_TEST (test_metadata_database)
     fail_unless (gsignond_db_metadata_database_get_identity (
             metadata_db, identity_id) == NULL);
     fail_unless (gsignond_db_metadata_database_get_identities (
-            metadata_db) == NULL);
+            metadata_db, NULL) == NULL);
     fail_unless (gsignond_db_metadata_database_remove_identity (
             metadata_db, identity_id) == FALSE);
     fail_unless (gsignond_db_metadata_database_remove_reference (
@@ -794,7 +794,7 @@ START_TEST (test_metadata_database)
     fail_unless (gsignond_db_metadata_database_get_identity (
             metadata_db, 2222) == NULL);
 
-    identities = gsignond_db_metadata_database_get_identities (metadata_db);
+    identities = gsignond_db_metadata_database_get_identities (metadata_db, NULL);
     fail_unless (identities != NULL);
     fail_unless (g_list_length (identities) == 1);
     gsignond_identity_info_list_free (identities);
@@ -842,7 +842,7 @@ START_TEST (test_metadata_database)
     fail_unless (gsignond_db_metadata_database_remove_identity (
             metadata_db, identity_id) == TRUE);
     fail_unless (gsignond_db_metadata_database_get_identities (
-            metadata_db) == NULL);
+            metadata_db, NULL) == NULL);
 
     gsignond_identity_info_unref (identity);
 
@@ -867,6 +867,10 @@ START_TEST (test_credentials_database)
     GHashTable *data = NULL;
     GHashTable *data2 = NULL;
     Data input;
+    GSignondDictionary *cap_filter = NULL;
+    GSignondDictionary *type_filter = NULL;
+    GSignondDictionary *cap_type_filter = NULL;
+    GSignondDictionary *no_cap_filter = NULL;
 
     config = gsignond_config_new ();
     storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
@@ -998,11 +1002,52 @@ START_TEST (test_credentials_database)
     fail_if (owner == NULL);
     gsignond_security_context_free (owner);
 
+    /* load_identities : matched with caption and security context */
+    cap_filter = gsignond_dictionary_new ();
+    GSignondSecurityContext *ctx =
+    		gsignond_security_context_new_from_values("sysctx1", "appctx1");
+    gsignond_dictionary_set_string (cap_filter, "Caption", "cap");
+    gsignond_dictionary_set(cap_filter, "Owner",
+    		 gsignond_security_context_to_variant(ctx));
     identities = gsignond_db_credentials_database_load_identities (
-            credentials_db);
+            credentials_db, cap_filter);
+    gsignond_dictionary_unref (cap_filter);
+
     fail_if (identities == NULL);
     fail_unless (g_list_length (identities) == 1);
     gsignond_identity_info_list_free (identities);
+
+    /* load_identities: matched with type */
+    type_filter = gsignond_dictionary_new();
+    gsignond_dictionary_set_int32 (type_filter, "Type", 456);
+    identities = gsignond_db_credentials_database_load_identities (
+            credentials_db, type_filter);
+    gsignond_dictionary_unref (type_filter);
+
+    fail_if (identities == NULL);
+    fail_unless (g_list_length (identities) == 1);
+    gsignond_identity_info_list_free (identities);
+
+    /* load_identities: matched with type and caption */
+    cap_type_filter = gsignond_dictionary_new();
+    gsignond_dictionary_set_int32 (cap_type_filter, "Type", 456);
+    gsignond_dictionary_set_string (cap_type_filter, "Caption", "CAP");
+    identities = gsignond_db_credentials_database_load_identities (
+            credentials_db, cap_type_filter);
+    gsignond_dictionary_unref (type_filter);
+
+    fail_if (identities == NULL);
+    fail_unless (g_list_length (identities) == 1);
+    gsignond_identity_info_list_free (identities);
+
+    /* Negative load_identities query */
+    no_cap_filter = gsignond_dictionary_new();
+    gsignond_dictionary_set_string (no_cap_filter, "Caption", "non_existing");
+
+    identities = gsignond_db_credentials_database_load_identities (
+            credentials_db, no_cap_filter);
+    gsignond_dictionary_unref (no_cap_filter);
+    fail_unless (identities == NULL);
 
     fail_unless (gsignond_db_credentials_database_remove_identity (
             credentials_db, identity_id) == TRUE);
