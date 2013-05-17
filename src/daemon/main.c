@@ -150,5 +150,6 @@ int main (int argc, char **argv)
  
     if (main_loop) g_main_loop_unref (main_loop);
 
+    DBG("Clean shutdown");
     return 0;
 }

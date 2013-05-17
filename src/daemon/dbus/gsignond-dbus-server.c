@@ -58,10 +58,12 @@ G_DEFINE_TYPE (GSignondDbusServer, gsignond_dbus_server, G_TYPE_OBJECT)
 #define GSIGNOND_DBUS_SERVER_GET_PRIV(obj) \
     G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_DBUS_SERVER, GSignondDbusServerPrivate)
 
+#ifdef USE_P2P
 static void _on_connection_closed (GDBusConnection *connection,
                        gboolean         remote_peer_vanished,
                        GError          *error,
                        gpointer         user_data);
+#endif
 
 static void
 _set_property (GObject *object,
@@ -108,12 +110,14 @@ _get_property (GObject *object,
     }
 }
 
+#ifdef USE_P2P
 static void
 _clear_connection (gpointer connection, gpointer value, gpointer userdata)
 {
     (void) value;
     g_signal_handlers_disconnect_by_func (connection, _on_connection_closed, userdata);
 }
+#endif
 
 static void
 _dispose (GObject *object)
@@ -121,7 +125,9 @@ _dispose (GObject *object)
     GSignondDbusServer *self = GSIGNOND_DBUS_SERVER (object);
 
     if (self->priv->auth_services) {
+#ifdef USE_P2P
         g_hash_table_foreach (self->priv->auth_services, _clear_connection, self);
+#endif
         g_hash_table_unref (self->priv->auth_services);
         self->priv->auth_services = NULL;
     }
@@ -198,6 +204,24 @@ gsignond_dbus_server_init (GSignondDbusServer *self)
         g_direct_hash, g_direct_equal, NULL, g_object_unref);
 }
 
+const gchar *
+gsignond_dbus_server_get_address (GSignondDbusServer *server)
+{
+    g_return_val_if_fail (server || GSIGNOND_IS_DBUS_SERVER (server), NULL);
+#ifdef USE_P2P
+    return g_dbus_server_get_client_address (server->priv->bus_server);
+#else
+    return NULL;
+#endif
+}
+
+static gboolean
+_compare_auth_service_by_pointer (gpointer key, gpointer value, gpointer dead_object)
+{
+    return value == dead_object;
+}
+
+#ifdef USE_P2P
 static void
 _on_connection_closed (GDBusConnection *connection,
                        gboolean         remote_peer_vanished,
@@ -209,9 +233,34 @@ _on_connection_closed (GDBusConnection *connection,
     g_signal_handlers_disconnect_by_func (connection, _on_connection_closed, user_data);
     DBG("dbus connection(%p) closed (peer vanished : %d)", connection, remote_peer_vanished);
     if (error) {
-       INFO("...reason : %s", error->message);
+       DBG("...reason : %s", error->message);
     }
     g_hash_table_remove (server->priv->auth_services, connection);
+}
+#else
+
+static gboolean
+_close_server (gpointer data)
+{
+	g_object_unref (data);
+	return FALSE;
+}
+#endif
+
+static void
+_on_auth_service_dispose (gpointer data, GObject *dead_service)
+{
+    GSignondDbusServer *server = GSIGNOND_DBUS_SERVER (data);
+
+    g_return_if_fail (server);
+
+    g_hash_table_foreach_steal (server->priv->auth_services,
+            _compare_auth_service_by_pointer, dead_service);
+#ifndef USE_P2P
+    /* close server if using message bus */
+    if (g_hash_table_size(server->priv->auth_services) == 0)
+    	g_idle_add (_close_server, data);
+#endif
 }
 
 void
@@ -225,19 +274,10 @@ gsignond_dbus_server_start_auth_service (GSignondDbusServer *server, GDBusConnec
         g_object_ref (connection), g_object_ref (server->priv->daemon));
 
     g_hash_table_insert (server->priv->auth_services, connection, auth_service);
-
-    g_signal_connect (connection, "closed", G_CALLBACK(_on_connection_closed), server);
-}
-
-const gchar *
-gsignond_dbus_server_get_address (GSignondDbusServer *server)
-{
-    g_return_val_if_fail (server || GSIGNOND_IS_DBUS_SERVER (server), NULL);
 #ifdef USE_P2P
-    return g_dbus_server_get_client_address (server->priv->bus_server);
-#else
-    return NULL;
+    g_signal_connect (connection, "closed", G_CALLBACK(_on_connection_closed), server);
 #endif
+    g_object_weak_ref (G_OBJECT (auth_service), _on_auth_service_dispose, server);
 }
 
 #ifdef USE_P2P
@@ -247,7 +287,7 @@ _on_client_request (GDBusServer *dbus_server, GDBusConnection *connection, gpoin
     GSignondDbusServer *server = GSIGNOND_DBUS_SERVER(userdata);
 
     if (!server) {
-        ERR ("memory currpotion");
+        ERR ("memory corruption");
         return TRUE;
     }
 
