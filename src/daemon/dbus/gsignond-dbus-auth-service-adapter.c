@@ -410,12 +410,14 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
     
     methods = gsignond_daemon_query_methods (self->priv->auth_service, &error);
 
-    if (methods)
-        gsignond_dbus_auth_service_complete_query_methods (
-            self->priv->dbus_auth_service, invocation, (const gchar * const*)methods);
-    else {
+    if (error) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
+    } else {
+        const gchar *const empty_methods[] = { NULL };
+        gsignond_dbus_auth_service_complete_query_methods (
+              self->priv->dbus_auth_service, invocation,
+              methods ? (const gchar * const*)methods : empty_methods);
     }
 
     gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
