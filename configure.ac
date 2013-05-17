@@ -89,6 +89,9 @@ GTK_DOC_CHECK
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
 
+# Enable feature sets
+GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -D_POSIX_C_SOURCE=\\\"200809L\\\" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
+
 # Checks for typedefs, structures, and compiler characteristics.
 GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall -Werror -DG_LOG_DOMAIN=\\\"gsignond\\\""
 # GSIGNOND_LIBS="$GSIGNOND_LIBS -lduma"

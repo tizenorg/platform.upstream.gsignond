@@ -313,8 +313,6 @@ _gsignond_db_metadata_database_update_realms (
             }
             iter = g_sequence_iter_next (iter);
         }
-    } else {
-        DBG ("NULL realms or no realms to be added");
     }
     return TRUE;
 }

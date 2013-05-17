@@ -23,6 +23,15 @@
  * 02110-1301 USA
  */
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include <gio/gio.h>
+
+#include "config.h"
+
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-access-control-manager.h"
 
@@ -30,6 +39,13 @@
     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
                                   GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER, \
                                   GSignondAccessControlManagerPrivate))
+
+#define DBUS_SERVICE_DBUS "org.freedesktop.DBus"
+#define DBUS_PATH_DBUS "/org/freedesktop/DBus"
+#define DBUS_INTERFACE_DBUS "org.freedesktop.DBus"
+#ifndef GSIGNOND_BUS_TYPE
+#   define GSIGNOND_BUS_TYPE G_BUS_TYPE_SESSION
+#endif
 
 struct _GSignondAccessControlManagerPrivate
 {
@@ -99,12 +115,89 @@ _security_context_of_peer (GSignondAccessControlManager *self,
                            int peer_fd, const gchar *peer_service,
                            const gchar *peer_app_ctx)
 {
-    (void) self;
-    (void) peer_fd;
-    (void) peer_app_ctx;
+    pid_t remote_pid = 0;
+    gchar *procfname;
+    char *peerpath;
+    ssize_t res;
 
-    gsignond_security_context_set_system_context(peer_ctx, "");
-    gsignond_security_context_set_application_context(peer_ctx, "");
+    (void) self;
+
+    gsignond_security_context_set_system_context (peer_ctx, "");
+    gsignond_security_context_set_application_context (peer_ctx,
+                                                       peer_app_ctx);
+
+    if (peer_fd >= 0) {
+        struct ucred peer_cred;
+        socklen_t cred_size = sizeof(peer_cred);
+
+        if (getsockopt (peer_fd, SOL_SOCKET, SO_PEERCRED,
+                        &peer_cred, &cred_size) != 0) {
+            WARN ("getsockopt() for SO_PEERCRED failed");
+            return;
+        }
+        DBG ("remote peer pid=%d uid=%d gid=%d",
+             peer_cred.pid, peer_cred.uid, peer_cred.gid);
+        remote_pid = peer_cred.pid;
+    } else if (peer_service) {
+        GError *error = NULL;
+        GDBusConnection *connection;
+        GVariant *response = NULL;
+        guint32 upid;
+
+        connection = g_bus_get_sync (GSIGNOND_BUS_TYPE, NULL, &error);
+        if (!connection) {
+            WARN ("failed to open connection to session bus: %s",
+                  error->message);
+            g_error_free (error);
+            return;
+        }
+
+        error = NULL;
+        response = g_dbus_connection_call_sync (connection,
+                                                DBUS_SERVICE_DBUS,
+                                                DBUS_PATH_DBUS,
+                                                DBUS_INTERFACE_DBUS,
+                                                "GetConnectionUnixProcessID",
+                                                g_variant_new ("(s)", peer_service),
+                                                ((const GVariantType *) "(u)"),
+                                                G_DBUS_CALL_FLAGS_NONE,
+                                                -1,
+                                                NULL,
+                                                &error);
+
+        g_object_unref (connection);
+
+        if (!response) {
+            WARN ("request for peer pid failed: %s",
+                  error->message);
+            g_error_free (error);
+            return;
+        }
+        
+        g_variant_get (response, "(u)", &upid);
+        DBG ("remote peer service=%s pid=%u", peer_service, upid);
+        remote_pid = (pid_t) upid;
+
+        g_variant_unref (response);
+    } else return;
+
+    if (!remote_pid)
+        return;
+
+    procfname = g_strdup_printf ("/proc/%d/exe", remote_pid);
+    peerpath = g_malloc0 (PATH_MAX + 1);
+    res = readlink (procfname, peerpath, PATH_MAX);
+    g_free (procfname);
+    if (res <= 0) {
+        WARN ("failed to follow link for pid %d", remote_pid);
+        g_free (peerpath);
+        return;
+    }
+
+    DBG ("identity of pid %d is [%s:%s]", remote_pid, peerpath, peer_app_ctx);
+    gsignond_security_context_set_system_context (peer_ctx, peerpath);
+
+    g_free (peerpath);
 }
 
 static gboolean
@@ -168,9 +261,16 @@ _acl_is_valid (GSignondAccessControlManager *self,
 GSignondSecurityContext *
 _security_context_of_keychain (GSignondAccessControlManager *self)
 {
+    const gchar *keychain_sysctx = NULL;
+
     (void) self;
 
-    return gsignond_security_context_new_from_values ("", "");
+#   ifdef ENABLE_DEBUG
+    keychain_sysctx = g_getenv ("SSO_KEYCHAIN_SYSCTX");
+#   endif
+    if (!keychain_sysctx)
+        keychain_sysctx = "";
+    return gsignond_security_context_new_from_values (keychain_sysctx, "");
 }
 
 static void
