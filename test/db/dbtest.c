@@ -487,7 +487,7 @@ START_TEST (test_secret_database)
     g_hash_table_foreach (data2, (GHFunc)_compare_key_value, &input);
     fail_if (input.status != 1);
 
-    g_hash_table_unref(data2);
+    gsignond_dictionary_unref (data2);
     g_hash_table_unref(data);
 
 
@@ -678,7 +678,7 @@ START_TEST (test_secret_storage)
     g_hash_table_foreach (data2, (GHFunc)_compare_key_value, &input);
     fail_if (input.status != 1);
 
-    g_hash_table_unref(data2);
+    gsignond_dictionary_unref(data2);
     g_hash_table_unref(data);
 
     fail_unless (gsignond_secret_storage_remove_data (
@@ -957,7 +957,7 @@ START_TEST (test_credentials_database)
     input.status = 1;
     g_hash_table_foreach (data2, (GHFunc)_compare_key_value, &input);
     fail_if (input.status != 1);
-    g_hash_table_unref(data2);
+    gsignond_dictionary_unref(data2);
     g_hash_table_unref(data);
 
     fail_unless (gsignond_db_credentials_database_remove_data (

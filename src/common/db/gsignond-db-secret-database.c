@@ -82,7 +82,7 @@ _gsignond_db_read_key_value (
 {
     gchar *key = NULL;
     GVariant *value = NULL;
-    key = g_strdup ((const gchar *)sqlite3_column_text (stmt, 0));
+    key = (const gchar *)sqlite3_column_text (stmt, 0);
     value = g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, 
         (gconstpointer) sqlite3_column_blob(stmt, 1),
         (gsize) sqlite3_column_bytes(stmt, 1), sizeof(guchar));
