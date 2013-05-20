@@ -48,10 +48,11 @@ struct IdentityData {
     gchar *type;
     void *value;
 } data[] = {
-        { "UserName", "s", "test_user" },
-        { "Secret", "s", "test_pass" },
-        { "StoreSecret", "b", (void *)TRUE}
- };
+    { "UserName", "s", "test_user" },
+    { "Caption", "s", "test_caption" },
+    { "Secret", "s", "test_pass" },
+    { "StoreSecret", "b", (void *)TRUE}
+};
 
 #if HAVE_GTESTDBUS
 
@@ -88,7 +89,7 @@ teardown_daemon (void)
 }
 #endif
 
-gboolean validate_identity_info (GVariant *identity_info)
+gboolean _validate_identity_info (GVariant *identity_info)
 {
     GSignondIdentityInfo *identity = 0;
     const gchar *username = 0;
@@ -99,10 +100,62 @@ gboolean validate_identity_info (GVariant *identity_info)
 
     username = gsignond_identity_info_get_username (identity);
 
+    gsignond_dictionary_unref (identity);
+
     if (!username || strcmp (username, "test_user")) return FALSE;
 
     return TRUE;
 }
+
+GVariant * _get_test_identity_data()
+{
+    GVariantBuilder builder, method_builder;
+    const gchar *mechanisms[] = {"mech1","mech2", NULL };
+    int i;
+
+    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+
+    for (i=0; i < sizeof(data)/sizeof(struct IdentityData); i++) {
+        g_variant_builder_add (&builder, "{sv}", data[i].key, g_variant_new (data[i].type, data[i].value));
+    }
+
+    g_variant_builder_init (&method_builder, (const GVariantType *)"a{sas}");
+    g_variant_builder_add (&method_builder, "{s^as}", "ssotest", mechanisms);
+
+    g_variant_builder_add (&builder, "{sv}", "AuthMethods", g_variant_builder_end (&method_builder));
+
+    return g_variant_builder_end (&builder);
+}
+
+GVariant * _create_identity_info_with_data (const gchar *username,
+                                            const gchar *caption, 
+                                            gint type, 
+                                            const gchar *methods[],
+                                            const gchar **mechanisms[])
+{
+    GVariantBuilder builder;
+
+    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+
+    if(username) g_variant_builder_add (&builder, "{sv}", "UserName", g_variant_new_string (username));
+    if(caption) g_variant_builder_add (&builder, "{sv}", "Caption", g_variant_new_string (caption));
+    if (type != 0) g_variant_builder_add (&builder, "{sv}", "Type", g_variant_new_int32(type));
+    if (methods && mechanisms) {
+        GVariantBuilder method_builder;
+        int i;
+ 
+        g_variant_builder_init (&method_builder, (const GVariantType *)"a{sas}");
+
+        for (i=0; methods[i]; i++) {
+            g_variant_builder_add (&method_builder, "{s^as}", methods[i], mechanisms[i]);
+        }
+
+        g_variant_builder_add (&builder, "{sv}", "AuthMethods", g_variant_builder_end (&method_builder));
+    }
+
+    return g_variant_builder_end (&builder);
+}
+
 
 GDBusConnection * _get_bus_connection (GError **error)
 {
@@ -118,72 +171,138 @@ GDBusConnection * _get_bus_connection (GError **error)
 #endif
 }
 
+GSignondDbusAuthService * _get_auth_service (GDBusConnection *connection,
+                                             GError **error)
+{
+    return gsignond_dbus_auth_service_proxy_new_sync (
+                connection,
+                G_DBUS_PROXY_FLAGS_NONE,
+                GSIGNOND_SERVICE,
+                GSIGNOND_DAEMON_OBJECTPATH,
+                NULL, error);
+}
+
+GSignondDbusIdentity * _get_identity_for_path (GDBusConnection *connection,
+                                               const gchar *identity_path,
+                                               GError **error)
+{
+    return gsignond_dbus_identity_proxy_new_sync (
+        connection,
+        G_DBUS_PROXY_FLAGS_NONE,
+        GSIGNOND_SERVICE,
+        identity_path,
+        NULL, error);
+}
+
+GSignondDbusAuthSession * _get_auth_session_for_path (GDBusConnection *connection,
+                                                      const gchar *session_path,
+                                                      GError **error)
+{
+    return gsignond_dbus_auth_session_proxy_new_sync (
+        connection,
+        G_DBUS_PROXY_FLAGS_NONE,
+        GSIGNOND_SERVICE,
+        session_path,
+        NULL, error);
+}
+
+GSignondDbusIdentity * _register_identity (GSignondDbusAuthService *auth_service,
+                                           const gchar *app_context,
+                                           GError **error) 
+{
+    GDBusConnection *connection = NULL;
+    GSignondDbusIdentity *identity = NULL;
+    gchar *identity_path = NULL;
+
+    gboolean res = gsignond_dbus_auth_service_call_register_new_identity_sync (
+        auth_service,
+        app_context,
+        &identity_path,
+        NULL,
+        error);
+
+    if (res == FALSE) return NULL;
+
+    connection = g_dbus_proxy_get_connection (G_DBUS_PROXY (auth_service));
+    identity = _get_identity_for_path (connection, identity_path, error);
+
+    g_free (identity_path);
+
+    return identity;
+}
+
+GSignondDbusIdentity * _get_identity (GSignondDbusAuthService *auth_service,
+                                      guint32 id,
+                                      const gchar *app_context,
+                                      GVariant **identity_info,
+                                      GError **error)
+{
+    gboolean res;
+    gchar *identity_path = NULL;
+    GDBusConnection *connection = NULL;
+    GSignondDbusIdentity *identity = NULL;
+    
+    res = gsignond_dbus_auth_service_call_get_identity_sync(
+        auth_service,
+        id,
+        app_context,        
+        &identity_path,
+        identity_info,
+        NULL,
+        error);
+
+    if (res == FALSE || !identity_path) return NULL;
+
+    connection = g_dbus_proxy_get_connection (G_DBUS_PROXY (auth_service));
+    identity = _get_identity_for_path (connection, identity_path, error);
+
+    g_free (identity_path);
+
+    return identity;
+}
+
+/*
+ * Test cases
+ */
 START_TEST (test_register_new_identity)
 {
     GError *error = 0;
-    gboolean res;
     GDBusConnection *connection = NULL;
-    GSignondDbusAuthService *auth_service = 0;
-    gchar *identity_path = 0;
+    GSignondDbusAuthService *auth_service = NULL;
+    GSignondDbusIdentity *identity = NULL;
 
     connection = _get_bus_connection (&error);
     fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
 
-    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        GSIGNOND_DAEMON_OBJECTPATH,
-        NULL, &error);
-
+    auth_service = _get_auth_service (connection, &error);
     fail_if (auth_service == NULL, "failed to get auth_service : %s", error ? error->message : "");
 
-    res = gsignond_dbus_auth_service_call_register_new_identity_sync (
-        auth_service,
-        "test_app",
-        &identity_path,
-        NULL,
-        &error);
+    identity = _register_identity (auth_service, "test_app", &error);
+    fail_if (identity == NULL, "Failed to register identity : %s", error ? error->message : "");
 
+    g_object_unref (identity);
     g_object_unref (auth_service);
-
-    fail_if (res == FALSE, "Failed to register identity : %s", error ? error->message : "");
-    fail_if (identity_path == NULL);
-    g_free (identity_path);
+    g_object_unref (connection);
 }
 END_TEST
 
 START_TEST (test_register_new_identity_with_no_app_context)
 {
-    GError *error = 0;
-    gboolean res;
-    GSignondDbusAuthService *auth_service = 0;
-    gchar *identity_path = NULL;
+    GError *error = NULL;
+    GSignondDbusAuthService *auth_service = NULL;
+    GSignondDbusIdentity *identity = NULL;
     GDBusConnection *connection = _get_bus_connection (&error);
     fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
     fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
  
-    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        GSIGNOND_DAEMON_OBJECTPATH,
-        NULL, &error);
+    auth_service = _get_auth_service (connection, &error);
+    fail_if (auth_service == NULL, "failed to get auth_service : %s", error ? error->message : "");
 
-    fail_if (auth_service == NULL);
+    identity = _register_identity (auth_service, "", &error);
+    fail_if (identity == NULL, "Failed to register identity : %s", error ? error->message : "");
 
-    res = gsignond_dbus_auth_service_call_register_new_identity_sync (
-        auth_service,
-        "",
-        &identity_path,
-        NULL,
-        &error);
-
+    g_object_unref (identity);
     g_object_unref (auth_service);
-
-    fail_if (res == FALSE, "Failed to register identity");
-    fail_if (identity_path == NULL);
-    g_free (identity_path);
 }
 END_TEST
 
@@ -194,105 +313,56 @@ START_TEST (test_identity_store)
     GSignondDbusIdentity *identity = 0;
     guint id;
     GVariant *identity_info = NULL;
-    gchar *identity_path = NULL;
-    GVariantBuilder builder, method_builder;
-    int i;
-    gchar* mechanisms [] = {"password", NULL};
 
     GDBusConnection *connection = _get_bus_connection (&error);
     fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
     fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
 
-    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        GSIGNOND_DAEMON_OBJECTPATH,
-        NULL, &error);
+    auth_service = _get_auth_service (connection, &error);
+    fail_if (auth_service == NULL, "failed to get auth_service : %s", error ? error->message : "");
 
-    fail_if (auth_service == NULL);
- 
-    res = gsignond_dbus_auth_service_call_register_new_identity_sync (
-        auth_service,
-        "test-app",
-        &identity_path,
-        NULL,
-        &error);
+    identity_info = _get_test_identity_data ();
+    fail_if (identity_info == NULL, "Failed to get test identity data");
 
-    fail_if (identity_path == NULL);
+    identity = _register_identity (auth_service, "test_app", &error);
+    fail_if (identity == NULL, "Failed to register identity : %s", error ? error->message : "");
 
-    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
-    
-    for (i=0; i < sizeof(data)/sizeof(struct IdentityData); i++) {
-        g_variant_builder_add (&builder, "{sv}", data[i].key, g_variant_new (data[i].type, data[i].value));
-    }
-
-    g_variant_builder_init (&method_builder, (const GVariantType *)"a{sas}");
-    g_variant_builder_add (&method_builder, "{s^as}", "password", mechanisms);
-
-    g_variant_builder_add (&builder, "{sv}", "AuthMethods", g_variant_builder_end (&method_builder));
-
-    identity_info = g_variant_builder_end (&builder);
-
-    fail_if (identity_info == NULL);
-
-    identity = gsignond_dbus_identity_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        identity_path,
-        NULL, &error);
-
-    res = gsignond_dbus_identity_call_store_sync (
-        identity,
-        identity_info,
-        &id,
-        NULL,
-        &error);
-
-    g_object_unref (identity);
-
-    fail_if (res == FALSE, "Failed to store identity");
+    res = gsignond_dbus_identity_call_store_sync (identity, identity_info, 
+                                    &id, NULL, &error); 
+    fail_if (res == FALSE, "Failed to store identity : %s", error ? error->message : "");
     fail_if (id == 0);
 
     g_print ("Identity id : %d\n", id);
+
+    g_object_unref (identity);
+    g_object_unref (auth_service);
+    g_object_unref (connection);
 }
 END_TEST
 
 START_TEST(test_identity_get_identity)
 {
-    GError *error = NULL; gboolean res = FALSE;
+    GError *error = NULL;
     GSignondDbusAuthService *auth_service = 0;
-    gint id = 1 ; /* identity id created in test_identity_store */
+    guint32 id = 1; /* identity id created in test_identity_store */
     GVariant *identity_info = NULL;
-    gchar *identity_path = 0;
+    GSignondDbusIdentity *identity = NULL;
     GDBusConnection *connection = _get_bus_connection (&error);
     fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
     fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
 
-    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        GSIGNOND_DAEMON_OBJECTPATH,
-        NULL, &error);
+    auth_service = _get_auth_service (connection, &error);
+    fail_if (auth_service == NULL, "failed to get auth_service : %s", error ? error->message : "");
 
-    fail_if (auth_service == NULL);
- 
-    res = gsignond_dbus_auth_service_call_get_identity_sync(
-        auth_service,
-        id,
-        "test-app",
-        &identity_path,
-        &identity_info,
-        NULL,
-        &error);
-
-    fail_if (res == FALSE, "Failed to get identity");
-    fail_if (identity_path == NULL);
+    identity = _get_identity (auth_service, id, "test_app", &identity_info, &error);
+    fail_if (identity == NULL, "Failed to get identity for id '%u' : %s", id, error ? error->message : "");
     fail_if (identity_info == NULL);
 
-    fail_if (validate_identity_info(identity_info) == FALSE);
+    fail_if (_validate_identity_info(identity_info) == FALSE);
+
+    g_object_unref (auth_service);
+    g_object_unref (identity);
+    g_object_unref (connection);
 }
 END_TEST
 
@@ -305,14 +375,8 @@ START_TEST(test_clear_database)
     fail_if (connection == NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
     fail_if (error != NULL, "failed to get bus connection : %s", error ? error->message : "(null)");
  
-    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        GSIGNOND_DAEMON_OBJECTPATH,
-        NULL, &error);
-
-    fail_if (auth_service == NULL);
+    auth_service = _get_auth_service (connection, &error);
+    fail_if (auth_service == NULL, "failed to get auth_service : %s", error ? error->message : "");
 
     res = gsignond_dbus_auth_service_call_clear_sync (
         auth_service,
@@ -321,6 +385,7 @@ START_TEST(test_clear_database)
         &error);
 
     g_object_unref (auth_service);
+    g_object_unref (connection);
 
     fail_if (res == FALSE || ret == FALSE, "Failed to wipe databases");
 }
@@ -365,12 +430,8 @@ START_TEST(test_identity_signout)
     GSignondDbusIdentity *identity = 0;
     GSignondDbusAuthSession *auth_session = 0;
     GVariant *identity_info = NULL;
-    gchar *identity_path = NULL;
     gchar *session_path = NULL;
-    GVariantBuilder builder, method_builder;
-    int i;
     guint id;
-    gchar* mechanisms [] = {"password", NULL};
     gboolean identity_signed_out = FALSE;
     gboolean session_unregistered = FALSE;
     GMainLoop *loop = NULL;
@@ -380,72 +441,32 @@ START_TEST(test_identity_signout)
 
     loop = g_main_loop_new (NULL, FALSE);
 
-    auth_service = gsignond_dbus_auth_service_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        GSIGNOND_DAEMON_OBJECTPATH,
-        NULL, &error);
+    auth_service = _get_auth_service (connection, &error);
+    fail_if (auth_service == NULL, "failed to get auth_service : %s", error ? error->message : "");
 
-    fail_if (auth_service == NULL);
- 
-    res = gsignond_dbus_auth_service_call_register_new_identity_sync (
-        auth_service,
-        "",
-        &identity_path,
-        NULL,
-        &error);
+    identity = _register_identity (auth_service, "", &error);
+    fail_if (identity == NULL, "Failed to register new identity : %s", error ? error->message : "");
 
-    fail_if (identity_path == NULL);
-
-    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
-    
-    for (i=0; i < sizeof(data)/sizeof(struct IdentityData); i++) {
-        g_variant_builder_add (&builder, "{sv}", data[i].key, g_variant_new (data[i].type, data[i].value));
-    }
-
-    g_variant_builder_init (&method_builder, (const GVariantType *)"a{sas}");
-    g_variant_builder_add (&method_builder, "{s^as}", "password", mechanisms);
-
-    g_variant_builder_add (&builder, "{sv}", "AuthMethods", g_variant_builder_end (&method_builder));
-
-    identity_info = g_variant_builder_end (&builder);
-
+    identity_info = _get_test_identity_data ();
     fail_if (identity_info == NULL);
 
-    identity = gsignond_dbus_identity_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        identity_path,
-        NULL, &error);
-
-    res = gsignond_dbus_identity_call_store_sync (
-        identity,
-        identity_info,
-        &id,
-        NULL,
-        &error);
-
-    g_signal_connect (identity, "info-updated", G_CALLBACK(_on_identity_updated), &identity_signed_out);
-
+    res = gsignond_dbus_identity_call_store_sync (identity, identity_info,
+                                                  &id, NULL, &error);
     fail_if (res == FALSE, "Failed to store identity");
     fail_if (id == 0);
 
-    res = gsignond_dbus_identity_call_get_auth_session_sync (
-            identity, "password", &session_path, NULL, &error);
+    g_signal_connect (identity, "info-updated", G_CALLBACK(_on_identity_updated), &identity_signed_out);
 
-    fail_if (res == FALSE, "Failed to create authentication session on identity for method 'password', error : %s",
+    res = gsignond_dbus_identity_call_get_auth_session_sync (
+            identity, "ssotest", &session_path, NULL, &error);
+
+    fail_if (res == FALSE, "Failed to create authentication session on identity for method 'ssotest', error : %s",
         error ? error->message : "");
     fail_if (session_path == NULL, "(null) session_path");
 
-    auth_session = gsignond_dbus_auth_session_proxy_new_sync (
-        connection,
-        G_DBUS_PROXY_FLAGS_NONE,
-        GSIGNOND_SERVICE,
-        session_path,
-        NULL, &error);
+    auth_session = _get_auth_session_for_path (connection, session_path, &error);
 
+    g_free (session_path);
     fail_if (error != NULL, "failed to created session proxy for path '%s', error: %s", 
         session_path, error ? error->message : "");
     fail_if (auth_session == NULL, "(null) session object");
@@ -460,8 +481,150 @@ START_TEST(test_identity_signout)
     fail_unless (session_unregistered == TRUE, "Session unregistred not reached");
     fail_unless (identity_signed_out == TRUE, "Identity signed out signal not reached");
 
-    g_object_unref (auth_session);
+    g_object_unref (auth_service);
     g_object_unref (identity);
+    g_object_unref (auth_session);
+    g_object_unref (connection);
+}
+END_TEST
+
+START_TEST(test_query_identities)
+{
+    GDBusConnection *connection = NULL;
+    GSignondDbusAuthService *auth_service = NULL;
+    GSignondDbusIdentity *identity = NULL;
+    GVariant *v_info = NULL;
+    GSignondIdentityInfo *info1 = NULL, *info2 = NULL, *info3 = NULL, *tmp_info = NULL;
+    GSignondDictionary *filter = NULL;
+    GVariant *v_identities = NULL;
+    const gchar *methods[] = { "testmethod", NULL };
+    const gchar *mech[] = {"mech1", "mech2", NULL};
+    const gchar **mechanisms[] = { mech };
+    gboolean res;
+    guint32 id = 0;
+    GError *error = NULL;
+
+    connection = _get_bus_connection (&error);
+    fail_if (connection == NULL, "Failed to get bus connection : %s", error ? error->message : "");
+
+    auth_service = _get_auth_service (connection, &error);
+    fail_if (auth_service == NULL, "Failed to get auth_service : %s", error ? error->message : "");
+
+    /* created identity1 */
+    identity = _register_identity (auth_service, "app_context_A", &error);
+    fail_if (identity == NULL, "Failed to register new identity : %s", error ? error->message : "");
+
+    v_info = _create_identity_info_with_data ("user1", "caption1", 1, methods, mechanisms);
+    fail_if (v_info == NULL);
+    res = gsignond_dbus_identity_call_store_sync (identity, v_info, &id, NULL, &error);
+    fail_if (res == FALSE || id == 0, "Failed to store identity : %s", error ? error->message : "");
+    g_object_unref (identity);
+
+    identity = _get_identity (auth_service, id, "app_context_A", &v_info, &error);
+    fail_if (identity == NULL || v_info == NULL, "Failed to load identity for id '%d' : %s", id, error ? error->message : "");
+    g_object_unref (identity);
+    info1 = gsignond_dictionary_new_from_variant (v_info);
+
+    /* created identity2 */
+    identity = _register_identity (auth_service, "app_context_B", &error);
+    fail_if (identity == NULL, "Failed to register new identity : %s", error ? error->message : "");
+
+    v_info = _create_identity_info_with_data ("user2", "caption2", 2, methods, mechanisms);
+    fail_if (v_info == NULL);
+    info2 = gsignond_dictionary_new_from_variant (v_info);
+    res = gsignond_dbus_identity_call_store_sync (identity, v_info, &id, NULL, &error);
+    fail_if (res == FALSE || id == 0, "Failed to store identity : %s", error ? error->message : "");
+    g_object_unref (identity);
+
+    identity = _get_identity (auth_service, id, "app_context_B", &v_info, &error);
+    fail_if (identity == NULL || v_info == NULL, "Failed to load identity for id '%d' : %s", id, error ? error->message : "");
+    g_object_unref (identity);
+    info2 = gsignond_dictionary_new_from_variant (v_info);
+
+    /* create identity3 */
+    identity = _register_identity (auth_service, "app_context_A", &error);
+    fail_if (identity == NULL, "Failed to register new identity : %s", error ? error->message : "");
+
+    v_info = _create_identity_info_with_data ("user2", "caption3", 2, methods, mechanisms);
+    fail_if (v_info == NULL);
+    info3 = gsignond_dictionary_new_from_variant (v_info);
+    res = gsignond_dbus_identity_call_store_sync (identity, v_info, &id, NULL, &error);
+    fail_if (res == FALSE || id == 0, "Failed to store identity : %s", error ? error->message : "");
+    g_object_unref (identity);
+
+    identity = _get_identity (auth_service, id, "app_context_A", &v_info, &error);
+    fail_if (identity == NULL || v_info == NULL, "Failed to load identity for id '%d' : %s", id, error ? error->message : "");
+    g_object_unref (identity);
+    info3 = gsignond_dictionary_new_from_variant (v_info);
+
+    /* query identities for app-context: app_context_A */
+    filter = gsignond_dictionary_new();
+    res = gsignond_dbus_auth_service_call_query_identities_sync (auth_service,
+            gsignond_dictionary_to_variant (filter),
+            "app_context_A", &v_identities, NULL, &error);
+    gsignond_dictionary_unref (filter);
+    fail_if (res == FALSE || !v_identities, "Failed to query identities for "
+                           "app context 'app_context_A' : %s",
+                           error ? error->message : "");
+    fail_if (g_variant_n_children (v_identities) != 2, 
+        "Expected no of identities '%d', got '%d'", 2,
+        g_variant_n_children(v_identities));
+    /* validated query results */
+    tmp_info = gsignond_dictionary_new_from_variant (
+                            g_variant_get_child_value (v_identities, 0));
+    fail_if (gsignond_identity_info_compare (info1, tmp_info) == FALSE);
+    gsignond_identity_info_unref (tmp_info);
+
+    tmp_info = gsignond_dictionary_new_from_variant (
+                            g_variant_get_child_value (v_identities, 1));
+    fail_if (gsignond_identity_info_compare (info3, tmp_info) == FALSE);
+    gsignond_identity_info_unref (tmp_info);
+
+    /* query identities for app-context: app_context_B, Identity type : 2 */
+    filter = gsignond_dictionary_new();
+    gsignond_dictionary_set_int32 (filter, "Type", 2);
+    res = gsignond_dbus_auth_service_call_query_identities_sync (auth_service,
+            gsignond_dictionary_to_variant (filter),
+            "app_context_B", &v_identities, NULL, &error);
+    gsignond_dictionary_unref (filter);
+    fail_if (res == FALSE || !v_identities, "Failed to query identities for "
+                           "app context 'app_context_B' and Type: 2 : %s",
+                           error ? error->message : "");
+    /* validated query results */
+    fail_if (g_variant_n_children (v_identities) != 1, 
+        "Expected no of identities '%d', got '%d'", 1,
+        g_variant_n_children(v_identities));
+    tmp_info = gsignond_dictionary_new_from_variant (
+                            g_variant_get_child_value (v_identities, 0));
+    fail_if (gsignond_identity_info_compare (info2, tmp_info) == FALSE);
+    gsignond_identity_info_unref (tmp_info);
+
+    /* query identities for app-context: app_context_A, Caption: "cap*" */
+    filter = gsignond_dictionary_new();
+    gsignond_dictionary_set_string (filter, "Caption", "cap");
+    res = gsignond_dbus_auth_service_call_query_identities_sync (auth_service,
+            gsignond_dictionary_to_variant (filter),
+            "app_context_B", &v_identities, NULL, &error);
+    gsignond_dictionary_unref (filter);
+    fail_if (res == FALSE || !v_identities, "Failed to query identities for "
+                           "app context 'app_context_A' : %s",
+                           error ? error->message : "");
+    /* validated query results */
+    fail_if (g_variant_n_children (v_identities) != 1, 
+        "Expected no of identities '%d', got '%d'", 1,
+        g_variant_n_children(v_identities));
+    tmp_info = gsignond_dictionary_new_from_variant (
+                            g_variant_get_child_value (v_identities, 0));
+    fail_if (gsignond_identity_info_compare 
+            (info2, tmp_info) == FALSE);
+    gsignond_identity_info_unref (tmp_info);
+
+    gsignond_identity_info_unref (info1);
+    gsignond_identity_info_unref (info2);
+    gsignond_identity_info_unref (info3);
+
+    g_object_unref (auth_service);
+    g_object_unref (connection);
 }
 END_TEST
 
@@ -479,9 +642,10 @@ Suite* daemon_suite (void)
     tcase_add_test (tc, test_identity_get_identity);
     tcase_add_test (tc, test_clear_database);
     tcase_add_test (tc, test_identity_signout);
+    tcase_add_test (tc, test_query_identities);
 
     suite_add_tcase (s, tc);
-    
+
     return s;
 }
 
