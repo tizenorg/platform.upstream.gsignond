@@ -80,7 +80,7 @@ _gsignond_db_read_key_value (
         sqlite3_stmt *stmt,
         GSignondDictionary* data)
 {
-    gchar *key = NULL;
+    const gchar *key = NULL;
     GVariant *value = NULL;
     key = (const gchar *)sqlite3_column_text (stmt, 0);
     value = g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, 
