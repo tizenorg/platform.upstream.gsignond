@@ -214,7 +214,7 @@ START_TEST (test_identity_store)
  
     res = gsignond_dbus_auth_service_call_register_new_identity_sync (
         auth_service,
-        "",
+        "test-app",
         &identity_path,
         NULL,
         &error);

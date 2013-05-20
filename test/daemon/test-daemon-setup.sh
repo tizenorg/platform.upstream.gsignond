@@ -4,6 +4,7 @@ export G_MESSAGES_DEBUG=all
 export SSO_IDENTITY_TIMEOUT=5
 export SSO_STORAGE_PATH=/tmp/gsignond
 export SSO_SECRET_PATH=/tmp/gsignond
+export SSO_KEYCHAIN_SYSCTX=$PWD/.libs/daemontest
 
 rm -rf "$SSO_STORAGE_PATH"
 

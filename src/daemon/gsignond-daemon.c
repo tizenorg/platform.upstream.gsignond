@@ -564,6 +564,12 @@ _check_keychain_access (GSignondDaemon *self,
         gsignond_access_control_manager_security_context_of_keychain (acm);
     gboolean has_access =
         (gsignond_security_context_compare (keychain, ctx) == 0);
+    DBG ("keychain access compare [%s:%s] vs [%s:%s] = %d",
+         gsignond_security_context_get_system_context (keychain),
+         gsignond_security_context_get_application_context (keychain),
+         gsignond_security_context_get_system_context (ctx),
+         gsignond_security_context_get_application_context (ctx),
+         has_access);
     gsignond_security_context_free (keychain);
     if (!has_access) {
         WARN ("keychain access check failed");
