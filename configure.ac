@@ -61,7 +61,7 @@ AC_ARG_ENABLE(dbus-type,
 
 echo "----------------------"
 echo " DBUS TYPE : '$enable_dbus_type'"
-echo "-----------------------"
+echo "----------------------"
 if test "x$enable_dbus_type" = "xp2p" ; then
     AC_DEFINE(USE_P2P, [1], [Use peer to peer dbus])
 elif test "x$enable_dbus_type" = "xsession" ; then
@@ -75,6 +75,15 @@ elif test "x$enable_dbus_type" = "xsession" ; then
 elif test "x$enable_dbus_type" = "xsystem" ; then
     AC_DEFINE(GSIGNOND_BUS_TYPE, [G_BUS_TYPE_SYSTEM], [Use system bus])
     DBUS_SERVICES_DIR="`pkg-config --variable system_bus_services_dir dbus-1`"
+fi
+
+AC_ARG_ENABLE(debug,
+	      [  --enable-debug          enable debug features],
+	      [enable_debug=yes], [enable_debug=no])
+echo -n "enable debug features... "
+echo $enable_debug
+if test "x$enable_debug" = "xyes" ; then
+    AC_DEFINE(ENABLE_DEBUG, [1], [Enable debug features])
 fi
 
 AM_CONDITIONAL(USE_GTESTDBUS, [test x$gtestdbus = xyes])

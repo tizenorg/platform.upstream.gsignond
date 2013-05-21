@@ -71,6 +71,7 @@ _load_config (GSignondConfig *self)
     int i,j;
     GKeyFile *settings = g_key_file_new ();
 
+#   ifdef ENABLE_DEBUG
     if (!self->priv->config_file_path) {
         def_config = g_strdup (g_getenv ("GSIGNOND_CONFIG"));
         if (!def_config)
@@ -95,6 +96,19 @@ _load_config (GSignondConfig *self)
             }
         }
     }
+#   else  /* ENABLE_DEBUG */
+#   ifndef GSIGNOND_SYSCONF_DIR
+#   error "System configuration directory not defined!"
+#   endif
+    def_config = g_build_filename (GSIGNOND_SYSCONF_DIR,
+                                   "gsignond/gsignond.conf",
+                                   NULL);
+    if (g_access (def_config, R_OK) == 0) {
+        self->priv->config_file_path = def_config;
+    } else {
+        g_free (def_config);
+    }
+#   endif  /* ENABLE_DEBUG */
 
     if (self->priv->config_file_path) {
         DBG ("Loading SSO config from %s", self->priv->config_file_path);
@@ -333,7 +347,9 @@ gsignond_config_init (GSignondConfig *self)
 
     if (!_load_config (self))
         WARN ("load configuration failed, using default settings");
+#   ifdef ENABLE_DEBUG
     _load_environment (self);
+#   endif
 }
 
 static void
