@@ -64,7 +64,6 @@ static gboolean
 _load_config (GSignondConfig *self)
 {
     gchar *def_config;
-    const gchar * const *sysconfdirs;
     GError *err = NULL;
     gchar **groups = NULL;
     gsize n_groups = 0;
@@ -72,6 +71,8 @@ _load_config (GSignondConfig *self)
     GKeyFile *settings = g_key_file_new ();
 
 #   ifdef ENABLE_DEBUG
+    const gchar * const *sysconfdirs;
+
     if (!self->priv->config_file_path) {
         def_config = g_strdup (g_getenv ("GSIGNOND_CONFIG"));
         if (!def_config)
@@ -172,6 +173,7 @@ _load_config (GSignondConfig *self)
     return TRUE;
 }
 
+#ifdef ENABLE_DEBUG
 static void
 _load_environment (GSignondConfig *self)
 {
@@ -237,6 +239,7 @@ _load_environment (GSignondConfig *self)
                                     GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
                                     e_val);
 }
+#endif  /* ENABLE_DEBUG */
 
 gint
 gsignond_config_get_integer (GSignondConfig *self, const gchar *key)
