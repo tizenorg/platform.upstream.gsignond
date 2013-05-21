@@ -55,10 +55,12 @@ struct IdentityData {
     { "Secret", "s", "test_pass" },
     { "StoreSecret", "b", (void *)TRUE}
 };
-
+gchar *exe_name = 0;
 #if HAVE_GTESTDBUS
-
 GTestDBus *dbus = NULL;
+#else
+GPid daemon_pid = 0;
+#endif
 
 static void
 setup_daemon (void)
@@ -69,11 +71,14 @@ setup_daemon (void)
     fail_if (g_setenv ("SSO_AUTH_SESSION_TIMEOUT", "60", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_SECRET_PATH", "/tmp/gsignond", TRUE) == FALSE);
+    fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
+
+    g_print ("Programe name : %s\n", exe_name);
 
     if (system("rm -rf /tmp/gsignond") != 0) {
         g_print("Failed to clean db path : %s\n", strerror(errno));
     }
-
+#if HAVE_GTESTDBUS
     dbus = g_test_dbus_new (G_TEST_DBUS_NONE);
     fail_unless (dbus != NULL, "could not create test dbus");
 
@@ -81,20 +86,75 @@ setup_daemon (void)
 
     g_test_dbus_up (dbus);
     g_print ("Server address : %s\n", g_test_dbus_get_bus_address(dbus));
+#else
+    GError *error = NULL;
+#   ifdef USE_P2P
+    /* start daemon maually */
+    gchar *argv[2];
+    const gchar *test_daemon_path = g_getenv("SSO_DAEMON_PATH");
+    fail_if (test_daemon_path == NULL, "No SSO daemon path found");
+
+    argv[0] = (gchar*)test_daemon_path ; 
+    argv[1] = NULL;
+    g_spawn_async (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, &error);
+    fail_if (error != NULL, "Failed to span daemon : %s", error ? error->message : "");
+    g_usleep (500 * 1000);
+#   else
+    /* session bus wher no GTestBus support */
+    GIOChannel *channel = NULL;
+    gchar *config_path = NULL;
+    gchar *bus_address = NULL;
+    gchar *argv[] = {"dbus-daemon", "--print-address", "--config-file=", NULL};
+    gsize len = 0;
+    gint stdout_fd = 0;
+
+    config_path = g_strdup_printf ("--config-file=%s", "gsignond-dbus.conf");
+    argv[2] = config_path;
+
+    /* start daemon */
+    g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, NULL, &stdout_fd, NULL, &error);
+    fail_if (error != NULL, "Failed to span daemon : %s", error ? error->message : "");
+    fail_if (daemon_pid == 0, "Failed to get daemon pid");
+    g_usleep (500 * 1000);
+
+    g_free (config_path);
+    channel = g_io_channel_unix_new (stdout_fd);
+    g_io_channel_read_line (channel, &bus_address, NULL, &len, &error);
+    fail_if (error != NULL, "Failed to daemon address : %s", error ? error->message : "");
+
+    g_io_channel_unref (channel);
+
+    if (bus_address) bus_address[len] = '\0';
+
+    if (GSIGNOND_BUS_TYPE == G_BUS_TYPE_SYSTEM)
+        fail_if (g_setenv("DBUS_SYSTEM_BUS_ADDRESS", bus_address, TRUE) == FALSE);
+    else
+        fail_if (g_setenv("DBUS_SESSION_BUS_ADDRESS", bus_address, TRUE) == FALSE);
+
+    g_print ("Daemon Address : %s\n", bus_address);
+    g_free (bus_address);
+#   endif
+
+    g_print ("Daemon PID = %d\n", daemon_pid);
+#endif
 }
 
 static void
 teardown_daemon (void)
 {
+#if HAVE_GTESTDBUS
     g_test_dbus_down (dbus);
+#else
+    kill (daemon_pid, SIGTERM);
+#endif
 
     g_unsetenv ("SSO_IDENTITY_TIMEOUT");
     g_unsetenv ("SSO_DAEMON_TIMEOUT");
     g_unsetenv ("SSO_AUTH_SESSION_TIMEOUT");
     g_unsetenv ("SSO_STORAGE_PATH");
     g_unsetenv ("SSO_SECRET_PATH");
+    g_unsetenv ("SSO_KEYCHAIN_SYSCTX");
 }
-#endif
 
 gboolean _validate_identity_info (GVariant *identity_info)
 {
@@ -640,9 +700,9 @@ Suite* daemon_suite (void)
     Suite *s = suite_create ("Gsignon daemon");
     
     TCase *tc = tcase_create ("Identity");
-#if HAVE_GTESTDBUS
+
     tcase_add_unchecked_fixture (tc, setup_daemon, teardown_daemon);
-#endif
+
     tcase_add_test (tc, test_register_new_identity);
     tcase_add_test (tc, test_register_new_identity_with_no_app_context);
     tcase_add_test (tc, test_identity_store);
@@ -656,7 +716,7 @@ Suite* daemon_suite (void)
     return s;
 }
 
-int main (void)
+int main (int argc, char *argv[])
 {
     int number_failed;
     Suite *s = 0;
@@ -665,6 +725,8 @@ int main (void)
 #if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
 #endif
+
+    exe_name = argv[0];
 
     s = daemon_suite();
     sr = srunner_create(s);

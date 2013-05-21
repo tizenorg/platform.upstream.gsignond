@@ -87,6 +87,7 @@ if test "x$enable_debug" = "xyes" ; then
 fi
 
 AM_CONDITIONAL(USE_GTESTDBUS, [test x$gtestdbus = xyes])
+AC_SUBST(MESSAGE_BUS_TYPE, [$enable_dbus_type])
 
 AC_SUBST(DBUS_SERVICES_DIR)
 DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
@@ -131,10 +132,11 @@ test/Makefile
 test/common/Makefile
 test/db/Makefile
 test/daemon/Makefile
+test/daemon/gsignond-dbus.conf
 test/plugins/Makefile
 ])
 
-if test x$gtestdbus = xyes; then
+if test x$enable_dbus_type != xp2p; then
     AC_OUTPUT([
     test/daemon/services/com.google.code.AccountsSSO.gSingleSignOn.service
     ])

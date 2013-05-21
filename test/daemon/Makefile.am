@@ -1,10 +1,8 @@
-if USE_GTESTDBUS
 TESTS = daemontest
-else
-TESTS = test-daemon-setup.sh
-endif
+
 TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
 	SSO_BIN_DIR=$(top_builddir)/src/daemon/plugins/plugind/.libs \
+    SSO_DAEMON_PATH=$(abs_top_builddir)/src/daemon/gsignond \
 	LD_LIBRARY_PATH="$(top_builddir)/src/daemon/plugins/plugind/.libs:$(top_builddir)/src/common/.libs:$(top_builddir)/src/common/db/.libs:$(top_builddir)/src/daemon/.libs:$(top_builddir)/src/daemon/db/.libs:$(top_builddir)/src/daemon/dbus/.libs:$(top_builddir)/src/daemon/plugins/.libs" 
 VALGRIND_TESTS_DISABLE=
 
