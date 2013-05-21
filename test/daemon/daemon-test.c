@@ -25,6 +25,8 @@
 
 #include "config.h"
 #include <check.h>
+#include <error.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <gio/gio.h>
 #include <glib.h>
@@ -61,11 +63,16 @@ GTestDBus *dbus = NULL;
 static void
 setup_daemon (void)
 {
+    fail_if (g_setenv ("G_MESSAGES_DEBUG", "all", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_IDENTITY_TIMEOUT", "60", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_DAEMON_TIMEOUT", "60", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_AUTH_SESSION_TIMEOUT", "60", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_SECRET_PATH", "/tmp/gsignond", TRUE) == FALSE);
+
+    if (system("rm -rf /tmp/gsignond") != 0) {
+        g_print("Failed to clean db path : %s\n", strerror(errno));
+    }
 
     dbus = g_test_dbus_new (G_TEST_DBUS_NONE);
     fail_unless (dbus != NULL, "could not create test dbus");
@@ -497,7 +504,7 @@ START_TEST(test_query_identities)
     GSignondIdentityInfo *info1 = NULL, *info2 = NULL, *info3 = NULL, *tmp_info = NULL;
     GSignondDictionary *filter = NULL;
     GVariant *v_identities = NULL;
-    const gchar *methods[] = { "testmethod", NULL };
+    const gchar *methods[] = { "ssotest", NULL };
     const gchar *mech[] = {"mech1", "mech2", NULL};
     const gchar **mechanisms[] = { mech };
     gboolean res;
