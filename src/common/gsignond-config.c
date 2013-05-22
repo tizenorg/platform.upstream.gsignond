@@ -37,6 +37,9 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-dictionary.h"
 
+#define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "metadata.db"
+#define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "secret.db"
+
 struct _GSignondConfigPrivate
 {
     gchar *config_file_path;
@@ -179,7 +182,6 @@ _load_environment (GSignondConfig *self)
 {
     const gchar *e_val = 0;
     guint timeout = 0;
-    gint level = 0;
     
     e_val = g_getenv ("SSO_DAEMON_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
@@ -199,12 +201,6 @@ _load_environment (GSignondConfig *self)
                                     GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT,
                                     e_val);
 
-    e_val = g_getenv ("SSO_LOGGING_LEVEL");
-    if (e_val && (level = atoi(e_val)))
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_GENERAL_LOG_LEVEL,
-                                    e_val);
-    
     e_val = g_getenv ("SSO_PLUGINS_DIR");
     if (e_val) 
         gsignond_config_set_string (self,
@@ -347,6 +343,13 @@ gsignond_config_init (GSignondConfig *self)
                                 GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
                                 default_data_path);
     g_free (default_data_path);
+
+    gsignond_config_set_string (self,
+                                GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME,
+                                GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME);
+    gsignond_config_set_string (self,
+                                GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME,
+                                GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME);
 
     if (!_load_config (self))
         WARN ("load configuration failed, using default settings");

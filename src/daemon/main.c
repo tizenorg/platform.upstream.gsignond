@@ -112,10 +112,12 @@ int main (int argc, char **argv)
     };
 
     DBG ("before: real uid %d effective uid %d", getuid (), geteuid ());
-    setreuid (-1, getuid());
+    if (setreuid (-1, getuid()))
+        WARN ("setreuid() failed");
     DBG ("after: real uid %d effective uid %d", getuid (), geteuid ());
     DBG ("before: real gid %d effective gid %d", getgid (), getegid ());
-    setregid (-1, getgid());
+    if (setregid (-1, getgid()))
+        WARN ("setregid() failed");
     DBG ("after: real gid %d effective gid %d", getgid (), getegid ());
 
 #if !GLIB_CHECK_VERSION (2, 36, 0)

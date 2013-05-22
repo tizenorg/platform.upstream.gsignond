@@ -30,8 +30,6 @@
 #include "common/db/gsignond-db-error.h"
 #include "gsignond-db-metadata-database.h"
 
-#define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "metadata.db"
-
 #define RETURN_IF_NOT_OPEN(obj, retval) \
     if (gsignond_db_sql_database_is_open (obj) == FALSE) { \
         GError* last_error = gsignond_db_create_error( \
@@ -502,23 +500,24 @@ _gsignond_db_metadata_database_open (
     g_return_val_if_fail (self, FALSE);
 
     if (!filename || strlen (filename) <= 0) {
-        filename = GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME;
+        ERR ("Missing Metadata DB filename");
+        return FALSE;
     }
     dir = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
     if (!dir) {
-        DBG ("Invalid Metadata DB directory");
+        ERR ("Invalid Metadata DB directory");
         return FALSE;
     }
     db_filename = g_build_filename (dir, filename, NULL);
     if (!db_filename) {
-        DBG ("Invalid Metadata DB filename");
+        ERR ("Invalid Metadata DB filename");
         return FALSE;
     }
 
     dir_created = g_mkdir_with_parents (dir, S_IRWXU);
     if (dir_created != 0) {
-        DBG ("Metadata DB directory does not exist");
+        ERR ("Metadata DB directory does not exist");
         goto _open_exit;
     }
 

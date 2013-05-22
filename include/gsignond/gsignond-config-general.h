@@ -29,8 +29,6 @@
 #define GSIGNOND_CONFIG_GENERAL                 "General"
 #define GSIGNOND_CONFIG_GENERAL_STORAGE_PATH    GSIGNOND_CONFIG_GENERAL \
                                                 "/StoragePath"
-#define GSIGNOND_CONFIG_GENERAL_LOG_LEVEL       GSIGNOND_CONFIG_GENERAL \
-                                                "/LoggingLevel"
 #define GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR  GSIGNOND_CONFIG_GENERAL \
                                                 "/ExtensionsDir"
 #define GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR     GSIGNOND_CONFIG_GENERAL \

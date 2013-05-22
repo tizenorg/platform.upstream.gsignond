@@ -29,8 +29,6 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-secret-storage.h"
 
-#define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "secret.db"
-
 #define GSIGNOND_SECRET_STORAGE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
                                            GSIGNOND_TYPE_SECRET_STORAGE, \
@@ -175,17 +173,18 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     dir = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     if (!dir) {
-        DBG("No directory specified in config object for secret db...");
+        ERR ("No directory specified in config object for secret db...");
         return FALSE;
     }
     filename = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME);
     if (!filename) {
-        filename = GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME;
+        ERR ("Database filename not specified");
+        return FALSE;
     }
     db_filename = g_build_filename (dir, filename, NULL);
     if (!db_filename) {
-        DBG("Invalid db filename...");
+        ERR ("Invalid db filename...");
         return FALSE;
     }
 
@@ -204,7 +203,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
                 SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     g_free (db_filename);
     if (!ret) {
-        DBG ("Open DB failed");
+        ERR ("Open DB failed");
         g_object_unref (self->priv->database);
         self->priv->database = NULL;
         return FALSE;

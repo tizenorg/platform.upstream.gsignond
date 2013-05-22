@@ -217,8 +217,10 @@ _mount_filesystem (GSignondStorageManager *parent)
     DBG ("mount options: %s", mntopts);
     uid_t uid = getuid ();
     gid_t gid = getgid ();
-    setreuid (-1, 0);
-    setregid (-1, 0);
+    if (setreuid (-1, 0))
+        WARN ("setreuid() failed");
+    if (setregid (-1, 0))
+        WARN ("setregid() failed");
     DBG ("perform mount %s -> %s", priv->cdir, parent->location);
     if (mount (priv->cdir, parent->location,
                "ecryptfs", MS_NOSUID | MS_NODEV, mntopts)) {
@@ -231,8 +233,10 @@ _mount_filesystem (GSignondStorageManager *parent)
 
 _mount_exit:
     g_free (mntopts);
-    setreuid (-1, uid);
-    setregid (-1, gid);
+    if (setreuid (-1, uid))
+        WARN ("setreuid() failed");
+    if (setregid (-1, gid))
+        WARN ("setregid() failed");
 
     return retval;
 }
