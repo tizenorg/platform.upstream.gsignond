@@ -21,4 +21,4 @@ libpassword_la_SOURCES = \
 all-local: slink
 
 slink:
-	ln -sf $(top_builddir)/src/plugins/password/.libs/libpassword.so ../.libs/libpassword.so
+	ln -sf $(abs_top_builddir)/src/plugins/password/.libs/libpassword.so ../.libs/libpassword.so

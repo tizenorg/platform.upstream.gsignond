@@ -91,13 +91,17 @@ setup_daemon (void)
 #   ifdef USE_P2P
     /* start daemon maually */
     gchar *argv[2];
-    const gchar *test_daemon_path = g_getenv("SSO_DAEMON_PATH");
+    gchar *test_daemon_path = g_build_filename (g_getenv("SSO_BIN_DIR"),
+            "gsignond", NULL);
     fail_if (test_daemon_path == NULL, "No SSO daemon path found");
 
-    argv[0] = (gchar*)test_daemon_path ; 
+    argv[0] = test_daemon_path;
     argv[1] = NULL;
-    g_spawn_async (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, &error);
-    fail_if (error != NULL, "Failed to span daemon : %s", error ? error->message : "");
+    g_spawn_async (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+            &daemon_pid, &error);
+    g_free (test_daemon_path);
+    fail_if (error != NULL, "Failed to span daemon : %s",
+            error ? error->message : "");
     g_usleep (500 * 1000);
 #   else
     /* session bus wher no GTestBus support */

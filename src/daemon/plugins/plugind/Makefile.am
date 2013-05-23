@@ -35,3 +35,8 @@ gsignond_plugind_LDADD = \
     $(GSIGNOND_LIBS) \
     $(NULL)
 
+all-local: slink
+
+slink:
+	$(MKDIR_P) $(abs_top_builddir)/src/daemon/.libs
+	ln -sf $(abs_top_builddir)/src/daemon/plugins/plugind/.libs/gsignond-plugind $(abs_top_builddir)/src/daemon/.libs/gsignond-plugind

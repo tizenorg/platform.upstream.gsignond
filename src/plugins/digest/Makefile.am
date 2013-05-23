@@ -21,5 +21,5 @@ libdigest_la_SOURCES = \
 all-local: slink
 
 slink:
-	ln -sf $(top_builddir)/src/plugins/digest/.libs/libdigest.so ../.libs/libdigest.so
+	ln -sf $(abs_top_builddir)/src/plugins/digest/.libs/libdigest.so ../.libs/libdigest.so
 
