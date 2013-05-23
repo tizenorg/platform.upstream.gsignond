@@ -76,11 +76,11 @@ static void gsignond_ssotest_plugin_request_initial (
     DBG ("response=%p", response);
     gsignond_session_data_set_realm (response, "testRealm_after_test");
 
-    gsignond_plugin_status_changed (GSIGNOND_PLUGIN (self),
-                                    GSIGNOND_PLUGIN_STATE_WAITING,
-                                    "hello from the test plugin");
     for (i = 0; i < 10; i++) {
         if (!self->priv->is_canceled) {
+            gsignond_plugin_status_changed (GSIGNOND_PLUGIN (self),
+                                            GSIGNOND_PLUGIN_STATE_WAITING,
+                                            "hello from the test plugin");
             g_usleep (1000 * 1000 / 100);
             g_main_context_iteration (NULL, FALSE);
         }
