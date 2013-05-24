@@ -102,7 +102,7 @@ setup_daemon (void)
     g_free (test_daemon_path);
     fail_if (error != NULL, "Failed to span daemon : %s",
             error ? error->message : "");
-    g_usleep (500 * 1000);
+    sleep (5); /* 5 secod */
 #   else
     /* session bus wher no GTestBus support */
     GIOChannel *channel = NULL;
@@ -458,7 +458,7 @@ START_TEST(test_clear_database)
     g_object_unref (auth_service);
     g_object_unref (connection);
 
-    fail_if (res == FALSE || ret == FALSE, "Failed to wipe databases");
+    fail_if (res == FALSE || ret == FALSE, "Failed to wipe databases : %s", error ? error->message : "");
 }
 END_TEST
 
@@ -491,6 +491,7 @@ static void _on_sign_out_reply (GSignondDbusIdentity *sender, GAsyncResult *repl
     fail_if (res == FALSE, "failed to call signout on identity : %s", error ? error->message : "");
 
     g_main_loop_quit ((GMainLoop *)data);
+    g_main_loop_unref((GMainLoop *)data);
 }
 
 START_TEST(test_identity_signout)
@@ -602,7 +603,6 @@ START_TEST(test_query_identities)
 
     v_info = _create_identity_info_with_data ("user2", "caption2", 2, methods, mechanisms);
     fail_if (v_info == NULL);
-    info2 = gsignond_dictionary_new_from_variant (v_info);
     res = gsignond_dbus_identity_call_store_sync (identity, v_info, &id, NULL, &error);
     fail_if (res == FALSE || id == 0, "Failed to store identity : %s", error ? error->message : "");
     g_object_unref (identity);
@@ -618,7 +618,6 @@ START_TEST(test_query_identities)
 
     v_info = _create_identity_info_with_data ("user2", "caption3", 2, methods, mechanisms);
     fail_if (v_info == NULL);
-    info3 = gsignond_dictionary_new_from_variant (v_info);
     res = gsignond_dbus_identity_call_store_sync (identity, v_info, &id, NULL, &error);
     fail_if (res == FALSE || id == 0, "Failed to store identity : %s", error ? error->message : "");
     g_object_unref (identity);
