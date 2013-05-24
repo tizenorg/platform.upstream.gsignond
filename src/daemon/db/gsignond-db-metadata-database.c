@@ -255,11 +255,11 @@ _gsignond_db_metadata_database_update_credentials (
     id = gsignond_identity_info_get_id (identity);
     type = gsignond_identity_info_get_identity_type (identity);
     if (!gsignond_identity_info_get_is_identity_new (identity)) {
-        query = sqlite3_mprintf ("UPDATE CREDENTIALS SET caption = %Q, "
+        query = sqlite3_mprintf ("UPDATE IDENTITY SET caption = %Q, "
                 "username = %Q, flags = %u, type = %u WHERE id = %u;",
                 caption ?caption : "",username? username : "", flags, type, id);
     } else {
-        query = sqlite3_mprintf ("INSERT INTO CREDENTIALS "
+        query = sqlite3_mprintf ("INSERT INTO IDENTITY "
                 "(caption, username, flags, type) "
                 "VALUES(%Q, %Q, %u, %u);",
                 caption ?caption : "",username? username : "", flags, type);
@@ -543,7 +543,7 @@ _gsignond_db_metadata_database_create (
     }
 
     queries = ""
-            "CREATE TABLE CREDENTIALS"
+            "CREATE TABLE IDENTITY"
             "(id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "caption TEXT,"
             "username TEXT,"
@@ -569,17 +569,17 @@ _gsignond_db_metadata_database_create (
 
             "CREATE TABLE REALMS"
             "(identity_id INTEGER CONSTRAINT fk_identity_id "
-            "REFERENCES CREDENTIALS(id) ON DELETE CASCADE,"
+            "REFERENCES IDENTITY(id) ON DELETE CASCADE,"
             "realm TEXT,"
             "hostname TEXT,"
             "PRIMARY KEY (identity_id, realm, hostname));"
 
             "CREATE TABLE ACL"
             "(rowid INTEGER PRIMARY KEY AUTOINCREMENT,"
-            "identity_id INTEGER CONSTRAINT fk_identity_id "
-            "REFERENCES CREDENTIALS(id) ON DELETE CASCADE,"
-            "method_id INTEGER CONSTRAINT fk_method_id "
-            "REFERENCES METHODS(id) ON DELETE CASCADE,"
+            "identity_id INTEGER CONSTRAINT fk_identity_id REFERENCES "
+            "IDENTITY(id) ON DELETE CASCADE,"
+            "method_id INTEGER CONSTRAINT fk_method_id REFERENCES "
+            "METHODS(id) ON DELETE CASCADE,"
             "mechanism_id INTEGER CONSTRAINT fk_mechanism_id "
             "REFERENCES MECHANISMS(id) ON DELETE CASCADE,"
             "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES "
@@ -587,11 +587,67 @@ _gsignond_db_metadata_database_create (
 
             "CREATE TABLE REFS"
             "(identity_id INTEGER CONSTRAINT fk_identity_id "
-            "REFERENCES CREDENTIALS(id) ON DELETE CASCADE,"
+            "REFERENCES IDENTITY(id) ON DELETE CASCADE,"
             "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES "
             "SECCTX(id) ON DELETE CASCADE,"
             "ref TEXT,"
             "PRIMARY KEY (identity_id, secctx_id, ref));"
+
+            "CREATE TABLE OWNER"
+            "(rowid INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "identity_id INTEGER CONSTRAINT fk_identity_id "
+            "REFERENCES IDENTITY(id) ON DELETE CASCADE,"
+            "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES SECCTX(id) "
+            "ON DELETE CASCADE);"
+
+            // Triggers for deleting orphan SECCTX entries
+            "CREATE TRIGGER fkdstale_ACL_secctx_id_SECCTX_id"
+            "BEFORE DELETE ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM SECCTX WHERE SECCTX.id = OLD.secctx_id AND "
+            "    (SELECT COUNT(*) FROM REFS WHERE "
+            "    REFS.secctx_id = OLD.secctx_id) == 0 AND "
+            "    (SELECT COUNT(*) FROM OWNER WHERE "
+            "    OWNER.secctx_id = OLD.secctx_id) == 0;"
+            "END;"
+
+            "CREATE TRIGGER fkdstale_REFS_secctx_id_SECCTX_id"
+            "BEFORE DELETE ON [REFS]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM SECCTX WHERE SECCTX.id = OLD.secctx_id AND "
+            "    (SELECT COUNT(*) FROM ACL WHERE "
+            "    ACL.secctx_id = OLD.secctx_id) == 0 AND "
+            "    (SELECT COUNT(*) FROM OWNER WHERE "
+            "    OWNER.secctx_id = OLD.secctx_id) == 0;"
+            "END;"
+
+            "CREATE TRIGGER fkdstale_OWNER_secctx_id_SECCTX_id"
+            "BEFORE DELETE ON [OWNER]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM SECCTX WHERE SECCTX.id = OLD.secctx_id AND "
+            "    (SELECT COUNT(*) FROM ACL WHERE "
+            "    ACL.secctx_id = OLD.secctx_id) == 0 AND "
+            "    (SELECT COUNT(*) FROM REFS WHERE "
+            "    REFS.secctx_id = OLD.secctx_id) == 0;"
+            "END;"
+
+            // Trigger for deleting orphan METHODS entries
+            "CREATE TRIGGER fkdstale_ACL_method_id_METHODS_id"
+            "BEFORE DELETE ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM METHODS WHERE METHODS.id = OLD.method_id AND "
+            "    (SELECT COUNT(*) FROM ACL WHERE "
+            "    ACL.method_id = OLD.method_id) == 1;"
+            "END;"
+
+            // Trigger for deleting orphan MECHANISMS entries
+            "CREATE TRIGGER fkdstale_ACL_mechanism_id_MECHANISMS_id"
+            "BEFORE DELETE ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM MECHANISMS WHERE MECHANISMS.id = OLD.mechanism_id "
+            "    AND (SELECT COUNT(*) FROM ACL WHERE "
+            "    ACL.mechanism_id = OLD.mechanism_id) == 1;"
+            "END;"
 
             /*
              * triggers generated with
@@ -599,228 +655,248 @@ _gsignond_db_metadata_database_create (
              * SQLite_foreign_key_trigger_generator
              */
             /* insert triggers to force foreign keys support */
-            /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_REALMS_identity_id_CREDENTIALS_id "
-            "BEFORE INSERT ON [REALMS] "
-            "FOR EACH ROW BEGIN "
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_REALMS_identity_id_IDENTITY_id"
+            "BEFORE INSERT ON [REALMS]"
+            "FOR EACH ROW BEGIN"
             "  SELECT RAISE(ROLLBACK, 'insert on table REALMS violates foreign "
-            "key constraint fki_REALMS_identity_id_CREDENTIALS_id') "
-            "  WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
-            "CREDENTIALS WHERE id = NEW.identity_id) IS NULL; "
-            "END; "
-
-            /* Foreign key preventing update */
-            "CREATE TRIGGER fku_REALMS_identity_id_CREDENTIALS_id "
-            "BEFORE UPDATE ON [REALMS] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table REALMS violates "
-            "foreign key constraint fku_REALMS_identity_id_CREDENTIALS_id') "
-            "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
-            "CREDENTIALS WHERE id = NEW.identity_id) IS NULL; "
-            "END; "
-
-            /* Cascading Delete */
-            "CREATE TRIGGER fkdc_REALMS_identity_id_CREDENTIALS_id "
-            "BEFORE DELETE ON CREDENTIALS "
-            "FOR EACH ROW BEGIN "
-            "    DELETE FROM REALMS WHERE REALMS.identity_id = OLD.id; "
-            "END; "
-
-            /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_ACL_identity_id_CREDENTIALS_id "
-            "BEFORE INSERT ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates "
-            "foreign key constraint fki_ACL_identity_id_CREDENTIALS_id') "
-            "  WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
-            "CREDENTIALS WHERE id = NEW.identity_id) IS NULL; "
+            "key constraint fki_REALMS_identity_id_IDENTITY_id')"
+            "  WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM IDENTITY "
+            "WHERE id = NEW.identity_id) IS NULL;"
             "END;"
 
-            /* Foreign key preventing update */
-            "CREATE TRIGGER fku_ACL_identity_id_CREDENTIALS_id "
-            "BEFORE UPDATE ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates "
-            "foreign key constraint fku_ACL_identity_id_CREDENTIALS_id') "
-            "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
-            "CREDENTIALS WHERE id = NEW.identity_id) IS NULL; "
-            "END; "
-
-            /* Cascading Delete */
-            "CREATE TRIGGER fkdc_ACL_identity_id_CREDENTIALS_id "
-            "BEFORE DELETE ON CREDENTIALS "
-            "FOR EACH ROW BEGIN "
-             "   DELETE FROM ACL WHERE ACL.identity_id = OLD.id; "
-            "END; "
-
-            /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_ACL_method_id_METHODS_id "
-            "BEFORE INSERT ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates "
-            "foreign key constraint fki_ACL_method_id_METHODS_id') "
-            "  WHERE NEW.method_id IS NOT NULL AND (SELECT id FROM "
-            "METHODS WHERE id = NEW.method_id) IS NULL; "
-            "END; "
-
-            /* Foreign key preventing update */
-            "CREATE TRIGGER fku_ACL_method_id_METHODS_id "
-            "BEFORE UPDATE ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates "
-            "foreign key constraint fku_ACL_method_id_METHODS_id') "
-            "      WHERE NEW.method_id IS NOT NULL AND (SELECT id FROM "
-            "METHODS WHERE id = NEW.method_id) IS NULL; "
-            "END; "
-
-            /* Cascading Delete */
-            "CREATE TRIGGER fkdc_ACL_method_id_METHODS_id "
-            "BEFORE DELETE ON METHODS "
-            "FOR EACH ROW BEGIN "
-            "    DELETE FROM ACL WHERE ACL.method_id = OLD.id; "
-            "END; "
-
-            /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_ACL_mechanism_id_MECHANISMS_id "
-            "BEFORE INSERT ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates foreign "
-            "key constraint fki_ACL_mechanism_id_MECHANISMS_id') "
-            "  WHERE NEW.mechanism_id IS NOT NULL AND (SELECT id FROM "
-            "MECHANISMS WHERE id = NEW.mechanism_id) IS NULL; "
-            "END; "
-
-            /* Foreign key preventing update */
-            "CREATE TRIGGER fku_ACL_mechanism_id_MECHANISMS_id "
-            "BEFORE UPDATE ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates foreign "
-            "key constraint fku_ACL_mechanism_id_MECHANISMS_id') "
-            "      WHERE NEW.mechanism_id IS NOT NULL AND (SELECT id FROM "
-            "MECHANISMS WHERE id = NEW.mechanism_id) IS NULL; "
-            "END; "
-
-            /* Cascading Delete */
-            "CREATE TRIGGER fkdc_ACL_mechanism_id_MECHANISMS_id "
-            "BEFORE DELETE ON MECHANISMS "
-            "FOR EACH ROW BEGIN "
-            "    DELETE FROM ACL WHERE ACL.mechanism_id = OLD.id; "
-            "END; "
-
-            /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_ACL_secctx_id_SECCTX_id "
-            "BEFORE INSERT ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates foreign "
-            "key constraint fki_ACL_secctx_id_SECCTX_id') "
-            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
-            "WHERE id = NEW.secctx_id) IS NULL; "
-            "END; "
-
-            /* Foreign key preventing update */
-            "CREATE TRIGGER fku_ACL_secctx_id_SECCTX_id "
-            "BEFORE UPDATE ON [ACL] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates foreign "
-            "key constraint fku_ACL_secctx_id_SECCTX_id') "
-            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
-            "WHERE id = NEW.secctx_id) IS NULL; "
-            "END; "
-
-            /* Cascading Delete */
-            "CREATE TRIGGER fkdc_ACL_secctx_id_SECCTX_id "
-            "BEFORE DELETE ON SECCTX "
-            "FOR EACH ROW BEGIN "
-            "    DELETE FROM ACL WHERE ACL.secctx_id = OLD.id; "
-            "END; "
-
-            /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_REFS_identity_id_CREDENTIALS_id "
-            "BEFORE INSERT ON [REFS] "
-            "FOR EACH ROW BEGIN "
-            "  SELECT RAISE(ROLLBACK, 'insert on table REFS violates foreign "
-            "key constraint fki_REFS_identity_id_CREDENTIALS_id') "
-            "  WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
-            "CREDENTIALS WHERE id = NEW.identity_id) IS NULL; "
-            "END; "
-
-            /* Foreign key preventing update */
-            "CREATE TRIGGER fku_REFS_identity_id_CREDENTIALS_id "
-            "BEFORE UPDATE ON [REFS] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table REFS violates foreign "
-            "key constraint fku_REFS_identity_id_CREDENTIALS_id') "
-            "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
-            "CREDENTIALS WHERE id = NEW.identity_id) IS NULL; "
-            "END; "
-
-            /* Cascading Delete */
-            "CREATE TRIGGER fkdc_REFS_identity_id_CREDENTIALS_id "
-            "BEFORE DELETE ON CREDENTIALS "
-            "FOR EACH ROW BEGIN "
-            "    DELETE FROM REFS WHERE REFS.identity_id = OLD.id; "
-            "END; "
-
-            /* Foreign Key Preventing insert */
-            "CREATE TRIGGER fki_REFS_secctx_id_SECCTX_id "
-            "BEFORE INSERT ON [REFS] "
-            "FOR EACH ROW BEGIN "
-            "  SELECT RAISE(ROLLBACK, 'insert on table REFS violates foreign "
-            "key constraint fki_REFS_secctx_id_SECCTX_id') "
-            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
-            "WHERE id = NEW.secctx_id) IS NULL; "
-            "END; "
-
-            /* Foreign key preventing update */
-            "CREATE TRIGGER fku_REFS_secctx_id_SECCTX_id "
-            "BEFORE UPDATE ON [REFS] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table REFS violates "
-            "foreign key constraint fku_REFS_secctx_id_SECCTX_id') "
-            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM "
-            "SECCTX WHERE id = NEW.secctx_id) IS NULL; "
-            "END; "
-
-            /* Cascading Delete */
-            "CREATE TRIGGER fkdc_REFS_secctx_id_SECCTX_id "
-            "BEFORE DELETE ON SECCTX "
-            "FOR EACH ROW BEGIN "
-            "    DELETE FROM REFS WHERE REFS.secctx_id = OLD.id; "
-            "END; "
-
-            //create OWNER table
-            "CREATE TABLE OWNER"
-            "(rowid INTEGER PRIMARY KEY AUTOINCREMENT,"
-            "identity_id INTEGER CONSTRAINT fk_identity_id "
-            "REFERENCES CREDENTIALS(id) ON DELETE CASCADE,"
-            "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES SECCTX(id) "
-            "ON DELETE CASCADE);"
-
-            //added triggers for OWNER
-            // Foreign Key Preventing insert
-            "CREATE TRIGGER fki_OWNER_secctx_id_SECCTX_id "
-            "BEFORE INSERT ON [OWNER] "
-            "FOR EACH ROW BEGIN "
-            "  SELECT RAISE(ROLLBACK, 'insert on table OWNER violates "
-            "foreign key constraint fki_OWNER_secctx_id_SECCTX_id') "
-            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
-            "WHERE id = NEW.secctx_id) IS NULL; "
-            "END; "
             // Foreign key preventing update
-            "CREATE TRIGGER fku_OWNER_secctx_id_SECCTX_id "
-            "BEFORE UPDATE ON [OWNER] "
-            "FOR EACH ROW BEGIN "
-            "    SELECT RAISE(ROLLBACK, 'update on table OWNER violates "
-            "foreign key constraint fku_OWNER_secctx_id_SECCTX_id') "
-            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
-            "WHERE id = NEW.secctx_id) IS NULL; "
-            "END; "
+            "CREATE TRIGGER fku_REALMS_identity_id_IDENTITY_id"
+            "BEFORE UPDATE ON [REALMS]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table REALMS violates "
+            "foreign key constraint fku_REALMS_identity_id_IDENTITY_id')"
+            "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
+            "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
+            "END;"
+
             // Cascading Delete
-            "CREATE TRIGGER fkdc_OWNER_secctx_id_SECCTX_id "
-            "BEFORE DELETE ON SECCTX "
-            "FOR EACH ROW BEGIN "
-            "    DELETE FROM OWNER WHERE OWNER.secctx_id = OLD.id; "
-            "END; "
+            "CREATE TRIGGER fkdc_REALMS_identity_id_IDENTITY_id"
+            "BEFORE DELETE ON [IDENTITY]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM REALMS WHERE REALMS.identity_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_ACL_identity_id_IDENTITY_id"
+            "BEFORE INSERT ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates foreign "
+            "key constraint fki_ACL_identity_id_IDENTITY_id')"
+            "  WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM IDENTITY "
+            "WHERE id = NEW.identity_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_ACL_identity_id_IDENTITY_id"
+            "BEFORE UPDATE ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates foreign "
+            "key constraint fku_ACL_identity_id_IDENTITY_id')"
+            "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
+            "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_ACL_identity_id_IDENTITY_id"
+            "BEFORE DELETE ON [IDENTITY]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM ACL WHERE ACL.identity_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_ACL_method_id_METHODS_id"
+            "BEFORE INSERT ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates foreign "
+            "key constraint fki_ACL_method_id_METHODS_id')"
+            "  WHERE NEW.method_id IS NOT NULL AND (SELECT id FROM METHODS "
+            "WHERE id = NEW.method_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_ACL_method_id_METHODS_id"
+            "BEFORE UPDATE ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates foreign "
+            "key constraint fku_ACL_method_id_METHODS_id')"
+            "      WHERE NEW.method_id IS NOT NULL AND (SELECT id FROM METHODS "
+            "WHERE id = NEW.method_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_ACL_method_id_METHODS_id"
+            "BEFORE DELETE ON [METHODS]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM ACL WHERE ACL.method_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_ACL_mechanism_id_MECHANISMS_id"
+            "BEFORE INSERT ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates foreign "
+            "key constraint fki_ACL_mechanism_id_MECHANISMS_id')"
+            "  WHERE NEW.mechanism_id IS NOT NULL AND (SELECT id FROM "
+            "MECHANISMS WHERE id = NEW.mechanism_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_ACL_mechanism_id_MECHANISMS_id"
+            "BEFORE UPDATE ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates foreign "
+            "key constraint fku_ACL_mechanism_id_MECHANISMS_id')"
+            "      WHERE NEW.mechanism_id IS NOT NULL AND (SELECT id FROM "
+            "MECHANISMS WHERE id = NEW.mechanism_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_ACL_mechanism_id_MECHANISMS_id"
+            "BEFORE DELETE ON [MECHANISMS]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM ACL WHERE ACL.mechanism_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_ACL_secctx_id_SECCTX_id"
+            "BEFORE INSERT ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "  SELECT RAISE(ROLLBACK, 'insert on table ACL violates foreign "
+            "key constraint fki_ACL_secctx_id_SECCTX_id')"
+            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_ACL_secctx_id_SECCTX_id"
+            "BEFORE UPDATE ON [ACL]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table ACL violates foreign "
+            "key constraint fku_ACL_secctx_id_SECCTX_id')"
+            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_ACL_secctx_id_SECCTX_id"
+            "BEFORE DELETE ON [SECCTX]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM ACL WHERE ACL.secctx_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_REFS_identity_id_IDENTITY_id"
+            "BEFORE INSERT ON [REFS]"
+            "FOR EACH ROW BEGIN"
+            "  SELECT RAISE(ROLLBACK, 'insert on table REFS violates foreign "
+            "key constraint fki_REFS_identity_id_IDENTITY_id')"
+            "  WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM IDENTITY "
+            "WHERE id = NEW.identity_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_REFS_identity_id_IDENTITY_id"
+            "BEFORE UPDATE ON [REFS]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table REFS violates foreign "
+            "key constraint fku_REFS_identity_id_IDENTITY_id')"
+            "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
+            "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_REFS_identity_id_IDENTITY_id"
+            "BEFORE DELETE ON [IDENTITY]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM REFS WHERE REFS.identity_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_REFS_secctx_id_SECCTX_id"
+            "BEFORE INSERT ON [REFS]"
+            "FOR EACH ROW BEGIN"
+            "  SELECT RAISE(ROLLBACK, 'insert on table REFS violates foreign "
+            "key constraint fki_REFS_secctx_id_SECCTX_id')"
+            "  WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_REFS_secctx_id_SECCTX_id"
+            "BEFORE UPDATE ON [REFS]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table REFS violates foreign "
+            "key constraint fku_REFS_secctx_id_SECCTX_id')"
+            "      WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_REFS_secctx_id_SECCTX_id"
+            "BEFORE DELETE ON [SECCTX]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM REFS WHERE REFS.secctx_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_OWNER_identity_id_IDENTITY_id"
+            "BEFORE INSERT ON [OWNER]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'insert on table OWNER violates "
+            "foreign key constraint fki_OWNER_identity_id_IDENTITY_id')"
+            "    WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
+            "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_OWNER_identity_id_IDENTITY_id"
+            "BEFORE UPDATE ON [OWNER]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table OWNER violates "
+            "foreign key constraint fku_OWNER_identity_id_IDENTITY_id')"
+            "    WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
+            "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_OWNER_identity_id_IDENTITY_id"
+            "BEFORE DELETE ON [IDENTITY]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM OWNER WHERE OWNER.identity_id = OLD.id;"
+            "END;"
+
+            // Foreign Key Preventing insert
+            "CREATE TRIGGER fki_OWNER_secctx_id_SECCTX_id"
+            "BEFORE INSERT ON [OWNER]"
+            "FOR EACH ROW BEGIN"
+            "   SELECT RAISE(ROLLBACK, 'insert on table OWNER violates foreign "
+            "key constraint fki_OWNER_secctx_id_SECCTX_id')"
+            "   WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL;"
+            "END;"
+
+            // Foreign key preventing update
+            "CREATE TRIGGER fku_OWNER_secctx_id_SECCTX_id"
+            "BEFORE UPDATE ON [OWNER]"
+            "FOR EACH ROW BEGIN"
+            "    SELECT RAISE(ROLLBACK, 'update on table OWNER violates "
+            "foreign key constraint fku_OWNER_secctx_id_SECCTX_id')"
+            "    WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
+            "WHERE id = NEW.secctx_id) IS NULL;"
+            "END;"
+
+            // Cascading Delete
+            "CREATE TRIGGER fkdc_OWNER_secctx_id_SECCTX_id"
+            "BEFORE DELETE ON [SECCTX]"
+            "FOR EACH ROW BEGIN"
+            "    DELETE FROM OWNER WHERE OWNER.secctx_id = OLD.id;"
+            "END;"
 
             "PRAGMA user_version = 1;";
 
@@ -837,7 +913,7 @@ _gsignond_db_metadata_database_clear (
     RETURN_IF_NOT_OPEN (obj, FALSE);
 
     queries = ""
-            "DELETE FROM CREDENTIALS;"
+            "DELETE FROM IDENTITY;"
             "DELETE FROM METHODS;"
             "DELETE FROM MECHANISMS;"
             "DELETE FROM ACL;"
@@ -1209,7 +1285,7 @@ gsignond_db_metadata_database_get_identity (
 
     identity = gsignond_identity_info_new ();
     query = sqlite3_mprintf ("SELECT caption, username, flags, type "
-                             "FROM credentials WHERE id = %u;",
+                             "FROM IDENTITY WHERE id = %u;",
                              identity_id);
     rows = gsignond_db_sql_database_query_exec (GSIGNOND_DB_SQL_DATABASE (self),
             query, (GSignondDbSqlDatabaseQueryCallback)
@@ -1217,7 +1293,7 @@ gsignond_db_metadata_database_get_identity (
             identity);
     sqlite3_free (query);
     if (G_UNLIKELY (rows <= 0)) {
-        DBG ("Fetch credentials failed");
+        DBG ("Fetch IDENTITY failed");
         gsignond_identity_info_unref (identity);
         return NULL;
     }
@@ -1343,7 +1419,7 @@ gsignond_db_metadata_database_get_identities (
     	}
     }
 
-    query = sqlite3_mprintf ("SELECT id FROM credentials %s%s%s ORDER BY id",
+    query = sqlite3_mprintf ("SELECT id FROM IDENTITY %s%s%s ORDER BY id",
     		owner_query ? owner_query : "",
     		caption_query ? caption_query : "",
     		type_query ? type_query : "");
@@ -1393,12 +1469,9 @@ gsignond_db_metadata_database_remove_identity (
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
     RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), FALSE);
 
-    queries = sqlite3_mprintf ("DELETE FROM CREDENTIALS WHERE id = %u;"
-                               "DELETE FROM ACL WHERE identity_id = %u;"
-                               "DELETE FROM REALMS WHERE identity_id = %u;"
-                               "DELETE FROM owner WHERE identity_id = %u;",
-                               identity_id, identity_id,
-                               identity_id, identity_id);
+    /* Triggers should handle the cleanup of other tables */
+    queries = sqlite3_mprintf ("DELETE FROM IDENTITY WHERE id = %u;",
+                               identity_id);
     ret = gsignond_db_sql_database_transaction_exec (
             GSIGNOND_DB_SQL_DATABASE (self), queries);
     sqlite3_free (queries);
