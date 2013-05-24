@@ -1013,6 +1013,7 @@ START_TEST (test_credentials_database)
     gsignond_dictionary_set_string (cap_filter, "Caption", "cap");
     gsignond_dictionary_set(cap_filter, "Owner",
     		 gsignond_security_context_to_variant(ctx));
+    gsignond_security_context_free (ctx);
     identities = gsignond_db_credentials_database_load_identities (
             credentials_db, cap_filter);
     gsignond_dictionary_unref (cap_filter);
@@ -1038,7 +1039,7 @@ START_TEST (test_credentials_database)
     gsignond_dictionary_set_string (cap_type_filter, "Caption", "CAP");
     identities = gsignond_db_credentials_database_load_identities (
             credentials_db, cap_type_filter);
-    gsignond_dictionary_unref (type_filter);
+    gsignond_dictionary_unref (cap_type_filter);
 
     fail_if (identities == NULL);
     fail_unless (g_list_length (identities) == 1);
