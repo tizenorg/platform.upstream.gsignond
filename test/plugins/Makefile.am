@@ -2,7 +2,9 @@ TESTS = digestplugintest passwordplugintest pluginproxytest pluginremotetest
 
 TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
 	SSO_BIN_DIR=$(top_builddir)/src/daemon/.libs \
-	LD_LIBRARY_PATH=$(top_builddir)/src/daemon/plugins/plugind/.libs
+    SSO_STORAGE_PATH=/tmp/gsignond \
+    SSO_SECRET_PATH=/tmp/gsignond \
+    LD_LIBRARY_PATH=$(top_builddir)/src/daemon/plugins/plugind/.libs
 
 VALGRIND_TESTS_DISABLE =
     

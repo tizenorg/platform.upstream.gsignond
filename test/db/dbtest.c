@@ -837,12 +837,16 @@ START_TEST (test_metadata_database)
     owner = gsignond_db_metadata_database_get_owner (metadata_db,
             identity_id);
     fail_if (owner == NULL);
-    gsignond_security_context_free (owner);
 
     fail_unless (gsignond_db_metadata_database_remove_identity (
             metadata_db, identity_id) == TRUE);
     fail_unless (gsignond_db_metadata_database_get_identities (
             metadata_db, NULL) == NULL);
+
+    fail_unless (gsignond_db_metadata_database_get_methods (
+            metadata_db, identity_id, owner) == NULL);
+
+    gsignond_security_context_free (owner);
 
     gsignond_identity_info_unref (identity);
 

@@ -1,5 +1,7 @@
 TESTS = dbtest
-TESTS_ENVIRONMENT=
+TESTS_ENVIRONMENT= SSO_STORAGE_PATH=/tmp/gsignond \
+    SSO_SECRET_PATH=/tmp/gsignond
+
 VALGRIND_TESTS_DISABLE=
 
 check_PROGRAMS = dbtest

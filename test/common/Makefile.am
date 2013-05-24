@@ -1,5 +1,8 @@
 TESTS = commontest
-TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs
+TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
+    SSO_STORAGE_PATH=/tmp/gsignond \
+    SSO_SECRET_PATH=/tmp/gsignond
+
 VALGRIND_TESTS_DISABLE=
 
 check_PROGRAMS = commontest
