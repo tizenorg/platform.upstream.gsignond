@@ -135,7 +135,8 @@ int main (int argc, char **argv)
 
     g_log_set_default_handler (_default_log_handler, NULL);
 
-    opt_context = g_option_context_new ("SSO plugin daemon");
+    opt_context = g_option_context_new ("<plugin_path> <plugin_name>");
+    g_option_context_set_summary (opt_context, "gSSO helper plugin daemon");
     g_option_context_add_main_entries (opt_context, opt_entries, NULL);
     g_option_context_parse (opt_context, &argc, &argv, &error);
     g_option_context_free (opt_context);
@@ -143,6 +144,11 @@ int main (int argc, char **argv)
         DBG ("Error parsing options: %s", error->message);
         g_error_free (error);
         if (plugin_args) g_strfreev(plugin_args);
+        return -1;
+    }
+
+    if (!plugin_args || !plugin_args[0] || !plugin_args[1]) {
+        WARN ("missing mandatory arguments");
         return -1;
     }
 
