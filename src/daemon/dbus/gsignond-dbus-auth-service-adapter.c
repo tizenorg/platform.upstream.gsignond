@@ -292,7 +292,7 @@ _create_and_cache_dbus_identity (GSignondDbusAuthServiceAdapter *self,
     self->priv->identities = g_list_append (self->priv->identities, dbus_identity);
     g_object_weak_ref (G_OBJECT (dbus_identity), _on_identity_disposed, self);
 #ifndef USE_P2P
-    g_object_set_data (G_OBJECT(dbus_identity), "dbus-client-name", (gpointer)g_strdup(sender));
+    g_object_set_data (G_OBJECT(dbus_identity), "dbus-client-name", (gpointer)sender);
     if (!g_hash_table_contains (self->priv->caller_watchers, sender)) {
         guint watcher_id = g_bus_watch_name_on_connection (connection, sender, G_BUS_NAME_WATCHER_FLAGS_NONE, 
                                         NULL, _on_connnection_lost, self, NULL);
