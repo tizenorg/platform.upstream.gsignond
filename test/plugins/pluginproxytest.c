@@ -107,6 +107,7 @@ gboolean testing_proxy_process_queue = FALSE;
 gint proxy_process_queue_results = 0;
 gboolean testing_proxy_process_queue_cancel = FALSE;
 gint proxy_process_queue_cancel_results = 0;
+gboolean testing_proxy_process_cancel_triggered = FALSE;
 
 void
 gsignond_auth_session_notify_process_result (
@@ -222,9 +223,11 @@ gsignond_auth_session_notify_state_changed (
         gpointer user_data)
 {
     if (testing_proxy_process_cancel &&
+            !testing_proxy_process_cancel_triggered &&
             state == GSIGNOND_PLUGIN_STATE_WAITING) {
         GSignondPluginProxy* proxy = GSIGNOND_PLUGIN_PROXY(user_data);
         gsignond_plugin_proxy_cancel(proxy, self);
+        testing_proxy_process_cancel_triggered = TRUE;
     } else if (testing_proxy_process_queue_cancel &&
             state == GSIGNOND_PLUGIN_STATE_WAITING &&
             proxy_process_queue_cancel_results == 5) {
