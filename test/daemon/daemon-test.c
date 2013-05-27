@@ -102,7 +102,7 @@ setup_daemon (void)
     g_free (test_daemon_path);
     fail_if (error != NULL, "Failed to span daemon : %s",
             error ? error->message : "");
-    sleep (5); /* 5 secod */
+    sleep (5); /* 5 second */
 #   else
     /* session bus wher no GTestBus support */
     GIOChannel *channel = NULL;
@@ -119,7 +119,7 @@ setup_daemon (void)
     g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, NULL, &stdout_fd, NULL, &error);
     fail_if (error != NULL, "Failed to span daemon : %s", error ? error->message : "");
     fail_if (daemon_pid == 0, "Failed to get daemon pid");
-    g_usleep (500 * 1000);
+    sleep (5); /* 5 second */
 
     g_free (config_path);
     channel = g_io_channel_unix_new (stdout_fd);
