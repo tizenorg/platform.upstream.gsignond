@@ -173,18 +173,18 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     dir = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     if (!dir) {
-        ERR ("No directory specified in config object for secret db...");
+        WARN ("No directory specified in config object for secret db...");
         return FALSE;
     }
     filename = gsignond_config_get_string (self->config,
             GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME);
     if (!filename) {
-        ERR ("Database filename not specified");
+        WARN ("Database filename not specified");
         return FALSE;
     }
     db_filename = g_build_filename (dir, filename, NULL);
     if (!db_filename) {
-        ERR ("Invalid db filename...");
+        WARN ("Invalid db filename...");
         return FALSE;
     }
 
@@ -203,7 +203,7 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
                 SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     g_free (db_filename);
     if (!ret) {
-        ERR ("Open DB failed");
+        WARN ("Open DB failed");
         g_object_unref (self->priv->database);
         self->priv->database = NULL;
         return FALSE;

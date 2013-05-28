@@ -323,8 +323,8 @@ gsignond_db_secret_database_update_data (
     GSignondDbSqlDatabase *parent = NULL;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_SECRET_DATABASE (self), FALSE);
-    g_return_val_if_fail (data != NULL, FALSE);
     RETURN_IF_NOT_OPEN (self, FALSE);
+    g_return_val_if_fail (data != NULL, FALSE);
 
     parent = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (parent)) {
