@@ -22,8 +22,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
+#include <errno.h>
+#include <string.h>
+#include <glib/gstdio.h>
 
-#include <config.h>
+#include "config.h"
+
 #include "gsignond-dbus-server.h"
 #include "gsignond-dbus-auth-service-adapter.h"
 #include "gsignond-dbus.h"
@@ -158,7 +162,11 @@ _finalize (GObject *object)
 {
 #ifdef USE_P2P
     GSignondDbusServer *self = GSIGNOND_DBUS_SERVER (object);
-    if (self->priv->address) {
+    if (self->priv->address && g_str_has_prefix (self->priv->address, "unix:path=")) {
+        const gchar *path = g_strstr_len(self->priv->address, -1, "unix:path=") + 10;
+        if (path) { 
+            g_unlink (path);
+        }
         g_free (self->priv->address);
         self->priv->address = NULL;
     }
@@ -300,10 +308,26 @@ GSignondDbusServer * gsignond_dbus_server_new_with_address (const gchar *address
 {
     GError *err = NULL;
     gchar *guid = 0;
+    const gchar *file_path = NULL;
     GSignondDbusServer *server = GSIGNOND_DBUS_SERVER (
         g_object_new (GSIGNOND_TYPE_DBUS_SERVER, "address", address, NULL));
 
     if (!server) return NULL;
+
+    if (g_str_has_prefix(address, "unix:path=")) {
+        file_path = g_strstr_len (address, -1, "unix:path=") + 10;
+
+        if (g_file_test(file_path, G_FILE_TEST_EXISTS)) {
+            g_unlink (file_path);
+        }
+        else {
+            gchar *base_path = g_path_get_dirname (file_path);
+            if (g_mkdir_with_parents (base_path, S_IRUSR | S_IWUSR | S_IXUSR) == -1) {
+                WARN ("Could not create '%s', error: %s", base_path, strerror(errno));
+            }
+            g_free (base_path);
+        }
+    }
 
     guid = g_dbus_generate_guid ();
 
@@ -326,11 +350,20 @@ GSignondDbusServer * gsignond_dbus_server_new_with_address (const gchar *address
 
     g_dbus_server_start (server->priv->bus_server);
 
+    if (file_path)
+        g_chmod (file_path, S_IRUSR | S_IWUSR);
+
     return server;
 }
 
 GSignondDbusServer * gsignond_dbus_server_new () {
-    return gsignond_dbus_server_new_with_address (GSIGNOND_DBUS_ADDRESS);
+	GSignondDbusServer *server = NULL;
+	gchar *address = g_strdup_printf (GSIGNOND_DBUS_ADDRESS, g_get_user_runtime_dir());
+
+    server = gsignond_dbus_server_new_with_address (address);
+    g_free (address);
+
+    return server ;
 }
 #else
 

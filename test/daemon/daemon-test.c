@@ -231,8 +231,11 @@ GVariant * _create_identity_info_with_data (const gchar *username,
 GDBusConnection * _get_bus_connection (GError **error)
 {
 #if USE_P2P
+    gchar address[128];
+
+    g_snprintf (address, 127, GSIGNOND_DBUS_ADDRESS, g_get_user_runtime_dir());
     return g_dbus_connection_new_for_address_sync (
-        GSIGNOND_DBUS_ADDRESS,
+        address,
         G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
         NULL,
         NULL,
