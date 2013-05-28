@@ -507,7 +507,8 @@ gsignond_db_credentials_database_load_data (
 
     if (identity_id == 0 ||
     	!gsignond_db_credentials_database_is_open_secret_storage (self)) {
-        DBG ("Load data failed - invalid id/secret storage not opened");
+        DBG ("Load data failed - invalid id (%d)/secret storage not opened",
+                identity_id);
     	return NULL;
     }
 
@@ -549,7 +550,8 @@ gsignond_db_credentials_database_update_data (
 
     if (identity_id == 0 ||
     	!gsignond_db_credentials_database_is_open_secret_storage (self)) {
-        DBG ("Update data failed - invalid id/secret storage not opened");
+        DBG ("Update data failed - invalid id(%d)/secret storage not opened",
+                identity_id);
     	return FALSE;
     }
 
@@ -593,7 +595,8 @@ gsignond_db_credentials_database_remove_data (
 
     if (identity_id == 0 ||
     	!gsignond_db_credentials_database_is_open_secret_storage (self)) {
-        DBG ("Remove data failed - invalid id/secret storage not opened");
+        DBG ("Remove data failed - invalid id (%d)/secret storage not opened",
+                identity_id);
     	return FALSE;
     }
 
