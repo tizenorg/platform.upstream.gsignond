@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sqlite3.h>
+#include <glib/gstdio.h>
 
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-log.h"
@@ -146,21 +147,21 @@ _get_filled_identity_info_2 (
                 (GEqualFunc)g_str_equal,
                 (GDestroyNotify)NULL,
                 (GDestroyNotify)g_sequence_free);
-        seq1 = _sequence_new("mech11"); g_sequence_append (seq1, "mech12");
+        seq1 = _sequence_new("mech11"); //g_sequence_append (seq1, "mech12");
         g_hash_table_insert (methods, "method1", seq1);
         g_hash_table_insert (methods, "method2", _sequence_new("mech21"));
-        g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
+        //g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
         gsignond_identity_info_set_methods (identity, methods);
         g_hash_table_unref (methods);
     }
 
     /*acl*/
     ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
-    ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
-    ctx3 = gsignond_security_context_new_from_values ("sysctx3", "appctx3");
+    //ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
+    //ctx3 = gsignond_security_context_new_from_values ("sysctx3", "appctx3");
     ctx_list = g_list_append (ctx_list,ctx1);
-    ctx_list = g_list_append (ctx_list,ctx2);
-    ctx_list = g_list_append (ctx_list,ctx3);
+    //ctx_list = g_list_append (ctx_list,ctx2);
+    //ctx_list = g_list_append (ctx_list,ctx3);
     if (add_acl) {
         gsignond_identity_info_set_access_control_list (identity, ctx_list);
     }
@@ -395,7 +396,7 @@ _gsignond_query_read_string (
     return TRUE;
 }
 
-START_TEST (test_secret_database)
+START_TEST (test_sql_database)
 {
     GSignondDbSecretDatabase *database = NULL;
     GSignondConfig *config = NULL;
@@ -436,11 +437,12 @@ START_TEST (test_secret_database)
 
     config = gsignond_config_new ();
     dir = gsignond_config_get_string (config,
-            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+            GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
     if (!dir) {
         dir = g_get_user_data_dir ();
     }
-    filename = g_build_filename (dir, "secret_test.db", NULL);
+    g_mkdir_with_parents (dir, S_IRWXU);
+    filename = g_build_filename (dir, "sql_db_test.db", NULL);
     fail_unless (gsignond_db_sql_database_open (sqldb, filename,
             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) == TRUE);
     /* don't open the db again if its already open */
@@ -605,6 +607,7 @@ START_TEST (test_secret_storage)
     GHashTable *data = NULL;
     GHashTable *data2 = NULL;
     Data input;
+    const gchar *dir = NULL;
 
     config = gsignond_config_new ();
     /* Secret Storage */
@@ -612,6 +615,13 @@ START_TEST (test_secret_storage)
             "config", config, NULL);
     g_object_unref(config);
     fail_if (storage == NULL);
+
+    dir = gsignond_config_get_string (config,
+            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+    if (!dir) {
+        dir = g_get_user_data_dir ();
+    }
+    g_mkdir_with_parents (dir, S_IRWXU);
 
     fail_unless (gsignond_secret_storage_get_last_error (storage) == NULL);
     fail_unless (gsignond_secret_storage_clear_db (storage) == FALSE);
@@ -1068,7 +1078,8 @@ Suite* db_suite (void)
 
     TCase *tc_core = tcase_create ("Tests");
     tcase_add_test (tc_core, test_identity_info);
-    tcase_add_test (tc_core, test_secret_database);
+
+    tcase_add_test (tc_core, test_sql_database);
     tcase_add_test (tc_core, test_secret_storage);
     tcase_add_test (tc_core, test_metadata_database);
     tcase_add_test (tc_core, test_credentials_database);

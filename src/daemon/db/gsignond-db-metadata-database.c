@@ -535,12 +535,35 @@ _gsignond_db_metadata_database_create (
     const gchar *queries = NULL;
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (obj), FALSE);
     RETURN_IF_NOT_OPEN (obj, FALSE);
+    gint fk_enabled = 0;
+    gint version = 0;
 
-    if (gsignond_db_sql_database_get_db_version(obj,
-            "PRAGMA user_version;") > 0) {
-        DBG ("Metadata DB is already created");
+    queries = "PRAGMA foreign_keys = 1;";
+    if (!gsignond_db_sql_database_exec (obj, queries)) {
+        DBG ("Metadata DB enabling foreign keys failed");
+        return FALSE;
+    }
+
+    gsignond_db_sql_database_query_exec_int (obj, "PRAGMA foreign_keys;",
+            &fk_enabled);
+    version = gsignond_db_sql_database_get_db_version(obj,
+                "PRAGMA user_version;");
+    if (version > 0) {
+        DBG ("Metadata DB is already created with with version (%d) and "
+                "foreign keys enabled (%d)", version, fk_enabled);
         return TRUE;
     }
+
+    queries = "PRAGMA user_version = 1;";
+    if (!gsignond_db_sql_database_exec (obj, queries)) {
+        DBG ("Metadata DB setting version failed");
+        return FALSE;
+    }
+
+    version = gsignond_db_sql_database_get_db_version(obj,
+            "PRAGMA user_version;");
+    DBG ("Metadata DB is to be created with version (%d) and foreign keys "
+            "enabled(%d)", version, fk_enabled);
 
     queries = ""
             "CREATE TABLE IDENTITY"
@@ -579,17 +602,17 @@ _gsignond_db_metadata_database_create (
             "identity_id INTEGER CONSTRAINT fk_identity_id REFERENCES "
             "IDENTITY(id) ON DELETE CASCADE,"
             "method_id INTEGER CONSTRAINT fk_method_id REFERENCES "
-            "METHODS(id) ON DELETE CASCADE,"
+            "METHODS(id),"
             "mechanism_id INTEGER CONSTRAINT fk_mechanism_id "
-            "REFERENCES MECHANISMS(id) ON DELETE CASCADE,"
+            "REFERENCES MECHANISMS(id),"
             "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES "
-            "SECCTX(id) ON DELETE CASCADE);"
+            "SECCTX(id));"
 
             "CREATE TABLE REFS"
             "(identity_id INTEGER CONSTRAINT fk_identity_id "
             "REFERENCES IDENTITY(id) ON DELETE CASCADE,"
             "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES "
-            "SECCTX(id) ON DELETE CASCADE,"
+            "SECCTX(id),"
             "ref TEXT,"
             "PRIMARY KEY (identity_id, secctx_id, ref));"
 
@@ -598,7 +621,7 @@ _gsignond_db_metadata_database_create (
             "identity_id INTEGER CONSTRAINT fk_identity_id "
             "REFERENCES IDENTITY(id) ON DELETE CASCADE,"
             "secctx_id INTEGER CONSTRAINT fk_secctx_id REFERENCES SECCTX(id) "
-            "ON DELETE CASCADE);"
+            ");"
 
             // Triggers for deleting orphan SECCTX entries
             "CREATE TRIGGER fkdstale_ACL_secctx_id_SECCTX_id"
@@ -675,13 +698,6 @@ _gsignond_db_metadata_database_create (
             "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
             "END;"
 
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_REALMS_identity_id_IDENTITY_id"
-            "BEFORE DELETE ON [IDENTITY]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM REALMS WHERE REALMS.identity_id = OLD.id;"
-            "END;"
-
             // Foreign Key Preventing insert
             "CREATE TRIGGER fki_ACL_identity_id_IDENTITY_id"
             "BEFORE INSERT ON [ACL]"
@@ -700,13 +716,6 @@ _gsignond_db_metadata_database_create (
             "key constraint fku_ACL_identity_id_IDENTITY_id')"
             "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
             "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
-            "END;"
-
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_ACL_identity_id_IDENTITY_id"
-            "BEFORE DELETE ON [IDENTITY]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM ACL WHERE ACL.identity_id = OLD.id;"
             "END;"
 
             // Foreign Key Preventing insert
@@ -729,13 +738,6 @@ _gsignond_db_metadata_database_create (
             "WHERE id = NEW.method_id) IS NULL;"
             "END;"
 
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_ACL_method_id_METHODS_id"
-            "BEFORE DELETE ON [METHODS]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM ACL WHERE ACL.method_id = OLD.id;"
-            "END;"
-
             // Foreign Key Preventing insert
             "CREATE TRIGGER fki_ACL_mechanism_id_MECHANISMS_id"
             "BEFORE INSERT ON [ACL]"
@@ -754,13 +756,6 @@ _gsignond_db_metadata_database_create (
             "key constraint fku_ACL_mechanism_id_MECHANISMS_id')"
             "      WHERE NEW.mechanism_id IS NOT NULL AND (SELECT id FROM "
             "MECHANISMS WHERE id = NEW.mechanism_id) IS NULL;"
-            "END;"
-
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_ACL_mechanism_id_MECHANISMS_id"
-            "BEFORE DELETE ON [MECHANISMS]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM ACL WHERE ACL.mechanism_id = OLD.id;"
             "END;"
 
             // Foreign Key Preventing insert
@@ -783,13 +778,6 @@ _gsignond_db_metadata_database_create (
             "WHERE id = NEW.secctx_id) IS NULL;"
             "END;"
 
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_ACL_secctx_id_SECCTX_id"
-            "BEFORE DELETE ON [SECCTX]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM ACL WHERE ACL.secctx_id = OLD.id;"
-            "END;"
-
             // Foreign Key Preventing insert
             "CREATE TRIGGER fki_REFS_identity_id_IDENTITY_id"
             "BEFORE INSERT ON [REFS]"
@@ -808,13 +796,6 @@ _gsignond_db_metadata_database_create (
             "key constraint fku_REFS_identity_id_IDENTITY_id')"
             "      WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
             "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
-            "END;"
-
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_REFS_identity_id_IDENTITY_id"
-            "BEFORE DELETE ON [IDENTITY]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM REFS WHERE REFS.identity_id = OLD.id;"
             "END;"
 
             // Foreign Key Preventing insert
@@ -837,13 +818,6 @@ _gsignond_db_metadata_database_create (
             "WHERE id = NEW.secctx_id) IS NULL;"
             "END;"
 
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_REFS_secctx_id_SECCTX_id"
-            "BEFORE DELETE ON [SECCTX]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM REFS WHERE REFS.secctx_id = OLD.id;"
-            "END;"
-
             // Foreign Key Preventing insert
             "CREATE TRIGGER fki_OWNER_identity_id_IDENTITY_id"
             "BEFORE INSERT ON [OWNER]"
@@ -862,13 +836,6 @@ _gsignond_db_metadata_database_create (
             "foreign key constraint fku_OWNER_identity_id_IDENTITY_id')"
             "    WHERE NEW.identity_id IS NOT NULL AND (SELECT id FROM "
             "IDENTITY WHERE id = NEW.identity_id) IS NULL;"
-            "END;"
-
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_OWNER_identity_id_IDENTITY_id"
-            "BEFORE DELETE ON [IDENTITY]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM OWNER WHERE OWNER.identity_id = OLD.id;"
             "END;"
 
             // Foreign Key Preventing insert
@@ -890,15 +857,7 @@ _gsignond_db_metadata_database_create (
             "    WHERE NEW.secctx_id IS NOT NULL AND (SELECT id FROM SECCTX "
             "WHERE id = NEW.secctx_id) IS NULL;"
             "END;"
-
-            // Cascading Delete
-            "CREATE TRIGGER fkdc_OWNER_secctx_id_SECCTX_id"
-            "BEFORE DELETE ON [SECCTX]"
-            "FOR EACH ROW BEGIN"
-            "    DELETE FROM OWNER WHERE OWNER.secctx_id = OLD.id;"
-            "END;"
-
-            "PRAGMA user_version = 1;";
+            ;
 
     return gsignond_db_sql_database_transaction_exec (obj, queries);
 }
