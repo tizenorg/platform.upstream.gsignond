@@ -251,12 +251,22 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
 
     GSignondPluginProxy* proxy = NULL;
 
+    if (factory->methods == NULL) {
+        _enumerate_plugins (factory);
+    }
+
+    if (g_hash_table_lookup(factory->mechanisms, plugin_type) == NULL) {
+        DBG("Plugin not known %s", plugin_type);
+        return NULL;
+    }
+
     proxy = g_hash_table_lookup(factory->plugins, plugin_type);
     if (proxy != NULL) {
         DBG("get existing plugin %s -> %p", plugin_type, proxy);
         g_object_ref(proxy);
         return proxy;
     }
+
     proxy = gsignond_plugin_proxy_new(factory->config, plugin_type);
     if (proxy == NULL) {
         return NULL;
@@ -304,21 +314,9 @@ gsignond_plugin_proxy_factory_get_plugin_mechanisms(
 {
     g_return_val_if_fail(factory->mechanisms, NULL);
 
-    const gchar **mechanisms = NULL;
-    mechanisms = g_hash_table_lookup(factory->mechanisms, plugin_type);
-    if (mechanisms == NULL) {
-        GSignondPlugin* plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new (
-                factory->config, plugin_type));
-        if (plugin != NULL) {
-            gchar **mechs = NULL;
-            g_object_get (plugin, "mechanisms", &mechs, NULL);
-            if (mechs != NULL) {
-                g_hash_table_insert(factory->mechanisms, g_strdup(plugin_type),
-                        mechs);
-                mechanisms = (const gchar **)mechs;
-            }
-            g_object_unref (plugin);
-        }
+    if (factory->methods == NULL) {
+        _enumerate_plugins (factory);
     }
-    return mechanisms;
+
+    return g_hash_table_lookup(factory->mechanisms, plugin_type);
 }

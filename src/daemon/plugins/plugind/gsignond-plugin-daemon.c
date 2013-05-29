@@ -361,7 +361,6 @@ gsignond_plugin_daemon_new (
         const gchar* plugin_type)
 {
     GError *error = NULL;
-    gchar *object_path = NULL;
     GSignondPipeStream *stream = NULL;
 
     g_return_val_if_fail (filename != NULL && plugin_type != NULL, NULL);
@@ -391,21 +390,17 @@ gsignond_plugin_daemon_new (
     daemon->priv->dbus_remote_plugin =
             gsignond_dbus_remote_plugin_skeleton_new ();
 
-    object_path = g_strdup_printf ("%s_%s", GSIGNOND_PLUGIN_OBJECTPATH,
-            daemon->priv->plugin_type);
     g_dbus_interface_skeleton_export (
                 G_DBUS_INTERFACE_SKELETON(daemon->priv->dbus_remote_plugin),
-                daemon->priv->connection, object_path, &error);
+                daemon->priv->connection, GSIGNOND_PLUGIN_OBJECTPATH, &error);
     if (error) {
         DBG ("failed to register object: %s", error->message);
         g_error_free (error);
-        g_free (object_path);
         g_object_unref (daemon);
         return NULL;
     }
     DBG("Started plugin daemon '%p' at path '%s' on conneciton '%p'",
-            daemon, object_path, daemon->priv->connection);
-    g_free (object_path);
+            daemon, GSIGNOND_PLUGIN_OBJECTPATH, daemon->priv->connection);
 
     /* Connect dbus remote plugin signals to handlers */
     g_signal_connect_swapped (daemon->priv->dbus_remote_plugin,

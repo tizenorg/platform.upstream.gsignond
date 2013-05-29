@@ -555,7 +555,6 @@ gsignond_plugin_remote_new (
         GSignondConfig *config,
         const gchar *plugin_type)
 {
-    gchar *object_path = NULL;
     GError *error = NULL;
     GPid cpid = 0;
     gchar **argv;
@@ -593,9 +592,6 @@ gsignond_plugin_remote_new (
             (GChildWatchFunc)_child_watch_cb, plugin);
     plugin->priv->cpid = cpid;
 
-    object_path = g_strdup_printf ("%s_%s", GSIGNOND_PLUGIN_OBJECTPATH,
-            plugin_type);
-
     /* Create dbus connection */
     stream = gsignond_pipe_stream_new (cout_fd, cin_fd, TRUE);
     plugin->priv->connection = g_dbus_connection_new_sync (G_IO_STREAM (stream),
@@ -608,18 +604,16 @@ gsignond_plugin_remote_new (
                     plugin->priv->connection,
                     G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
                     NULL,
-                    object_path,
+                    GSIGNOND_PLUGIN_OBJECTPATH,
                     NULL,
                     &error);
     if (error) {
         DBG ("Failed to register object: %s", error->message);
         g_error_free (error);
-        g_free (object_path);
         g_object_unref (plugin);
         return NULL;
     }
-    DBG("'%s' object exported(%p)", object_path, plugin);
-    g_free (object_path);
+    DBG("'%s' object exported(%p)", GSIGNOND_PLUGIN_OBJECTPATH, plugin);
 
     plugin->priv->signal_response = g_signal_connect_swapped (
             plugin->priv->dbus_plugin_proxy, "response",
