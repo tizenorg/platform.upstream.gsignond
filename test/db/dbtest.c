@@ -405,7 +405,7 @@ START_TEST (test_sql_database)
     GSignondCredentials *creds = NULL;
     guint32 id = 1, method = 2;
     GHashTable *data = NULL;
-    GHashTable *data2 = NULL;
+    GSignondDictionary *data2 = NULL;
     Data input;
     sqlite3_stmt *stmt = NULL;
     gint status=0;
