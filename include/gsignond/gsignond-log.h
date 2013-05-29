@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  *
  * This library is free software; you can redistribute it and/or
@@ -29,9 +29,9 @@
 
 #define INFO(frmt, args...) g_message("%s:%d %s " frmt , __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
-#define ERR(frmt, args...)  g_error("%s:%d %s " frmt , __FILE__, __LINE__, \
+#define ERR(frmt, args...)  g_critical("%s:%d %s " frmt , __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
-#define WARN(frmt, args...)  g_warning("%s:%d %s " frmt , __FILE__, __LINE__, \
+#define WARN(frmt, args...) g_warning("%s:%d %s " frmt , __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
 #define DBG(frmt, args...)  g_debug("%s:%d %s " frmt , __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)

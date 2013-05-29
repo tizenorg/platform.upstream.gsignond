@@ -23,7 +23,8 @@
  * 02110-1301 USA
  */
 
-#include <config.h>
+#include "config.h"
+
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
@@ -122,6 +123,10 @@ int main (int argc, char **argv)
 
 #if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
+#endif
+
+#ifdef ENABLE_DEBUG
+    g_log_set_always_fatal (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
 #endif
 
     opt_context = g_option_context_new ("SSO daemon");
