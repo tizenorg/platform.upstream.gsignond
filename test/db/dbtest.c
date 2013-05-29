@@ -147,21 +147,21 @@ _get_filled_identity_info_2 (
                 (GEqualFunc)g_str_equal,
                 (GDestroyNotify)NULL,
                 (GDestroyNotify)g_sequence_free);
-        seq1 = _sequence_new("mech11"); //g_sequence_append (seq1, "mech12");
+        seq1 = _sequence_new("mech11"); g_sequence_append (seq1, "mech12");
         g_hash_table_insert (methods, "method1", seq1);
         g_hash_table_insert (methods, "method2", _sequence_new("mech21"));
-        //g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
+        g_hash_table_insert (methods, "method3", _sequence_new("mech31"));
         gsignond_identity_info_set_methods (identity, methods);
         g_hash_table_unref (methods);
     }
 
     /*acl*/
     ctx1 = gsignond_security_context_new_from_values ("sysctx1", "appctx1");
-    //ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
-    //ctx3 = gsignond_security_context_new_from_values ("sysctx3", "appctx3");
+    ctx2 = gsignond_security_context_new_from_values ("sysctx2", "appctx2");
+    ctx3 = gsignond_security_context_new_from_values ("sysctx3", "appctx3");
     ctx_list = g_list_append (ctx_list,ctx1);
-    //ctx_list = g_list_append (ctx_list,ctx2);
-    //ctx_list = g_list_append (ctx_list,ctx3);
+    ctx_list = g_list_append (ctx_list,ctx2);
+    ctx_list = g_list_append (ctx_list,ctx3);
     if (add_acl) {
         gsignond_identity_info_set_access_control_list (identity, ctx_list);
     }
