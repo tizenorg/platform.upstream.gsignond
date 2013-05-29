@@ -84,7 +84,7 @@ echo -n "enable debug features... "
 echo $enable_debug
 if test "x$enable_debug" = "xyes" ; then
     AC_DEFINE(ENABLE_DEBUG, [1], [Enable debug features])
-    AC_ARG_ENABLE(sqllog,
+    AC_ARG_ENABLE(sql-log,
           [  --enable-sql-log          enable sql log feature],
           [enable_sql_log=yes], [enable_sql_log=no])
     echo -n "enable sql log feature... "
