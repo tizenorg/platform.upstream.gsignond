@@ -540,12 +540,17 @@ _gsignond_db_metadata_database_create (
 
     queries = "PRAGMA foreign_keys = 1;";
     if (!gsignond_db_sql_database_exec (obj, queries)) {
-        DBG ("Metadata DB enabling foreign keys failed");
+        ERR ("Metadata DB enabling foreign keys failed");
         return FALSE;
     }
 
     gsignond_db_sql_database_query_exec_int (obj, "PRAGMA foreign_keys;",
             &fk_enabled);
+    if (!fk_enabled) {
+        ERR ("Metadata DB - foreign keys not enabled");
+        return FALSE;
+    }
+
     version = gsignond_db_sql_database_get_db_version(obj,
                 "PRAGMA user_version;");
     if (version > 0) {
