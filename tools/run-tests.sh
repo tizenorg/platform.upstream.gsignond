@@ -5,14 +5,12 @@ export SSO_SECRET_PATH=/tmp/gsignond
 
 rm -rf "$SSO_STORAGE_PATH"
 
-cd ..;
-
 make distclean;
-./autogen.sh --enable-dbus-type=session --enable-debug && \
+autoreconf -fi;
+./configure --enable-dbus-type=session --enable-debug && \
 make -j4 && make check && make distclean && \
-./autogen.sh --enable-dbus-type=system --enable-debug && \
+./configure --enable-dbus-type=system --enable-debug && \
 make -j4 && make check && make distclean && \
-./autogen.sh --enable-dbus-type=p2p --enable-debug && \
-make -j4 && make check;
+./configure --enable-dbus-type=p2p --enable-debug && \
+make -j4 && make check && make distclean;
 
-cd tools;
