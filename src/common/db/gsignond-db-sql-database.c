@@ -66,6 +66,15 @@ _gsignond_db_sql_database_is_open (GSignondDbSqlDatabase *self)
     return self->priv->db != NULL;
 }
 
+#ifdef ENABLE_SQL_LOG
+void trace_callback (void *s, const char *stmt)
+{
+    if (stmt) {
+        DBG ("SQLITE TRACE: %s", stmt);
+    }
+}
+#endif
+
 gboolean
 _gsignond_db_sql_database_open (
         GSignondDbSqlDatabase *self,
@@ -95,6 +104,10 @@ _gsignond_db_sql_database_open (
         if (g_chmod (filename, S_IRUSR | S_IWUSR))
             WARN ("setting file permissions on %s failed", filename);
     }
+
+#ifdef ENABLE_SQL_LOG
+    sqlite3_trace (self->priv->db, trace_callback, NULL);
+#endif
 
     if (!GSIGNOND_DB_SQL_DATABASE_GET_CLASS (self)->create (self)) {
         GSIGNOND_DB_SQL_DATABASE_GET_CLASS (self)->close (self);

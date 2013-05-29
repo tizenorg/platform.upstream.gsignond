@@ -84,6 +84,14 @@ echo -n "enable debug features... "
 echo $enable_debug
 if test "x$enable_debug" = "xyes" ; then
     AC_DEFINE(ENABLE_DEBUG, [1], [Enable debug features])
+    AC_ARG_ENABLE(sqllog,
+          [  --enable-sql-log          enable sql log feature],
+          [enable_sql_log=yes], [enable_sql_log=no])
+    echo -n "enable sql log feature... "
+    echo $enable_sql_log
+    if test "x$enable_sql_log" = "xyes" ; then
+        AC_DEFINE(ENABLE_SQL_LOG, [1], [Enable SQL log feature])
+    fi
 fi
 
 AM_CONDITIONAL(USE_GTESTDBUS, [test x$gtestdbus = xyes])
