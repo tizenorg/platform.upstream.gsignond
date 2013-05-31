@@ -74,10 +74,10 @@ setup_daemon (void)
     fail_if (g_setenv ("SSO_SECRET_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
 
-    g_print ("Programe name : %s\n", exe_name);
+    DBG ("Programe name : %s\n", exe_name);
 
     if (system("rm -rf /tmp/gsignond") != 0) {
-        g_print("Failed to clean db path : %s\n", strerror(errno));
+        DBG("Failed to clean db path : %s\n", strerror(errno));
     }
 #if HAVE_GTESTDBUS
     dbus = g_test_dbus_new (G_TEST_DBUS_NONE);
@@ -86,7 +86,7 @@ setup_daemon (void)
     g_test_dbus_add_service_dir (dbus, GSIGNOND_TEST_DBUS_SERVICE_DIR);
 
     g_test_dbus_up (dbus);
-    g_print ("Server address : %s\n", g_test_dbus_get_bus_address(dbus));
+    DBG ("Test dbus server address : %s\n", g_test_dbus_get_bus_address(dbus));
 #else
     GError *error = NULL;
 #   ifdef USE_P2P
@@ -103,27 +103,28 @@ setup_daemon (void)
     g_free (test_daemon_path);
     fail_if (error != NULL, "Failed to span daemon : %s",
             error ? error->message : "");
-    sleep (5); /* 5 second */
+    sleep (5); /* 5 seconds */
 #   else
-    /* session bus wher no GTestBus support */
+    /* session bus where no GTestBus support */
     GIOChannel *channel = NULL;
     gchar *config_path = NULL;
     gchar *bus_address = NULL;
-    gchar *argv[] = {"dbus-daemon", "--print-address", "--config-file=", NULL};
+    gchar *argv[] = {"dbus-daemon", "--print-address=2", "--config-file=", NULL};
     gsize len = 0;
-    gint stdout_fd = 0;
+    gint stderr_fd = 0;
+    const gchar *dbus_monitor = NULL;
 
     config_path = g_strdup_printf ("--config-file=%s", "gsignond-dbus.conf");
     argv[2] = config_path;
 
     /* start daemon */
-    g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, NULL, &stdout_fd, NULL, &error);
+    g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, NULL, NULL, &stderr_fd, &error);
     fail_if (error != NULL, "Failed to span daemon : %s", error ? error->message : "");
     fail_if (daemon_pid == 0, "Failed to get daemon pid");
-    sleep (5); /* 5 second */
-
     g_free (config_path);
-    channel = g_io_channel_unix_new (stdout_fd);
+    sleep (5); /* 5 seconds */
+
+    channel = g_io_channel_unix_new (stderr_fd);
     g_io_channel_read_line (channel, &bus_address, NULL, &len, &error);
     fail_if (error != NULL, "Failed to daemon address : %s", error ? error->message : "");
 
@@ -136,11 +137,22 @@ setup_daemon (void)
     else
         fail_if (g_setenv("DBUS_SESSION_BUS_ADDRESS", bus_address, TRUE) == FALSE);
 
-    g_print ("Daemon Address : %s\n", bus_address);
+    DBG ("Daemon Address : %s\n", bus_address);
     g_free (bus_address);
+
+    if ((dbus_monitor = g_getenv("SSO_DBUS_DEBUG")) != NULL && g_strcmp0 (dbus_monitor, "0")) {
+    	/* start dbus-monitor */
+    	char *argv[] = {"dbus-monitor", "<<bus_type>>", NULL };
+        argv[1] = GSIGNOND_BUS_TYPE == G_BUS_TYPE_SYSTEM ? "--system" : "--session" ;
+    	g_spawn_async (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
+    	if (error) {
+    		DBG ("Error while running dbus-monitor : %s", error->message);
+    		g_error_free (error);
+    	}
+    }
 #   endif
 
-    g_print ("Daemon PID = %d\n", daemon_pid);
+    DBG ("Daemon PID = %d\n", daemon_pid);
 #endif
 }
 
@@ -150,7 +162,7 @@ teardown_daemon (void)
 #if HAVE_GTESTDBUS
     g_test_dbus_down (dbus);
 #else
-    kill (daemon_pid, SIGTERM);
+    if (daemon_pid) kill (daemon_pid, SIGTERM);
 #endif
 
     g_unsetenv ("SSO_IDENTITY_TIMEOUT");
@@ -251,7 +263,7 @@ GSignondDbusAuthService * _get_auth_service (GDBusConnection *connection,
 {
     return gsignond_dbus_auth_service_proxy_new_sync (
                 connection,
-                G_DBUS_PROXY_FLAGS_NONE,
+                G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
                 GSIGNOND_SERVICE,
                 GSIGNOND_DAEMON_OBJECTPATH,
                 NULL, error);
@@ -263,7 +275,7 @@ GSignondDbusIdentity * _get_identity_for_path (GDBusConnection *connection,
 {
     return gsignond_dbus_identity_proxy_new_sync (
         connection,
-        G_DBUS_PROXY_FLAGS_NONE,
+        G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
         GSIGNOND_SERVICE,
         identity_path,
         NULL, error);
@@ -275,7 +287,7 @@ GSignondDbusAuthSession * _get_auth_session_for_path (GDBusConnection *connectio
 {
     return gsignond_dbus_auth_session_proxy_new_sync (
         connection,
-        G_DBUS_PROXY_FLAGS_NONE,
+        G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
         GSIGNOND_SERVICE,
         session_path,
         NULL, error);
@@ -296,7 +308,10 @@ GSignondDbusIdentity * _register_identity (GSignondDbusAuthService *auth_service
         NULL,
         error);
 
-    if (res == FALSE) return NULL;
+    if (res == FALSE) {
+        DBG (" ERROR :: %s", error ? (*error)->message : "");
+        return NULL;
+    }
 
     connection = g_dbus_proxy_get_connection (G_DBUS_PROXY (auth_service));
     identity = _get_identity_for_path (connection, identity_path, error);
@@ -326,7 +341,10 @@ GSignondDbusIdentity * _get_identity (GSignondDbusAuthService *auth_service,
         NULL,
         error);
 
-    if (res == FALSE || !identity_path) return NULL;
+    if (res == FALSE || !identity_path) {
+        DBG ("ERROR :: %s", error ? (*error)->message : "");
+        return NULL;
+    }
 
     connection = g_dbus_proxy_get_connection (G_DBUS_PROXY (auth_service));
     identity = _get_identity_for_path (connection, identity_path, error);
@@ -378,6 +396,7 @@ START_TEST (test_register_new_identity_with_no_app_context)
 
     g_object_unref (identity);
     g_object_unref (auth_service);
+    g_object_unref (connection);
 }
 END_TEST
 
@@ -407,7 +426,7 @@ START_TEST (test_identity_store)
     fail_if (res == FALSE, "Failed to store identity : %s", error ? error->message : "");
     fail_if (id == 0);
 
-    g_print ("Identity id : %d\n", id);
+    DBG ("Identity id : %d\n", id);
 
     g_object_unref (identity);
     g_object_unref (auth_service);
@@ -458,11 +477,10 @@ START_TEST(test_clear_database)
         &ret,
         NULL,
         &error);
+    fail_if (res == FALSE || ret == FALSE, "Failed to wipe databases : %s", error ? error->message : "");
 
     g_object_unref (auth_service);
     g_object_unref (connection);
-
-    fail_if (res == FALSE || ret == FALSE, "Failed to wipe databases : %s", error ? error->message : "");
 }
 END_TEST
 
@@ -632,6 +650,7 @@ START_TEST(test_query_identities)
     info3 = gsignond_dictionary_new_from_variant (v_info);
 
     /* query identities for app-context: app_context_A */
+    v_identities = NULL;
     filter = gsignond_dictionary_new();
     res = gsignond_dbus_auth_service_call_query_identities_sync (auth_service,
             gsignond_dictionary_to_variant (filter),
@@ -655,6 +674,7 @@ START_TEST(test_query_identities)
     gsignond_identity_info_unref (tmp_info);
 
     /* query identities for app-context: app_context_B, Identity type : 2 */
+    v_identities = NULL;
     filter = gsignond_dictionary_new();
     gsignond_dictionary_set_int32 (filter, "Type", 2);
     res = gsignond_dbus_auth_service_call_query_identities_sync (auth_service,
@@ -674,6 +694,7 @@ START_TEST(test_query_identities)
     gsignond_identity_info_unref (tmp_info);
 
     /* query identities for app-context: app_context_A, Caption: "cap*" */
+    v_identities = NULL;
     filter = gsignond_dictionary_new();
     gsignond_dictionary_set_string (filter, "Caption", "cap");
     res = gsignond_dbus_auth_service_call_query_identities_sync (auth_service,
