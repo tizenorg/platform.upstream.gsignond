@@ -156,10 +156,6 @@ gsignond_plugin_remote_dispose (GObject *object)
     }
 
     if (self->priv->cpid > 0) {
-        if (self->priv->child_watch_id) {
-            g_source_remove (self->priv->child_watch_id);
-            self->priv->child_watch_id = 0;
-        }
         kill (self->priv->cpid, SIGTERM);
         self->priv->cpid = 0;
     }
@@ -542,12 +538,8 @@ _child_watch_cb (
         gint  status,
         gpointer data)
 {
-    GSignondPluginRemote *plugin = (GSignondPluginRemote*)data;
-    DBG ("Plugin process (%s) with pid (%d) closed",
-            plugin->priv->plugin_type ? plugin->priv->plugin_type : "", pid);
+    DBG ("Plugin process with pid (%d) closed with status %d", pid, status);
     g_spawn_close_pid (pid);
-    g_source_remove (plugin->priv->child_watch_id);
-    plugin->priv->child_watch_id = 0;
 }
 
 GSignondPluginRemote *
