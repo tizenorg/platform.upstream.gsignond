@@ -26,6 +26,7 @@
 #include <check.h>
 #include <stdlib.h>
 #include <glib-object.h>
+#include <string.h>
 
 #include "gsignond-plugin-proxy.h"
 #include "gsignond-plugin-proxy-factory.h"
@@ -35,9 +36,6 @@
 #include <gsignond/gsignond-log.h>
 
 static GMainLoop *main_loop = NULL;
-
-typedef struct _GSignondAuthSession GSignondAuthSession;
-typedef struct _GSignondAuthSessionClass GSignondAuthSessionClass;
 
 static void
 _stop_mainloop ()

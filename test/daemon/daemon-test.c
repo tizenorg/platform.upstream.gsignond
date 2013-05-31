@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <gio/gio.h>
 #include <glib.h>
+#include <string.h>
 
 #include <daemon/dbus/gsignond-dbus.h>
 #include <daemon/dbus/gsignond-dbus-auth-service-gen.h>
