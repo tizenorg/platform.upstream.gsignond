@@ -76,6 +76,9 @@ elif test "x$enable_dbus_type" = "xsystem" ; then
     AC_DEFINE(GSIGNOND_BUS_TYPE, [G_BUS_TYPE_SYSTEM], [Use system bus])
     DBUS_SERVICES_DIR="`pkg-config --variable system_bus_services_dir dbus-1`"
 fi
+if test "x$enable_dbus_type" != "xp2p" ; then
+    DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
+fi
 
 AC_ARG_ENABLE(debug,
 	      [  --enable-debug          enable debug features],
@@ -98,7 +101,6 @@ AM_CONDITIONAL(USE_GTESTDBUS, [test x$gtestdbus = xyes])
 AC_SUBST(MESSAGE_BUS_TYPE, [$enable_dbus_type])
 
 AC_SUBST(DBUS_SERVICES_DIR)
-DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
 AC_SUBST(DBUS_INTERFACES_DIR)
 
 # gtk-doc

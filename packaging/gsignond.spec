@@ -1,3 +1,9 @@
+# define used dbus type [p2p, session, system]
+%define dbus_type session
+# enable debug features such as control environment variables
+# WARNING! do not use for production builds as it will break security
+%define debug_build 1
+
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
 Version: 0.0.0
@@ -45,7 +51,12 @@ autoreconf --install --force
 
 
 %build
-%configure --enable-dbus-type=session
+%if %{debug_build} == 1
+%configure --enable-dbus-type=%{dbus_type} --enable-debug
+%else
+%configure --enable-dbus-type=%{dbus_type}
+%endif
+
 make %{?_smp_mflags}
 
 
@@ -70,7 +81,9 @@ chmod u+s %{_bindir}/%{name}
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
 %{_libdir}/%{name}/plugins/*.so*
+%if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
+%endif
 %exclude %{_libdir}/gsignond/extensions/*.la
 %exclude %{_libdir}/gsignond/plugins/*.la
 
@@ -81,8 +94,10 @@ chmod u+s %{_bindir}/%{name}
 %{_libdir}/lib%{name}-*.so
 %{_libdir}/lib%{name}-*.la
 %{_libdir}/pkgconfig/%{name}.pc
+%if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/interfaces/*SingleSignOn*.xml
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
+%endif
 
 
 %changelog

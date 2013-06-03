@@ -1,6 +1,6 @@
 NULL=
 INTERFACES_DIR = $(top_srcdir)/src/daemon/dbus/interfaces
-SERVCIES_DIR   = $(top_srcdir)/src/daemon/dbus/services
+SERVICES_DIR   = $(top_srcdir)/src/daemon/dbus/services
 DBUS_BUILT_SOURCES = \
     gsignond-dbus-auth-service-gen.c \
     gsignond-dbus-auth-service-gen.h \
@@ -107,7 +107,7 @@ libgsignond_dbus_la_SOURCES = \
 
 dbusservicedir = $(DBUS_SERVICES_DIR)
 dbusservice_DATA = \
-    $(SERVCIES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.service
+    $(SERVICES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.service
 
 dbusinterfacesdir = $(DBUS_INTERFACES_DIR)
 dbusinterfaces_DATA = \
@@ -117,7 +117,7 @@ dbusinterfaces_DATA = \
     $(INTERFACES_DIR)/org.tizen.SSO.singlesignonui.xml \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.xml
 
-EXTRA_DIST = dbusservice
+EXTRA_DIST = dbusservice dbusinterfaces
 
 clean-local :
 	rm -f *~ $(DBUS_BUILT_SOURCES) $(DBUS_BUILT_DOCS)
