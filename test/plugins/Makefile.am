@@ -4,7 +4,7 @@ TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
 	SSO_BIN_DIR=$(top_builddir)/src/daemon/.libs \
     SSO_STORAGE_PATH=/tmp/gsignond \
     SSO_SECRET_PATH=/tmp/gsignond \
-    LD_LIBRARY_PATH=$(top_builddir)/src/daemon/plugins/plugind/.libs
+    LD_LIBRARY_PATH="$(top_builddir)/src/daemon/plugins/plugind/.libs:$(top_builddir)/src/common/.libs:$(top_builddir)/src/common/db/.libs:$(top_builddir)/src/daemon/.libs:$(top_builddir)/src/daemon/db/.libs:$(top_builddir)/src/daemon/dbus/.libs:$(top_builddir)/src/daemon/plugins/.libs"
 
 VALGRIND_TESTS_DISABLE =
     
