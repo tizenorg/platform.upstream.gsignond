@@ -21,6 +21,31 @@ gsignond-identity-enum-types.c: $(top_srcdir)/src/common/gsignond-enum.c.templat
                     --identifier-prefix gsignond \
                     gsignond-identity.h > $@
 
+gsignond_includedir = $(includedir)/gsignond
+gsignond_pubhdr = ../../include/gsignond
+gsignond_include_HEADERS = \
+	$(gsignond_pubhdr)/gsignond-access-control-manager.h \
+	$(gsignond_pubhdr)/gsignond-config-db.h \
+	$(gsignond_pubhdr)/gsignond-config-dbus.h \
+	$(gsignond_pubhdr)/gsignond-config-general.h \
+	$(gsignond_pubhdr)/gsignond-config.h \
+	$(gsignond_pubhdr)/gsignond-credentials.h \
+	$(gsignond_pubhdr)/gsignond-dictionary.h \
+	$(gsignond_pubhdr)/gsignond-error.h \
+	$(gsignond_pubhdr)/gsignond-extension-interface.h \
+	$(gsignond_pubhdr)/gsignond-identity-info.h \
+	$(gsignond_pubhdr)/gsignond-log.h \
+	$(gsignond_pubhdr)/gsignond-pipe-stream.h \
+	$(gsignond_pubhdr)/gsignond-plugin-interface.h \
+	$(gsignond_pubhdr)/gsignond-plugin-loader.h \
+	$(gsignond_pubhdr)/gsignond-secret-storage.h \
+	$(gsignond_pubhdr)/gsignond-security-context.h \
+	$(gsignond_pubhdr)/gsignond-session-data.h \
+	$(gsignond_pubhdr)/gsignond-signonui-data.h \
+	$(gsignond_pubhdr)/gsignond-signonui.h \
+	$(gsignond_pubhdr)/gsignond-storage-manager.h \
+	$(gsignond_pubhdr)/gsignond-utils.h
+
 gsignond_SOURCES = \
     main.c \
     gsignond-auth-session.c \

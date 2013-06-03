@@ -2,7 +2,7 @@
 %define dbus_type session
 # enable debug features such as control environment variables
 # WARNING! do not use for production builds as it will break security
-%define debug_build 1
+%define debug_build 0
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
@@ -90,12 +90,11 @@ chmod u+s %{_bindir}/%{name}
 
 %files devel
 %defattr(-,root,root,-)
-#%{_includedir}/%{name}/*.h
+%{_includedir}/%{name}/*.h
 %{_libdir}/lib%{name}-*.so
 %{_libdir}/lib%{name}-*.la
 %{_libdir}/pkgconfig/%{name}.pc
 %if %{dbus_type} != "p2p"
-%{_datadir}/dbus-1/interfaces/*SingleSignOn*.xml
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
 %endif
 
