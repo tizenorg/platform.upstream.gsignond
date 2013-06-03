@@ -29,7 +29,7 @@
 #include <config.h>
 #include <glib.h>
 #include <daemon/gsignond-identity.h>
-#include "gsignond-disposable.h"
+#include "common/gsignond-disposable.h"
 #include "gsignond-dbus-identity-gen.h"
 
 G_BEGIN_DECLS

@@ -29,7 +29,7 @@
 #include <config.h>
 #include <glib.h>
 #include <daemon/gsignond-auth-session.h>
-#include "gsignond-disposable.h"
+#include "common/gsignond-disposable.h"
 #include "gsignond-dbus-auth-session-gen.h"
 
 G_BEGIN_DECLS

@@ -62,6 +62,8 @@ libgsignond_common_la_SOURCES = \
     gsignond-plugin-loader.c \
     gsignond-utils.c \
     gsignond-pipe-stream.c \
+    gsignond-disposable.h \
+    gsignond-disposable.c \
     $(BUILT_SOURCES) \
     $(NULL)
 

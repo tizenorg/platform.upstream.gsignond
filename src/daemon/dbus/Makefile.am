@@ -92,8 +92,6 @@ libgsignond_dbus_la_LIBADD = \
 
 libgsignond_dbus_la_SOURCES = \
    $(DBUS_BUILT_SOURCES) \
-   gsignond-disposable.h \
-   gsignond-disposable.c \
    gsignond-dbus.h \
    gsignond-dbus-server.c \
    gsignond-dbus-server.h \
