@@ -23,11 +23,12 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-plugin-proxy-factory.h"
 #include <string.h>
 #include <stdio.h>
-#include <gsignond/gsignond-log.h>
-#include <gsignond/gsignond-plugin-loader.h>
+
+#include "gsignond/gsignond-log.h"
+#include "common/gsignond-plugin-loader.h"
+#include "gsignond-plugin-proxy-factory.h"
 #include "gsignond-plugin-remote.h"
 
 G_DEFINE_TYPE (GSignondPluginProxyFactory, gsignond_plugin_proxy_factory, G_TYPE_OBJECT);

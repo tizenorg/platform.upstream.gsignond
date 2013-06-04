@@ -35,9 +35,7 @@ gsignond_include_HEADERS = \
 	$(gsignond_pubhdr)/gsignond-extension-interface.h \
 	$(gsignond_pubhdr)/gsignond-identity-info.h \
 	$(gsignond_pubhdr)/gsignond-log.h \
-	$(gsignond_pubhdr)/gsignond-pipe-stream.h \
 	$(gsignond_pubhdr)/gsignond-plugin-interface.h \
-	$(gsignond_pubhdr)/gsignond-plugin-loader.h \
 	$(gsignond_pubhdr)/gsignond-secret-storage.h \
 	$(gsignond_pubhdr)/gsignond-security-context.h \
 	$(gsignond_pubhdr)/gsignond-session-data.h \

@@ -25,8 +25,8 @@
 
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-error.h"
-#include "gsignond/gsignond-pipe-stream.h"
 #include "gsignond/gsignond-plugin-interface.h"
+#include "common/gsignond-pipe-stream.h"
 #include "daemon/dbus/gsignond-dbus.h"
 #include "gsignond-plugin-remote-private.h"
 #include "gsignond-plugin-remote.h"

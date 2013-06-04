@@ -23,12 +23,12 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-plugin-proxy.h"
-#include "gsignond/gsignond-plugin-loader.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-config.h"
+#include "common/gsignond-plugin-loader.h"
 #include "daemon/gsignond-auth-session.h"
+#include "gsignond-plugin-proxy.h"
 #include "gsignond-plugin-remote.h"
 
 #define GSIGNOND_PLUGIN_PROXY_PRIV(obj) \

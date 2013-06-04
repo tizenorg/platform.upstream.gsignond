@@ -25,7 +25,7 @@
 #include <gio/gunixinputstream.h>
 #include <gio/gunixoutputstream.h>
 
-#include "gsignond/gsignond-pipe-stream.h"
+#include "gsignond-pipe-stream.h"
 
 #define GSIGNOND_PIPE_STREAM_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\

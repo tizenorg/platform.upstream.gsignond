@@ -24,9 +24,10 @@
  */
 
 
-#include "gsignond/gsignond-plugin-loader.h"
-#include "gsignond/gsignond-log.h"
 #include <gmodule.h>
+
+#include "gsignond/gsignond-log.h"
+#include "gsignond-plugin-loader.h"
 
 GSignondPlugin*
 gsignond_load_plugin(

@@ -24,12 +24,12 @@
  */
 
 #include "gsignond/gsignond-plugin-interface.h"
-#include "daemon/dbus/gsignond-dbus-remote-plugin-gen.h"
-#include "daemon/dbus/gsignond-dbus.h"
-#include "gsignond/gsignond-plugin-loader.h"
-#include "gsignond/gsignond-pipe-stream.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-error.h"
+#include "common/gsignond-plugin-loader.h"
+#include "common/gsignond-pipe-stream.h"
+#include "daemon/dbus/gsignond-dbus-remote-plugin-gen.h"
+#include "daemon/dbus/gsignond-dbus.h"
 #include "gsignond-plugin-daemon.h"
 
 struct _GSignondPluginDaemonPrivate
