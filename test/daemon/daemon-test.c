@@ -31,6 +31,7 @@
 #include <gio/gio.h>
 #include <glib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <daemon/dbus/gsignond-dbus.h>
 #include <daemon/dbus/gsignond-dbus-auth-service-gen.h>
@@ -57,6 +58,7 @@ struct IdentityData {
     { "StoreSecret", "b", (void *)TRUE}
 };
 gchar *exe_name = 0;
+
 #if HAVE_GTESTDBUS
 GTestDBus *dbus = NULL;
 #else
@@ -108,30 +110,40 @@ setup_daemon (void)
 #   else
     /* session bus where no GTestBus support */
     GIOChannel *channel = NULL;
-    gchar *config_path = NULL;
     gchar *bus_address = NULL;
-    gchar *argv[] = {"dbus-daemon", "--print-address=2", "--config-file=", NULL};
+    gint tmp_fd = 0;
+    gint pipe_fd[2];
+    gchar *argv[] = {"dbus-daemon", "--config-file=<<conf-file>>", "--print-address=<<fd>>", NULL};
     gsize len = 0;
-    gint stderr_fd = 0;
     const gchar *dbus_monitor = NULL;
 
-    config_path = g_strdup_printf ("--config-file=%s", "gsignond-dbus.conf");
-    argv[2] = config_path;
+    argv[1] = g_strdup_printf ("--config-file=%s", "gsignond-dbus.conf");
 
-    /* start daemon */
-    g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, NULL, NULL, &stderr_fd, &error);
+    if (pipe(pipe_fd)== -1) {
+        WARN("Failed to open temp file : %s", error->message);
+        argv[2] = g_strdup_printf ("--print-address=1");
+        g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &daemon_pid, NULL, NULL, &tmp_fd, &error);
+    } else {
+        tmp_fd = pipe_fd[0];
+        argv[2] = g_strdup_printf ("--print-address=%d", pipe_fd[1]);
+        g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH|G_SPAWN_LEAVE_DESCRIPTORS_OPEN, NULL, NULL, &daemon_pid, &error);
+    }
     fail_if (error != NULL, "Failed to span daemon : %s", error ? error->message : "");
     fail_if (daemon_pid == 0, "Failed to get daemon pid");
-    g_free (config_path);
+    g_free (argv[1]);
+    g_free (argv[2]);
     sleep (5); /* 5 seconds */
 
-    channel = g_io_channel_unix_new (stderr_fd);
+    channel = g_io_channel_unix_new (tmp_fd);
     g_io_channel_read_line (channel, &bus_address, NULL, &len, &error);
     fail_if (error != NULL, "Failed to daemon address : %s", error ? error->message : "");
-
     g_io_channel_unref (channel);
+    
+    if (pipe_fd[0]) close (pipe_fd[0]);
+    if (pipe_fd[1]) close (pipe_fd[1]);
 
     if (bus_address) bus_address[len] = '\0';
+    fail_if(bus_address == NULL || strlen(bus_address) == 0);
 
     if (GSIGNOND_BUS_TYPE == G_BUS_TYPE_SYSTEM)
         fail_if (g_setenv("DBUS_SYSTEM_BUS_ADDRESS", bus_address, TRUE) == FALSE);
