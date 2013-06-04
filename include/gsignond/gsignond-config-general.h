@@ -39,5 +39,7 @@
                                                 "/Extension"
 #define GSIGNOND_CONFIG_GENERAL_SECURE_DIR      GSIGNOND_CONFIG_GENERAL \
                                                 "/SecureDir"
+#define GSIGNOND_CONFIG_PLUGIN_TIMEOUT          GSIGNOND_CONFIG_GENERAL \
+                                                "/PluginTimeout"
 
 #endif /* __GSIGNOND_GENERAL_CONFIG_H_ */

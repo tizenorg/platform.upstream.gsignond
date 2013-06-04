@@ -243,6 +243,33 @@ gsignond_plugin_proxy_factory_new(GSignondConfig *config)
     return proxy;
 }
 
+static gboolean
+_find_proxy_by_pointer (gpointer key, gpointer value, gpointer userdata)
+{
+    (void)key;
+    return userdata == value;
+}
+
+static void
+_remove_dead_proxy (gpointer data, GObject *dead_proxy)
+{
+    GSignondPluginProxyFactory *factory = GSIGNOND_PLUGIN_PROXY_FACTORY(data);
+    if (factory) {
+        g_hash_table_foreach_steal (factory->plugins, 
+                _find_proxy_by_pointer, dead_proxy);
+    }
+}
+
+static void
+_proxy_toggle_ref_cb (gpointer userdata, GObject *proxy, gboolean is_last_ref)
+{
+    /* start/stop timeout timer */
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (proxy), is_last_ref);
+
+    if (is_last_ref) g_object_weak_ref (proxy, _remove_dead_proxy, userdata);
+    else g_object_weak_unref (proxy, _remove_dead_proxy, userdata);
+}
+
 GSignondPluginProxy*
 gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
                                          const gchar* plugin_type)
@@ -274,7 +301,8 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
     }
     g_hash_table_insert(factory->plugins, g_strdup (plugin_type), proxy);
     DBG("get new plugin %s -> %p", plugin_type, proxy);
-    g_object_ref(proxy);
+    g_object_add_toggle_ref(G_OBJECT(proxy), _proxy_toggle_ref_cb, factory);
+
     return proxy;
 }
 

@@ -201,6 +201,12 @@ _load_environment (GSignondConfig *self)
                                     GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT,
                                     e_val);
 
+    e_val = g_getenv ("SSO_PLUGIN_TIMEOUT");
+    if (e_val && (timeout = atoi(e_val)))
+        gsignond_config_set_string (self,
+                                    GSIGNOND_CONFIG_PLUGIN_TIMEOUT,
+                                    e_val);
+
     e_val = g_getenv ("SSO_PLUGINS_DIR");
     if (e_val) 
         gsignond_config_set_string (self,

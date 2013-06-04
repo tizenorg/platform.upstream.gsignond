@@ -67,7 +67,7 @@ typedef struct {
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-G_DEFINE_TYPE (GSignondPluginProxy, gsignond_plugin_proxy, G_TYPE_OBJECT);
+G_DEFINE_TYPE (GSignondPluginProxy, gsignond_plugin_proxy, GSIGNOND_TYPE_DISPOSABLE);
 
 static GSignondProcessData*
 gsignond_process_data_new (
@@ -478,9 +478,14 @@ gsignond_plugin_proxy_new (
         GSignondConfig *config,
         const gchar *plugin_type)
 {
+    g_return_val_if_fail (config && plugin_type, NULL);
+
+    gint timeout = gsignond_config_get_integer (config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT);
     GSignondPluginProxy* proxy = g_object_new (GSIGNOND_TYPE_PLUGIN_PROXY,
                                                "config", config,
                                                "type", plugin_type,
+                                               "auto-dispose", FALSE,
+                                               "timeout", timeout,
                                                NULL);
     if (g_strcmp0 (plugin_type,
                    gsignond_plugin_proxy_get_plugin_type (proxy)) == 0)

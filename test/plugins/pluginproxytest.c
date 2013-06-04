@@ -505,6 +505,127 @@ START_TEST (test_pluginproxyfactory_add)
 }
 END_TEST
 
+typedef struct {
+    GSignondPluginProxyFactory *factory;
+    GSignondPluginProxy *proxy;
+} ProxyTimeoutData;
+
+static gboolean
+_validate_new_proxy(gpointer userdata)
+{
+    ProxyTimeoutData *data = (ProxyTimeoutData *)userdata;
+    fail_if (data == NULL);
+
+    GSignondPluginProxy *proxy = gsignond_plugin_proxy_factory_get_plugin (data->factory, "ssotest");
+    fail_if (proxy == NULL);
+
+    fail_if (proxy == data->proxy, "expected new proxy object, but got cached object");
+    g_object_unref(proxy);
+
+    g_free (userdata);
+
+    _stop_mainloop();
+
+    return FALSE;
+}
+
+static gboolean
+_validate_cached_proxy (gpointer userdata)
+{
+    ProxyTimeoutData *data = (ProxyTimeoutData *)userdata;
+    fail_if (data == NULL);
+    
+    GSignondPluginProxy *proxy = gsignond_plugin_proxy_factory_get_plugin (data->factory, "ssotest");
+    fail_if (proxy == NULL);
+
+    fail_unless (proxy == data->proxy, "expected cached proxy object, but got new object");
+
+    g_object_unref (proxy);
+
+    g_timeout_add_seconds (2, _validate_new_proxy, userdata);
+
+    return FALSE;
+}
+
+START_TEST (test_pluginproxyfactory_proxy_timeout)
+{
+    DBG("test_pluginproxyfactory_proxy_timeout\n");
+    GSignondPluginProxyFactory *factory = NULL;
+    GSignondPluginProxy *proxy1 = NULL, *proxy2 = NULL;
+    GSignondConfig *config = NULL;
+
+    /* CASE 1: proxy timeout disabled */
+    g_setenv ("SSO_PLUGIN_TIMEOUT", "0", TRUE);
+  
+    config = gsignond_config_new();
+    fail_if(config == NULL);
+
+    factory = gsignond_plugin_proxy_factory_new ( config);
+    fail_if (factory == NULL);
+
+    proxy1 = gsignond_plugin_proxy_factory_get_plugin (factory, "ssotest");
+    fail_if (proxy1 == NULL);
+    g_object_unref (proxy1);
+
+    proxy2 = gsignond_plugin_proxy_factory_get_plugin (factory, "ssotest");
+    fail_if (proxy2 == NULL);
+
+    fail_unless (proxy1 == proxy2, "got new plugin proxy object, "
+                                   "where expected cached object(%p,%p)",
+                                    proxy1, proxy2);
+    g_object_unref (proxy2);
+
+    g_object_unref (config);
+    g_object_unref (factory);
+
+    /* CASE 2: proxy timeout enbled */ 
+    g_setenv ("SSO_PLUGIN_TIMEOUT", "1", TRUE);
+
+    config = gsignond_config_new();
+    fail_if(config == NULL);
+
+    factory = gsignond_plugin_proxy_factory_new (config);
+    fail_if (factory == NULL);
+
+    proxy1 = gsignond_plugin_proxy_factory_get_plugin (factory, "ssotest");
+    fail_if (proxy1 == NULL);
+    g_object_unref (proxy1);
+
+    ProxyTimeoutData *data = g_new0(ProxyTimeoutData, 1);
+    data->factory = factory;
+    data->proxy = proxy1;
+    g_timeout_add_seconds (2, _validate_new_proxy, (gpointer)data);
+
+    _run_mainloop ();
+
+    g_object_unref(config);
+    g_object_unref(factory);
+
+    /* CASE 3: proxy timeout enable - request recently closed plugin */
+    g_setenv ("SSO_PLUGIN_TIMEOUT", "2", TRUE);
+    config = gsignond_config_new ();
+    fail_if (config == NULL);
+
+    factory = gsignond_plugin_proxy_factory_new(config);
+    fail_if (factory == NULL);
+
+    proxy1 = gsignond_plugin_proxy_factory_get_plugin(factory, "ssotest");
+    fail_if (proxy1 == NULL);
+    g_object_unref (proxy1);
+
+    ProxyTimeoutData *data1 = g_new0(ProxyTimeoutData, 1);
+    data1->factory = factory;
+    data1->proxy = proxy1;
+
+    g_timeout_add_seconds (1, _validate_cached_proxy, (gpointer)data1);
+
+    _run_mainloop();
+
+    g_object_unref(config);
+    g_object_unref(factory);
+}
+END_TEST
+
 Suite* pluginproxy_suite (void)
 {
     Suite *s = suite_create ("Plugin proxy");
@@ -513,6 +634,7 @@ Suite* pluginproxy_suite (void)
     TCase *tc_core = tcase_create ("Tests");
     tcase_add_checked_fixture (tc_core, _setup, _teardown);
 
+    tcase_set_timeout (tc_core, 10);
     tcase_add_test (tc_core, test_pluginproxy_create);
     tcase_add_test (tc_core, test_pluginproxy_process);
     tcase_add_test (tc_core, test_pluginproxy_process_cancel);
@@ -521,6 +643,7 @@ Suite* pluginproxy_suite (void)
     tcase_add_test (tc_core, test_pluginproxyfactory_methods_and_mechanisms);
     tcase_add_test (tc_core, test_pluginproxyfactory_get);
     tcase_add_test (tc_core, test_pluginproxyfactory_add);
+    tcase_add_test (tc_core, test_pluginproxyfactory_proxy_timeout);
 
     suite_add_tcase (s, tc_core);
     return s;

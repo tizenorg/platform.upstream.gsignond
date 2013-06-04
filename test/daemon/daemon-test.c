@@ -73,6 +73,7 @@ setup_daemon (void)
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_SECRET_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
+    fail_if (g_setenv ("SSO_PLUGIN_TIMEOUT", "5", TRUE) == FALSE);
 
     DBG ("Programe name : %s\n", exe_name);
 

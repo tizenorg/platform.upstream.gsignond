@@ -28,6 +28,7 @@
 
 #include <glib-object.h>
 
+#include "common/gsignond-disposable.h"
 #include "daemon/gsignond-types.h"
 #include <gsignond/gsignond-plugin-interface.h>
 #include <gsignond/gsignond-config.h>
@@ -54,7 +55,7 @@ typedef struct _GSignondPluginProxyPrivate GSignondPluginProxyPrivate;
 
 struct _GSignondPluginProxy
 {
-    GObject parent_instance;
+    GSignondDisposable parent_instance;
     
     /* Private */
     GSignondPluginProxyPrivate *priv;
@@ -62,7 +63,7 @@ struct _GSignondPluginProxy
 
 struct _GSignondPluginProxyClass
 {
-    GObjectClass parent_class;
+    GSignondDisposableClass parent_class;
 };
 
 GType
