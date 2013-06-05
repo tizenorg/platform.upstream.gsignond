@@ -11,7 +11,9 @@ commontest_SOURCES = commontest.c
 commontest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
-    -I$(top_srcdir)/include/ 
+    -I$(top_srcdir) \
+    -I$(top_builddir)/include/ \
+    -I$(top_builddir)/src/
 
 commontest_LDADD = \
     $(top_builddir)/src/common/libgsignond-common.la \

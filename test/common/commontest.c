@@ -28,11 +28,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <glib-unix.h>
-#include <gsignond/gsignond-session-data.h>
-#include <gsignond/gsignond-plugin-loader.h>
-#include <gsignond/gsignond-error.h>
-#include <gsignond/gsignond-log.h>
-#include <gsignond/gsignond-pipe-stream.h>
+#include "gsignond/gsignond-session-data.h"
+#include "gsignond/gsignond-error.h"
+#include "gsignond/gsignond-log.h"
+#include "common/gsignond-pipe-stream.h"
+#include "common/gsignond-plugin-loader.h"
 
 START_TEST (test_pipe_stream)
 {

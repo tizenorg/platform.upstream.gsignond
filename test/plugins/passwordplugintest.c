@@ -26,12 +26,12 @@
 #include <check.h>
 #include <stdlib.h>
 #include "gsignond-password-plugin.h"
-#include <gsignond/gsignond-session-data.h>
-#include <gsignond/gsignond-signonui-data.h>
-#include <gsignond/gsignond-plugin-interface.h>
-#include <gsignond/gsignond-error.h>
-#include <gsignond/gsignond-plugin-loader.h>
-#include <gsignond/gsignond-config.h>
+#include "gsignond/gsignond-session-data.h"
+#include "gsignond/gsignond-signonui-data.h"
+#include "gsignond/gsignond-plugin-interface.h"
+#include "gsignond/gsignond-error.h"
+#include "gsignond/gsignond-config.h"
+#include "common/gsignond-plugin-loader.h"
 
 
 static void check_plugin(GSignondPlugin* plugin)

@@ -33,12 +33,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <daemon/dbus/gsignond-dbus.h>
-#include <daemon/dbus/gsignond-dbus-auth-service-gen.h>
-#include <daemon/dbus/gsignond-dbus-identity-gen.h>
-#include <daemon/dbus/gsignond-dbus-auth-session-gen.h>
-#include <gsignond/gsignond-identity-info.h>
-#include <gsignond/gsignond-log.h>
+#include "daemon/dbus/gsignond-dbus.h"
+#include "daemon/dbus/gsignond-dbus-auth-service-gen.h"
+#include "daemon/dbus/gsignond-dbus-identity-gen.h"
+#include "daemon/dbus/gsignond-dbus-auth-session-gen.h"
+#include "gsignond/gsignond-identity-info.h"
+#include "gsignond/gsignond-log.h"
 
 #ifdef USE_P2P
 #  ifdef GSIGNOND_SERVICE
