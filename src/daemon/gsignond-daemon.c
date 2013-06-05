@@ -344,7 +344,7 @@ gsignond_daemon_store_identity (GSignondDaemon *daemon, GSignondIdentity *identi
     info = gsignond_identity_get_identity_info(identity);
     if (!info) return 0;
     
-    was_new_identity = (gsignond_identity_info_get_id (info) == 0);
+    was_new_identity = gsignond_identity_info_get_is_identity_new (info);
 
     id = gsignond_db_credentials_database_update_identity (daemon->priv->db, info);
 

@@ -63,6 +63,12 @@ struct _GSignondIdentityPrivate
     GHashTable *auth_sessions; // (auth_method,auth_session) table
 };
 
+typedef struct _GSignondIdentityCbData
+{
+    GSignondIdentity *identity;
+    GSignondAuthSession *session;
+} GSignondIdentityCbData;
+
 G_DEFINE_TYPE (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT);
 
 
@@ -313,17 +319,11 @@ gsignond_identity_get_info (GSignondIdentity *identity, const GSignondSecurityCo
 static void
 _on_dialog_refreshed (GError *error, gpointer user_data)
 {
-    GSignondAuthSession *session = GSIGNOND_AUTH_SESSION (user_data);
+    /*GSignondAuthSession *session = GSIGNOND_AUTH_SESSION (user_data);*/
 
     if (error) {
         WARN ("Error : %s", error->message);
         g_error_free (error);
-    }
-
-    if (session) {
-        /*
-         * FIXME: whom to pass the reply ? 
-         */
     }
 }
 
@@ -339,32 +339,84 @@ _on_refresh_dialog (GSignondAuthSession *session, GSignondSignonuiData *ui_data,
 static void
 _on_refresh_requested (GSignondSignonuiData *ui_data, gpointer user_data)
 {
-    GSignondAuthSession *session = GSIGNOND_AUTH_SESSION (user_data);
-    gsignond_auth_session_refresh (session, ui_data);
+    GSignondIdentityCbData *cb_data = (GSignondIdentityCbData *) user_data;
+
+    gsignond_auth_session_refresh (cb_data->session, ui_data);
 }
 
 static void
 _on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer user_data)
 {
-    GSignondAuthSession *session = GSIGNOND_AUTH_SESSION (user_data);
+    GSignondIdentityCbData *cb_data = (GSignondIdentityCbData *) user_data;
+    GSignondIdentityPrivate *priv = GSIGNOND_IDENTITY_PRIV (cb_data->identity);
+    GSignondSignonuiError ui_error = SIGNONUI_ERROR_NONE;
+
     if (error) {
-        WARN ("UI-Error: %s", error->message);
+        WARN ("UI-Error: %s on identity %d",
+              error->message,
+              gsignond_identity_info_get_id (priv->info));
         g_error_free (error);
+        g_slice_free (GSignondIdentityCbData, cb_data);
         return;
     }
-    if (session) {
-        gsignond_auth_session_user_action_finished (session, reply);
+
+    if (!gsignond_signonui_data_get_query_error (reply, &ui_error))
+        WARN ("signonui error %d for identity %d",
+              ui_error,
+              gsignond_identity_info_get_id (priv->info));
+
+    if (!gsignond_identity_info_get_validated (priv->info) &&
+        ui_error == SIGNONUI_ERROR_NONE) {
+        gsignond_identity_info_set_username (priv->info,
+                                             gsignond_signonui_data_get_username (reply));
+    }
+
+    /* storing secret allowed? */
+    if (gsignond_identity_info_get_store_secret (priv->info)) {
+        gboolean remember = TRUE;
+
+        /* and there was no opt-out? */
+        if (!gsignond_signonui_data_get_remember_password (reply, &remember))
+            DBG ("identity %d - don't remember password",
+                 gsignond_identity_info_get_id (priv->info));
+        if (remember && ui_error == SIGNONUI_ERROR_NONE) {
+                gsignond_identity_info_set_secret (priv->info,
+                                                   gsignond_signonui_data_get_password (reply));
+        } else if (!remember ||
+                   (ui_error == SIGNONUI_ERROR_CANCELED ||
+                    ui_error == SIGNONUI_ERROR_FORGOT_PASSWORD)) {
+            /* reset to empty in case user canceled or forgot,
+             * or doesn't want password to be remebered anymore */
+            gsignond_identity_info_set_secret (priv->info, "");
+        }
+    }
+    /* TODO: auto-set to validated on successful process() cycle */
+    /* store if not a new identity (new is stored later) */
+    if (!gsignond_identity_info_get_is_identity_new (priv->info)) {
+        if (!gsignond_daemon_store_identity (priv->owner, cb_data->identity))
+            WARN ("failed to update identity %d",
+                  gsignond_identity_info_get_id (priv->info));
+    }
+
+    if (cb_data->session) {
+        gsignond_auth_session_user_action_finished (cb_data->session, reply);
     }
     else if (reply) gsignond_signonui_data_unref (reply);
+
+    g_slice_free (GSignondIdentityCbData, cb_data);
 }
 
 static void
 _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (userdata);
+    GSignondIdentityCbData *cb_data = g_slice_new (GSignondIdentityCbData);
+
+    cb_data->identity = identity;
+    cb_data->session = session;
 
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(session), 
-            ui_data, _on_user_action_completed, _on_refresh_requested, session);
+            ui_data, _on_user_action_completed, _on_refresh_requested, cb_data);
 }
 
 static void
