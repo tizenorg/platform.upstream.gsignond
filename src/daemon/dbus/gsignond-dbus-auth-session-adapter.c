@@ -246,6 +246,8 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     mechanisms = gsignond_auth_session_query_available_mechanisms (
@@ -261,7 +263,8 @@ _handle_query_available_mechanisms (GSignondDbusAuthSessionAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
+
     return TRUE;
 }
 
@@ -304,6 +307,7 @@ _emit_state_changed (gint state, const gchar *message, gpointer user_data)
     gsignond_dbus_auth_session_emit_state_changed (
             self->priv->dbus_auth_session, state, message);
 }
+
 static void
 _on_process_done (GSignondSessionData *reply, const GError *error, gpointer user_data)
 {
@@ -340,6 +344,8 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     data = (GSignondSessionData *)gsignond_dictionary_new_from_variant ((GVariant *)session_data);
@@ -355,10 +361,7 @@ _handle_process (GSignondDbusAuthSessionAdapter *self,
         
         self->priv->is_process_active = FALSE;
 
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
-    }
-    else {
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
     }
 
     gsignond_dictionary_unref (data);
@@ -374,7 +377,9 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
     GError *error = NULL;
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (self), FALSE);
-    
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     if (gsignond_auth_session_cancel (self->priv->session, self->priv->ctx, &error))
@@ -384,7 +389,7 @@ _handle_cancel (GSignondDbusAuthSessionAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }

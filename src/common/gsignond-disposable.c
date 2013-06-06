@@ -29,7 +29,7 @@
 struct _GSignondDisposablePrivate
 {
     guint timeout;       /* timeout in seconds */
-    gint  keep_obj_counter; /* keep object request counter */
+    volatile gint  keep_obj_counter; /* keep object request counter */
     guint timer_id;      /* timer source id */
 };
 
@@ -89,7 +89,7 @@ _get_property (GObject *object,
             g_value_set_int (value, self->priv->timeout);
             break;
         case PROP_AUTO_DISPOSE:
-            g_value_set_boolean (value, (gboolean)!self->priv->keep_obj_counter);
+            g_value_set_boolean (value, gsignond_disposable_get_auto_dispose(self));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -170,7 +170,7 @@ gsignond_disposable_init (GSignondDisposable *self)
 
     self->priv->timer_id = 0;
     self->priv->timeout = 0;
-    self->priv->keep_obj_counter = 0;
+    g_atomic_int_set(&self->priv->keep_obj_counter, 0);
 
     DBG ("INIT");
 }
@@ -209,9 +209,9 @@ _update_timer (GSignondDisposable *self)
                   self,
                   self->priv->keep_obj_counter, 
                   self->priv->timeout);
-    if (self->priv->keep_obj_counter == 0) {
+    if (g_atomic_int_get(&self->priv->keep_obj_counter) == 0) {
         if (self->priv->timeout) {
-            INFO("Setting object timeout to %d", self->priv->timeout);
+            DBG("Setting object timeout to %d", self->priv->timeout);
             self->priv->timer_id = g_timeout_add_seconds (self->priv->timeout,
                                                           _timer_dispose,
                                                           self);
@@ -229,9 +229,9 @@ gsignond_disposable_set_auto_dispose (GSignondDisposable *self,
 {
     g_return_if_fail (self && GSIGNOND_IS_DISPOSABLE (self));
 
-    if (self->priv->keep_obj_counter == 0 && dispose) return;
+    if (g_atomic_int_get(&self->priv->keep_obj_counter) == 0 && dispose) return;
 
-    self->priv->keep_obj_counter += !dispose ? +1 : -1;
+    g_atomic_int_add (&self->priv->keep_obj_counter, !dispose ? +1 : -1);
 
     _update_timer (self);
 }
@@ -250,21 +250,6 @@ gsignond_disposable_set_timeout (GSignondDisposable *self,
 }
 
 void
-gsignond_disposable_set_keep_in_use (GSignondDisposable *self)
-{
-    /* check if need to reset timer */
-    if (self->priv->keep_obj_counter || !self->priv->timeout) return ;
-
-    if (self->priv->timer_id) 
-        g_source_remove (self->priv->timer_id);
-
-    INFO ("Resetting timer for object '%s' (%p).",
-          G_OBJECT_TYPE_NAME (self), self);
-    self->priv->timer_id = g_timeout_add_seconds (self->priv->timeout, 
-                                                  _timer_dispose, self);
-}
-
-void
 gsignond_disposable_delete_later (GSignondDisposable *self)
 {
     if (self->priv->timer_id)
@@ -275,3 +260,10 @@ gsignond_disposable_delete_later (GSignondDisposable *self)
     self->priv->timer_id = g_idle_add (_auto_dispose, self);
 }
 
+gboolean
+gsignond_disposable_get_auto_dispose (GSignondDisposable *self)
+{
+    g_return_val_if_fail (self && GSIGNOND_IS_DISPOSABLE(self), FALSE);
+
+    return g_atomic_int_get(&self->priv->keep_obj_counter) == 0 ;
+}

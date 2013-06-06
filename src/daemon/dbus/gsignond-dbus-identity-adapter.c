@@ -372,6 +372,7 @@ _on_credentials_updated (_IdentityDbusInfo *info, guint32 updated_id, GError *er
 
     _identity_dbus_info_free (info);
 }
+
 static gboolean
 _handle_request_credentials_update (GSignondDbusIdentityAdapter *self,
                                     GDBusMethodInvocation *invocation,
@@ -382,19 +383,20 @@ _handle_request_credentials_update (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
-    
+
     gsignond_identity_request_credentials_update (self->priv->identity, message, self->priv->sec_context, &error);
     if (error) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
-        
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+ 
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
     }
     else {
         self->priv->credentials_update_handler_id = g_signal_connect_swapped (self->priv->identity,
             "credentials-updated", G_CALLBACK (_on_credentials_updated), self);
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
     }
 
     return TRUE;
@@ -410,6 +412,8 @@ _handle_get_info (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
     
     identity_data = gsignond_identity_get_info (self->priv->identity, 
@@ -424,7 +428,7 @@ _handle_get_info (GSignondDbusIdentityAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }
@@ -454,6 +458,8 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     session = gsignond_identity_get_auth_session (self->priv->identity, method, self->priv->sec_context, &error);
@@ -463,6 +469,9 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
         GSignondDbusAuthSessionAdapter *dbus_session = gsignond_dbus_auth_session_adapter_new_with_connection (
             g_object_ref (self->priv->connection), session, self->priv->app_context, timeout);
 
+        if (g_list_length (self->priv->sessions) == 0)
+            gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
         self->priv->sessions = g_list_append (self->priv->sessions, dbus_session);
 
         g_object_weak_ref (G_OBJECT (dbus_session), _on_session_disposed, self);
@@ -470,14 +479,13 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
         gsignond_dbus_identity_complete_get_auth_session (
             self->priv->dbus_identity, invocation, 
             gsignond_dbus_auth_session_adapter_get_object_path (dbus_session));
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE(self), FALSE);
     }
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
-
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
     }
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE(self), TRUE);
 
     return TRUE;
 }
@@ -504,6 +512,8 @@ _on_user_verfied (_IdentityDbusInfo *info, gboolean res, const GError *error, gp
             self->priv->dbus_identity, invocation, res);
     }
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
+
     _identity_dbus_info_free (info);
 }
 
@@ -517,6 +527,8 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     gsignond_identity_verify_user (self->priv->identity, params, self->priv->sec_context, &error);
@@ -525,7 +537,7 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
 
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
     }
     else {
         _IdentityDbusInfo *info = _identity_dbus_info_new (self, invocation, NULL);
@@ -533,8 +545,6 @@ _handle_verify_user (GSignondDbusIdentityAdapter *self,
         /* FIXME: Do we allow multiple calls at a given point of time */
         self->priv->verify_user_handler_id = g_signal_connect_swapped (self->priv->identity, 
                     "user-verified", G_CALLBACK (_on_user_verfied), (gpointer)info);
-
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE(self), FALSE);
     }
 
     return TRUE;
@@ -574,6 +584,8 @@ _handle_verify_secret (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
     
     gsignond_identity_verify_secret (self->priv->identity, secret, self->priv->sec_context, &error);
@@ -581,15 +593,13 @@ _handle_verify_secret (GSignondDbusIdentityAdapter *self,
     if (error) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
     }
     else {
         _IdentityDbusInfo *info = _identity_dbus_info_new (self, invocation, NULL);
 
         self->priv->verify_secret_handler_id = g_signal_connect_swapped (self->priv->identity, 
                 "secret-verified", G_CALLBACK (_on_secret_verfied), (gpointer)info);
-
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE(self), FALSE);
     }
 
     return TRUE;
@@ -604,18 +614,19 @@ _handle_remove (GSignondDbusIdentityAdapter   *self,
  
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     if (!gsignond_identity_remove (self->priv->identity, self->priv->sec_context, &error)) {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
-
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
     }
     else {
         gsignond_dbus_identity_complete_remove (self->priv->dbus_identity, invocation);
-
     }
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }
@@ -630,6 +641,8 @@ _handle_sign_out (GSignondDbusIdentityAdapter *self,
  
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     res = gsignond_identity_sign_out (self->priv->identity, self->priv->sec_context, &error);
@@ -642,7 +655,7 @@ _handle_sign_out (GSignondDbusIdentityAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }
@@ -658,6 +671,8 @@ _handle_store (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     id = gsignond_identity_store (self->priv->identity, info, self->priv->sec_context, &error);
@@ -669,7 +684,7 @@ _handle_store (GSignondDbusIdentityAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }
@@ -685,6 +700,8 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     id = gsignond_identity_add_reference (self->priv->identity, reference, self->priv->sec_context, &error);
@@ -697,7 +714,7 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }
@@ -713,6 +730,8 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     PREPARE_SECURITY_CONTEXT (self, invocation);
 
     id = gsignond_identity_remove_reference (self->priv->identity, reference, self->priv->sec_context, &error);
@@ -724,7 +743,7 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE(self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }

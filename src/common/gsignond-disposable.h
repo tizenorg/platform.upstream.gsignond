@@ -58,11 +58,11 @@ struct _GSignondDisposableClass
 GType gsignond_disposable_get_type (void) G_GNUC_CONST;
 
 void
-gsignond_disposable_set_keep_in_use (GSignondDisposable *disposable);
-
-void
 gsignond_disposable_set_auto_dispose (GSignondDisposable *disposable,
                                       gboolean dispose);
+
+gboolean
+gsignond_disposable_get_auto_dispose (GSignondDisposable *disposable);
 
 void
 gsignond_disposable_set_timeout (GSignondDisposable *self,

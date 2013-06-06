@@ -268,7 +268,6 @@ _on_identity_disposed (gpointer data, GObject *object)
     self->priv->identities = g_list_remove (self->priv->identities, object);
 
     if (g_list_length (self->priv->identities) == 0) {
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
         gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
     }
 }
@@ -287,7 +286,8 @@ _create_and_cache_dbus_identity (GSignondDbusAuthServiceAdapter *self,
                             g_object_ref (connection), identity, app_context, identity_timeout);
 
     /* keep alive till this identity object gets disposed */
-    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+    if (g_list_length (self->priv->identities) == 0)
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
 
     self->priv->identities = g_list_append (self->priv->identities, dbus_identity);
     g_object_weak_ref (G_OBJECT (dbus_identity), _on_identity_disposed, self);
@@ -320,6 +320,8 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SERVICE_ADAPTER(self), FALSE);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     connection = g_dbus_method_invocation_get_connection (invocation);
 #ifdef USE_P2P
     fd = g_socket_get_fd (g_socket_connection_get_socket (G_SOCKET_CONNECTION (g_dbus_connection_get_stream(connection))));
@@ -345,11 +347,11 @@ _handle_register_new_identity (GSignondDbusAuthServiceAdapter *self,
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
-        
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
     }
     gsignond_security_context_free (sec_context);
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
+    
     return TRUE;
 }
 
@@ -366,6 +368,8 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
     const gchar *sender =  NULL;
     int fd = -1;
     GSignondSecurityContext *sec_context = gsignond_security_context_new ();
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
 
     connection = g_dbus_method_invocation_get_connection (invocation);
 #ifdef USE_P2P
@@ -394,10 +398,10 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
         g_error_free (error);
-
-        gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
     }
     gsignond_security_context_free (sec_context);
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }
@@ -409,7 +413,9 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
 {
     const gchar **methods = NULL;
     GError *error = NULL;
-    
+ 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     methods = gsignond_daemon_query_methods (self->priv->auth_service, &error);
 
     if (error) {
@@ -422,7 +428,7 @@ _handle_query_methods (GSignondDbusAuthServiceAdapter   *self,
               methods ? (const gchar * const*)methods : empty_methods);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
     return TRUE;
 }
@@ -436,6 +442,8 @@ _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
     const gchar **mechanisms = 0;
     GError *error = NULL;
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
+
     mechanisms = gsignond_daemon_query_mechanisms (self->priv->auth_service, method, &error);
 
     if (mechanisms)
@@ -446,7 +454,8 @@ _handle_query_mechanisms (GSignondDbusAuthServiceAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
+
     return TRUE;
 }
 
@@ -470,6 +479,8 @@ _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
     GSignondSecurityContext *sec_context;
     const gchar *sender =  NULL;
     int fd = -1;
+
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
 
 #ifdef USE_P2P
     GDBusConnection *connection = NULL;
@@ -512,8 +523,8 @@ _handle_query_identities (GSignondDbusAuthServiceAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
-    
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
+
     return TRUE;
 }
 
@@ -528,6 +539,7 @@ _handle_clear (GSignondDbusAuthServiceAdapter *self,
     const gchar *sender =  NULL;
     int fd = -1;
 
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), FALSE);
 #ifdef USE_P2P
     GDBusConnection *connection = NULL;
     connection = g_dbus_method_invocation_get_connection (invocation);
@@ -555,8 +567,8 @@ _handle_clear (GSignondDbusAuthServiceAdapter *self,
         g_error_free (error);
     }
 
-    gsignond_disposable_set_keep_in_use (GSIGNOND_DISPOSABLE (self));
-    
+    gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
+
     return TRUE;
 }
 
