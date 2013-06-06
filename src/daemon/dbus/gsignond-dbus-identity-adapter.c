@@ -470,7 +470,7 @@ _handle_get_auth_session (GSignondDbusIdentityAdapter *self,
         gsignond_dbus_identity_complete_get_auth_session (
             self->priv->dbus_identity, invocation, 
             gsignond_dbus_auth_session_adapter_get_object_path (dbus_session));
-        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE(self), TRUE);
+        gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE(self), FALSE);
     }
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);

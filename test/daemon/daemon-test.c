@@ -69,9 +69,9 @@ static void
 setup_daemon (void)
 {
     fail_if (g_setenv ("G_MESSAGES_DEBUG", "all", TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_IDENTITY_TIMEOUT", "60", TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_DAEMON_TIMEOUT", "60", TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_AUTH_SESSION_TIMEOUT", "60", TRUE) == FALSE);
+    fail_if (g_setenv ("SSO_IDENTITY_TIMEOUT", "5", TRUE) == FALSE);
+    fail_if (g_setenv ("SSO_DAEMON_TIMEOUT", "5", TRUE) == FALSE);
+    fail_if (g_setenv ("SSO_AUTH_SESSION_TIMEOUT", "5", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_SECRET_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
@@ -742,6 +742,7 @@ Suite* daemon_suite (void)
     
     TCase *tc = tcase_create ("Identity");
 
+    tcase_set_timeout(tc, 10);
     tcase_add_unchecked_fixture (tc, setup_daemon, teardown_daemon);
 
     tcase_add_test (tc, test_register_new_identity);
