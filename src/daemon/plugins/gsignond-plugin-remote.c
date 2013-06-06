@@ -53,6 +53,186 @@ G_DEFINE_TYPE_WITH_CODE (GSignondPluginRemote, gsignond_plugin_remote,
 
 #define GSIGNOND_PLUGIND_NAME "gsignond-plugind"
 
+
+static gboolean
+_on_child_stderror_cb (
+        GIOChannel *channel,
+        GIOCondition condition,
+        gpointer data)
+{
+
+    GSignondPluginRemote *plugin = GSIGNOND_PLUGIN_REMOTE (data);
+    //DBG ("");
+
+    if (condition == G_IO_HUP || condition == G_IO_NVAL) {
+        g_io_channel_shutdown (plugin->priv->err_watch_ch, FALSE, NULL);
+        g_io_channel_unref (plugin->priv->err_watch_ch);
+        plugin->priv->err_watch_ch = NULL;
+        g_source_remove (plugin->priv->err_watch_id);
+        plugin->priv->err_watch_id = 0;
+        return FALSE;
+    }
+
+    if (g_io_channel_get_flags (channel) & G_IO_FLAG_IS_READABLE) {
+        gchar * string = NULL;
+        GError *error = NULL;
+        gsize bytes_read = 0;
+        gboolean keep_error_source = TRUE;
+        GIOStatus status = g_io_channel_read_line (channel, &string,
+                &bytes_read, NULL, &error);
+        if (status == G_IO_STATUS_NORMAL && bytes_read > 0 && error == NULL) {
+            DBG ("(%s) %s",plugin->priv?(plugin->priv->plugin_type ?
+                    plugin->priv->plugin_type : "NULL"):"NULL", string);
+        }
+        if (string) {
+            g_free (string);
+        }
+        keep_error_source = (bytes_read > 0 && error == NULL);
+        if (error) {
+            g_error_free (error);
+        }
+        if (!keep_error_source) {
+            DBG ("Removing error source- bytes_read %d, error %p",
+                    (gint)bytes_read, error?error:NULL);
+        }
+        return keep_error_source;
+    }
+
+    return TRUE;
+}
+
+static void
+_on_child_down_cb (
+        GPid  pid,
+        gint  status,
+        gpointer data)
+{
+    DBG ("Plugind with pid (%d) closed with status %d", pid, status);
+
+    g_spawn_close_pid (pid);
+
+    GSignondPluginRemote *plugin = (GSignondPluginRemote *) (data);
+    if (plugin->priv->main_loop && g_main_loop_is_running (
+            plugin->priv->main_loop)) {
+        g_main_loop_quit (plugin->priv->main_loop);
+    }
+
+    plugin->priv->is_plugind_up = FALSE;
+}
+
+static gboolean
+_on_child_up_cb (
+        GIOChannel *channel,
+        GIOCondition condition,
+        gpointer data)
+{
+    GSignondPluginRemote *plugin = GSIGNOND_PLUGIN_REMOTE (data);
+
+    DBG ("");
+
+    if (plugin->priv->main_loop && g_main_loop_is_running (
+            plugin->priv->main_loop)) {
+        g_main_loop_quit (plugin->priv->main_loop);
+    }
+
+    if (g_io_channel_get_flags (channel) & G_IO_FLAG_IS_READABLE) {
+        gchar string[1];
+        GError *error = NULL;
+        gsize bytes_read = 0;
+        GIOStatus status = g_io_channel_read_chars (channel, string, 1,
+                &bytes_read, &error);
+        if (status == G_IO_STATUS_NORMAL && error == NULL
+                && *string == '1') {
+            DBG ("Plugind is UP and READY");
+            plugin->priv->is_plugind_up = TRUE;
+        }
+        if (error) {
+            g_error_free (error);
+        }
+    }
+
+    return FALSE;
+}
+
+static gboolean
+_on_loop_timeout_cb (gpointer data)
+{
+    GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (data);
+
+    DBG ("Mainloop quit timer fired");
+    if (g_main_loop_is_running (self->priv->main_loop)) {
+        g_main_loop_quit (self->priv->main_loop);
+    }
+
+    return FALSE;
+}
+
+static guint
+_create_main_loop_with_timeout (
+        GSignondPluginRemote *self,
+        GMainContext *context,
+        guint timeout)
+{
+    guint timer_id = 0;
+    GSource *timer = g_timeout_source_new (timeout);
+    g_source_set_callback (timer, (GSourceFunc) _on_loop_timeout_cb, self, NULL);
+    //g_source_attach increments the ref count of the source
+    timer_id = g_source_attach (timer, context);
+    g_source_unref (timer);
+
+    self->priv->main_loop = g_main_loop_new (context, TRUE);
+    //loop has ref'd the context
+    if (context) {
+        g_main_context_unref (context);
+    }
+    return timer_id;
+}
+
+static void
+_run_main_loop (
+        GSignondPluginRemote *self)
+{
+    if (self->priv->main_loop) {
+        g_main_loop_run (self->priv->main_loop);
+        /* attached context gets freed as well, which internally destroys all
+         * the attached sources */
+        g_main_loop_unref (self->priv->main_loop);
+        self->priv->main_loop = NULL;
+    }
+}
+
+static void
+_run_main_loop_with_timeout (
+        GSignondPluginRemote *self,
+        guint timeout)
+{
+    guint timer_id = _create_main_loop_with_timeout (self, NULL, timeout);
+    _run_main_loop (self);
+    g_source_remove (timer_id);
+}
+
+static void
+_run_main_loop_with_ready_watch (
+        GSignondPluginRemote *self,
+        gint fd,
+        guint timeout)
+{
+    GIOChannel *ready_watch = NULL;
+    GSource *source = NULL;
+
+    GMainContext *context = g_main_context_new ();
+    _create_main_loop_with_timeout (self, context, timeout);
+
+    ready_watch = g_io_channel_unix_new (fd);
+    source = g_io_create_watch (ready_watch, G_IO_IN | G_IO_HUP);
+    g_source_set_callback (source, (GSourceFunc)_on_child_up_cb, self, NULL);
+    g_source_attach (source, context);
+    g_source_unref (source);
+
+    _run_main_loop (self);
+    g_io_channel_unref (ready_watch);
+}
+
 static void
 gsignond_plugin_remote_set_property (
         GObject *object,
@@ -70,7 +250,7 @@ static void
 gsignond_plugin_remote_get_property (
         GObject *object,
         guint property_id,
-        GValue *value, 
+        GValue *value,
         GParamSpec *pspec)
 {
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (object);
@@ -124,11 +304,35 @@ gsignond_plugin_remote_dispose (GObject *object)
 {
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (object);
 
-    if (self->priv->err_watch_ch) {
-        g_io_channel_shutdown (self->priv->err_watch_ch, FALSE, NULL);
-        g_io_channel_unref (self->priv->err_watch_ch);
-        g_source_remove (self->priv->err_watch_id);
-        self->priv->err_watch_ch = NULL;
+    if (self->priv->main_loop) {
+        if (g_main_loop_is_running (self->priv->main_loop)) {
+            g_main_loop_quit (self->priv->main_loop);
+        }
+        g_main_loop_unref (self->priv->main_loop);
+        self->priv->main_loop = NULL;
+    }
+
+    if (self->priv->cpid > 0) {
+
+        if (self->priv->is_plugind_up) {
+            DBG ("Send SIGTERM to Plugind");
+            kill (self->priv->cpid, SIGTERM);
+            _run_main_loop_with_timeout (self, 1000); //1 sec
+
+            if (kill (self->priv->cpid, 0) == 0) {
+                WARN ("Plugind have to be killed with SIGKILL");
+                kill (self->priv->cpid, SIGKILL);
+                _run_main_loop_with_timeout (self, 1000); //1 sec
+            }
+
+            if (self->priv->is_plugind_up) {
+                WARN ("Plugind did not exit even after SIGKILL");
+            } else {
+                DBG ("Plugind DESTROYED");
+            }
+        }
+
+        self->priv->cpid = 0;
     }
 
     if (self->priv->connection) {
@@ -155,9 +359,13 @@ gsignond_plugin_remote_dispose (GObject *object)
         self->priv->dbus_plugin_proxy = NULL;
     }
 
-    if (self->priv->cpid > 0) {
-        kill (self->priv->cpid, SIGTERM);
-        self->priv->cpid = 0;
+    if (self->priv->err_watch_ch) {
+        g_io_channel_shutdown (self->priv->err_watch_ch, FALSE, NULL);
+        g_io_channel_unref (self->priv->err_watch_ch);
+        self->priv->err_watch_ch = NULL;
+        if (self->priv->err_watch_id) {
+            g_source_remove (self->priv->err_watch_id);
+        }
     }
 
     G_OBJECT_CLASS (gsignond_plugin_remote_parent_class)->dispose (object);
@@ -207,12 +415,15 @@ gsignond_plugin_remote_init (GSignondPluginRemote *self)
 
     self->priv->connection = NULL;
     self->priv->dbus_plugin_proxy = NULL;
-    self->priv->err_watch_ch = NULL;
     self->priv->plugin_type = NULL;
     self->priv->plugin_mechanisms = NULL;
     self->priv->cpid = 0;
+
+    self->priv->err_watch_ch = NULL;
     self->priv->child_watch_id = 0;
 
+    self->priv->main_loop = NULL;
+    self->priv->is_plugind_up = FALSE;
 }
 
 static void
@@ -476,72 +687,6 @@ _status_changed_cb (
             (GSignondPluginState)status, message);
 }
 
-static gboolean
-_error_watch_cb (
-        GIOChannel *channel,
-        GIOCondition condition,
-        gpointer data)
-{
-
-    GSignondPluginRemote *plugin = (GSignondPluginRemote*)data;
-
-    if (condition == G_IO_HUP || condition == G_IO_NVAL) {
-        g_io_channel_shutdown (plugin->priv->err_watch_ch, FALSE, NULL);
-        g_io_channel_unref (plugin->priv->err_watch_ch);
-        plugin->priv->err_watch_ch = NULL;
-        g_source_remove (plugin->priv->err_watch_id);
-        DBG ("Plugind (%s) is down",
-                plugin->priv->plugin_type ? plugin->priv->plugin_type : "");
-
-        if (plugin->priv->cpid > 0 &&
-            kill (plugin->priv->cpid, 0) != 0) {
-            if (plugin->priv->child_watch_id) {
-                g_source_remove (plugin->priv->child_watch_id);
-                plugin->priv->child_watch_id = 0;
-            }
-            plugin->priv->cpid = 0;
-        }
-        return FALSE;
-    }
-
-    if (g_io_channel_get_flags (channel) & G_IO_FLAG_IS_READABLE) {
-        gchar * string = NULL;
-        GError *error = NULL;
-        gsize bytes_read = 0;
-        gboolean keep_error_source = TRUE;
-        GIOStatus status = g_io_channel_read_line (channel, &string,
-                &bytes_read, NULL, &error);
-        if (status == G_IO_STATUS_NORMAL && bytes_read > 0 && error == NULL) {
-            DBG ("(%s) %s",plugin->priv?(plugin->priv->plugin_type ?
-                    plugin->priv->plugin_type : "NULL"):"NULL", string);
-        }
-        if (string) {
-            g_free (string);
-        }
-        keep_error_source = (bytes_read > 0 && error == NULL);
-        if (error) {
-            g_error_free (error);
-        }
-        if (!keep_error_source) {
-            DBG ("Removing error source- bytes_read %d, error %p",
-                    (gint)bytes_read, error?error:NULL);
-        }
-        return keep_error_source;
-    }
-
-    return TRUE;
-}
-
-static void
-_child_watch_cb (
-        GPid  pid,
-        gint  status,
-        gpointer data)
-{
-    DBG ("Plugin process with pid (%d) closed with status %d", pid, status);
-    g_spawn_close_pid (pid);
-}
-
 GSignondPluginRemote *
 gsignond_plugin_remote_new (
         GSignondConfig *config,
@@ -581,8 +726,24 @@ gsignond_plugin_remote_new (
             NULL));
 
     plugin->priv->child_watch_id = g_child_watch_add (cpid,
-            (GChildWatchFunc)_child_watch_cb, plugin);
+            (GChildWatchFunc)_on_child_down_cb, plugin);
     plugin->priv->cpid = cpid;
+
+    _run_main_loop_with_ready_watch (plugin, cerr_fd, 1000);
+
+    if (!plugin->priv->is_plugind_up) {
+        DBG ("Plugind (%s) process failed to start up", plugin_type);
+        g_object_unref (plugin);
+        return NULL;
+    }
+
+    /* Create watch for error messages */
+    plugin->priv->err_watch_ch = g_io_channel_unix_new (cerr_fd);
+    plugin->priv->err_watch_id = g_io_add_watch (plugin->priv->err_watch_ch,
+            G_IO_IN | G_IO_HUP, (GIOFunc)_on_child_stderror_cb, plugin);
+    g_io_channel_set_close_on_unref (plugin->priv->err_watch_ch, TRUE);
+    g_io_channel_set_flags (plugin->priv->err_watch_ch, G_IO_FLAG_NONBLOCK,
+            NULL);
 
     /* Create dbus connection */
     stream = gsignond_pipe_stream_new (cout_fd, cin_fd, TRUE);
@@ -628,14 +789,6 @@ gsignond_plugin_remote_new (
     plugin->priv->signal_status_changed = g_signal_connect_swapped (
             plugin->priv->dbus_plugin_proxy, "status-changed",
             G_CALLBACK(_status_changed_cb), plugin);
-
-    /* Create watch for error messages */
-    plugin->priv->err_watch_ch = g_io_channel_unix_new (cerr_fd);
-    plugin->priv->err_watch_id = g_io_add_watch (plugin->priv->err_watch_ch,
-            G_IO_IN | G_IO_HUP, (GIOFunc)_error_watch_cb, plugin);
-    g_io_channel_set_close_on_unref (plugin->priv->err_watch_ch, TRUE);
-    g_io_channel_set_flags (plugin->priv->err_watch_ch, G_IO_FLAG_NONBLOCK,
-            NULL);
 
     return plugin;
 }

@@ -36,12 +36,16 @@ struct _GSignondPluginRemotePrivate
 {
     GDBusConnection   *connection;
     GSignondDbusRemotePlugin *dbus_plugin_proxy;
-    GIOChannel *err_watch_ch;
     gchar *plugin_type;
     gchar **plugin_mechanisms;
     GPid cpid;
     guint child_watch_id;
+
+    GIOChannel *err_watch_ch;
     guint err_watch_id;
+
+    GMainLoop *main_loop;
+    gboolean is_plugind_up;
 
     /* Signals */
     guint signal_response;
