@@ -542,7 +542,7 @@ _validate_cached_proxy (gpointer userdata)
 
     g_object_unref (proxy);
 
-    g_timeout_add_seconds (2, _validate_new_proxy, userdata);
+    g_timeout_add (2050, _validate_new_proxy, userdata);
 
     return FALSE;
 }
