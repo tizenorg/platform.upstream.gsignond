@@ -27,13 +27,17 @@
 
 #include <glib.h>
 
-#define INFO(frmt, args...) g_message("%s:%d %s " frmt , __FILE__, __LINE__, \
+#define INFO(frmt, args...) g_message("%f %s:%d %s " frmt , \
+        g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
-#define ERR(frmt, args...)  g_critical("%s:%d %s " frmt , __FILE__, __LINE__, \
+#define ERR(frmt, args...)  g_critical("%f %s:%d %s " frmt , \
+        g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
-#define WARN(frmt, args...) g_warning("%s:%d %s " frmt , __FILE__, __LINE__, \
+#define WARN(frmt, args...) g_warning("%f %s:%d %s " frmt , \
+        g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
-#define DBG(frmt, args...)  g_debug("%s:%d %s " frmt , __FILE__, __LINE__, \
+#define DBG(frmt, args...)  g_debug("%f %s:%d %s " frmt , \
+        g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
 
 #endif /* __GSIGNOND_LOG_H_ */
