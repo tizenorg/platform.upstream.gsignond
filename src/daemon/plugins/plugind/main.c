@@ -31,13 +31,14 @@
 #include <glib-unix.h>
 #include <glib.h>
 #include <gio/gio.h>
+#include <sys/prctl.h>
 
 #include "gsignond/gsignond-log.h"
 #include "daemon/dbus/gsignond-dbus.h"
 #include "gsignond-plugin-daemon.h"
 
 static GSignondPluginDaemon *_daemon = NULL;
-static guint           _sig_source_id[2];
+static guint _sig_source_id[3];
 
 static void
 _on_daemon_closed (gpointer data, GObject *server)
@@ -71,50 +72,22 @@ _install_sighandlers (GMainLoop *main_loop)
                            main_loop,
                            NULL);
     _sig_source_id[0] = g_source_attach (source, ctx);
+
     source = g_unix_signal_source_new (SIGINT);
     g_source_set_callback (source,
                            _handle_quit_signal,
                            main_loop,
                            NULL);
     _sig_source_id[1] = g_source_attach (source, ctx);
-}
 
-static void
-_default_log_handler (
-        const gchar    *log_domain,
-        GLogLevelFlags  log_level,
-        const gchar    *message,
-        gpointer        unused_data)
-{
-    const gchar *strvect[16];
-    gchar *msg = NULL;
-    guint ind = 0;
-    if (log_domain) {
-        strvect[ind++] = log_domain;
-        strvect[ind++] = "-";
-    }
-    strvect[ind++] = "plugind";
-    if (log_level & G_LOG_LEVEL_ERROR)
-        strvect[ind++] = "-ERROR: ";
-    else if (log_level & G_LOG_LEVEL_CRITICAL)
-        strvect[ind++] = "-CRITICAL: ";
-    else if (log_level & G_LOG_LEVEL_WARNING)
-        strvect[ind++] = "-WARNING: ";
-    else if (log_level & G_LOG_LEVEL_MESSAGE)
-        strvect[ind++] = "-MESSAGE: ";
-    else if (log_level & G_LOG_LEVEL_INFO)
-        strvect[ind++] = "-INFO: ";
-    else if (log_level & G_LOG_LEVEL_DEBUG)
-        strvect[ind++] = "-DEBUG: ";
-    else
-        strvect[ind++] = ": ";
-    strvect[ind++] = message;
-    strvect[ind++] = NULL;
+    source = g_unix_signal_source_new (SIGHUP);
+    g_source_set_callback (source,
+                           _handle_quit_signal,
+                           main_loop,
+                           NULL);
+    _sig_source_id[2] = g_source_attach (source, ctx);
 
-    msg = g_strjoinv ("", (gchar**) strvect);
-    fprintf (stderr, "%s\n", msg);
-    fflush (stderr);
-    g_free (msg);
+    prctl(PR_SET_PDEATHSIG, SIGHUP);
 }
 
 int main (int argc, char **argv)
@@ -123,45 +96,77 @@ int main (int argc, char **argv)
     GMainLoop *main_loop = NULL;
     GOptionContext *opt_context = NULL;
     gchar **plugin_args = NULL;
+    gint up_signal = -1;
     GOptionEntry opt_entries[] = {
         {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &plugin_args,
                 "Plugin Args", NULL},
         {NULL}
     };
 
+    /* Duplicates stdin,stdout,stderr descriptors and point the descriptors
+     * to /dev/null to avoid anyone writing to descriptors before initial
+     * "plugind-is-ready" notification is sent to gsignond
+     * */
+    gint in_fd = dup(0);
+    if (!freopen("/dev/null", "r+", stdin)) {
+        WARN ("Unable to redirect stdin to /dev/null");
+    }
+
+    gint out_fd = dup(1);
+    if(!freopen("/dev/null", "r+", stdout)) {
+        WARN ("Unable to redirect stdout to /dev/null");
+    }
+
+    gint err_fd = dup(2);
+    if (!freopen("/dev/null", "r+", stderr)) {
+        WARN ("Unable to redirect stderr to /dev/null");
+    }
+
 #if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
 #endif
-
-    g_log_set_default_handler (_default_log_handler, NULL);
 
     opt_context = g_option_context_new ("<plugin_path> <plugin_name>");
     g_option_context_set_summary (opt_context, "gSSO helper plugin daemon");
     g_option_context_add_main_entries (opt_context, opt_entries, NULL);
     g_option_context_parse (opt_context, &argc, &argv, &error);
     g_option_context_free (opt_context);
-    if (error) {
-        DBG ("Error parsing options: %s", error->message);
-        g_error_free (error);
+    if (error || !plugin_args || !plugin_args[0] || !plugin_args[1]) {
+        close (in_fd);
+        close (out_fd);
+        close (err_fd);
+        if (error) g_error_free (error);
         if (plugin_args) g_strfreev(plugin_args);
         return -1;
     }
 
-    if (!plugin_args || !plugin_args[0] || !plugin_args[1]) {
-        WARN ("missing mandatory arguments");
-        return -1;
-    }
-
-    _daemon = gsignond_plugin_daemon_new (plugin_args[0], plugin_args[1]);
+    _daemon = gsignond_plugin_daemon_new (plugin_args[0], plugin_args[1], in_fd,
+            out_fd);
     g_strfreev(plugin_args);
     if (_daemon == NULL) {
-        DBG ("Error creating daemon object");
+        close (in_fd);
+        close (out_fd);
+        close (err_fd);
         return -1;
     }
 
     main_loop = g_main_loop_new (NULL, FALSE);
     g_object_weak_ref (G_OBJECT (_daemon), _on_daemon_closed, main_loop);
-    _install_sighandlers(main_loop);
+    _install_sighandlers (main_loop);
+
+    /* Notification for gsignond that plugind is up and ready */
+    up_signal = write (err_fd, "1", sizeof(char));
+
+    /* Reattach stderr and point stdout to stderr as well */
+    dup2 (err_fd, 2);
+    dup2 (err_fd, 1);
+    close (err_fd);
+
+    if (up_signal == -1) {
+        g_main_loop_unref (main_loop);
+        g_object_unref (_daemon);
+        return -1;
+    }
 
     DBG ("Entering main event loop");
 

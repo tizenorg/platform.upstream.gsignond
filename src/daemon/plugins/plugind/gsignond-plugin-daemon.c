@@ -358,7 +358,9 @@ _handle_status_changed_from_plugin (
 GSignondPluginDaemon *
 gsignond_plugin_daemon_new (
         const gchar* filename,
-        const gchar* plugin_type)
+        const gchar* plugin_type,
+        gint in_fd,
+        gint out_fd)
 {
     GError *error = NULL;
     GSignondPipeStream *stream = NULL;
@@ -380,7 +382,7 @@ gsignond_plugin_daemon_new (
     daemon->priv->plugin_type = g_strdup (plugin_type);
 
     /* Create dbus connection */
-    stream = gsignond_pipe_stream_new (0, 1, FALSE);
+    stream = gsignond_pipe_stream_new (in_fd, out_fd, TRUE);
     daemon->priv->connection = g_dbus_connection_new_sync (G_IO_STREAM (stream),
             NULL, G_DBUS_CONNECTION_FLAGS_DELAY_MESSAGE_PROCESSING, NULL, NULL,
             NULL);

@@ -65,6 +65,8 @@ GType gsignond_plugin_daemon_get_type();
 GSignondPluginDaemon *
 gsignond_plugin_daemon_new (
         const gchar* filename,
-        const gchar* plugin_type);
+        const gchar* plugin_type,
+        gint in_fd,
+        gint out_fd);
 
 #endif /* __GSIGNOND_PLUGIN_DAEMON_H_ */
