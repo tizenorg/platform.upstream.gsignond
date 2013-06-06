@@ -26,6 +26,8 @@
 #include <check.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#include "daemon/gsignond-types.h"
 #include "gsignond-plugin-remote-private.h"
 #include "gsignond-plugin-remote.h"
 #include "plugind/gsignond-plugin-daemon.h"
@@ -36,9 +38,6 @@
 
 static GMainLoop *main_loop = NULL;
 guint child_watch_id = 0;
-
-typedef struct _GSignondAuthSession GSignondAuthSession;
-typedef struct _GSignondAuthSessionClass GSignondAuthSessionClass;
 
 struct _GSignondAuthSession
 {
@@ -86,6 +85,20 @@ _teardown ()
         g_main_loop_unref (main_loop);
         main_loop = NULL;
     }
+}
+
+static gboolean
+_timeout_quit_loop (gpointer data)
+{
+    _stop_mainloop ();
+    return FALSE;
+}
+
+static void
+_run_loop_with_timeout (guint timeout)
+{
+    g_timeout_add_seconds (timeout, _timeout_quit_loop, NULL);
+    _run_mainloop ();
 }
 
 static void
@@ -211,26 +224,39 @@ START_TEST (test_pluginremote_create)
     fail_if (config == NULL);
 
     plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    g_object_unref (config);
 
     check_plugin (plugin);
-    g_object_unref (config);
     g_object_unref (plugin);
 }
 END_TEST
 
-static void
-_child_watch_cb (
-        GPid  pid,
-        gint  status,
-        gpointer data)
-{
-    DBG ("plugind GONE");
-    _stop_mainloop ();
-    g_source_remove (child_watch_id);
-    child_watch_id = 0;
-}
-
 START_TEST (test_pluginremote_plugind_create)
+{
+    DBG ("");
+    GSignondPlugin *plugin = NULL;
+    const gchar *plugin_type = "password";
+    GSignondPluginRemotePrivate* priv = NULL;
+
+    GSignondConfig* config = gsignond_config_new ();
+    fail_if (config == NULL);
+
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    g_object_unref (config);
+
+    fail_if (plugin == NULL);
+    priv = (GSignondPluginRemotePrivate *)GSIGNOND_PLUGIN_REMOTE (plugin)->priv;
+
+    fail_unless (priv->cpid > 0);
+    fail_unless (kill (priv->cpid, 0) == 0);
+
+    check_plugin (plugin);
+
+    g_object_unref (plugin);
+}
+END_TEST
+
+START_TEST (test_pluginremote_plugind_unref)
 {
     DBG ("");
     GSignondPlugin *plugin = NULL;
@@ -240,23 +266,18 @@ START_TEST (test_pluginremote_plugind_create)
 
     GSignondConfig* config = gsignond_config_new ();
     fail_if (config == NULL);
-    
+
     plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
     fail_if (plugin == NULL);
     priv = (GSignondPluginRemotePrivate *)GSIGNOND_PLUGIN_REMOTE (plugin)->priv;
 
-    fail_unless (priv->child_watch_id > 0);
     fail_unless (priv->cpid > 0);
+    fail_unless (kill (priv->cpid, 0) == 0);
     cpid = priv->cpid;
 
-    child_watch_id = g_child_watch_add (cpid,
-            (GChildWatchFunc)_child_watch_cb, plugin);
     g_object_unref (plugin);
     g_object_unref (config);
 
-    _run_mainloop ();
-
-    fail_unless (child_watch_id == 0);
     fail_unless (kill (cpid, 0) != 0);
 }
 END_TEST
@@ -267,6 +288,7 @@ START_TEST (test_pluginremote_plugind_kill)
     GSignondPlugin *plugin = NULL;
     const gchar *plugin_type = "password";
     GSignondPluginRemotePrivate* priv = NULL;
+    gint cpid = 0;
 
     GSignondConfig* config = gsignond_config_new ();
     fail_if (config == NULL);
@@ -275,17 +297,16 @@ START_TEST (test_pluginremote_plugind_kill)
     fail_if (plugin == NULL);
     priv = (GSignondPluginRemotePrivate *)GSIGNOND_PLUGIN_REMOTE (plugin)->priv;
 
-    fail_unless (priv->child_watch_id > 0);
     fail_unless (priv->cpid > 0);
     fail_unless (kill (priv->cpid, 0) == 0);
-
-    child_watch_id = g_child_watch_add (priv->cpid,
-            (GChildWatchFunc)_child_watch_cb, plugin);
+    cpid = priv->cpid;
+    check_plugin (plugin);
 
     kill (priv->cpid, SIGTERM);
-    _run_mainloop ();
 
-    fail_unless (child_watch_id == 0);
+    _run_loop_with_timeout (1);
+
+    fail_unless (kill (cpid, 0) != 0);
 
     g_object_unref (plugin);
     g_object_unref (config);
@@ -518,14 +539,14 @@ START_TEST (test_plugind_daemon)
     gchar *plugin_path = g_module_build_path (gsignond_config_get_string (
                 config, GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), "nonexisting");
     fail_if (plugin_path == NULL);
-    daemon = gsignond_plugin_daemon_new (plugin_path, "nonexisting");
+    daemon = gsignond_plugin_daemon_new (plugin_path, "nonexisting", 0, 1);
     g_free (plugin_path);
     fail_if (daemon != NULL);
 
     plugin_path = g_module_build_path (gsignond_config_get_string (
             config, GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), plugin_type);
     fail_if (plugin_path == NULL);
-    daemon = gsignond_plugin_daemon_new (plugin_path, plugin_type);
+    daemon = gsignond_plugin_daemon_new (plugin_path, plugin_type, 0, 1);
     g_free (plugin_path);
     fail_if (daemon == NULL);
     g_object_unref (daemon);
@@ -543,11 +564,13 @@ Suite* pluginremote_suite (void)
     tcase_add_checked_fixture (tc_core, _setup, _teardown);
     tcase_add_test (tc_core, test_pluginremote_create);
     tcase_add_test (tc_core, test_pluginremote_plugind_create);
+    tcase_add_test (tc_core, test_pluginremote_plugind_unref);
     tcase_add_test (tc_core, test_pluginremote_plugind_kill);
     tcase_add_test (tc_core, test_pluginremote_request);
     tcase_add_test (tc_core, test_pluginremote_user_action_finished);
     tcase_add_test (tc_core, test_pluginremote_refresh);
     tcase_add_test (tc_core, test_plugind_daemon);
+
     suite_add_tcase (s, tc_core);
     return s;
 }
