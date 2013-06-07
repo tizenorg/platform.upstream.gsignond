@@ -87,7 +87,8 @@ _install_sighandlers (GMainLoop *main_loop)
                            NULL);
     _sig_source_id[2] = g_source_attach (source, ctx);
 
-    prctl(PR_SET_PDEATHSIG, SIGHUP);
+    if (prctl(PR_SET_PDEATHSIG, SIGHUP))
+        WARN ("failed to set parent death signal");
 }
 
 int main (int argc, char **argv)
