@@ -30,5 +30,3 @@ daemontest_LDADD = \
     $(GSIGNOND_LIBS) \
     $(CHECK_LIBS)
 
-EXTRA_DIST = "$(top_builddir)/test/daemon/services/com.google.code.AccountsSSO.SingleSignOn.service.in"
-
