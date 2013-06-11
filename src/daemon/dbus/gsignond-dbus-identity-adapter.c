@@ -79,10 +79,10 @@ struct _GSignondDbusIdentityAdapterPrivate
     GSignondSecurityContext *sec_context;
     GList *sessions;
     /* signal handler ids */
-    guint info_updated_handler_id;
-    guint verify_user_handler_id;
-    guint verify_secret_handler_id;
-    guint credentials_update_handler_id;
+    gulong info_updated_handler_id;
+    gulong verify_user_handler_id;
+    gulong verify_secret_handler_id;
+    gulong credentials_update_handler_id;
 };
 
 G_DEFINE_TYPE (GSignondDbusIdentityAdapter, gsignond_dbus_identity_adapter, GSIGNOND_TYPE_DISPOSABLE)
@@ -695,7 +695,7 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
                        const gchar *reference,
                        gpointer user_data)
 {
-    gint32 id = 0;
+    guint32 id = 0;
     GError *error = NULL;
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);
@@ -725,7 +725,7 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
                           const gchar *reference,
                           gpointer user_data)
 {
-    gint32 id = 0;
+    guint32 id = 0;
     GError *error = NULL;
 
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER (self), FALSE);

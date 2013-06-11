@@ -234,7 +234,7 @@ _gsignond_db_metadata_database_update_credentials (
     gchar *query = NULL;
     gint flags = 0;
     guint32 type;
-    gint id;
+    gint64 id;
     const gchar *caption= NULL, *username = NULL;
     gboolean ret = FALSE;
 

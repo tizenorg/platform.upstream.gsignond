@@ -717,7 +717,8 @@ gsignond_plugin_remote_new (
             NULL, &cpid, &cin_fd, &cout_fd, &cerr_fd, &error);
     g_strfreev (argv);
     if (ret == FALSE || (kill(cpid, 0) != 0)) {
-        DBG ("failed to start plugind: error %s(%d)", error->message, ret);
+        DBG ("failed to start plugind: error %s(%d)", 
+            error ? error->message : "(null)", ret);
         if (error) g_error_free (error);
         return NULL;
     }
