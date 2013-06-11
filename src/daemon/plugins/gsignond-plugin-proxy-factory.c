@@ -246,8 +246,11 @@ gsignond_plugin_proxy_factory_new(GSignondConfig *config)
 static gboolean
 _find_proxy_by_pointer (gpointer key, gpointer value, gpointer userdata)
 {
-    (void)key;
-    return userdata == value;
+    if (userdata == value) {
+        g_free (key);
+        return TRUE;
+    }
+    return FALSE;
 }
 
 static void
