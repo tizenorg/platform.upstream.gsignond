@@ -114,14 +114,9 @@ int main (int argc, char **argv)
     }
 
     gint out_fd = dup(1);
-    if(!freopen("/dev/null", "r+", stdout)) {
-        WARN ("Unable to redirect stdout to /dev/null");
-    }
 
-    gint err_fd = dup(2);
-    if (!freopen("/dev/null", "r+", stderr)) {
-        WARN ("Unable to redirect stderr to /dev/null");
-    }
+    /* Reattach stderr to stdout */
+    dup2 (2, 1);
 
 #if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
@@ -133,11 +128,12 @@ int main (int argc, char **argv)
     g_option_context_parse (opt_context, &argc, &argv, &error);
     g_option_context_free (opt_context);
     if (error || !plugin_args || !plugin_args[0] || !plugin_args[1]) {
-        close (in_fd);
-        close (out_fd);
-        close (err_fd);
+        if (write (out_fd, "0", sizeof(char)) == -1)
+            WARN ("Unable to write down notification to stdout");
         if (error) g_error_free (error);
         if (plugin_args) g_strfreev(plugin_args);
+        close (in_fd);
+        close (out_fd);
         return -1;
     }
 
@@ -145,9 +141,10 @@ int main (int argc, char **argv)
             out_fd);
     g_strfreev(plugin_args);
     if (_daemon == NULL) {
+        if (write (out_fd, "0", sizeof(char)) == -1)
+            WARN ("Unable to write down notification to stdout");
         close (in_fd);
         close (out_fd);
-        close (err_fd);
         return -1;
     }
 
@@ -156,12 +153,7 @@ int main (int argc, char **argv)
     _install_sighandlers (main_loop);
 
     /* Notification for gsignond that plugind is up and ready */
-    up_signal = write (err_fd, "1", sizeof(char));
-
-    /* Reattach stderr and point stdout to stderr as well */
-    dup2 (err_fd, 2);
-    dup2 (err_fd, 1);
-    close (err_fd);
+    up_signal = write (out_fd, "1", sizeof(char));
 
     if (up_signal == -1) {
         g_main_loop_unref (main_loop);

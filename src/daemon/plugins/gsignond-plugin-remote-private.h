@@ -47,6 +47,8 @@ struct _GSignondPluginRemotePrivate
     GMainLoop *main_loop;
     gboolean is_plugind_up;
 
+    gboolean unref_in_down_cb;
+
     /* Signals */
     guint signal_response;
     guint signal_response_final;
