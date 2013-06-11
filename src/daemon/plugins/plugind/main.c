@@ -98,6 +98,7 @@ int main (int argc, char **argv)
     GOptionContext *opt_context = NULL;
     gchar **plugin_args = NULL;
     gint up_signal = -1;
+    gint in_fd = 0, out_fd = 1, err_fd = 2;
     GOptionEntry opt_entries[] = {
         {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &plugin_args,
                 "Plugin Args", NULL},
@@ -108,12 +109,16 @@ int main (int argc, char **argv)
      * to /dev/null to avoid anyone writing to descriptors before initial
      * "plugind-is-ready" notification is sent to gsignond
      * */
-    gint in_fd = dup(0);
+    in_fd = dup(0);
+    if (in_fd == -1) {
+        WARN ("Failed to dup stdin : %s(%d)", strerror(errno), errno);
+        in_fd = 0;
+    }
     if (!freopen("/dev/null", "r+", stdin)) {
         WARN ("Unable to redirect stdin to /dev/null");
     }
 
-    gint out_fd = dup(1);
+    out_fd = dup(1);
 
     /* Reattach stderr to stdout */
     dup2 (2, 1);
@@ -125,15 +130,20 @@ int main (int argc, char **argv)
     opt_context = g_option_context_new ("<plugin_path> <plugin_name>");
     g_option_context_set_summary (opt_context, "gSSO helper plugin daemon");
     g_option_context_add_main_entries (opt_context, opt_entries, NULL);
+    g_option_context_set_ignore_unknown_options (opt_context, TRUE);
     g_option_context_parse (opt_context, &argc, &argv, &error);
     g_option_context_free (opt_context);
-    if (error || !plugin_args || !plugin_args[0] || !plugin_args[1]) {
+    if (error) {
+        WARN ("Error in arguments parsing: %s", error->message);
+        g_error_free (error);
+    }
+    if (!plugin_args || !plugin_args[0] || !plugin_args[1]) {
+        WARN ("plugin path or plugin type missing");
         if (write (out_fd, "0", sizeof(char)) == -1)
             WARN ("Unable to write down notification to stdout");
-        if (error) g_error_free (error);
+        if (in_fd != 0) close (in_fd);
+        if (out_fd != 1) close (out_fd);
         if (plugin_args) g_strfreev(plugin_args);
-        close (in_fd);
-        close (out_fd);
         return -1;
     }
 
@@ -143,8 +153,8 @@ int main (int argc, char **argv)
     if (_daemon == NULL) {
         if (write (out_fd, "0", sizeof(char)) == -1)
             WARN ("Unable to write down notification to stdout");
-        close (in_fd);
-        close (out_fd);
+        if (in_fd != 0) close (in_fd);
+        if (out_fd != 1) close (out_fd);
         return -1;
     }
 
@@ -168,7 +178,7 @@ int main (int argc, char **argv)
     if(_daemon) {
         g_object_unref (_daemon);
     }
- 
+
     if (main_loop) {
         g_main_loop_unref (main_loop);
     }

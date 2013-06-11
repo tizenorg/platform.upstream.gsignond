@@ -139,7 +139,7 @@ gsignond_disposable_class_init (GSignondDisposableClass *klass)
                            "Object timeout",
                            "object timeout",
                            0,
-                           G_MAXINT,
+                           G_MAXUINT,
                            0,
                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 

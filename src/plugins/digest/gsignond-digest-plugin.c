@@ -101,7 +101,7 @@ _gsignond_digest_plugin_compute_md5_digest (
     g_checksum_update (a2, TO_GUCHAR(method), strlen(method));
     g_checksum_update (a2, TO_GUCHAR(":"), 1);
     g_checksum_update (a2, TO_GUCHAR(digest_uri), strlen(digest_uri));
-    if (qop && g_strcmp0 (qop, "auth-int") == 0) {
+    if (qop && g_strcmp0 (qop, "auth-int") == 0 && hentity) {
         g_checksum_update (a2, TO_GUCHAR(":"), 1);
         g_checksum_update (a2, TO_GUCHAR(hentity), strlen(hentity));
     }
@@ -300,6 +300,16 @@ gsignond_digest_plugin_user_action_finished (
         const gchar* hentity = gsignond_dictionary_get_string (session_data,
                 "HEntity");
         gchar *cnonce = _gsignond_digest_plugin_generate_nonce (priv);
+
+        if ((!realm || !algo  || !nonce  || !method  || !digest_uri)
+            || (qop && g_strcmp0 (qop, "auth-int") == 0 && !hentity)
+            || (qop && !nonce_count)) {
+            GError* error = g_error_new (GSIGNOND_ERROR,
+            		GSIGNOND_ERROR_MISSING_DATA, "Missing Session Data");
+            gsignond_plugin_error (plugin, error);
+            g_error_free (error);
+            return;
+        }
         gchar *digest = _gsignond_digest_plugin_compute_md5_digest(algo,
                 username,realm, secret, nonce, nonce_count, cnonce, qop, method,
                 digest_uri, hentity);

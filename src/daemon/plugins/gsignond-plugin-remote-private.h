@@ -50,13 +50,13 @@ struct _GSignondPluginRemotePrivate
     gboolean unref_in_down_cb;
 
     /* Signals */
-    guint signal_response;
-    guint signal_response_final;
-    guint signal_store;
-    guint signal_error;
-    guint signal_user_action_required;
-    guint signal_refreshed;
-    guint signal_status_changed;
+    gulong signal_response;
+    gulong signal_response_final;
+    gulong signal_store;
+    gulong signal_error;
+    gulong signal_user_action_required;
+    gulong signal_refreshed;
+    gulong signal_status_changed;
 };
 
 G_END_DECLS
