@@ -92,6 +92,7 @@ static void gsignond_ssotest_plugin_request_initial (
                                      "Session canceled");
         gsignond_plugin_error (plugin, error); 
         g_error_free (error);
+        gsignond_dictionary_unref (response);
         return;
     }
 
