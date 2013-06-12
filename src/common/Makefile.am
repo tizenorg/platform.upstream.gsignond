@@ -27,7 +27,7 @@ gsignond-plugin-enum-types.c: gsignond-enum.c.template $(GSIGNOND_INCLUDE_DIR)/g
 
 
 libgsignond_common_la_CPPFLAGS = \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     $(GSIGNOND_CFLAGS) \
@@ -51,6 +51,7 @@ libgsignond_common_la_SOURCES = \
     gsignond-access-control-manager.c \
     gsignond-extension-interface.c \
     gsignond-storage-manager.c \
+    gsignond-identity-info-internal.h \
     gsignond-identity-info.c \
     gsignond-credentials.c \
     gsignond-config.c \
@@ -59,12 +60,19 @@ libgsignond_common_la_SOURCES = \
     gsignond-dictionary.c \
     gsignond-session-data.c \
     gsignond-signonui-data.c \
+    gsignond-plugin-loader.h \
     gsignond-plugin-loader.c \
     gsignond-utils.c \
+    gsignond-pipe-stream.h \
     gsignond-pipe-stream.c \
     gsignond-disposable.h \
     gsignond-disposable.c \
     $(BUILT_SOURCES) \
+    $(NULL)
+
+dist_libgsignond_common_la_SOURCES = \
+    gsignond-enum.c.template \
+    gsignond-enum.h.template \
     $(NULL)
 
 CLEANFILES = 

@@ -11,7 +11,7 @@ dbtest_SOURCES = dbtest.c
 dbtest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     -I$(top_srcdir)/src/ \
     -I$(top_srcdir)/include/ 
 

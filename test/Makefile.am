@@ -1,7 +1,11 @@
 SUBDIRS = common daemon db plugins
 
-VALGRIND_TESTS_DISABLE =
+VALGRIND_TESTS_DISABLE = common db plugins
 valgrind: $(SUBDIRS)
 	for t in $(filter-out $(VALGRIND_TESTS_DISABLE),$(SUBDIRS)); do \
 		cd $$t; $(MAKE) valgrind; cd ..;\
 	done;
+
+EXTRA_DIST = \
+    valgrind.supp \
+    valgrind_common.mk	

@@ -3,7 +3,7 @@ plugins_LTLIBRARIES = libssotest.la
 NULL=
 
 libssotest_la_CPPFLAGS = \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     $(GSIGNOND_CFLAGS) \
@@ -15,6 +15,7 @@ libssotest_la_LIBADD = \
     $(NULL)
 
 libssotest_la_SOURCES = \
+    gsignond-ssotest-plugin.h \
     gsignond-ssotest-plugin.c \
     $(NULL)
 

@@ -54,13 +54,14 @@ gsignond_SOURCES = \
     gsignond-identity.h \
     gsignond-signonui-proxy.c \
     gsignond-signonui-proxy.h \
+    gsignond-types.h \
     $(BUILT_SOURCES) \
     $(NULL)
 
 gsignond_CFLAGS = \
-    -I$(top_srcdir) \
-    -I$(top_builddir)/include/ \
-    -I$(top_builddir)/src/ \
+    -I$(top_builddir) \
+    -I$(top_srcdir)/include/ \
+    -I$(top_srcdir)/src/ \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 

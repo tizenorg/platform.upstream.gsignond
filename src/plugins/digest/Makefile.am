@@ -3,7 +3,7 @@ plugins_LTLIBRARIES = libdigest.la
 NULL=
 
 libdigest_la_CPPFLAGS = \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     $(GSIGNOND_CFLAGS) \
@@ -15,6 +15,7 @@ libdigest_la_LIBADD = \
     $(NULL)
 
 libdigest_la_SOURCES = \
+    gsignond-digest-plugin.h \
     gsignond-digest-plugin.c \
     $(NULL)
 

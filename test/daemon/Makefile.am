@@ -3,6 +3,7 @@ TESTS = daemontest
 TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
 	SSO_BIN_DIR=$(top_builddir)/src/daemon/.libs \
 	LD_LIBRARY_PATH="$(top_builddir)/src/daemon/plugins/plugind/.libs:$(top_builddir)/src/common/.libs:$(top_builddir)/src/common/db/.libs:$(top_builddir)/src/daemon/.libs:$(top_builddir)/src/daemon/db/.libs:$(top_builddir)/src/daemon/dbus/.libs:$(top_builddir)/src/daemon/plugins/.libs" 
+
 VALGRIND_TESTS_DISABLE=
 
 check_PROGRAMS = daemontest
@@ -15,7 +16,7 @@ daemontest_CFLAGS = \
     $(CHECK_CFLAGS) \
     -U G_LOG_DOMAIN \
     -DG_LOG_DOMAIN=\"gsignond-test-server\" \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     -I$(top_srcdir)/src/ \
     -I$(top_srcdir)/include/
 

@@ -1,6 +1,6 @@
 NULL=
 INTERFACES_DIR = $(top_srcdir)/src/daemon/dbus/interfaces
-SERVICES_DIR   = $(top_srcdir)/src/daemon/dbus/services
+SERVICES_DIR   = $(top_builddir)/src/daemon/dbus/services
 DBUS_BUILT_SOURCES = \
     gsignond-dbus-auth-service-gen.c \
     gsignond-dbus-auth-service-gen.h \
@@ -66,7 +66,7 @@ gsignond-dbus-remote-plugin-gen.c gsignond-dbus-remote-plugin-gen.h : $(INTERFAC
 lib_LTLIBRARIES = libgsignond-dbus-glue.la
 
 libgsignond_dbus_glue_la_CPPFLAGS = \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 
@@ -79,9 +79,10 @@ libgsignond_dbus_glue_la_SOURCES = $(DBUS_BUILT_SOURCES)
 lib_LTLIBRARIES += libgsignond-dbus.la
 
 libgsignond_dbus_la_CPPFLAGS = \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     -I$(top_srcdir)/include \
     -I$(top_srcdir)/src \
+    -I$(top_builddir)/src/daemon/dbus \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 

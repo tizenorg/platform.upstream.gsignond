@@ -3,7 +3,7 @@ plugins_LTLIBRARIES = libpassword.la
 NULL=
 
 libpassword_la_CPPFLAGS = \
-    -I$(top_srcdir) \
+    -I$(top_builddir) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     $(GSIGNOND_CFLAGS) \
@@ -15,6 +15,7 @@ libpassword_la_LIBADD = \
     $(NULL)
 
 libpassword_la_SOURCES = \
+    gsignond-password-plugin.h \
     gsignond-password-plugin.c \
     $(NULL)
 
