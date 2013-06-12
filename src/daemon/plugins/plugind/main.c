@@ -98,7 +98,7 @@ int main (int argc, char **argv)
     GOptionContext *opt_context = NULL;
     gchar **plugin_args = NULL;
     gint up_signal = -1;
-    gint in_fd = 0, out_fd = 1, err_fd = 2;
+    gint in_fd = 0, out_fd = 1;
     GOptionEntry opt_entries[] = {
         {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &plugin_args,
                 "Plugin Args", NULL},
