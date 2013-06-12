@@ -119,6 +119,10 @@ int main (int argc, char **argv)
     }
 
     out_fd = dup(1);
+    if (out_fd == -1) {
+        WARN ("Failed to dup stdout : %s(%d)", strerror(errno), errno);
+        out_fd = 1;
+    }
 
     /* Reattach stderr to stdout */
     dup2 (2, 1);
