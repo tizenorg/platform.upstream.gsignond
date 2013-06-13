@@ -52,13 +52,19 @@ fi
 
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
+# allow fake installations for "distcheck"
+AC_ARG_ENABLE(distcheck,
+	      [  --enable-distcheck build for distcheck target],
+	      [enable_distcheck=yes], [enable_distcheck=no])
+echo -n "running distcheck... "
+echo $enable_distcheck
+
 AC_ARG_ENABLE(dbus-type,
               [  --enable-dbus-type=dbus-type specify daemon dbus type:
                           p2p(default): uses peer to peer dbus
                           session: uses session message bus
                           system: uses system message bus],
               [enable_dbus_type=$enableval], [enable_dbus_type=p2p])
-
 echo "----------------------"
 echo " DBUS TYPE : '$enable_dbus_type'"
 echo "----------------------"
@@ -66,7 +72,11 @@ if test "x$enable_dbus_type" = "xp2p" ; then
     AC_DEFINE(USE_P2P, [1], [Use peer to peer dbus])
 elif test "x$enable_dbus_type" = "xsession" ; then
     AC_DEFINE(GSIGNOND_BUS_TYPE, [G_BUS_TYPE_SESSION], [Use session bus])
-    DBUS_SERVICES_DIR="`pkg-config --variable session_bus_services_dir dbus-1`"
+    if test "x$enable_distcheck" = "xyes" ; then
+        DBUS_SERVICES_DIR="${datadir}/dbus-1/services"
+    else
+        DBUS_SERVICES_DIR="`pkg-config --variable session_bus_services_dir dbus-1`"
+    fi
     
     PKG_CHECK_MODULES(GTestDBus, gio-2.0 >= 2.34, [gtestdbus=yes], [gtestdbus=no])
     if test "x$gtestdbus" = xyes; then
@@ -74,10 +84,18 @@ elif test "x$enable_dbus_type" = "xsession" ; then
     fi
 elif test "x$enable_dbus_type" = "xsystem" ; then
     AC_DEFINE(GSIGNOND_BUS_TYPE, [G_BUS_TYPE_SYSTEM], [Use system bus])
-    DBUS_SERVICES_DIR="`pkg-config --variable system_bus_services_dir dbus-1`"
+    if test "x$enable_distcheck" = "xyes" ; then
+        DBUS_SERVICES_DIR="${datadir}/dbus-1/system-services"
+    else
+        DBUS_SERVICES_DIR="`pkg-config --variable system_bus_services_dir dbus-1`"
+    fi
 fi
 if test "x$enable_dbus_type" != "xp2p" ; then
-    DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
+    if test "x$enable_distcheck" = "xyes" ; then
+        DBUS_INTERFACES_DIR="${datadir}/dbus-1/interfaces"
+    else
+        DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
+    fi
 fi
 
 AC_ARG_ENABLE(debug,
