@@ -15,7 +15,6 @@ Requires: dbus-1
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires: pkgconfig(dbus-1)
-BuildRequires: pkgconfig(gtk-doc)
 BuildRequires: pkgconfig(glib-2.0) >= 2.30
 BuildRequires: pkgconfig(gobject-2.0)
 BuildRequires: pkgconfig(gio-2.0)
@@ -39,15 +38,11 @@ Requires:   %{name} = %{version}-%{release}
 
 %prep
 %setup -q -n %{name}-%{version}
-#gtkdocize
-# for repository snapshot packages
-#aclocal
-#autoheader
-#libtoolize --copy --force
-#autoconf
-#automake --add-missing --copy
-#autoreconf --install --force
-# fore release source packages
+if [ -f = "gtk-doc.make" ]
+then
+rm gtk-doc.make
+fi
+touch gtk-doc.make
 autoreconf -f -i
 
 
@@ -85,15 +80,12 @@ chmod u+s %{_bindir}/%{name}
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif
-%exclude %{_libdir}/gsignond/extensions/*.la
-%exclude %{_libdir}/gsignond/plugins/*.la
 
 
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/%{name}/*.h
 %{_libdir}/lib%{name}-*.so
-%{_libdir}/lib%{name}-*.la
 %{_libdir}/pkgconfig/%{name}.pc
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
