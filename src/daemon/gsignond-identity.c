@@ -73,6 +73,7 @@ G_DEFINE_TYPE (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT);
 
 
 static void _on_session_close (gpointer data, GObject *session);
+static void _on_refresh_dialog (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata);
 
 #define GSIGNOND_IDENTITY_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_IDENTITY, GSignondIdentityPrivate)
 
@@ -319,8 +320,9 @@ gsignond_identity_get_info (GSignondIdentity *identity, const GSignondSecurityCo
 static void
 _on_dialog_refreshed (GError *error, gpointer user_data)
 {
-    /*GSignondAuthSession *session = GSIGNOND_AUTH_SESSION (user_data);*/
+    GSignondIdentityCbData *cb_data = (GSignondIdentityCbData *)user_data;
 
+    g_signal_handlers_disconnect_by_func(cb_data->session, _on_refresh_dialog, user_data);
     if (error) {
         WARN ("Error : %s", error->message);
         g_error_free (error);
@@ -330,17 +332,19 @@ _on_dialog_refreshed (GError *error, gpointer user_data)
 static void
 _on_refresh_dialog (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata)
 {
-    GSignondIdentity *identity = GSIGNOND_IDENTITY (userdata);
+    GSignondIdentityCbData *cb_data = (GSignondIdentityCbData *) userdata;
 
-    gsignond_daemon_refresh_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT (session),
-            ui_data, _on_dialog_refreshed, (gpointer)session);
+    gsignond_daemon_refresh_dialog (GSIGNOND_DAEMON (cb_data->identity->priv->owner), 
+            G_OBJECT (cb_data->session), ui_data, _on_dialog_refreshed, userdata);
 }
 
 static void
-_on_refresh_requested (GSignondSignonuiData *ui_data, gpointer user_data)
+_on_refresh_requested_by_ui (GSignondSignonuiData *ui_data, gpointer user_data)
 {
     GSignondIdentityCbData *cb_data = (GSignondIdentityCbData *) user_data;
 
+    /* check for dialog refresh requests */
+    g_signal_connect (cb_data->session, "process-refreshed", G_CALLBACK (_on_refresh_dialog), cb_data);
     gsignond_auth_session_refresh (cb_data->session, ui_data);
 }
 
@@ -350,6 +354,8 @@ _on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer 
     GSignondIdentityCbData *cb_data = (GSignondIdentityCbData *) user_data;
     GSignondIdentityPrivate *priv = GSIGNOND_IDENTITY_PRIV (cb_data->identity);
     GSignondSignonuiError ui_error = SIGNONUI_ERROR_NONE;
+
+    g_signal_handlers_disconnect_by_func(cb_data->session, _on_refresh_dialog, user_data);
 
     if (error) {
         WARN ("UI-Error: %s on identity %d",
@@ -416,7 +422,7 @@ _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui
     cb_data->session = session;
 
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(session), 
-            ui_data, _on_user_action_completed, _on_refresh_requested, cb_data);
+            ui_data, _on_user_action_completed, _on_refresh_requested_by_ui, userdata);
 }
 
 static void
@@ -530,7 +536,6 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
 
     /* Handle 'ui' signanls on session */
     g_signal_connect (session, "process-user-action-required", G_CALLBACK (_on_user_action_required), identity);
-    g_signal_connect (session, "process-refreshed", G_CALLBACK (_on_refresh_dialog), identity);
     g_signal_connect (session, "process-store", G_CALLBACK (_on_store_token), identity);
 
     g_hash_table_insert (identity->priv->auth_sessions, g_strdup (method), session);

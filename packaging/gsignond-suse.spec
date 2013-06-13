@@ -6,11 +6,11 @@
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 0.0.0
-Release: 8
+Version: 0.0.1
+Release: 9
 Group: System/Daemons
 License: LGPL
-Source: %{name}-%{version}.tar.bz2
+Source: %{name}-%{version}.tar.gz
 Requires: dbus-1
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -40,14 +40,14 @@ Requires:   %{name} = %{version}-%{release}
 %setup -q -n %{name}-%{version}
 #gtkdocize
 # for repository snapshot packages
-aclocal
-autoheader
-libtoolize --copy --force
-autoconf
-automake --add-missing --copy
-autoreconf --install --force
+#aclocal
+#autoheader
+#libtoolize --copy --force
+#autoconf
+#automake --add-missing --copy
+#autoreconf --install --force
 # fore release source packages
-#autoreconf -f -i
+autoreconf -f -i
 
 
 %build
@@ -100,6 +100,9 @@ chmod u+s %{_bindir}/%{name}
 
 
 %changelog
+* Wed Jun 12 2013 Jussi Laako <jussi.laako@linux.intel.com>
+- Prepare for first release
+
 * Thu Feb 08 2013 Jussi Laako <jussi.laako@linux.intel.com>
 - Initial RPM packaging
 
