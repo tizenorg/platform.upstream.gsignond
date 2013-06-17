@@ -91,11 +91,3 @@ chmod u+s %{_bindir}/%{name}
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
 %endif
 
-
-%changelog
-* Wed Jun 12 2013 Jussi Laako <jussi.laako@linux.intel.com>
-- Prepare for first release
-
-* Thu Feb 08 2013 Jussi Laako <jussi.laako@linux.intel.com>
-- Initial RPM packaging
-
