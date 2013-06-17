@@ -24,14 +24,14 @@
  */
 
 #include "gsignond-dbus-signonui-adapter.h"
-#include "gsignond-dbus-signonui-gen.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond-dbus.h"
 
 struct _GSignondDbusSignonuiAdapterPrivate
 {
     GDBusConnection *connection;
-    GSignondDbusSinglesignonui *proxy;
+    GDBusProxy *proxy;
+    gulong connection_close_signal_id;
 };
 
 G_DEFINE_TYPE (GSignondDbusSignonuiAdapter, gsignond_dbus_signonui_adapter, G_TYPE_OBJECT)
@@ -57,6 +57,11 @@ static void
 _dispose (GObject *object)
 {
     GSignondDbusSignonuiAdapter *self = GSIGNOND_DBUS_SIGNONUI_ADAPTER (object);
+
+    if (self->priv->connection_close_signal_id) {
+        g_signal_handler_disconnect (self->priv->connection, self->priv->connection_close_signal_id);
+        self->priv->connection_close_signal_id = 0;
+    }
 
     if (self->priv->connection) {
         g_object_unref (self->priv->connection);
@@ -104,32 +109,139 @@ gsignond_dbus_signonui_adapter_init (GSignondDbusSignonuiAdapter *self)
     self->priv = GSIGNOND_DBUS_SIGNONUI_ADAPTER_GET_PRIV(self);
     self->priv->connection = 0;
     self->priv->proxy = 0;
+    self->priv->connection_close_signal_id = 0;
+}
+
+static void
+_on_proxy_signal (GSignondDbusSignonuiAdapter *adapter,
+                  gchar *sender_name,
+                  gchar *signal_name,
+                  GVariant *params,
+                  gpointer user_data)
+{
+    gchar *request_id = NULL;
+
+    g_return_if_fail (adapter && signal_name && params);
+
+    /* Ignore other than 'refresh' signal */
+    if (g_strcmp0(signal_name, "refresh") != 0) return ;
+
+    if (!g_variant_is_of_type (params, G_VARIANT_TYPE_TUPLE)) {
+        WARN ("Expected 'tuple' type but got '%s' type", 
+                    g_variant_get_type_string (params));
+        return ;
+    }
+
+    g_variant_get (params, "(s)", &request_id);
+
+    if (request_id) {
+        g_signal_emit (adapter, _signals[SIG_REFRESH], 0, request_id);
+        g_free (request_id);
+    }
+}
+
+static void
+_on_connection_closed (GSignondDbusSignonuiAdapter *adapter,
+                       gboolean remote_peer_vanished, 
+                       GError *error,
+                       gpointer user_data)
+{
+    g_return_if_fail (adapter);
+
+    DBG("UI Connection closed...");
+
+    g_signal_handler_disconnect (adapter->priv->connection, adapter->priv->connection_close_signal_id);
+    adapter->priv->connection_close_signal_id = 0;
+
+    g_clear_object (&adapter->priv->connection);
+    g_clear_object (&adapter->priv->proxy);
+}
+
+static gboolean
+_setup_ui_connection (GSignondDbusSignonuiAdapter *adapter)
+{
+    GError *err = NULL;
+    GVariant *reply = NULL;
+    gchar *ui_server_address = NULL;
+    GDBusConnection *session_bus = NULL;
+
+    g_return_val_if_fail (adapter, FALSE);
+
+    if (adapter->priv->connection) return TRUE;
+
+    session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &err);
+    if (err) {
+        WARN ("Error getting session bus :%s", err->message);
+        goto fail;
+    }
+
+    reply = g_dbus_connection_call_sync (session_bus, SIGNONUI_SERVICE, SIGNONUI_OBJECTPATH,
+                SIGNONUI_IFACE, "getBusAddress", g_variant_new ("()"), 
+                G_VARIANT_TYPE_TUPLE, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err);
+    if (!reply) {
+        WARN ("Failed to get signon ui bus address : %s", err->message);
+        goto fail;
+    }
+
+    g_variant_get(reply, "(s)", &ui_server_address);
+
+    DBG ("Connecting to UI Server at : %s", ui_server_address);
+
+    adapter->priv->connection = g_dbus_connection_new_for_address_sync (ui_server_address,
+            G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT, NULL, NULL, &err);
+    g_free (ui_server_address);
+    if (err) {
+        WARN ("Failed to connect UI server at address '%s' : %s", ui_server_address,
+                err->message);
+        goto fail;
+    }
+
+    adapter->priv->connection_close_signal_id = 
+            g_signal_connect_swapped (adapter->priv->connection, 
+                "closed", G_CALLBACK(_on_connection_closed), adapter);
+
+    adapter->priv->proxy = g_dbus_proxy_new_sync (adapter->priv->connection,
+           G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+           NULL,
+           NULL,
+           SIGNONUI_DIALOG_OBJECTPATH,
+           SIGNONUI_DIALOG_IFACE,
+           NULL,
+           &err);
+    if (err) {
+        WARN ("failed to get ui object : %s", err->message);
+        goto fail;
+    }
+
+    g_signal_connect_swapped (adapter->priv->proxy, "g-signal", G_CALLBACK (_on_proxy_signal), adapter);
+
+    return TRUE;
+fail:
+    if (err) g_error_free (err);
+    return FALSE;
 }
 
 static void
 _on_query_dialog_ready (GObject *proxy, GAsyncResult *res, gpointer user_data)
 {
     GError *error = NULL;
-    GVariant *out_params = NULL;
+    GVariant *reply = NULL;
     _SignonuiDbusInfo *info = (_SignonuiDbusInfo *)user_data;
 
-    gsignond_dbus_singlesignonui_call_query_dialog_finish (
-            GSIGNOND_DBUS_SINGLESIGNONUI (proxy), &out_params, res, &error);
+    reply = g_dbus_proxy_call_finish (G_DBUS_PROXY (proxy), res, &error);
 
-    if (!info) {
-        ERR ("Memory curropted");
-        return;
-    }
-
-    if (info->cb) {
-        ((GSignondDbusSignonuiQueryDialogCb)info->cb) (out_params, error, info->data);
+    if (info) {
+        if (info->cb) {
+            GVariant *out_params = NULL; g_variant_get (reply, "(@a{sv})", &out_params);
+            ((GSignondDbusSignonuiQueryDialogCb)info->cb) (out_params, error, info->data);
+            g_variant_unref (out_params);
+        }
         g_object_unref (info->adapter);
-        g_free (info);
+        g_slice_free (_SignonuiDbusInfo, info);
     }
-    else {
-        if (error) g_error_free (error);
-        if (out_params) g_variant_unref (out_params);
-    }
+    
+    if (error) g_error_free (error);
+    if (reply) g_variant_unref (reply);
 }
 
 gboolean
@@ -142,13 +254,19 @@ gsignond_dbus_signonui_adapter_query_dialog (GSignondDbusSignonuiAdapter *adapte
         WARN ("assert (!adapter ||!GSIGNOND_IS_DBUS_SIGNONUI_ADAPTER (adapter)) failed"); 
         return FALSE;
     }
-    _SignonuiDbusInfo *info = g_new0 (_SignonuiDbusInfo, 1);
+    if (!adapter->priv->proxy && !_setup_ui_connection(adapter)) {
+        WARN ("Failed to setup ui connection");
+        return FALSE;
+    }
+    _SignonuiDbusInfo *info = g_slice_new0 (_SignonuiDbusInfo);
 
     info->adapter = g_object_ref (adapter);
     info->cb = callback;
     info->data = user_data;
-    gsignond_dbus_singlesignonui_call_query_dialog (adapter->priv->proxy, params, NULL,
-                _on_query_dialog_ready, (gpointer)info);
+
+    g_dbus_proxy_call (adapter->priv->proxy, "queryDialog",
+            g_variant_new ("(a{sv})", params), G_DBUS_CALL_FLAGS_NONE, -1, NULL,
+            _on_query_dialog_ready, (gpointer)info);
 
     return TRUE;
 }
@@ -157,23 +275,20 @@ static void
 _on_refresh_dialog_ready (GObject *proxy, GAsyncResult *res, gpointer user_data)
 {
     GError *error = NULL;
+    GVariant *reply = NULL;
     _SignonuiDbusInfo *info = (_SignonuiDbusInfo *)user_data;
 
-    gsignond_dbus_singlesignonui_call_refresh_dialog_finish (
-            GSIGNOND_DBUS_SINGLESIGNONUI (proxy), res, &error);
+    reply = g_dbus_proxy_call_finish (G_DBUS_PROXY (proxy), res, &error);
 
-    if (!info) {
-        ERR ("Memory curropted");
-        g_error_free (error);
-        return;
-    }
-
-    if (info->cb) {
-        ((GSignondDbusSignonuiRefreshDialogCb)info->cb) (error, info->data);
+    if (info) {
+        if (info->cb)
+            ((GSignondDbusSignonuiRefreshDialogCb)info->cb) (error, info->data);
         g_object_unref (info->adapter);
-        g_free (info);
+        g_slice_free (_SignonuiDbusInfo, info);
     }
-    else if (error) g_error_free (error);
+   
+    if (reply) g_variant_unref (reply);
+    if (error) g_error_free (error);
 }
 
 gboolean
@@ -186,13 +301,20 @@ gsignond_dbus_signonui_adapter_refresh_dialog (GSignondDbusSignonuiAdapter *adap
         WARN ("assert (!adapter ||!GSIGNOND_IS_DBUS_SIGNONUI_ADAPTER (adapter)) failed"); 
         return FALSE;
     }
-    _SignonuiDbusInfo *info = g_new0 (_SignonuiDbusInfo, 1);
+    if (!adapter->priv->proxy && !_setup_ui_connection(adapter)) {
+        WARN ("Failed to setup ui connection");
+        return FALSE;
+    }
+
+    _SignonuiDbusInfo *info = g_slice_new0 (_SignonuiDbusInfo);
 
     info->adapter = g_object_ref (adapter);
     info->cb = callback;
     info->data = user_data;
-    gsignond_dbus_singlesignonui_call_refresh_dialog (adapter->priv->proxy, params, NULL,
-                _on_refresh_dialog_ready, (gpointer)info);
+
+    g_dbus_proxy_call (adapter->priv->proxy, "refreshDialog",
+            g_variant_new ("(a{sv})", params), G_DBUS_CALL_FLAGS_NONE, -1, NULL,
+            _on_refresh_dialog_ready, (gpointer)info);
 
     return TRUE;
 }
@@ -201,23 +323,20 @@ static void
 _on_cancel_request_ready (GObject *proxy, GAsyncResult *res, gpointer user_data)
 {
     GError *error = NULL;
+    GVariant *reply = NULL;
     _SignonuiDbusInfo *info = (_SignonuiDbusInfo *)user_data;
 
-    gsignond_dbus_singlesignonui_call_cancel_ui_request_finish (
-            GSIGNOND_DBUS_SINGLESIGNONUI (proxy), res, &error);
+    reply = g_dbus_proxy_call_finish (G_DBUS_PROXY (proxy), res, &error);
 
-    if (!info) {
-        ERR ("Memory curropted");
-        g_error_free (error);
-        return;
-    }
-
-    if (info->cb) {
-        ((GSignondDbusSignonuiCancelRequestCb)info->cb) (error, info->data);
+    if (info) {
+        if (info->cb)
+            ((GSignondDbusSignonuiCancelRequestCb)info->cb) (error, info->data);
         g_object_unref (info->adapter);
-        g_free (info);
+        g_slice_free (_SignonuiDbusInfo, info);
     }
-    else if (error) g_error_free (error);
+
+    if (reply) g_variant_unref (reply);
+    if (error) g_error_free (error);
 }
 
 gboolean
@@ -230,28 +349,21 @@ gsignond_dbus_signonui_adapter_cancel_request (GSignondDbusSignonuiAdapter *adap
         WARN ("assert (!adapter ||!GSIGNOND_IS_DBUS_SIGNONUI_ADAPTER (adapter)) failed"); 
         return FALSE;
     }
-    _SignonuiDbusInfo *info = g_new0 (_SignonuiDbusInfo, 1);
+    if (!adapter->priv->proxy && !_setup_ui_connection(adapter)) {
+        WARN ("Failed to setup ui connection");
+        return FALSE;
+    }
+    _SignonuiDbusInfo *info = g_slice_new0 (_SignonuiDbusInfo);
 
     info->adapter = g_object_ref (adapter);
     info->cb = callback;
     info->data = user_data;
-    gsignond_dbus_singlesignonui_call_cancel_ui_request (adapter->priv->proxy, request_id, NULL,
-                _on_cancel_request_ready, (gpointer)info);
+
+    g_dbus_proxy_call (adapter->priv->proxy, "cancelUiRequest",
+            g_variant_new ("(s)", request_id), G_DBUS_CALL_FLAGS_NONE, -1, NULL,
+            _on_cancel_request_ready, (gpointer)info);
 
     return TRUE;
-}
-
-static void
-_on_refresh_request (GSignondDbusSignonuiAdapter *proxy, gchar *request_id, gpointer userdata)
-{
-    GSignondDbusSignonuiAdapter *adapter = GSIGNOND_DBUS_SIGNONUI_ADAPTER (userdata);
-
-    if (!adapter) {
-        ERR ("DBus-Error: memroy curroption");
-        return;
-    }
-
-    g_signal_emit (adapter, _signals[SIG_REFRESH], 0, request_id);
 }
 
 /**
@@ -264,34 +376,13 @@ _on_refresh_request (GSignondDbusSignonuiAdapter *proxy, gchar *request_id, gpoi
 GSignondDbusSignonuiAdapter * 
 gsignond_dbus_signonui_adapter_new ()
 {
-    GError *err = NULL;
     GSignondDbusSignonuiAdapter *adapter = GSIGNOND_DBUS_SIGNONUI_ADAPTER (
         g_object_new (GSIGNOND_TYPE_DBUS_SIGNONUI_ADAPTER, NULL));
-    
-    adapter->priv->connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &err);
-    if (err) {
-        ERR ("Error getting session bus :%s", err->message);
-        goto fail;
-    }
 
-    adapter->priv->proxy = gsignond_dbus_singlesignonui_proxy_new_sync (adapter->priv->connection,
-           G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES, 
-           SIGNONUI_SERVICE,
-           SIGNONUI_OBJECTPATH,
-           NULL,
-           &err);
-    if (err) {
-        WARN ("failed to get ui object : %s", err->message);
-        goto fail;
+    if (!_setup_ui_connection (adapter)) {
+        g_object_unref (adapter);
+        return NULL;
     }
-
-    g_signal_connect (adapter->priv->proxy, "refresh", G_CALLBACK (_on_refresh_request), adapter);
 
     return adapter;
-
-fail:
-    if (err) g_error_free (err);
-    g_object_unref (adapter);
-    return NULL;
 }
-

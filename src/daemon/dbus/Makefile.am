@@ -8,8 +8,6 @@ DBUS_BUILT_SOURCES = \
     gsignond-dbus-auth-session-gen.h \
     gsignond-dbus-identity-gen.c \
     gsignond-dbus-identity-gen.h \
-    gsignond-dbus-signonui-gen.c \
-    gsignond-dbus-signonui-gen.h \
     gsignond-dbus-remote-plugin-gen.c \
     gsignond-dbus-remote-plugin-gen.h \
     $(NULL)
@@ -18,7 +16,6 @@ DBUS_BUILT_DOCS = \
     gsignond-dbus-auth-service-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
     gsignond-dbus-auth-session-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
     gsignond-dbus-identity-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.Identity.xml \
-    gsignond-dbus-signonui-doc-gen-org.tizen.SSO.singlesignonui.xml \
     gsignond-dbus-remote-plugin-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.xml \
     $(NULL)
 
@@ -45,14 +42,6 @@ gsignond-dbus-identity-gen.c gsignond-dbus-identity-gen.h : $(INTERFACES_DIR)/co
        --c-namespace GSignondDbus                           \
        --generate-c-code  gsignond-dbus-identity-gen         \
        --generate-docbook gsignond-dbus-identity-doc-gen     \
-       $<
-
-gsignond-dbus-signonui-gen.c gsignond-dbus-signonui-gen.h : $(INTERFACES_DIR)/org.tizen.SSO.singlesignonui.xml
-	gdbus-codegen                                       \
-       --interface-prefix org.tizen.SSO                 \
-       --c-namespace GSignondDbus                       \
-       --generate-c-code  gsignond-dbus-signonui-gen    \
-       --generate-docbook gsignond-dbus-signonui-doc-gen\
        $<
 
 gsignond-dbus-remote-plugin-gen.c gsignond-dbus-remote-plugin-gen.h : $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.xml
@@ -117,7 +106,6 @@ dbusinterfaces_DATA = \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.Identity.xml \
-    $(INTERFACES_DIR)/org.tizen.SSO.singlesignonui.xml \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.xml
 
 EXTRA_DIST = interfaces

@@ -38,8 +38,10 @@
 #define GSIGNOND_AUTH_SESSION_INTERFACE  GSIGNOND_SERVICE_PREFIX ".AuthSession"
 #define GSIGNOND_PLUGIN_OBJECTPATH       GSIGNOND_DAEMON_OBJECTPATH "/Plugin"
 
-#define SIGNONUI_SERVICE                 "org.tizen.SSO"
-#define SIGNONUI_OBJECTPATH              "/org/tizen/SSO/SignonUi"
-#define SIGNONUI_INTERFACE               "org.tizen.SSO.singlesignonui"
+#define SIGNONUI_SERVICE                 "com.google.code.AccountsSSO.gSingleSignOn.UI"
+#define SIGNONUI_OBJECTPATH              "/"
+#define SIGNONUI_IFACE                   "com.google.code.AccountsSSO.gSingleSignOn.UI"
+#define SIGNONUI_DIALOG_IFACE            "com.google.code.AccountsSSO.gSingleSignOn.UI.Dialog"
+#define SIGNONUI_DIALOG_OBJECTPATH       "/Dialog"
 
 #endif /* __GSIGNOND_DBUS_H_ */
