@@ -18,5 +18,5 @@ cd $2 && \
 mkdir -p packaging && \
 cd packaging && \
 ln -sf ../dist/rpm/gsignond-tizen.spec gsignond.spec &&
-ln -sf ../dist/rpm/gsignond-tizen.changes gsignond.change;
+ln -sf ../dist/rpm/gsignond-tizen.changes gsignond.changes;
 

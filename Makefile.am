@@ -11,7 +11,7 @@ pkgconfig_DATA = gsignond.pc
 
 SUBDIRS = src test
 
-EXTRA_DIST = dist
+EXTRA_DIST = dist tools
 
 valgrind:
 	cd test; make valgrind
