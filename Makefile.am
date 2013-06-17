@@ -11,7 +11,7 @@ pkgconfig_DATA = gsignond.pc
 
 SUBDIRS = src test
 
-EXTRA_DIST = packaging
+EXTRA_DIST = dist
 
 valgrind:
 	cd test; make valgrind
