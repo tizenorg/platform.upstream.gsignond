@@ -17,6 +17,6 @@ tar -xzvf $1 -C $2 --strip-components 1 && \
 cd $2 && \
 mkdir -p packaging && \
 cd packaging && \
-ln -sf ../dists/rpm/gsignond-tizen.spec gsignond.spec &&
-ln -sf ../dists/rpm/gsignond-tizen.changes gsignond.changes;
+cp -f ../dists/rpm/gsignond-tizen.spec gsignond.spec &&
+cp -f ../dists/rpm/gsignond-tizen.changes gsignond.changes;
 
