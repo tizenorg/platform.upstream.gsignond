@@ -26,10 +26,6 @@
 #define __GSIGNOND_LOG_H_
 
 #include <glib.h>
-#include "config.h"
-
-
-#ifdef ENABLE_DEBUG
 
 #include <execinfo.h>
 #include <stdio.h>
@@ -49,7 +45,6 @@
         free (strings);\
     }\
 }
-#endif /* ENABLE_DEBUG */
 
 #define INFO(frmt, args...) g_message("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
