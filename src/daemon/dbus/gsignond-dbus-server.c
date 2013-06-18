@@ -381,7 +381,8 @@ _on_name_lost (GDBusConnection *connection,
                gpointer         user_data)
 {
     INFO ("Lost (or failed to acquire) the name '%s' on the on bus connection '%p'", name, connection);
-    if (user_data) g_object_unref (G_OBJECT (user_data));
+    if (user_data && GSIGNOND_IS_DBUS_SERVER(user_data)) 
+        g_object_unref (G_OBJECT (user_data));
 }
 
 static void
