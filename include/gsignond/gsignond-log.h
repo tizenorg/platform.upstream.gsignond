@@ -26,6 +26,30 @@
 #define __GSIGNOND_LOG_H_
 
 #include <glib.h>
+#include "config.h"
+
+
+#ifdef ENABLE_DEBUG
+
+#include <execinfo.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define TRACEBACK() \
+{ \
+    void *array[256];\
+    size_t size, i;\
+    char **strings;\
+\
+    fprintf (stderr, "Backtrace for: %s %s\n", __FILE__, __PRETTY_FUNCTION__); \
+    size = backtrace (array, 256);\
+    strings = backtrace_symbols (array, size);\
+    if (strings) { \
+        for (i=0; i <size; i++) fprintf (stderr, "\t%s\n", strings[i]);\
+        free (strings);\
+    }\
+}
+#endif /* ENABLE_DEBUG */
 
 #define INFO(frmt, args...) g_message("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
