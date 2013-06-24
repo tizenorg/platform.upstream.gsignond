@@ -13,10 +13,11 @@ currdir = `pwd`;
 echo "CURR dir = $currdir"
 
 mkdir -p $2 && \
-tar -xzvf $1 -C $2 --strip-components 1 && \
 cd $2 && \
+git rm -r * && \
+tar -xzvf $1 -C $2 --strip-components 1 && \
 mkdir -p packaging && \
 cd packaging && \
-cp -f ../dists/rpm/gsignond-tizen.spec gsignond.spec &&
-cp -f ../dists/rpm/gsignond-tizen.changes gsignond.changes;
-
+cp -f ../dists/rpm/gsignond-tizen.spec gsignond.spec && \
+cp -f ../dists/rpm/gsignond-tizen.changes gsignond.changes && \
+cd .. && git add *;
