@@ -118,6 +118,8 @@ fi
 AM_CONDITIONAL(USE_GTESTDBUS, [test x$gtestdbus = xyes])
 AC_SUBST(MESSAGE_BUS_TYPE, [$enable_dbus_type])
 
+AM_CONDITIONAL(HAVE_DEBUG, [test x$enable_debug = xyes])
+
 AC_SUBST(DBUS_SERVICES_DIR)
 AC_SUBST(DBUS_INTERFACES_DIR)
 
