@@ -683,7 +683,7 @@ gsignond_identity_info_set_realms (
  * @info: instance of #GSignondIdentityInfo
  *
  * Retrieves the methods from the info whereas #GHashTable consists of
- * <gchar*,GSequence*> and #GSequence is a sequence of gchar *.
+ * (gchar*,GSequence*) and #GSequence is a sequence of gchar *.
  *
  * Returns: (transfer full) the methods if successful, NULL otherwise.
  * when done, methods should be freed using g_hash_table_unref.
@@ -724,7 +724,7 @@ gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
  * @info: instance of #GSignondIdentityInfo
  *
  * @methods: (transfer none) methods to be set whereas #GHashTable consists of
- * <gchar*,#GSequence*> and #GSequence is a sequence of gchar *.
+ * (gchar*,#GSequence*) and #GSequence is a sequence of gchar *.
  *
  * Sets the methods of the info.
  *

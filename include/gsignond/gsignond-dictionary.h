@@ -41,9 +41,6 @@ G_BEGIN_DECLS
 
 typedef GHashTable GSignondDictionary;
 
-GType
-gsignond_dictionary_get_type (void);
-
 GSignondDictionary *
 gsignond_dictionary_new (void);
 

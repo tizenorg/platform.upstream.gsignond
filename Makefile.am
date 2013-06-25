@@ -4,6 +4,7 @@ ACLOCAL_AMFLAGS = -I m4
 # also --enable-dbus-type=session here
 AM_DISTCHECK_CONFIGURE_FLAGS = \
     --enable-debug \
+    --enable-gtk-doc \
     --enable-distcheck
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -11,7 +12,7 @@ pkgconfig_DATA = gsignond.pc
 
 dist_sysconf_DATA = gsignond.conf
 
-SUBDIRS = src test
+SUBDIRS = src test docs
 
 EXTRA_DIST = dists tools
 

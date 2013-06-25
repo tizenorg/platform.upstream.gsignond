@@ -132,7 +132,7 @@ AC_SUBST(DBUS_SERVICES_DIR)
 AC_SUBST(DBUS_INTERFACES_DIR)
 
 # gtk-doc
-GTK_DOC_CHECK
+GTK_DOC_CHECK([1.18],[--flavour no-tmpl])
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
@@ -150,6 +150,7 @@ AC_OUTPUT([
 Makefile
 ${PACKAGE_NAME}.pc
 ${PACKAGE_NAME}-uninstalled.pc
+docs/Makefile
 src/Makefile
 src/common/Makefile
 src/common/db/Makefile
