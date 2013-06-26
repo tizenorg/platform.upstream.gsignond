@@ -27,12 +27,36 @@
 #include <gsignond/gsignond-log.h>
 
 /**
+ * SECTION:gsignond-dictionary
+ * @short_description: a dictionary container holding string keys and variant values
+ * @title: GSignondDictionary
+ * @include: gsignond/gsignond-dictionary.h
+ *
+ * A #GSignondDictionary is a dictionary data structure that maps string keys to #GVariant values.
+ * It's used in multiple places in gsignond and its public API to pass key-value
+ * data sets.
+ * 
+ * |[    GSignondDictionary* dict = gsignond_dictionary_new();
+ *     gsignond_dictionary_set_string(dict, "name", "John Smith");
+ *     gsignond_dictionary_set_uint32(dict, "age", 32);
+ *
+ *     guint32 age;
+ *     gboolean success = gsignond_dictionary_get_uint32(dict, "age", &age);
+ *     const gchar* name = gsignond_dictionary_get_string(dict, "name");
+ *     gsignond_dictionary_unref(dict);
+ * ]| 
+ */
+
+
+/**
  * gsignond_dictionary_new_from_variant:
  * @variant: instance of #GVariant
  *
- * Converts the variant to GSignondDictionary.
+ * Converts the #GVariant to #GSignondDictionary. This is useful for example if 
+ * the dictionary needs to be deserialized, or if it's contained in another 
+ * #GSignondDictionary and has been retrieved using gsignond_dictionary_get().
  *
- * Returns: (transfer full) object if successful, NULL otherwise.
+ * Returns: (transfer full) #GSignondDictionary if successful, NULL otherwise.
  */
 GSignondDictionary *
 gsignond_dictionary_new_from_variant (GVariant *variant)
@@ -58,7 +82,8 @@ gsignond_dictionary_new_from_variant (GVariant *variant)
  * gsignond_dictionary_to_variant:
  * @dict: instance of #GSignondDictionary
  *
- * Converts the GSignondDictionary to variant.
+ * Converts the #GSignondDictionary to a #GVariant. The result can be serialized
+ * or put into another #GSignondDictionary using gsignond_dictionary_set().
  *
  * Returns: (transfer full) #GVariant object if successful, NULL otherwise.
  */
@@ -90,7 +115,7 @@ gsignond_dictionary_to_variant (GSignondDictionary *dict)
 /**
  * gsignond_dictionary_new:
  *
- * Creates new instance of GSignondDictionary.
+ * Creates a new instance of #GSignondDictionary.
  *
  * Returns: (transfer full) #GSignondDictionary object if successful,
  * NULL otherwise.
@@ -108,7 +133,7 @@ gsignond_dictionary_new (void)
  * gsignond_dictionary_ref:
  * @dict: instance of #GSignondDictionary
  *
- * Increment reference count of the dictionary structure.
+ * Increment the reference count of the dictionary structure.
  * Returns: the passed in #GSignondDictionary
  */
 GSignondDictionary*
@@ -123,7 +148,8 @@ gsignond_dictionary_ref (GSignondDictionary *dict)
  * gsignond_dictionary_unref:
  * @dict: instance of #GSignondDictionary
  *
- * Decrement reference count of the dictionary structure.
+ * Decrements the reference count of the dictionary structure. If the reference
+ * count reaches zero, the structure is deallocated and shouldn't be used.
  *
  */
 void
@@ -138,10 +164,16 @@ gsignond_dictionary_unref (GSignondDictionary *dict)
 /**
  * gsignond_dictionary_get:
  * @dict: instance of #GSignondDictionary
+ * @key: the key to look up in the dictionary
  *
- * Retrieves a value from the dictionary.
+ * Retrieves a #GVariant value from the dictionary. This can be used to retrieve
+ * a value of an arbitrary type, and then convert it manually to a specific type
+ * using #GVariant methods. For most commonly used types, also getters that
+ * return the specific type directly are provided (gsignond_dictionary_get_string()
+ * and similar).
  *
- * Returns: (transfer none) the value; NULL is returned in case of failure.
+ * Returns: (transfer none) the value; NULL is returned in case of failure (for 
+ * example if the entry corresponding to the supplied key doesn't exist).
  */
 GVariant *
 gsignond_dictionary_get (GSignondDictionary *dict, const gchar *key)
@@ -155,11 +187,12 @@ gsignond_dictionary_get (GSignondDictionary *dict, const gchar *key)
 /**
  * gsignond_dictionary_set:
  * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to be set
+ * @value: (transfer full) value to be set
  *
- * @key: key to be set
- * @value: value to be set
- *
- * Adds or replaces key-value pair in the dictionary.
+ * Adds or replaces key-value pair in the dictionary. This allows to set a value
+ * of an arbitrary type: it first needs to be converted to a #GVariant. For most
+ * commonly used types also type-specific setters are provided.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -182,8 +215,13 @@ gsignond_dictionary_set (GSignondDictionary *dict,
 
 /**
  * gsignond_dictionary_get_boolean:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to look up
+ * @value: points to the location where the value should be set
  *
- * Overload, see #gsignond_dictionary_get for details.
+ * Retrieves a gboolean value.
+ *
+ * Returns: TRUE if the value was retrieved successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_get_boolean (GSignondDictionary *dict, const gchar *key,
@@ -200,9 +238,14 @@ gsignond_dictionary_get_boolean (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
- * gsignon_dictionary_set_boolean:
+ * gsignond_dictionary_set_boolean:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to set
+ * @value: value to set
  *
- * Overload, see #gsignond_dictionary_set for details.
+ * Sets or replaces a gboolean value in the dictionary.
+ * 
+ * Returns: TRUE if the value was set or replaced successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_set_boolean (GSignondDictionary *dict, const gchar *key,
@@ -213,8 +256,13 @@ gsignond_dictionary_set_boolean (GSignondDictionary *dict, const gchar *key,
 
 /**
  * gsignond_dictionary_get_int32:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to look up
+ * @value: points to the location where the value should be set
  *
- * Overload, see #gsignond_dictionary_get for details.
+ * Retrieves a int32 value.
+ * 
+ * Returns: TRUE if the value was retrieved successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_get_int32 (GSignondDictionary *dict, const gchar *key,
@@ -231,9 +279,14 @@ gsignond_dictionary_get_int32 (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
- * gsignon_dictionary_set_int32:
+ * gsignond_dictionary_set_int32:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to set
+ * @value: value to set
  *
- * Overload, see #gsignond_dictionary_set for details.
+ * Sets or replaces a int32 value in the dictionary.
+ * 
+ * Returns: TRUE if the value was set or replaced successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_set_int32 (GSignondDictionary *dict, const gchar *key,
@@ -243,9 +296,14 @@ gsignond_dictionary_set_int32 (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
- * gsignond_dictionary_get_guint32:
+ * gsignond_dictionary_get_uint32:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to look up
+ * @value: points to the location where the value should be set
  *
- * Overload, see #gsignond_dictionary_get for details.
+ * Retrieves a uint32 value.
+ * 
+ * Returns: TRUE if the value was retrieved successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_get_uint32 (GSignondDictionary *dict, const gchar *key,
@@ -262,9 +320,14 @@ gsignond_dictionary_get_uint32 (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
- * gsignon_dictionary_set_guint32:
+ * gsignond_dictionary_set_uint32:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to set
+ * @value: value to set
  *
- * Overload, see #gsignond_dictionary_set for details.
+ * Sets or replaces a uint32 value in the dictionary.
+ * 
+ * Returns: TRUE if the value was set or replaced successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_set_uint32 (GSignondDictionary *dict, const gchar *key,
@@ -275,8 +338,13 @@ gsignond_dictionary_set_uint32 (GSignondDictionary *dict, const gchar *key,
 
 /**
  * gsignond_dictionary_get_int64:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to look up
+ * @value: points to the location where the value should be set
  *
- * Overload, see #gsignond_dictionary_get for details.
+ * Retrieves a int64 value.
+ * 
+ * Returns: TRUE if the value was retrieved successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_get_int64 (GSignondDictionary *dict, const gchar *key,
@@ -293,9 +361,14 @@ gsignond_dictionary_get_int64 (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
- * gsignon_dictionary_set_int32:
+ * gsignond_dictionary_set_int64:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to set
+ * @value: value to set
  *
- * Overload, see #gsignond_dictionary_set for details.
+ * Sets or replaces a int64 value in the dictionary.
+ * 
+ * Returns: TRUE if the value was set or replaced successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_set_int64 (GSignondDictionary *dict, const gchar *key,
@@ -305,9 +378,14 @@ gsignond_dictionary_set_int64 (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
- * gsignond_dictionary_get_guint32:
+ * gsignond_dictionary_get_uint64:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to look up
+ * @value: points to the location where the value should be set
  *
- * Overload, see #gsignond_dictionary_get for details.
+ * Retrieves a uint64 value.
+ * 
+ * Returns: TRUE if the value was retrieved successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_get_uint64 (GSignondDictionary *dict, const gchar *key,
@@ -324,9 +402,14 @@ gsignond_dictionary_get_uint64 (GSignondDictionary *dict, const gchar *key,
 }
 
 /**
- * gsignon_dictionary_set_guint32:
+ * gsignond_dictionary_set_uint64:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to set
+ * @value: value to set
  *
- * Overload, see #gsignond_dictionary_set for details.
+ * Sets or replaces a uint64 value in the dictionary.
+ * 
+ * Returns: TRUE if the value was set or replaced successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_set_uint64 (GSignondDictionary *dict, const gchar *key,
@@ -338,8 +421,12 @@ gsignond_dictionary_set_uint64 (GSignondDictionary *dict, const gchar *key,
 
 /**
  * gsignond_dictionary_get_string:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to look up
  *
- * Overload, see #gsignond_dictionary_get for details.
+ * Retrieves a string value.
+ * 
+ * Returns: (transfer none) the value if it was retrieved successfully, NULL otherwise.
  */
 const gchar *
 gsignond_dictionary_get_string (GSignondDictionary *dict, const gchar *key)
@@ -353,9 +440,14 @@ gsignond_dictionary_get_string (GSignondDictionary *dict, const gchar *key)
 }
 
 /**
- * gsignon_dictionary_set_string:
+ * gsignond_dictionary_set_string:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none) key to set
+ * @value: (transfer none) value to set
  *
- * Overload, see #gsignond_dictionary_set for details.
+ * Sets or replaces a string value in the dictionary.
+ * 
+ * Returns: TRUE if the value was set or replaced successfully, FALSE otherwise.
  */
 gboolean
 gsignond_dictionary_set_string (GSignondDictionary *dict, const gchar *key,
@@ -367,9 +459,7 @@ gsignond_dictionary_set_string (GSignondDictionary *dict, const gchar *key,
 /**
  * gsignond_dictionary_remove:
  * @dict: instance of #GSignondDictionary
- *
- * @key: key which needs to be removed from the dictionary
- * @value: value to be set
+ * @key: (transfer none) key which needs to be removed from the dictionary
  *
  * Removes key-value pair in the dictionary as per key.
  *
@@ -392,7 +482,7 @@ gsignond_dictionary_remove (GSignondDictionary *dict, const gchar *key)
  *
  * Creates a copy of the dictionary.
  *
- * Returns: (transfer full) #GSignondDictionary object if successful,
+ * Returns: (transfer full) #GSignondDictionary object if the copy was successful,
  * NULL otherwise.
  */
 GSignondDictionary *

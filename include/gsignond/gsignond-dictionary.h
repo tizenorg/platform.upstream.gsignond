@@ -57,7 +57,7 @@ GSignondDictionary *
 gsignond_dictionary_new_from_variant (GVariant *variant);
 
 GVariant *
-gsignond_dictionary_to_variant (GSignondDictionary *self);
+gsignond_dictionary_to_variant (GSignondDictionary *dict);
 
 GVariant *
 gsignond_dictionary_get (GSignondDictionary *dict, const gchar *key);
