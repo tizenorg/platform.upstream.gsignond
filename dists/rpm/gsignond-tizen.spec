@@ -1,12 +1,12 @@
 # define used dbus type [p2p, session, system]
-%define dbus_type session
+%define dbus_type p2p
 # enable debug features such as control environment variables
 # WARNING! do not use for production builds as it will break security
 %define debug_build 0
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 0.0.1
+Version: 0.0.2
 Release: 9
 Group: System/Daemons
 License: LGPL

@@ -68,6 +68,8 @@ static void _on_connection_closed (GDBusConnection *connection,
                        GError          *error,
                        gpointer         user_data);
 #endif
+static void
+_on_auth_service_dispose (gpointer data, GObject *dead_service);
 
 static void
 _set_property (GObject *object,
@@ -114,14 +116,14 @@ _get_property (GObject *object,
     }
 }
 
-#ifdef USE_P2P
 static void
-_clear_connection (gpointer connection, gpointer value, gpointer userdata)
+_clear_watchers(gpointer connection, gpointer auth_service, gpointer userdata)
 {
-    (void) value;
+#ifdef USE_P2P
     g_signal_handlers_disconnect_by_func (connection, _on_connection_closed, userdata);
-}
 #endif
+    g_object_weak_unref (G_OBJECT(auth_service),  _on_auth_service_dispose, userdata);
+}
 
 static void
 _dispose (GObject *object)
@@ -129,9 +131,7 @@ _dispose (GObject *object)
     GSignondDbusServer *self = GSIGNOND_DBUS_SERVER (object);
 
     if (self->priv->auth_services) {
-#ifdef USE_P2P
-        g_hash_table_foreach (self->priv->auth_services, _clear_connection, self);
-#endif
+        g_hash_table_foreach (self->priv->auth_services, _clear_watchers, self);
         g_hash_table_unref (self->priv->auth_services);
         self->priv->auth_services = NULL;
     }
