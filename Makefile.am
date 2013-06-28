@@ -9,6 +9,8 @@ AM_DISTCHECK_CONFIGURE_FLAGS = \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = gsignond.pc
 
+dist_sysconf_DATA = gsignond.conf
+
 SUBDIRS = src test
 
 EXTRA_DIST = dists tools
