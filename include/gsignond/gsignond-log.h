@@ -31,6 +31,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * SECTION:gsignond-log
+ * @short_description: logging facilities
+ * @include: gsignond/gsignond-log.h
+ *
+ * <filename>gsignond/gsignond-log.h</filename> file contains logging macros 
+ * that plugins and extensions should use for debugging and tracing.
+ * 
+ * |[    INFO("Plugin %s initialized", plugin_mechanism); ]|
+ */
+
+/**
+ * TRACEBACK:
+ * 
+ * This macro prints the current function call stack to stderr.
+ */
 #define TRACEBACK() \
 { \
     void *array[256];\
@@ -46,15 +62,49 @@
     }\
 }
 
+/**
+ * INFO:
+ * @frmt: format string for the message
+ * @...: arguments for the format string
+ * 
+ * Use this macro to log informational messages. GSignond will take care of
+ * correctly saving them.
+ */
 #define INFO(frmt, args...) g_message("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
+
+/**
+ * ERR:
+ * @frmt: format string for the message
+ * @...: arguments for the format string
+ * 
+ * Use this macro to log error messages. GSignond will take care of
+ * correctly saving them.
+ */
 #define ERR(frmt, args...)  g_critical("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
+
+/**
+ * WARN:
+ * @frmt: format string for the message
+ * @...: arguments for the format string
+ * 
+ * Use this macro to log warning messages. GSignond will take care of
+ * correctly saving them.
+ */
 #define WARN(frmt, args...) g_warning("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
+/**
+ * DBG:
+ * @frmt: format string for the message
+ * @...: arguments for the format string
+ * 
+ * Use this macro to log debug messages. GSignond will take care of
+ * correctly saving them.
+ */
 #define DBG(frmt, args...)  g_debug("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
