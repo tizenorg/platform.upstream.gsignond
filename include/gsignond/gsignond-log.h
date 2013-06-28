@@ -34,11 +34,13 @@
 /**
  * SECTION:gsignond-log
  * @short_description: logging facilities
+ * @title: Logging
  * @include: gsignond/gsignond-log.h
  *
  * <filename>gsignond/gsignond-log.h</filename> file contains logging macros 
  * that plugins and extensions should use for debugging and tracing.
  * 
+ * For example:
  * |[    INFO("Plugin %s initialized", plugin_mechanism); ]|
  */
 
