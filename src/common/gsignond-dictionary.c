@@ -133,8 +133,9 @@ gsignond_dictionary_new (void)
  * gsignond_dictionary_ref:
  * @dict: instance of #GSignondDictionary
  *
- * Increment the reference count of the dictionary structure.
- * Returns: the passed in #GSignondDictionary
+ * Increments the reference count of the dictionary structure.
+ * 
+ * Returns: the pointer to the passed in #GSignondDictionary
  */
 GSignondDictionary*
 gsignond_dictionary_ref (GSignondDictionary *dict)

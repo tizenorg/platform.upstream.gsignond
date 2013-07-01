@@ -67,7 +67,7 @@ static void gsignond_password_plugin_request_initial (
         return;
     }
     
-    GSignondSignonuiData *user_action_data = gsignond_signonui_data_new();
+    GSignondSignonuiData *user_action_data = gsignond_dictionary_new();
     if (!username || !username[0])
         gsignond_signonui_data_set_query_username(user_action_data, TRUE);
     else {

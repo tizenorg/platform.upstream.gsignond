@@ -372,10 +372,10 @@ _on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer 
               error->message,
               gsignond_identity_info_get_id (priv->info));
         if (cb_data->session) {
-            GSignondSignonuiData *reply = gsignond_signonui_data_new();
+            GSignondSignonuiData *reply = gsignond_dictionary_new();
             gsignond_signonui_data_set_query_error (reply, SIGNONUI_ERROR_GENERAL);
             gsignond_auth_session_user_action_finished (cb_data->session, reply);
-            gsignond_signonui_data_unref(reply);
+            gsignond_dictionary_unref(reply);
         }
         g_error_free (error);
         g_slice_free (GSignondIdentityCbData, cb_data);
@@ -663,7 +663,7 @@ gsignond_identity_request_credentials_update (GSignondIdentity *identity,
         return FALSE;
     }
 
-    ui_data = gsignond_signonui_data_new ();
+    ui_data = gsignond_dictionary_new ();
 
     gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
@@ -673,7 +673,7 @@ gsignond_identity_request_credentials_update (GSignondIdentity *identity,
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(identity),
         ui_data, _on_credentials_updated, NULL, identity);
 
-    gsignond_signonui_data_unref (ui_data);
+    gsignond_dictionary_unref (ui_data);
 
     return TRUE;
 }
@@ -761,7 +761,7 @@ gsignond_identity_verify_user (GSignondIdentity *identity,
         return FALSE;
     }
 
-    ui_data = gsignond_signonui_data_new_from_variant (params);
+    ui_data = gsignond_dictionary_new_from_variant (params);
     gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
     gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
@@ -769,7 +769,7 @@ gsignond_identity_verify_user (GSignondIdentity *identity,
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT (identity),
         ui_data, _on_user_verified, NULL, identity);
 
-    gsignond_signonui_data_unref (ui_data);
+    gsignond_dictionary_unref (ui_data);
 
     return TRUE;
 }

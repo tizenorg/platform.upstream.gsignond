@@ -71,7 +71,7 @@ _ui_query_request_new (GObject *caller,
     _UIQueryRequest *req = g_new0(_UIQueryRequest, 1);
 
     req->caller = caller;
-    req->ui_data = gsignond_signonui_data_ref (ui_data);
+    req->ui_data = gsignond_dictionary_ref (ui_data);
     req->cb = cb;
     req->refresh_cb = refresh_cb;
     req->userdata = userdata;
@@ -105,7 +105,7 @@ static void
 _ui_query_request_free (_UIQueryRequest *req)
 {
     if (!req) return;
-    if (req->ui_data) gsignond_signonui_data_unref (req->ui_data);
+    if (req->ui_data) gsignond_dictionary_unref (req->ui_data);
     g_free (req);
 }
 
@@ -189,7 +189,7 @@ _query_dialog_cb_internal (GSignondSignonuiProxy *proxy, GSignondSignonuiData *u
     }
 
     if (req) _ui_query_request_free (req);
-    if (ui_data) gsignond_signonui_data_unref (ui_data);
+    if (ui_data) gsignond_dictionary_unref (ui_data);
 
     _process_next_request (proxy);
 }
@@ -198,7 +198,7 @@ static void
 _query_dialog_cb (GVariant *reply, GError *error, gpointer user_data)
 {
     GSignondSignonuiProxy *proxy = GSIGNOND_SIGNONUI_PROXY (user_data);
-    GSignondSignonuiData *ui_data = reply ? gsignond_signonui_data_new_from_variant (reply) : NULL;
+    GSignondSignonuiData *ui_data = reply ? gsignond_dictionary_new_from_variant (reply) : NULL;
 
      _query_dialog_cb_internal (proxy, ui_data, error);
 }
@@ -242,7 +242,7 @@ _process_next_request (GSignondSignonuiProxy *proxy)
             g_signal_connect_swapped (proxy->priv->signonui, "refresh",
                     G_CALLBACK(_on_refresh_request), proxy);
         else {
-            GSignondSignonuiData *reply = gsignond_signonui_data_new ();
+            GSignondSignonuiData *reply = gsignond_dictionary_new ();
             gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_NO_SIGNONUI);
             _query_dialog_cb_internal (proxy, reply, NULL);
             return;
@@ -252,10 +252,10 @@ _process_next_request (GSignondSignonuiProxy *proxy)
 
     /* update request id */
     gsignond_signonui_data_set_request_id (req->ui_data, G_OBJECT_TYPE_NAME(req->caller));
-    params =  gsignond_signonui_data_to_variant(req->ui_data) ;
+    params =  gsignond_dictionary_to_variant(req->ui_data) ;
     if (!gsignond_dbus_signonui_adapter_query_dialog (proxy->priv->signonui, 
             params, _query_dialog_cb, proxy)) {
-        GSignondSignonuiData *reply = gsignond_signonui_data_new ();
+        GSignondSignonuiData *reply = gsignond_dictionary_new ();
         gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_GENERAL);
         _query_dialog_cb_internal (proxy, reply, NULL);
         g_variant_unref (params);
@@ -307,7 +307,7 @@ gsignond_signonui_proxy_refresh_dialog (GSignondSignonuiProxy *proxy,
     if (proxy->priv->active_request
         && proxy->priv->active_request->caller == caller) {
         _UIRefreshRequest *req = _ui_refresh_request_new (cb, userdata);
-        GVariant *var_uidata = gsignond_signonui_data_to_variant (ui_data);
+        GVariant *var_uidata = gsignond_dictionary_to_variant (ui_data);
 
         gsignond_signonui_data_set_request_id (ui_data, G_OBJECT_TYPE_NAME(caller));
         if (gsignond_dbus_signonui_adapter_refresh_dialog (proxy->priv->signonui,
@@ -377,11 +377,11 @@ gsignond_signonui_proxy_cancel_request (GSignondSignonuiProxy *proxy,
     g_queue_delete_link (proxy->priv->request_queue, element);
 
     if (req && req->cb) {
-        GSignondSignonuiData *reply = gsignond_signonui_data_new ();
+        GSignondSignonuiData *reply = gsignond_dictionary_new ();
         gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_CANCELED);
 
         req->cb (reply, NULL, req->userdata);
-        gsignond_signonui_data_unref (reply);
+        gsignond_dictionary_unref (reply);
     }
     _ui_query_request_free (req);
 

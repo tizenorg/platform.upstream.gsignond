@@ -242,7 +242,7 @@ gsignond_digest_plugin_request_initial (
     gsignond_dictionary_ref (session_data);
     priv->session_data = session_data;
 
-    GSignondSignonuiData *user_action_data = gsignond_signonui_data_new ();
+    GSignondSignonuiData *user_action_data = gsignond_dictionary_new ();
     DATA_SET_VALUE (user_action_data, "Realm", realm);
     DATA_SET_VALUE (user_action_data, "DigestUri", digest_uri);
     gsignond_signonui_data_set_query_username (user_action_data, TRUE);

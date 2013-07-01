@@ -186,7 +186,7 @@ START_TEST (test_digestplugin_user_action_finished)
             G_CALLBACK(user_action_required_callback), &ui_action);
     g_signal_connect(plugin, "error", G_CALLBACK(error_callback), &error);
 
-    ui_data = gsignond_signonui_data_new();
+    ui_data = gsignond_dictionary_new();
     gsignond_signonui_data_set_query_error(ui_data, SIGNONUI_ERROR_NONE);
 
     //empty data

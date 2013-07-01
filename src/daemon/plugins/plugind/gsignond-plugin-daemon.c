@@ -210,9 +210,9 @@ _handle_user_action_finished_from_dbus (
             self->priv->dbus_remote_plugin, invocation);
 
     GSignondSignonuiData *data = (GSignondSignonuiData *)
-            gsignond_signonui_data_new_from_variant ((GVariant *)ui_data);
+            gsignond_dictionary_new_from_variant ((GVariant *)ui_data);
     gsignond_plugin_user_action_finished (self->priv->plugin, data);
-    gsignond_signonui_data_unref (data);
+    gsignond_dictionary_unref (data);
     return TRUE;
 }
 
@@ -230,9 +230,9 @@ _handle_refresh_from_dbus (
             self->priv->dbus_remote_plugin, invocation);
 
     GSignondSignonuiData *data = (GSignondSignonuiData *)
-            gsignond_signonui_data_new_from_variant ((GVariant *)ui_data);
+            gsignond_dictionary_new_from_variant ((GVariant *)ui_data);
     gsignond_plugin_refresh (self->priv->plugin, data);
-    gsignond_signonui_data_unref (data);
+    gsignond_dictionary_unref (data);
     return TRUE;
 }
 
@@ -325,7 +325,7 @@ _handle_user_action_required_from_plugin (
     DBG ("");
     g_return_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self));
 
-    GVariant *data = gsignond_signonui_data_to_variant (ui_data);
+    GVariant *data = gsignond_dictionary_to_variant (ui_data);
     gsignond_dbus_remote_plugin_emit_user_action_required (
             self->priv->dbus_remote_plugin, data);
 }
@@ -339,7 +339,7 @@ _handle_refreshed_from_plugin(
     DBG ("");
     g_return_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self));
 
-    GVariant *data = gsignond_signonui_data_to_variant (ui_data);
+    GVariant *data = gsignond_dictionary_to_variant (ui_data);
     gsignond_dbus_remote_plugin_emit_refreshed (self->priv->dbus_remote_plugin,
             data);
 }

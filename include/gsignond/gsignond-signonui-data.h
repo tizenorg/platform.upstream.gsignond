@@ -70,16 +70,6 @@ typedef enum {
     SIGNONUI_ERROR_FORGOT_PASSWORD
 } GSignondSignonuiError;
 
-#define gsignond_signonui_data_new() gsignond_dictionary_new()
-
-#define gsignond_signonui_data_new_from_variant(variantmap) gsignond_dictionary_new_from_variant(variantmap)
-
-#define gsignond_signonui_data_to_variant(data) gsignond_dictionary_to_variant (data)
-
-#define gsignond_signonui_data_ref(data) /*gsignond_dictionary_ref*/g_hash_table_ref (data)
-
-#define gsignond_signonui_data_unref(data) /*gsignond_dictionary_unref*/g_hash_table_unref (data);
-
 const gchar*
 gsignond_signonui_data_get_captcha_response (GSignondSignonuiData *data);
 void

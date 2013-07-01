@@ -122,14 +122,14 @@ static void gsignond_ssotest_plugin_request_initial (
     if (g_strcmp0 (mechanism, "mech2") == 0) {
         const gchar* username =
             gsignond_session_data_get_username (session_data);
-        GSignondSignonuiData *user_action_data = gsignond_signonui_data_new();
+        GSignondSignonuiData *user_action_data = gsignond_dictionary_new();
         if (username == NULL)
             gsignond_signonui_data_set_query_username (user_action_data, TRUE);
         else
             gsignond_signonui_data_set_username (user_action_data, username);
         gsignond_signonui_data_set_query_password (user_action_data, TRUE);
         gsignond_plugin_user_action_required (plugin, user_action_data);
-        gsignond_signonui_data_unref (user_action_data);
+        gsignond_dictionary_unref (user_action_data);
         gsignond_dictionary_unref (response);
         INFO ("mechanism 'mech2' responded'");
         return;
