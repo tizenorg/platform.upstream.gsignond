@@ -25,7 +25,6 @@
 
 #include "gsignond-signonui-proxy.h"
 #include <gsignond/gsignond-log.h>
-#include <gsignond/gsignond-signonui.h>
 #include "dbus/gsignond-dbus-signonui-adapter.h"
 
 static void _process_next_request (GSignondSignonuiProxy *proxy);

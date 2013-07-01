@@ -41,7 +41,6 @@
     <xi:include href="xml/gsignond-secret-storage.xml"/>
     <xi:include href="xml/gsignond-security-context.xml"/>
     <xi:include href="xml/gsignond-session-data.xml"/>
-    <xi:include href="xml/gsignond-signonui.xml"/>
     <xi:include href="xml/gsignond-signonui-data.xml"/>
     <xi:include href="xml/gsignond-storage-manager.xml"/>
     <xi:include href="xml/gsignond-utils.xml"/>

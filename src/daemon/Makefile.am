@@ -40,7 +40,6 @@ gsignond_include_HEADERS = \
 	$(gsignond_pubhdr)/gsignond-security-context.h \
 	$(gsignond_pubhdr)/gsignond-session-data.h \
 	$(gsignond_pubhdr)/gsignond-signonui-data.h \
-	$(gsignond_pubhdr)/gsignond-signonui.h \
 	$(gsignond_pubhdr)/gsignond-storage-manager.h \
 	$(gsignond_pubhdr)/gsignond-utils.h
 

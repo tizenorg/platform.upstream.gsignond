@@ -33,7 +33,6 @@
 #include "gsignond-identity-enum-types.h"
 #include "gsignond-auth-session.h"
 #include "gsignond/gsignond-config-dbus.h"
-#include "gsignond/gsignond-signonui.h"
 #include "common/gsignond-identity-info-internal.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 
