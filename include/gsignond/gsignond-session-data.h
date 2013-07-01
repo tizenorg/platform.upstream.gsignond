@@ -88,11 +88,11 @@ gsignond_session_data_set_renew_token (GSignondSessionData *data,
 
 gboolean
 gsignond_session_data_get_ui_policy (GSignondSessionData *data,
-                                     guint32 *ui_policy);
+                                     GSignondUiPolicy *ui_policy);
 
 void
 gsignond_session_data_set_ui_policy (GSignondSessionData *data,
-                                     guint32 ui_policy);
+                                     GSignondUiPolicy ui_policy);
 
 const gchar *
 gsignond_session_data_get_network_proxy (GSignondSessionData *data);
