@@ -40,21 +40,6 @@ G_BEGIN_DECLS
 
 typedef GSignondDictionary GSignondSignonuiData;
 
-/**
- * @GSignondSignonuiError:
- * @SIGNONUI_ERROR_NONE: No errors
- * @SIGNONUI_ERROR_GENERAL: Generic error during interaction
- * @SIGNONUI_ERROR_NO_SIGNONUI: Cannot send request to signon-ui
- * @SIGNONUI_ERROR_BAD_PARAMETERS:Signon-Ui cannot create dialog based on the given UiSessionData
- * @SIGNONUI_ERROR_CANCELED: User canceled action. Plugin should not retry automatically after this
- * @SIGNONUI_ERROR_NOT_AVAILABLE: Requested ui is not available. For example browser cannot be started
- * @SIGNONUI_ERROR_BAD_URL: Given url was not valid
- * @SIGNONUI_ERROR_BAD_CAPTCHA: Given captcha image was not valid
- * @SIGNONUI_ERROR_BAD_CAPTCHA_URL: Given url for capctha loading was not valid
- * @SIGNONUI_ERROR_REFRESH_FAILED: Refresh failed
- * @SIGNONUI_ERROR_FORBIDDEN: Showing ui forbidden by ui policy
- * @SIGNONUI_ERROR_FORGOT_PASSWORD: User pressed forgot password
- */
 typedef enum {
     SIGNONUI_ERROR_NONE = 0, 
     SIGNONUI_ERROR_GENERAL,
@@ -96,12 +81,11 @@ gsignond_signonui_data_get_final_url (GSignondSignonuiData *data);
 void
 gsignond_signonui_data_set_final_url (GSignondSignonuiData *data,
                      const gchar *url);
-gboolean
-gsignond_signonui_data_get_forgot_password (GSignondSignonuiData *data,
-                                            gboolean *forgot_password);
+const gchar*
+gsignond_signonui_data_get_forgot_password (GSignondSignonuiData *data);
 void
 gsignond_signonui_data_set_forgot_password (GSignondSignonuiData *data,
-                                            gboolean forgot);
+                                            const gchar *forgot);
 const gchar*
 gsignond_signonui_data_get_forgot_password_url (GSignondSignonuiData *data);
 void
@@ -142,7 +126,7 @@ gsignond_signonui_data_set_query_username (GSignondSignonuiData *data,
                                            gboolean query);
 gboolean
 gsignond_signonui_data_get_remember_password (GSignondSignonuiData *data,
-                                              gboolean *query_password);
+                                              gboolean *remember_password);
 void
 gsignond_signonui_data_set_remember_password (GSignondSignonuiData *data,
                              gboolean remember);

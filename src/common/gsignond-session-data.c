@@ -186,7 +186,7 @@ gsignond_session_data_set_caption (GSignondSessionData *data,
  * This property tells the plugin to discard any cached tokens and start 
  * the authoriztion process anew.
  * 
- * Returns: whether the key-value pair exists in the dictionary or not.
+ * Returns: whether the key-value pair exists in the @data dictionary or not.
  */
 gboolean
 gsignond_session_data_get_renew_token (GSignondSessionData *data,
@@ -219,7 +219,7 @@ gsignond_session_data_set_renew_token (GSignondSessionData *data,
  * A getter for UI policy setting associated with the authentication session.
  * The UI policy indicates how the authentication plugin should interact with the user.
  * 
- * Returns: whether the key-value pair exists in the dictionary or not.
+ * Returns: whether the key-value pair exists in the @data dictionary or not.
  */
 gboolean
 gsignond_session_data_get_ui_policy (GSignondSessionData *data,
@@ -281,7 +281,7 @@ gsignond_session_data_set_network_proxy (GSignondSessionData *data,
  * A getter for a network timeout setting associated with the authentication session.
  * This can be used to change the default timeout in case of unresponsive servers.
  * 
- * Returns: whether the key-value pair exists in the dictionary or not.
+ * Returns: whether the key-value pair exists in the @data dictionary or not.
  */
 gboolean
 gsignond_session_data_get_network_timeout (GSignondSessionData *data,
@@ -316,7 +316,7 @@ gsignond_session_data_set_network_timeout (GSignondSessionData *data,
  * This can be used to embed the user interaction window produced by the authentication
  * session into an application window.
  * 
- * Returns: whether the key-value pair exists in the dictionary or not.
+ * Returns: whether the key-value pair exists in the @data dictionary or not.
  */
 gboolean
 gsignond_session_data_get_window_id (GSignondSessionData *data,
