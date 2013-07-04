@@ -41,22 +41,6 @@ G_BEGIN_DECLS
 typedef struct _GSignondPlugin GSignondPlugin; /* dummy object */
 typedef struct _GSignondPluginInterface GSignondPluginInterface;
 
-/**
- * GSignondPluginState:
- * @GSIGNOND_PLUGIN_STATE_NONE: State unknown
- * @SIGNOND_PLUGIN_STATE_RESOLVING: Resolving remote server host name
- * @GSIGNOND_PLUGIN_STATE_CONNECTING: Connecting to remote server
- * @GSIGNOND_PLUGIN_STATE_SENDING_DATA: Sending data to remote server
- * @GSIGNOND_PLUGIN_STATE_WAITING: Waiting for reply from remote server
- * @GSIGNOND_PLUGIN_STATE_USER_PENDING: Waiting for response from user
- * @GSIGNOND_PLUGIN_STATE_REFRESHING: Refreshing ui request
- * @GSIGNOND_PLUGIN_STATE_PROCESS_PENDING: Request has been queued
- * @GSIGNOND_PLUGIN_STATE_STARTED: Request has been dequeued
- * @GSIGNOND_PLUGIN_STATE_CANCELING: Canceling current process
- * @GSIGNOND_PLUGIN_STATE_DONE: Process is finished
- * @GSIGNOND_PLUGIN_STATE_HOLDING: Holding long non-expired token
- * @GSIGNOND_PLUGIN_STATE_CUSTOM: Custom message
- */
 typedef enum {
     GSIGNOND_PLUGIN_STATE_NONE = 0,
     GSIGNOND_PLUGIN_STATE_RESOLVING,
@@ -70,8 +54,7 @@ typedef enum {
     GSIGNOND_PLUGIN_STATE_CANCELING,
     GSIGNOND_PLUGIN_STATE_DONE,
     GSIGNOND_PLUGIN_STATE_HOLDING,
-} PluginState;
-typedef PluginState GSignondPluginState;
+} GSignondPluginState;
 
 struct _GSignondPluginInterface {
     GTypeInterface parent;
