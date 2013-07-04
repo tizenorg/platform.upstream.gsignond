@@ -498,7 +498,8 @@ START_TEST (test_pluginproxyfactory_add)
     fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, proxy) == TRUE);
     fail_if(gsignond_plugin_proxy_factory_get_plugin(factory, "password")
             != proxy);
-
+    g_object_unref(proxy);
+    
     g_object_unref(proxy);
     g_object_unref(factory);
     g_object_unref(config);

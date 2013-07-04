@@ -57,7 +57,6 @@ struct IdentityData {
     { "Secret", "s", "test_pass" },
     { "StoreSecret", "b", (void *)TRUE}
 };
-gchar *exe_name = 0;
 
 #if HAVE_GTESTDBUS
 GTestDBus *dbus = NULL;
@@ -65,9 +64,34 @@ GTestDBus *dbus = NULL;
 GPid daemon_pid = 0;
 #endif
 
+static gchar* _get_executable_name()
+{
+    gchar *procfname;
+    char *path;
+    ssize_t res;
+    pid_t pid = getpid();
+
+    //valgrind does some magic with tasks, so we read the executable name of
+    //the 'main' task, instead of the current task
+    procfname = g_strdup_printf ("/proc/%d/task/%d/exe", pid, pid);
+    path = g_malloc0 (PATH_MAX + 1);
+    res = readlink (procfname, path, PATH_MAX);
+    g_free (procfname);
+
+    if (res <= 0) {
+        WARN ("failed to follow link for pid %d", pid);
+        g_free (path);
+        return NULL;
+    }
+    return path;
+}
+
 static void
 setup_daemon (void)
 {
+    gchar* exe_name = _get_executable_name();
+    fail_if(exe_name == NULL);
+    
     fail_if (g_setenv ("G_MESSAGES_DEBUG", "all", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_IDENTITY_TIMEOUT", "5", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_DAEMON_TIMEOUT", "5", TRUE) == FALSE);
@@ -77,7 +101,8 @@ setup_daemon (void)
     fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
     fail_if (g_setenv ("SSO_PLUGIN_TIMEOUT", "5", TRUE) == FALSE);
 
-    DBG ("Programe name : %s\n", exe_name);
+    DBG ("Programe pid %d, name : %s\n", getpid(), exe_name);
+    free(exe_name);
 
     if (system("rm -rf /tmp/gsignond") != 0) {
         DBG("Failed to clean db path : %s\n", strerror(errno));
@@ -767,8 +792,6 @@ int main (int argc, char *argv[])
 #if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();
 #endif
-
-    exe_name = argv[0];
 
     s = daemon_suite();
     sr = srunner_create(s);
