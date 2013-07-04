@@ -281,7 +281,7 @@ gsignond_storage_manager_storage_is_initialized (GSignondStorageManager *self)
  * Mounts an encrypted storage and returns filesystem path of the storage
  * mount point.
  *
- * Returns: (transfer none) path of the storage mount point.
+ * Returns: (transfer none): path of the storage mount point.
  */
 const gchar *
 gsignond_storage_manager_mount_filesystem (GSignondStorageManager *self)

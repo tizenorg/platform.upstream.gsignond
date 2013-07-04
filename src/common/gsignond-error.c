@@ -175,7 +175,7 @@ gsignond_error_quark (void)
  *
  * Converts the GVariant to GError.
  *
- * Returns: (transfer full) #GError object if successful, NULL otherwise.
+ * Returns: (transfer full): #GError object if successful, NULL otherwise.
  */
 GError *
 gsignond_error_new_from_variant (
@@ -202,7 +202,7 @@ gsignond_error_new_from_variant (
  *
  * Converts the GError to GVariant.
  *
- * Returns: (transfer full) #GVariant object if successful, NULL otherwise.
+ * Returns: (transfer full): #GVariant object if successful, NULL otherwise.
  */
 GVariant *
 gsignond_error_to_variant (

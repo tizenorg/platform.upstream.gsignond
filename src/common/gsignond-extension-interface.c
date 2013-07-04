@@ -165,7 +165,7 @@ GSignondExtension * default_extension_init ()
  *
  * Get human readable name of the extension.
  *
- * Returns: (transfer none) name of the extension.
+ * Returns: (transfer none): name of the extension.
  */
 const gchar *
 gsignond_extension_get_name (GSignondExtension *self)
@@ -193,7 +193,7 @@ gsignond_extension_get_version (GSignondExtension *self)
  *
  * Factory method to get a singleton storage manager object.
  *
- * Returns: (transfer none) storage manager object instance.
+ * Returns: (transfer none): storage manager object instance.
  */
 GSignondStorageManager *
 gsignond_extension_get_storage_manager (GSignondExtension *self,
@@ -210,7 +210,7 @@ gsignond_extension_get_storage_manager (GSignondExtension *self,
  *
  * Factory method to get a singleton secret storage object.
  *
- * Returns: (transfer none) secret storage object instance.
+ * Returns: (transfer none): secret storage object instance.
  */
 GSignondSecretStorage *
 gsignond_extension_get_secret_storage (GSignondExtension *self,
@@ -227,7 +227,7 @@ gsignond_extension_get_secret_storage (GSignondExtension *self,
  *
  * Factory method to get a singleton access control manager object.
  *
- * Returns: (transfer none) access control manager object instance.
+ * Returns: (transfer none): access control manager object instance.
  */
 GSignondAccessControlManager *
 gsignond_extension_get_access_control_manager (GSignondExtension *self,

@@ -83,7 +83,7 @@ gsignond_credentials_init (GSignondCredentials *self)
  * gsignond_credentials_new:
  *
  * Creates new #GSignondCredentials object
- * Returns : (transfer full) the #GSignondCredentials object
+ * Returns : (transfer full): the #GSignondCredentials object
  *
  */
 GSignondCredentials *

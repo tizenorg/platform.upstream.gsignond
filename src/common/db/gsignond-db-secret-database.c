@@ -137,7 +137,7 @@ gsignond_db_secret_database_init (GSignondDbSecretDatabase *self)
  * gsignond_db_secret_database_new:
  *
  * Creates new #GSignondDbSecretDatabase object
- * Returns : (transfer full) the #GSignondDbSecretDatabase object
+ * Returns : (transfer full): the #GSignondDbSecretDatabase object
  *
  */
 GSignondDbSecretDatabase *

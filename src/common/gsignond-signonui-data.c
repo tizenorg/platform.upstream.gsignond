@@ -104,7 +104,7 @@
  * 
  * A getter for the user's response to a captcha query.
  * 
- * Returns: (transfer none) the string entered by the user in response to a captcha query.
+ * Returns: (transfer none): the string entered by the user in response to a captcha query.
  */
 const gchar*
 gsignond_signonui_data_get_captcha_response (GSignondSignonuiData *data) 
@@ -132,7 +132,7 @@ gsignond_signonui_data_set_captcha_response (GSignondSignonuiData *data,
  * 
  * A getter for the captcha URL.
  * 
- * Returns: (transfer none) the URL to the captcha image to be verified by user.
+ * Returns: (transfer none): the URL to the captcha image to be verified by user.
  */
 const gchar*
 gsignond_signonui_data_get_captcha_url (GSignondSignonuiData *data)
@@ -279,7 +279,7 @@ gsignond_signonui_data_get_forgot_password (GSignondSignonuiData *data)
  * A setter for the forgot password string, which is shown to the user as a link to
  * reset the password or remind him of the password.
  * 
- * Returns: (transfer none) 
+ * Returns: (transfer none): 
  */
 void
 gsignond_signonui_data_set_forgot_password (GSignondSignonuiData *data,

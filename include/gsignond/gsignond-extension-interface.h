@@ -72,7 +72,7 @@ struct _GSignondExtensionClass
      *
      * Get human readable name of the extension.
      * 
-     * Returns: (transfer none) name of the extension.
+     * Returns: (transfer none): name of the extension.
      */
     const gchar * (*get_extension_name) (GSignondExtension *self);
     /**

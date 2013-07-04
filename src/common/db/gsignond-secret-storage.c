@@ -275,7 +275,7 @@ gsignond_secret_storage_is_open_db (GSignondSecretStorage *self)
  *
  * Loads the credentials.
  *
- * Returns: (transfer full) #GSignondCredentials if successful,
+ * Returns: (transfer full): #GSignondCredentials if successful,
  * NULL otherwise.
  */
 GSignondCredentials*
@@ -292,7 +292,7 @@ gsignond_secret_storage_load_credentials (
  * gsignond_secret_storage_update_credentials:
  *
  * @self: instance of #GSignondSecretStorage
- * @creds: (transfer none) the credentials that are being updated.
+ * @creds: (transfer none): the credentials that are being updated.
  *
  * Stores/updates the credentials for the given identity.
  *
@@ -332,7 +332,7 @@ gsignond_secret_storage_remove_credentials (
  * gsignond_secret_storage_check_credentials:
  *
  * @self: instance of #GSignondSecretStorage
- * @creds: (transfer none) the credentials that are being checked.
+ * @creds: (transfer none): the credentials that are being checked.
  *
  * Checks whether the given credentials are correct for the
  * given identity.
@@ -374,7 +374,7 @@ gsignond_secret_storage_check_credentials (
  *
  * Loads secret data.
  *
- * Returns: (transfer full) #GHashTable (gchar*, GBytes*) data. When done data
+ * Returns: (transfer full): #GHashTable (gchar*, GBytes*) data. When done data
  * should be freed with g_hash_table_unref (data)
  */
 GHashTable*
@@ -394,7 +394,7 @@ gsignond_secret_storage_load_data (
  * @self: instance of #GSignondSecretStorage
  * @id: the identity whose credentials are being fetched.
  * @method: the authentication method the data is used for.
- * @data: (transfer none) the data as #GHashTable (gchar*, GBytes*)
+ * @data: (transfer none): the data as #GHashTable (gchar*, GBytes*)
  *
  * Stores/replaces secret data. Calling this method replaces any data
  * which was previously stored for the given id/method.
@@ -438,7 +438,7 @@ gsignond_secret_storage_remove_data (
 /**
  * gsignond_secret_storage_set_last_error:
  * @self: instance of #GSignondDbDefaultStorage
- * @error : (transfer full) last occurred #GError
+ * @error : (transfer full): last occurred #GError
  *
  * sets the last occurred error
  *
@@ -461,7 +461,7 @@ gsignond_secret_storage_set_last_error (
  *
  * retrieves the last occurred error
  *
- * Returns: (transfer none) last occurred #GError
+ * Returns: (transfer none): last occurred #GError
  */
 const GError *
 gsignond_secret_storage_get_last_error (GSignondSecretStorage *self)

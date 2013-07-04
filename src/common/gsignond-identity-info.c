@@ -231,7 +231,7 @@ _gsignond_identity_info_methods_cmp (
  *
  * Creates new instance of GSignondIdentityInfo.
  *
- * Returns: (transfer full) #GSignondIdentityInfo object if successful,
+ * Returns: (transfer full): #GSignondIdentityInfo object if successful,
  * NULL otherwise.
  */
 GSignondIdentityInfo *
@@ -638,7 +638,7 @@ gsignond_identity_info_set_caption (
  *
  * Retrieves the realms from the info.
  *
- * Returns: (transfer full) the realms if successful, NULL Otherwise.
+ * Returns: (transfer full): the realms if successful, NULL Otherwise.
  * when done realms should be freed using g_sequence_free.
  */
 GSequence *
@@ -658,7 +658,7 @@ gsignond_identity_info_get_realms (GSignondIdentityInfo *info)
  * gsignond_identity_info_set_realms:
  * @info: instance of #GSignondIdentityInfo
  *
- * @realms: (transfer none) realms to be set
+ * @realms: (transfer none): realms to be set
  *
  * Sets the realms of the info.
  *
@@ -685,7 +685,7 @@ gsignond_identity_info_set_realms (
  * Retrieves the methods from the info whereas #GHashTable consists of
  * (gchar*,GSequence*) and #GSequence is a sequence of gchar *.
  *
- * Returns: (transfer full) the methods if successful, NULL otherwise.
+ * Returns: (transfer full): the methods if successful, NULL otherwise.
  * when done, methods should be freed using g_hash_table_unref.
  */
 GHashTable *
@@ -723,7 +723,7 @@ gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
  * gsignond_identity_info_set_methods:
  * @info: instance of #GSignondIdentityInfo
  *
- * @methods: (transfer none) methods to be set whereas #GHashTable consists of
+ * @methods: (transfer none): methods to be set whereas #GHashTable consists of
  * (gchar*,#GSequence*) and #GSequence is a sequence of gchar *.
  *
  * Sets the methods of the info.
@@ -771,7 +771,7 @@ gsignond_identity_info_set_methods (
  *
  * Retrieves the mechanisms from the info.
  *
- * Returns: (transfer full) the mechanisms if successful, NULL otherwise.
+ * Returns: (transfer full): the mechanisms if successful, NULL otherwise.
  * when done, mechanisms should be freed using g_sequence_free; #GSequence is a
  * sequence of gchar *.
  */
@@ -846,7 +846,7 @@ gsignond_identity_info_remove_method (
  *
  * Retrieves the access control list from the info.
  *
- * Returns: (transfer full) the list if successful, NULL otherwise.
+ * Returns: (transfer full): the list if successful, NULL otherwise.
  * when done, list should be freed using gsignond_security_context_list_free.
  */
 GSignondSecurityContextList *
@@ -866,7 +866,7 @@ gsignond_identity_info_get_access_control_list (GSignondIdentityInfo *info)
  * gsignond_identity_info_set_access_control_list:
  * @info: instance of #GSignondIdentityInfo
  *
- * @acl: (transfer none) access control list to be set
+ * @acl: (transfer none): access control list to be set
  *
  * Sets the access control list of the info.
  *
@@ -892,7 +892,7 @@ gsignond_identity_info_set_access_control_list (
  *
  * Retrieves the id from the info.
  *
- * Returns: (transfer full) the owner if successful, NULL otherwise.
+ * Returns: (transfer full): the owner if successful, NULL otherwise.
  * when done, owner list should be freed using
  * gsignond_security_context_free.
  */
@@ -913,7 +913,7 @@ gsignond_identity_info_get_owner (GSignondIdentityInfo *info)
  * gsignond_identity_info_set_owner:
  * @info: instance of #GSignondIdentityInfo
  *
- * @owners: (transfer none) owner to be set
+ * @owners: (transfer none): owner to be set
  *
  * Sets the owner of the info.
  *

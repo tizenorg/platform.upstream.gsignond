@@ -356,7 +356,7 @@ gsignond_db_sql_database_clear (GSignondDbSqlDatabase *self)
  *
  * Prepares the statement from the query.
  *
- * Returns: (transfer full) NULL if fails, valid sql statement otherwise.
+ * Returns: (transfer full): NULL if fails, valid sql statement otherwise.
  */
 sqlite3_stmt *
 gsignond_db_sql_database_prepare_statement (
@@ -462,7 +462,7 @@ _gsignond_db_read_string (
  *
  * Executes an SQL statement, and returns the fetched integer from the result.
  *
- * Returns: (transfer full) string if rows fetched are greater than 0,
+ * Returns: (transfer full): string if rows fetched are greater than 0,
  * NULL otherwise.
  */
 gchar *
@@ -507,7 +507,7 @@ _gsignond_db_read_strings (
  * Executes an SQL statement, and returns the fetched strings from the results
  * in the list.
  *
- * Returns: (transfer full) list if rows fetched are greater than 0,
+ * Returns: (transfer full): list if rows fetched are greater than 0,
  * NULL otherwise. When done with list, it must be freed using
  * g_list_free_full (list, g_free)
  */
@@ -554,7 +554,7 @@ _gsignond_db_read_string_tuple (
  * Executes an SQL statement, and returns the fetched string tuples from
  * the results into the hash table.
  *
- * Returns: (transfer full) string tuples if rows fetched are greater than 0,
+ * Returns: (transfer full): string tuples if rows fetched are greater than 0,
  * NULL otherwise. When done with tuples, it must be freed using
  * g_hash_table_unref (tuples)
  */
@@ -609,7 +609,7 @@ _gsignond_db_read_int_string_tuple (
  * Executes an SQL statement, and returns the fetched int-string tuples from
  * the results into the hash table.
  *
- * Returns: (transfer full) string tuples if rows fetched are greater than 0,
+ * Returns: (transfer full): string tuples if rows fetched are greater than 0,
  * NULL otherwise.
  */
 GHashTable *
@@ -702,7 +702,7 @@ _gsignond_db_read_array (
  * Executes an SQL statement, and returns the fetched integers from the results
  * in the array.
  *
- * Returns: (transfer full) list if rows fetched are greater than 0, NULL otherwise.
+ * Returns: (transfer full): list if rows fetched are greater than 0, NULL otherwise.
  */
 GArray *
 gsignond_db_sql_database_query_exec_int_array (
@@ -732,7 +732,7 @@ gsignond_db_sql_database_query_exec_int_array (
 /**
  * gsignond_db_sql_database_query_exec_stmt:
  * @self: instance of #GSignondDbSqlDatabase
- * @sql_stmt: (transfer full) sql statement executed on the database
+ * @sql_stmt: (transfer full): sql statement executed on the database
  * @callback: callback to be invoked if not NULL for the result of each row
  * @userdata: user_data to be relayed back through the callback
  *
@@ -947,7 +947,7 @@ gsignond_db_sql_database_get_db_version (
 /**
  * gsignond_db_sql_database_set_last_error:
  * @self: instance of #GSignondDbDefaultStorage
- * @error: (transfer full) last occurred #GError
+ * @error: (transfer full): last occurred #GError
  *
  * sets the last occurred error
  *

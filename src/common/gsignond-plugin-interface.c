@@ -31,7 +31,7 @@
 /**
  * GSignondPluginState:
  * @GSIGNOND_PLUGIN_STATE_NONE: State unknown
- * @SIGNOND_PLUGIN_STATE_RESOLVING: Resolving remote server host name
+ * @GSIGNOND_PLUGIN_STATE_RESOLVING: Resolving remote server host name
  * @GSIGNOND_PLUGIN_STATE_CONNECTING: Connecting to remote server
  * @GSIGNOND_PLUGIN_STATE_SENDING_DATA: Sending data to remote server
  * @GSIGNOND_PLUGIN_STATE_WAITING: Waiting for reply from remote server
@@ -42,7 +42,6 @@
  * @GSIGNOND_PLUGIN_STATE_CANCELING: Canceling current process
  * @GSIGNOND_PLUGIN_STATE_DONE: Process is finished
  * @GSIGNOND_PLUGIN_STATE_HOLDING: Holding long non-expired token
- * @GSIGNOND_PLUGIN_STATE_CUSTOM: Custom message
  */
 
 

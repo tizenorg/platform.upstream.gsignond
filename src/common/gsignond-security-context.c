@@ -38,7 +38,7 @@ _security_context_free (gpointer ptr)
  *
  * Allocates a new security context item.
  *
- * Returns: (transfer full) allocated #GSignondSecurityContext.
+ * Returns: (transfer full): allocated #GSignondSecurityContext.
  */
 GSignondSecurityContext *
 gsignond_security_context_new ()
@@ -59,7 +59,7 @@ gsignond_security_context_new ()
  *
  * Allocates and initializes a new security context item.
  *
- * Returns: (transfer full) allocated #GSignondSecurityContext.
+ * Returns: (transfer full): allocated #GSignondSecurityContext.
  */
 GSignondSecurityContext *
 gsignond_security_context_new_from_values (const gchar *system_context,
@@ -85,7 +85,7 @@ gsignond_security_context_new_from_values (const gchar *system_context,
  *
  * Copy a security context item.
  *
- * Returns: (transfer full) a copy of the #GSignondSecurityContext item.
+ * Returns: (transfer full): a copy of the #GSignondSecurityContext item.
  */
 GSignondSecurityContext *
 gsignond_security_context_copy (const GSignondSecurityContext *src_ctx)
@@ -138,7 +138,7 @@ gsignond_security_context_set_system_context (GSignondSecurityContext *ctx,
  * Get the system context part (such as SMACK label or MSSF token) of the
  * #GSignondSecurityContext.
  *
- * Returns: (transfer none) system context.
+ * Returns: (transfer none): system context.
  */
 const gchar *
 gsignond_security_context_get_system_context (
@@ -176,7 +176,7 @@ gsignond_security_context_set_application_context (
  * Get the application context part (such as script name or a web page) of
  * the #GSignondSecurityContext.
  *
- * Returns: (transfer none) application context.
+ * Returns: (transfer none): application context.
  */
 const gchar *
 gsignond_security_context_get_application_context (
@@ -193,7 +193,7 @@ gsignond_security_context_get_application_context (
  *
  * Build a GVariant of type "(ss)" from a #GSignondSecurityContext item.
  *
- * Returns: (transfer full) GVariant construct of a #GSignondSecurityContext.
+ * Returns: (transfer full): GVariant construct of a #GSignondSecurityContext.
  */
 GVariant *
 gsignond_security_context_to_variant (const GSignondSecurityContext *ctx)
@@ -215,7 +215,7 @@ gsignond_security_context_to_variant (const GSignondSecurityContext *ctx)
  *
  * Builds a #GSignondSecurityContext item from a GVariant of type "(ss)".
  *
- * Returns: (transfer full) #GSignondSecurityContext item.
+ * Returns: (transfer full): #GSignondSecurityContext item.
  */
 GSignondSecurityContext *
 gsignond_security_context_from_variant (GVariant *variant)
@@ -320,7 +320,7 @@ gsignond_security_context_check (const GSignondSecurityContext *reference,
  * Builds a GVariant of type "a(ss)" from a GList of #GSignondSecurityContext
  * items.
  *
- * Returns: (transfer full) GVariant construct of a #GSignondSecurityContextList.
+ * Returns: (transfer full): GVariant construct of a #GSignondSecurityContextList.
  */
 GVariant *
 gsignond_security_context_list_to_variant (
@@ -349,7 +349,7 @@ gsignond_security_context_list_to_variant (
  * Builds a GList of #GSignondSecurityContext items from a GVariant of type
  * "a(ss)".
  *
- * Returns: (transfer full) #GSignondSecurityContextList item.
+ * Returns: (transfer full): #GSignondSecurityContextList item.
  */
 GSignondSecurityContextList *
 gsignond_security_context_list_from_variant (GVariant *variant)
@@ -376,7 +376,7 @@ gsignond_security_context_list_from_variant (GVariant *variant)
  *
  * Copies a GList of #GSignondSecurityContext items.
  *
- * Returns: (transfer full) #GSignondSecurityContextList item.
+ * Returns: (transfer full): #GSignondSecurityContextList item.
  */
 GSignondSecurityContextList *
 gsignond_security_context_list_copy (
@@ -396,7 +396,7 @@ gsignond_security_context_list_copy (
 
 /**
  * gsignond_security_context_list_free:
- * @seclist: (transfer full) #GSignondSecurityContextList item.
+ * @seclist: (transfer full): #GSignondSecurityContextList item.
  *
  * Frees all items and the GList of #GSignondSecurityContext.
  */
