@@ -75,7 +75,7 @@ gsignond_LDADD = \
 
 if SET_PERMISSIONS
 install-exec-hook:
-	chown root $(bindir)/gsignond || true
-	chmod u+s $(bindir)/gsignond || true
+	chown root $(DESTDIR)$(bindir)/gsignond || true
+	chmod u+s $(DESTDIR)$(bindir)/gsignond || true
 endif
 
