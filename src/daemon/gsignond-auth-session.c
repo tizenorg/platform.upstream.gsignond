@@ -207,7 +207,7 @@ gsignond_auth_session_process (GSignondAuthSession *self,
                                GError **error)
 {
     if (!self || !GSIGNOND_IS_AUTH_SESSION (self)) {
-        WARN ("assertion (seöf && GSIGNOND_IS_AUTH_SESSION (self))failed");
+        WARN ("assertion (self && GSIGNOND_IS_AUTH_SESSION (self)) failed");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
@@ -224,12 +224,18 @@ gsignond_auth_session_process (GSignondAuthSession *self,
     }
 
     if (session_data && 
-        !gsignond_session_data_get_username (session_data) 
-        && self->priv->identity_info) {
-        const gchar *username = gsignond_identity_info_get_username (self->priv->identity_info);
-
-        if (username) {
-            gsignond_session_data_set_username (session_data, username);
+        self->priv->identity_info) {
+        if (!gsignond_session_data_get_username (session_data)) {
+            const gchar *username =
+                gsignond_identity_info_get_username (self->priv->identity_info);
+            if (username)
+                gsignond_session_data_set_username (session_data, username);
+        }
+        if (!gsignond_session_data_get_secret (session_data)) {
+            const gchar *secret =
+                gsignond_identity_info_get_secret (self->priv->identity_info);
+            if (secret)
+                gsignond_session_data_set_secret (session_data, secret);
         }
     }
 
