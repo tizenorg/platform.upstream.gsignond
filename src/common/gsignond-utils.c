@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -33,7 +34,17 @@
 #include "gsignond/gsignond-log.h"
 
 
+typedef struct __nonce_ctx_t
+{
+    gboolean initialized;
+    guint32 serial;
+    guchar key[32];
+    guchar entropy[16];
+} _nonce_ctx_t;
+
 static size_t pagesize = 0;
+static _nonce_ctx_t _nonce_ctx = { 0, };
+G_LOCK_DEFINE_STATIC (_nonce_lock);
 
 
 gboolean
@@ -159,5 +170,65 @@ gsignond_wipe_directory (const gchar *dirname)
 _dir_exit:
     g_dir_close (dirctx);
     return retval;
+}
+
+static gboolean
+_init_nonce_gen ()
+{
+    if (G_LIKELY(_nonce_ctx.initialized))
+        return TRUE;
+
+    int fd;
+
+    fd = open ("/dev/urandom", O_RDONLY);
+    if (fd < 0)
+        goto init_exit;
+    if (read (fd, _nonce_ctx.key, sizeof (_nonce_ctx.key)) !=
+        sizeof (_nonce_ctx.key))
+        goto init_close;
+    if (read (fd, _nonce_ctx.entropy, sizeof(_nonce_ctx.entropy)) !=
+        sizeof (_nonce_ctx.entropy))
+        goto init_close;
+
+    _nonce_ctx.serial = 0;
+
+    _nonce_ctx.initialized = TRUE;
+
+init_close:
+    close (fd);
+
+init_exit:
+    return _nonce_ctx.initialized;
+}
+
+gchar *
+gsignond_generate_nonce ()
+{
+    GHmac *hmac;
+    gchar *nonce = NULL;
+    struct timespec ts;
+
+    G_LOCK (_nonce_lock);
+
+    if (G_UNLIKELY (!_init_nonce_gen()))
+        goto nonce_exit;
+
+    hmac = g_hmac_new (G_CHECKSUM_SHA1,
+                       _nonce_ctx.key, sizeof (_nonce_ctx.key));
+    g_hmac_update (hmac, _nonce_ctx.entropy, sizeof (_nonce_ctx.entropy));
+    _nonce_ctx.serial++;
+    g_hmac_update (hmac,
+                   (const guchar *) &_nonce_ctx.serial,
+                   sizeof (_nonce_ctx.serial));
+    if (clock_gettime (CLOCK_MONOTONIC, &ts) == 0)
+        g_hmac_update (hmac, (const guchar *) &ts, sizeof (ts));
+    memset (&ts, 0x00, sizeof(ts));
+    nonce = g_strdup (g_hmac_get_string (hmac));
+    g_hmac_unref (hmac);
+
+nonce_exit:
+    G_UNLOCK (_nonce_lock);
+
+    return nonce;
 }
 

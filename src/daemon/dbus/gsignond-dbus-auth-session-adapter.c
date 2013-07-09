@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Amarnath Valluri <amarnath.valluri@linux.intel.com>
  *
@@ -23,9 +23,10 @@
  * 02110-1301 USA
  */
 
-#include <config.h>
-#include "gsignond-dbus-auth-session-adapter.h"
+#include "config.h"
 #include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-utils.h"
+#include "gsignond-dbus-auth-session-adapter.h"
 #include "gsignond-dbus.h"
 
 enum
@@ -408,7 +409,8 @@ gsignond_dbus_auth_session_adapter_new_with_connection (GDBusConnection *connect
                                                         const gchar *app_context,
                                                         guint timeout)
 {
-    static guint32 object_counter;
+    static guint32 object_counter = 0;
+    gchar *nonce;
     gchar *object_path = NULL;
     GSignondDbusAuthSessionAdapter *adapter = NULL;
     GError *error = NULL;
@@ -419,7 +421,12 @@ gsignond_dbus_auth_session_adapter_new_with_connection (GDBusConnection *connect
 
     if (!adapter) return NULL;
 
-    object_path = g_strdup_printf ("%s/AuthSession_%d", GSIGNOND_DAEMON_OBJECTPATH, object_counter++);
+    nonce = gsignond_generate_nonce ();
+    object_path = g_strdup_printf ("%s/AuthSession_%s_%d",
+                                   GSIGNOND_DAEMON_OBJECTPATH,
+                                   nonce,
+                                   object_counter++);
+    g_free (nonce);
     if (!g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (adapter->priv->dbus_auth_session),
                                            adapter->priv->connection,
                                            object_path,

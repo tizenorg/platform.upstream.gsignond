@@ -36,6 +36,9 @@ gsignond_wipe_file (const gchar *);
 gboolean
 gsignond_wipe_directory (const gchar *);
 
+gchar *
+gsignond_generate_nonce ();
+
 G_END_DECLS
 
 #endif  /* _SGINOND_UTILS_H_ */

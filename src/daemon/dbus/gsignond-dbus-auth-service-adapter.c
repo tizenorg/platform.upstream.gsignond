@@ -23,11 +23,11 @@
  * 02110-1301 USA
  */
 
-#include <config.h>
+#include "config.h"
+#include "gsignond/gsignond-log.h"
 #include "gsignond-dbus-auth-service-adapter.h"
 #include "gsignond-dbus-identity-adapter.h"
 #include "gsignond-dbus.h"
-#include "gsignond/gsignond-log.h"
 
 enum
 {
