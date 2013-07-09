@@ -547,7 +547,7 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
 }
 
 static void
-_on_query_dialog_done (GSignondSignonuiData *reply, GError *error, gpointer user_data)
+_on_credentials_updated (GSignondSignonuiData *reply, GError *error, gpointer user_data)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (user_data);
     guint32 id = 0;
@@ -555,7 +555,7 @@ _on_query_dialog_done (GSignondSignonuiData *reply, GError *error, gpointer user
     GSignondSignonuiError err_id = 0;
 
     if (error) {
-        WARN ("failed to verfiy user : %s", error->message);
+        WARN ("failed to verify user : %s", error->message);
         g_error_free (error);
 
         err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
@@ -627,13 +627,14 @@ gsignond_identity_request_credentials_update (GSignondIdentity *identity,
 
     ui_data = gsignond_signonui_data_new ();
 
-    gsignond_signonui_data_set_query_username (ui_data, TRUE);
+    gsignond_signonui_data_set_query_username (ui_data, FALSE);
+    gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
     gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
     gsignond_signonui_data_set_message (ui_data, message);
   
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(identity),
-        ui_data, _on_query_dialog_done, NULL, identity);
+        ui_data, _on_credentials_updated, NULL, identity);
 
     gsignond_signonui_data_unref (ui_data);
 
@@ -641,7 +642,7 @@ gsignond_identity_request_credentials_update (GSignondIdentity *identity,
 }
 
 static void
-_on_user_verfied (GSignondSignonuiData *reply, GError *error, gpointer user_data)
+_on_user_verified (GSignondSignonuiData *reply, GError *error, gpointer user_data)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (user_data);
     gboolean res = FALSE;
@@ -649,7 +650,7 @@ _on_user_verfied (GSignondSignonuiData *reply, GError *error, gpointer user_data
     GSignondSignonuiError err_id = 0;
 
     if (error) {
-        WARN ("failed to verfiy user : %s", error->message);
+        WARN ("failed to verify user : %s", error->message);
         g_error_free (error);
 
         err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
@@ -723,12 +724,13 @@ gsignond_identity_verify_user (GSignondIdentity *identity,
     }
 
     ui_data = gsignond_signonui_data_new_from_variant (params);
+    gsignond_signonui_data_set_query_username (ui_data, FALSE);
     gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
     gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
    
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT (identity),
-        ui_data, _on_user_verfied, NULL, identity);
+        ui_data, _on_user_verified, NULL, identity);
 
     gsignond_signonui_data_unref (ui_data);
 
