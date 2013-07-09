@@ -577,14 +577,12 @@ _on_credentials_updated (GSignondSignonuiData *reply, GError *error, gpointer us
         }
     }
     else {
-        const gchar *username = gsignond_signonui_data_get_username (reply);
         const gchar *secret = gsignond_signonui_data_get_password (reply);
 
-        if (!secret || !username) {
+        if (!secret) {
             err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER,
                                 "Server internal error occured");
         } else if (identity->priv->info) {
-            gsignond_identity_info_set_username (identity->priv->info, username) ;
             gsignond_identity_info_set_secret (identity->priv->info, secret) ;
 
             /* Save new secret in db */
@@ -629,7 +627,7 @@ gsignond_identity_request_credentials_update (GSignondIdentity *identity,
 
     ui_data = gsignond_signonui_data_new ();
 
-    gsignond_signonui_data_set_query_username (ui_data, TRUE);
+    gsignond_signonui_data_set_query_username (ui_data, FALSE);
     gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
     gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
@@ -726,6 +724,7 @@ gsignond_identity_verify_user (GSignondIdentity *identity,
     }
 
     ui_data = gsignond_signonui_data_new_from_variant (params);
+    gsignond_signonui_data_set_query_username (ui_data, FALSE);
     gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
     gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
