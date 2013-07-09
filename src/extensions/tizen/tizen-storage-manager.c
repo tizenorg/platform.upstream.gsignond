@@ -248,11 +248,15 @@ _unmount_filesystem (GSignondStorageManager *parent)
 
     uid_t uid = getuid ();
     gid_t gid = getgid ();
-    setreuid (-1, 0);
-    setregid (-1, 0);
+    if (setreuid (-1, 0))
+        WARN ("setreuid() failed");
+    if (setregid (-1, 0))
+        WARN ("setregid() failed");
     umount (parent->location);
-    setreuid (-1, uid);
-    setregid (-1, gid);
+    if (setreuid (-1, uid))
+        WARN ("setreuid() failed");
+    if (setregid (-1, gid))
+        WARN ("setregid() failed");
 
     return TRUE;
 }
