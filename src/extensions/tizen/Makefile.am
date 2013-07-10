@@ -9,6 +9,7 @@ libextension_tizen_la_CPPFLAGS = \
 	$(LIBECRYPTFS_CFLAGS)
 
 libextension_tizen_la_LIBADD = \
+	$(top_builddir)/src/common/libgsignond-common.la \
 	$(GSIGNOND_LIBS) \
 	$(LIBSMACK_LIBS) \
 	$(LIBECRYPTFS_LIBS)

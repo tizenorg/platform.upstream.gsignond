@@ -6,8 +6,10 @@ libextension_test_la_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	$(GSIGNOND_CFLAGS)
 
-libextension_test_la_LIBS = \
-	$(GSIGNOND_LIBS)
+libextension_test_la_LIBADD = \
+	$(top_builddir)/src/common/libgsignond-common.la \
+	$(GSIGNOND_LIBS) \
+	$(NULL)
 
 libextension_test_la_SOURCES = \
     test-access-control-manager.h \
