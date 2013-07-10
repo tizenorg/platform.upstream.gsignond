@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libgsignond-db.la
+noinst_LTLIBRARIES = libgsignond-db.la
 
 libgsignond_db_la_CPPFLAGS = \
     -I$(top_builddir) \

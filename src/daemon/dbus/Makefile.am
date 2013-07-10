@@ -52,7 +52,7 @@ gsignond-dbus-remote-plugin-gen.c gsignond-dbus-remote-plugin-gen.h : $(INTERFAC
        --generate-docbook gsignond-dbus-remote-plugin-doc-gen     \
        $<
 
-lib_LTLIBRARIES = libgsignond-dbus-glue.la
+noinst_LTLIBRARIES = libgsignond-dbus-glue.la
 
 libgsignond_dbus_glue_la_CPPFLAGS = \
     -I$(top_builddir) \
@@ -65,7 +65,7 @@ libgsignond_dbus_glue_la_LIBADD = \
 
 libgsignond_dbus_glue_la_SOURCES = $(DBUS_BUILT_SOURCES)
 
-lib_LTLIBRARIES += libgsignond-dbus.la
+noinst_LTLIBRARIES += libgsignond-dbus.la
 
 libgsignond_dbus_la_CPPFLAGS = \
     -I$(top_builddir) \

@@ -1,7 +1,7 @@
 SUBDIRS=
 NULL=
 
-lib_LTLIBRARIES = libgsignond-plugind-daemon.la
+noinst_LTLIBRARIES = libgsignond-plugind-daemon.la
 
 libgsignond_plugind_daemon_la_CPPFLAGS = \
     -I$(top_builddir) \

@@ -1,6 +1,6 @@
 SUBDIRS = plugind
 
-lib_LTLIBRARIES = libgsignond-plugins.la
+noinst_LTLIBRARIES = libgsignond-plugins.la
 
 libgsignond_plugins_la_CPPFLAGS = \
     -I$(top_builddir) \
