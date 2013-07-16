@@ -175,6 +175,7 @@ _handle_request_initial_from_dbus (
         GSignondPluginDaemon *self,
         GDBusMethodInvocation *invocation,
         const GVariant *session_data,
+        const GVariant *identity_method_cache,
         const gchar *mechanism,
         gpointer user_data)
 {
@@ -186,8 +187,11 @@ _handle_request_initial_from_dbus (
 
     GSignondSessionData *data = (GSignondSessionData *)
             gsignond_dictionary_new_from_variant ((GVariant *)session_data);
-    gsignond_plugin_request_initial (self->priv->plugin, data, mechanism);
+    GSignondSessionData *cache = 
+            gsignond_dictionary_new_from_variant ((GVariant *)identity_method_cache);
+    gsignond_plugin_request_initial (self->priv->plugin, data, cache, mechanism);
     gsignond_dictionary_unref (data);
+    gsignond_dictionary_unref (cache);
 
     return TRUE;
 }

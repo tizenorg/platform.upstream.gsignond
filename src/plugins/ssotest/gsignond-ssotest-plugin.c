@@ -65,6 +65,7 @@ static void gsignond_ssotest_plugin_cancel (GSignondPlugin *plugin)
 
 static void gsignond_ssotest_plugin_request_initial (
     GSignondPlugin *plugin, GSignondSessionData *session_data, 
+    GSignondDictionary* identity_method_cache,
     const gchar *mechanism)
 {
     gint i;

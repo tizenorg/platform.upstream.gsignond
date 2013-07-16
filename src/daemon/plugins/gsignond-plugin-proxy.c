@@ -61,6 +61,7 @@ struct _GSignondPluginProxyPrivate
 typedef struct {
     GSignondAuthSession* auth_session;
     GSignondSessionData* session_data;
+    GSignondDictionary* identity_method_cache;
     gchar* mechanism;
     gpointer userdata;
 } GSignondProcessData;
@@ -73,12 +74,15 @@ static GSignondProcessData*
 gsignond_process_data_new (
         GSignondAuthSession* auth_session,
         GSignondSessionData *session_data,
+        GSignondDictionary *identity_method_cache,
         const gchar* mechanism,
         gpointer userdata)
 {
     GSignondProcessData* data = g_slice_new0 (GSignondProcessData);
     data->auth_session = g_object_ref (auth_session);
     data->session_data = gsignond_dictionary_copy (session_data);
+    if (identity_method_cache)
+        data->identity_method_cache = gsignond_dictionary_copy (identity_method_cache);
     data->mechanism = g_strdup (mechanism);
     data->userdata = userdata;
     return data;
@@ -90,6 +94,8 @@ gsignond_process_data_free (
 {
     g_object_unref (data->auth_session);
     gsignond_dictionary_unref (data->session_data);
+    if (data->identity_method_cache)
+        gsignond_dictionary_unref (data->identity_method_cache);
     g_free (data->mechanism);
     g_slice_free (GSignondProcessData, data);
 }
@@ -113,6 +119,7 @@ gsignond_plugin_proxy_process_queue (
                 priv->active_process_userdata);
         gsignond_plugin_request_initial (priv->plugin,
                                          next_data->session_data,
+                                         next_data->identity_method_cache,
                                          next_data->mechanism);
         gsignond_process_data_free (next_data);
     }
@@ -500,6 +507,7 @@ gsignond_plugin_proxy_process (
         GSignondPluginProxy *self,
         GSignondAuthSession *session,
         GSignondSessionData *session_data,
+        GSignondDictionary *identity_method_cache,
         const gchar *mechanism,
         gpointer userdata)
 {
@@ -510,14 +518,15 @@ gsignond_plugin_proxy_process (
 
     if (session == priv->active_session && priv->expecting_request == TRUE) {
         priv->expecting_request = FALSE;
-        // mechanism is discarded if this is not an initial request
+        // mechanism and identity_method_cache are discarded if this is not an initial request
         gsignond_plugin_request (priv->plugin, session_data);
         return;
     }
 
     g_queue_push_tail (priv->session_queue,
                        gsignond_process_data_new (session,
-                                                  session_data,
+                                                  session_data, 
+                                                  identity_method_cache,
                                                   mechanism, userdata));
     gsignond_auth_session_notify_state_changed (
             session, GSIGNOND_PLUGIN_STATE_PROCESS_PENDING,

@@ -444,6 +444,7 @@ static void
 gsignond_plugin_remote_request_initial (
     GSignondPlugin *plugin,
     GSignondSessionData *session_data,
+    GSignondDictionary *identity_method_cache,
     const gchar *mechanism)
 {
     g_return_if_fail (session_data && plugin &&
@@ -451,8 +452,16 @@ gsignond_plugin_remote_request_initial (
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (plugin);
 
     GVariant *data = gsignond_dictionary_to_variant (session_data);
+    GVariant *cache;
+    if (identity_method_cache)
+        cache = gsignond_dictionary_to_variant (identity_method_cache);
+    else {
+        GSignondDictionary* empty_cache = gsignond_dictionary_new();
+        cache = gsignond_dictionary_to_variant (empty_cache);
+        gsignond_dictionary_unref(empty_cache);
+    }
     gsignond_dbus_remote_plugin_call_request_initial (
-            self->priv->dbus_plugin_proxy, data, mechanism, NULL,
+            self->priv->dbus_plugin_proxy, data, cache, mechanism, NULL,
             _request_initial_async_cb, self);
 }
 

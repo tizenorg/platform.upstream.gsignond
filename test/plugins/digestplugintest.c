@@ -117,7 +117,7 @@ START_TEST (test_digestplugin_request)
     gsignond_session_data_set_username(data, "user1");
     gsignond_session_data_set_secret(data, "password1");
 
-    gsignond_plugin_request_initial(plugin, data, "digest");
+    gsignond_plugin_request_initial(plugin, data, NULL, "digest");
     fail_if(result != NULL);
     fail_if(ui_action != NULL);
     fail_if(error == NULL);
@@ -134,7 +134,7 @@ START_TEST (test_digestplugin_request)
     gsignond_dictionary_set_string(data, "Method", "GET");
     gsignond_dictionary_set_string(data, "DigestUri", "/test/index.html");
 
-    gsignond_plugin_request_initial(plugin, data, "digest");
+    gsignond_plugin_request_initial(plugin, data, NULL, "digest");
     fail_if(result == NULL);
     fail_if(ui_action != NULL);
     fail_if(error != NULL);
@@ -147,7 +147,7 @@ START_TEST (test_digestplugin_request)
 
     //remove secret so that ui action is required
     gsignond_dictionary_remove (data, "Secret");
-    gsignond_plugin_request_initial(plugin, data, "digest");
+    gsignond_plugin_request_initial(plugin, data, NULL, "digest");
     fail_if(result != NULL);
     fail_if(ui_action == NULL);
     fail_if(error != NULL);
@@ -243,7 +243,7 @@ START_TEST (test_digestplugin_user_action_finished)
             "abg10b1234ee1f0e8b11d0f600bfb0c093");
     gsignond_dictionary_set_string (data, "Method", "GET");
     gsignond_dictionary_set_string (data, "DigestUri", "/test/index.html");
-    gsignond_plugin_request_initial (plugin, data, "digest");
+    gsignond_plugin_request_initial (plugin, data, NULL, "digest");
     gsignond_dictionary_unref (data); data = NULL;
 
     gsignond_plugin_user_action_finished (plugin, ui_data);

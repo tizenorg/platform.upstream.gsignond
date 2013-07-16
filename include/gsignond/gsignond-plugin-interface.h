@@ -78,7 +78,8 @@ struct _GSignondPluginInterface {
 
     void (*cancel) (GSignondPlugin *self);
     void (*request_initial) (GSignondPlugin *self, 
-                     GSignondSessionData *session_data, 
+                     GSignondSessionData *session_data,
+                     GSignondDictionary *identity_method_cache, 
                      const gchar *mechanism);
     void (*request) (GSignondPlugin *self, 
                      GSignondSessionData *session_data);
@@ -96,6 +97,7 @@ gsignond_plugin_cancel (GSignondPlugin *self);
 void 
 gsignond_plugin_request_initial (GSignondPlugin *self, 
                               GSignondSessionData *session_data, 
+                              GSignondDictionary *identity_method_cache,
                               const gchar *mechanism);
 void 
 gsignond_plugin_request (GSignondPlugin *self, 
@@ -116,7 +118,7 @@ gsignond_plugin_response_final (GSignondPlugin *self,
                              GSignondSessionData *session_data);
 void 
 gsignond_plugin_store (GSignondPlugin *self, 
-                       GSignondDictionary *token_data);
+                       GSignondDictionary *identity_method_cache);
 void 
 gsignond_plugin_error (GSignondPlugin *self, GError *error);
 void 

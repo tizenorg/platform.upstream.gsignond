@@ -95,11 +95,13 @@ void gsignond_plugin_cancel (GSignondPlugin *self)
 
 void gsignond_plugin_request_initial (GSignondPlugin *self, 
                               GSignondSessionData *session_data, 
+                              GSignondDictionary *identity_method_cache,
                               const gchar *mechanism)
 {
     g_return_if_fail (GSIGNOND_IS_PLUGIN (self));
     
     GSIGNOND_PLUGIN_GET_INTERFACE (self)->request_initial (self, session_data,
+            identity_method_cache,
             mechanism);
 }
 
@@ -141,9 +143,9 @@ void gsignond_plugin_response_final (GSignondPlugin *self,
 }
 
 void gsignond_plugin_store (GSignondPlugin *self, 
-                            GSignondDictionary *token_data)
+                            GSignondDictionary *identity_method_cache)
 {
-    g_signal_emit (self, signals[STORE], 0, token_data);
+    g_signal_emit (self, signals[STORE], 0, identity_method_cache);
 }
 
 void gsignond_plugin_error (GSignondPlugin *self, GError *error)

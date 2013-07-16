@@ -239,20 +239,13 @@ gsignond_auth_session_process (GSignondAuthSession *self,
         }
     }
 
-    /* pass token data to session data */
-    if (self->priv->token_data) {
-        GVariant *token_data = gsignond_dictionary_to_variant (self->priv->token_data);
-        /* FIXME: better add API GSignondSessionData to support(set/get) token data.
-                  That will be the cleaner solution */
-        gsignond_dictionary_set (session_data, "Token", token_data);
-    }
-
     _ProcessData * data = g_slice_new0 (_ProcessData);
     data->self = self;
     data->ready_cb = ready_cb;
     data->state_change_cb = state_change_cb;
     data->userdata = userdata;
     gsignond_plugin_proxy_process(self->priv->proxy, self, session_data,
+                                  self->priv->token_data,
                                   mechanism, data);
 
     return TRUE;

@@ -51,6 +51,7 @@ static void gsignond_password_plugin_request (
 
 static void gsignond_password_plugin_request_initial (
     GSignondPlugin *self, GSignondSessionData *session_data, 
+    GSignondDictionary* identity_method_cache,
     const gchar *mechanism)
 {
     const gchar* username = gsignond_session_data_get_username(session_data);

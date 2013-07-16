@@ -105,7 +105,7 @@ START_TEST (test_passwordplugin_request)
 
     // username empty, password not empty
     gsignond_session_data_set_secret(data, "megapassword");
-    gsignond_plugin_request_initial(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, NULL, "password");
     fail_if(result == NULL);    
     fail_if(ui_action != NULL);
     fail_if(error != NULL);
@@ -117,7 +117,7 @@ START_TEST (test_passwordplugin_request)
     
     // username and password not empty
     gsignond_session_data_set_username(data, "megauser");
-    gsignond_plugin_request_initial(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, NULL, "password");
     fail_if(result == NULL);    
     fail_if(ui_action != NULL);
     fail_if(error != NULL);
@@ -131,7 +131,7 @@ START_TEST (test_passwordplugin_request)
     //username and password empty
     gsignond_dictionary_unref(data);
     data = gsignond_dictionary_new();
-    gsignond_plugin_request_initial(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, NULL, "password");
     fail_if(result != NULL);    
     fail_if(ui_action == NULL);
     fail_if(error != NULL);
@@ -144,7 +144,7 @@ START_TEST (test_passwordplugin_request)
     
     //username not empty, password empty
     gsignond_session_data_set_username(data, "megauser");
-    gsignond_plugin_request_initial(plugin, data, "password");
+    gsignond_plugin_request_initial(plugin, data, NULL, "password");
     fail_if(result != NULL);    
     fail_if(ui_action == NULL);
     fail_if(error != NULL);

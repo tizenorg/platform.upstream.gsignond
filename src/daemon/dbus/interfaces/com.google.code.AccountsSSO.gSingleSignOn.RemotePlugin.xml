@@ -5,6 +5,7 @@
     </method>
     <method name="requestInitial">
       <arg name="sessionData" type="a{sv}" direction="in"/>
+      <arg name="identityMethodCache" type="a{sv}" direction="in"/>
       <arg name="mechanism" type="s" direction="in"/>
     </method>
     <method name="request">

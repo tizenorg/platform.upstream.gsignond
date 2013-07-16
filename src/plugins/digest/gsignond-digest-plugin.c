@@ -174,6 +174,7 @@ static void
 gsignond_digest_plugin_request_initial (
     GSignondPlugin *plugin,
     GSignondSessionData *session_data,
+    GSignondDictionary *identity_method_cache,
     const gchar *mechanism)
 {
     g_return_if_fail (plugin != NULL);

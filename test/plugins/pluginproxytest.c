@@ -134,10 +134,10 @@ gsignond_auth_session_notify_process_result (
             gsignond_session_data_set_username(data, "megauser");
             gsignond_session_data_set_secret(data, "megapassword");
 
-            gsignond_plugin_proxy_process(proxy, iface, data, "password",
+            gsignond_plugin_proxy_process(proxy, iface, data, NULL, "password",
                     proxy);
 
-            gsignond_plugin_proxy_process(proxy, iface, data, "password",
+            gsignond_plugin_proxy_process(proxy, iface, data, NULL, "password",
                     proxy);
     
             gsignond_dictionary_unref(data);
@@ -154,7 +154,7 @@ gsignond_auth_session_notify_process_result (
             fail_if(data == NULL);
 
             for (i = 0; i < 9; i++) {
-                gsignond_plugin_proxy_process(proxy, iface, data, "mech1",
+                gsignond_plugin_proxy_process(proxy, iface, data, NULL, "mech1",
                         proxy);
             }
             gsignond_dictionary_unref(data);
@@ -303,7 +303,7 @@ START_TEST (test_pluginproxy_process)
 
     testing_proxy_process = TRUE;
 
-    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password",
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, NULL, "password",
             proxy);
 
     _run_mainloop ();
@@ -335,7 +335,7 @@ START_TEST (test_pluginproxy_process_cancel)
     
     testing_proxy_process_cancel = TRUE;
     
-    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "mech1",
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, NULL, "mech1",
             proxy);
 
     _run_mainloop ();
@@ -369,7 +369,7 @@ START_TEST (test_pluginproxy_process_queue)
     
     testing_proxy_process_queue = TRUE;
     
-    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "password",
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, NULL, "password",
             proxy);
     _run_mainloop ();
 
@@ -399,7 +399,7 @@ START_TEST (test_pluginproxy_process_queue_cancel)
     
     testing_proxy_process_queue_cancel = TRUE;
     
-    gsignond_plugin_proxy_process(proxy, test_auth_session, data, "mech1",
+    gsignond_plugin_proxy_process(proxy, test_auth_session, data, NULL, "mech1",
             proxy);
 
     _run_mainloop ();

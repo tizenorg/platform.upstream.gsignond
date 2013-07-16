@@ -83,6 +83,7 @@ gsignond_plugin_proxy_process (
         GSignondPluginProxy *self,
         GSignondAuthSession* session,
         GSignondSessionData *session_data,
+        GSignondDictionary *identity_method_cache,
         const gchar *mechanism,
         gpointer userdata);
 void
