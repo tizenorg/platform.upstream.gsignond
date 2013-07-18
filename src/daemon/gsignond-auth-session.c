@@ -145,12 +145,13 @@ _create_mechanism_cache (GSignondAuthSession *self)
                                                     (gpointer) *iter,
                                                     _sort_cmp,
                                                     NULL);
-            DBG ("  allow: '%s'", *iter);
-            if (pos)
+            if (pos) {
+                DBG ("  allow: '%s'", *iter); 
                 g_sequence_insert_sorted (priv->available_mechanisms,
                                           (gpointer) *iter,
                                           _sort_cmp,
                                           NULL);
+	    }
         }
     }
     if (allowed_mechanisms)
