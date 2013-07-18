@@ -130,7 +130,6 @@ static GSequence *
 _gsignond_db_metadata_database_list_to_sequence (GList *list)
 {
     GSequence *seq = NULL;
-    if (!list) return seq;
     seq = g_sequence_new ((GDestroyNotify)g_free);
     list = g_list_first (list);
     for ( ; list != NULL; list = g_list_next (list)) {
