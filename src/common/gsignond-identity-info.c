@@ -35,16 +35,25 @@ _gsignond_identity_info_seq_cmp (
     GSequenceIter *iter1 = NULL, *iter2 = NULL;
     gboolean equal = TRUE;
 
-    if (one == NULL && two == NULL)
+   if (one == two)
         return TRUE;
 
-    if ((one != NULL && two == NULL) ||
-        (one == NULL && two != NULL) ||
-        (g_sequence_get_length (one) != g_sequence_get_length (two)))
+   if (one == NULL) {
+	if (g_sequence_get_length (two) == 0)
+	    return TRUE;
+        else
+	    return FALSE;
+   }
+
+   if (two == NULL) {
+	if (g_sequence_get_length (one) == 0)
+	    return TRUE;
+	else
+	    return FALSE;
+    }
+
+    if (g_sequence_get_length (one) != g_sequence_get_length (two))
         return FALSE;
-
-    if (one == two)
-        return TRUE;
 
     iter1 = g_sequence_get_begin_iter (one);
     while (!g_sequence_iter_is_end (iter1)) {
