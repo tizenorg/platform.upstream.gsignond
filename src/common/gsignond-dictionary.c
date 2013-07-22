@@ -109,13 +109,14 @@ gsignond_dictionary_new (void)
  * @dict: instance of #GSignondDictionary
  *
  * Increment reference count of the dictionary structure.
+ * Returns: the passed in #GSignondDictionary
  */
-void
+GSignondDictionary*
 gsignond_dictionary_ref (GSignondDictionary *dict)
 {
-    g_return_if_fail (dict != NULL);
+    g_return_val_if_fail (dict != NULL, NULL);
 
-    g_hash_table_ref (dict);
+    return (GSignondDictionary*)g_hash_table_ref (dict);
 }
 
 /**

@@ -47,7 +47,7 @@ gsignond_dictionary_get_type (void);
 GSignondDictionary *
 gsignond_dictionary_new (void);
 
-void
+GSignondDictionary *
 gsignond_dictionary_ref (GSignondDictionary *dict);
 
 void
