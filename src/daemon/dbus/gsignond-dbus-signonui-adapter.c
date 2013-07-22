@@ -232,9 +232,13 @@ _on_query_dialog_ready (GObject *proxy, GAsyncResult *res, gpointer user_data)
 
     if (info) {
         if (info->cb) {
-            GVariant *out_params = NULL; g_variant_get (reply, "(@a{sv})", &out_params);
+            GVariant *out_params = NULL;
+
+            if (!error) {
+                g_variant_get (reply, "(@a{sv})", &out_params);
+            }
             ((GSignondDbusSignonuiQueryDialogCb)info->cb) (out_params, error, info->data);
-            g_variant_unref (out_params);
+            if(out_params) g_variant_unref (out_params);
         }
         g_object_unref (info->adapter);
         g_slice_free (_SignonuiDbusInfo, info);
@@ -265,7 +269,7 @@ gsignond_dbus_signonui_adapter_query_dialog (GSignondDbusSignonuiAdapter *adapte
     info->data = user_data;
 
     g_dbus_proxy_call (adapter->priv->proxy, "queryDialog",
-            g_variant_new ("(a{sv})", params), G_DBUS_CALL_FLAGS_NONE, -1, NULL,
+            g_variant_new ("(@a{sv})", params), G_DBUS_CALL_FLAGS_NONE, G_MAXINT, NULL,
             _on_query_dialog_ready, (gpointer)info);
 
     return TRUE;

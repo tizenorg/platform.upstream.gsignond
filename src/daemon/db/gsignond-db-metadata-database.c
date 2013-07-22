@@ -1076,6 +1076,17 @@ gsignond_db_metadata_database_update_identity (
         return 0;
     }
 
+    if (!gsignond_identity_info_get_is_identity_new (identity)) {
+        DBG ("Remove old acl and owner list as identity is not new");
+        /* remove acl */
+        _gsignond_db_metadata_database_exec (self,
+                "DELETE FROM ACL WHERE identity_id = %u;", id);
+
+        /* remove owner */
+        _gsignond_db_metadata_database_exec (self,
+                "DELETE FROM OWNER WHERE identity_id = %u;", id);
+    }
+
     /* methods */
     methods = gsignond_identity_info_get_methods (identity);
     if (!_gsignond_db_metadata_database_insert_methods (self, identity,
@@ -1108,16 +1119,6 @@ gsignond_db_metadata_database_update_identity (
         goto finished;
     }
 
-    if (!gsignond_identity_info_get_is_identity_new (identity)) {
-        DBG ("Remove old acl and owner list as identity is not new");
-        /* remove acl */
-        _gsignond_db_metadata_database_exec (self,
-                "DELETE FROM ACL WHERE identity_id = %u;", id);
-
-        /* remove owner */
-        _gsignond_db_metadata_database_exec (self,
-                "DELETE FROM OWNER WHERE identity_id = %u;", id);
-    }
 
     /* ACL insert, this will do basically identity level ACL */
     g_hash_table_iter_init (&method_iter, methods);

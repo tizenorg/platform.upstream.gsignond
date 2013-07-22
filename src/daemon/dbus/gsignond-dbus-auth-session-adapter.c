@@ -26,6 +26,7 @@
 #include "config.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-utils.h"
+#include "gsignond/gsignond-error.h"
 #include "gsignond-dbus-auth-session-adapter.h"
 #include "gsignond-dbus.h"
 
@@ -320,8 +321,11 @@ _on_process_done (GSignondSessionData *reply, const GError *error, gpointer user
     self = info->adapter;
     self->priv->is_process_active = FALSE;
 
-    if (error)
-        g_dbus_method_invocation_return_gerror (info->invocation, error);
+    if (error) {
+        DBG("ERROR : %s(%d)", error->message, error->code);
+        GError *dbus_err = gsignond_get_gerror_for_id (error->code, error->message, NULL);
+        g_dbus_method_invocation_take_error (info->invocation, dbus_err);
+    }
     else {
         GVariant *result = gsignond_dictionary_to_variant ((GSignondDictionary *)reply); 
         gsignond_dbus_auth_session_complete_process (

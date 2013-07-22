@@ -53,6 +53,7 @@ typedef struct {
 struct _GSignondSignonuiProxyPrivate
 {
     GSignondDbusSignonuiAdapter *signonui;
+    guint signonui_timer_id;
     _UIQueryRequest *active_request; /* Active dialog */
     GQueue *request_queue;           /* request queue */
     gboolean is_idle;
@@ -114,6 +115,10 @@ _dispose (GObject *object)
 {
     GSignondSignonuiProxy *self = GSIGNOND_SIGNONUI_PROXY (object);
 
+    if (self->priv->signonui_timer_id) {
+        g_source_remove (self->priv->signonui_timer_id);
+        self->priv->signonui_timer_id = 0;
+    }
     if (self->priv->signonui) {
         g_object_unref (self->priv->signonui);
         self->priv->signonui = NULL;
@@ -151,10 +156,7 @@ gsignond_signonui_proxy_init (GSignondSignonuiProxy *proxy)
 {
     proxy->priv = GSIGNOND_SIGNONUI_PROXY_GET_PRIV (proxy);
 
-    proxy->priv->signonui = gsignond_dbus_signonui_adapter_new ();
-
-    if (proxy->priv->signonui)
-        g_signal_connect_swapped (proxy->priv->signonui, "refresh", G_CALLBACK(_on_refresh_request), proxy);
+    proxy->priv->signonui = NULL;
     proxy->priv->active_request = NULL;
     proxy->priv->request_queue = g_queue_new ();
     proxy->priv->is_idle = TRUE;
@@ -174,18 +176,18 @@ _on_refresh_request (GSignondSignonuiProxy *proxy, gchar *request_id, gpointer u
 }
 
 static void
-_query_dialog_cb (GVariant *reply, GError *error, gpointer user_data)
+_query_dialog_cb_internal (GSignondSignonuiProxy *proxy, GSignondSignonuiData *ui_data, GError *error)
 {
-    GSignondSignonuiProxy *proxy = GSIGNOND_SIGNONUI_PROXY (user_data);
-
     _UIQueryRequest *req = proxy->priv->active_request;
 
-    if (req && req->cb) 
-        req->cb (gsignond_signonui_data_new_from_variant (reply), error, req->userdata);
+    if (req && req->cb) {
+        req->cb (ui_data, error, req->userdata);
+    }
     else if (error) {
         WARN ("UI-Error: %s", error->message);
         g_error_free (error);
     }
+    if (ui_data) gsignond_signonui_data_unref (ui_data);
 
     _ui_query_request_free (req);
 
@@ -195,22 +197,64 @@ _query_dialog_cb (GVariant *reply, GError *error, gpointer user_data)
 }
 
 static void
+_query_dialog_cb (GVariant *reply, GError *error, gpointer user_data)
+{
+    GSignondSignonuiProxy *proxy = GSIGNOND_SIGNONUI_PROXY (user_data);
+    GSignondSignonuiData *ui_data = reply ? gsignond_signonui_data_new_from_variant (reply) : NULL;
+
+     _query_dialog_cb_internal (proxy, ui_data, error);
+}
+
+static gboolean
+_close_ui_connection (gpointer data)
+{
+    GSignondSignonuiProxy *proxy = GSIGNOND_SIGNONUI_PROXY(data);
+    g_return_val_if_fail (proxy, FALSE);
+
+    proxy->priv->signonui_timer_id = 0;
+
+    g_clear_object (&proxy->priv->signonui);
+
+    return FALSE;
+}
+
+static void
 _process_next_request (GSignondSignonuiProxy *proxy)
 {
     _UIQueryRequest *req = g_queue_pop_head (proxy->priv->request_queue);
+    GVariant *params = NULL;
 
     if (!req) {
         proxy->priv->is_idle = TRUE;
         proxy->priv->active_request = NULL;
+        proxy->priv->signonui_timer_id = 
+            g_timeout_add_seconds (10, (GSourceFunc)_close_ui_connection, proxy);
         return;
+    }
+    else {
+        if (proxy->priv->signonui_timer_id) {
+            g_source_remove (proxy->priv->signonui_timer_id);
+            proxy->priv->signonui_timer_id = 0;
+        }
+        if (!proxy->priv->signonui)
+            proxy->priv->signonui = gsignond_dbus_signonui_adapter_new ();
+        if (proxy->priv->signonui)
+            g_signal_connect_swapped (proxy->priv->signonui, "refresh",
+                    G_CALLBACK(_on_refresh_request), proxy);
+        else {
+            GSignondSignonuiData *reply = gsignond_signonui_data_new ();
+            gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_NO_SIGNONUI);
+            _query_dialog_cb_internal (proxy, reply, NULL);
+        }
     }
 
     proxy->priv->active_request = req;
 
     /* update request id */
     gsignond_signonui_data_set_request_id (req->ui_data, G_OBJECT_TYPE_NAME(req->caller));
+    params =  gsignond_signonui_data_to_variant(req->ui_data) ;
     gsignond_dbus_signonui_adapter_query_dialog (proxy->priv->signonui, 
-            gsignond_signonui_data_to_variant(req->ui_data), _query_dialog_cb, proxy);
+            params, _query_dialog_cb, proxy);
 
     proxy->priv->is_idle = FALSE;
 }
@@ -258,7 +302,6 @@ gsignond_signonui_proxy_refresh_dialog (GSignondSignonuiProxy *proxy,
         && proxy->priv->active_request->caller == caller) {
         _UIRefreshRequest *req = _ui_refresh_request_new (cb, userdata);
 
-        /* FIXME: Is it required to set refresh id for refresh data */
         gsignond_signonui_data_set_request_id (ui_data, G_OBJECT_TYPE_NAME(caller));
         gsignond_dbus_signonui_adapter_refresh_dialog (proxy->priv->signonui,
                 gsignond_signonui_data_to_variant (ui_data), _refresh_dialog_cb, req);
@@ -317,11 +360,11 @@ gsignond_signonui_proxy_cancel_request (GSignondSignonuiProxy *proxy,
     if (!element) return FALSE;
     req = element->data;
 
-     if (req->cb) {
-        gsignond_signonui_data_ref (req->ui_data);
-        gsignond_signonui_data_set_query_error(req->ui_data, SIGNONUI_ERROR_CANCELED);
+    if (req->cb) {
+        GSignondSignonuiData *reply = gsignond_signonui_data_new ();
+        gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_CANCELED);
 
-        req->cb (req->ui_data, NULL, req->userdata);
+        req->cb (reply, NULL, req->userdata);
     }
 
     if (cb) cb(NULL, userdata);

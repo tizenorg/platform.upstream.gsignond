@@ -361,15 +361,22 @@ _on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer 
         WARN ("UI-Error: %s on identity %d",
               error->message,
               gsignond_identity_info_get_id (priv->info));
+        if (cb_data->session) {
+            GSignondSignonuiData *reply = gsignond_signonui_data_new();
+            gsignond_signonui_data_set_query_error (reply, SIGNONUI_ERROR_GENERAL);
+            gsignond_auth_session_user_action_finished (cb_data->session, reply);
+            gsignond_signonui_data_unref(reply);
+        }
         g_error_free (error);
         g_slice_free (GSignondIdentityCbData, cb_data);
         return;
     }
 
-    if (!gsignond_signonui_data_get_query_error (reply, &ui_error))
+    if (gsignond_signonui_data_get_query_error (reply, &ui_error)
+        && ui_error != SIGNONUI_ERROR_NONE) {
         WARN ("signonui error %d for identity %d",
-              ui_error,
-              gsignond_identity_info_get_id (priv->info));
+              ui_error, gsignond_identity_info_get_id (priv->info));
+    }
 
     if (!gsignond_identity_info_get_validated (priv->info) &&
         ui_error == SIGNONUI_ERROR_NONE) {
@@ -407,7 +414,6 @@ _on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer 
     if (cb_data->session) {
         gsignond_auth_session_user_action_finished (cb_data->session, reply);
     }
-    else if (reply) gsignond_signonui_data_unref (reply);
 
     g_slice_free (GSignondIdentityCbData, cb_data);
 }
@@ -422,7 +428,7 @@ _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui
     cb_data->session = session;
 
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(session), 
-            ui_data, _on_user_action_completed, _on_refresh_requested_by_ui, userdata);
+            ui_data, _on_user_action_completed, _on_refresh_requested_by_ui, cb_data);
 }
 
 static void
@@ -554,7 +560,6 @@ _on_credentials_updated (GSignondSignonuiData *reply, GError *error, gpointer us
     GSignondIdentity *identity = GSIGNOND_IDENTITY (user_data);
     guint32 id = 0;
     GError *err = NULL;
-    GSignondSignonuiError err_id = 0;
 
     if (error) {
         WARN ("failed to verify user : %s", error->message);
@@ -562,38 +567,42 @@ _on_credentials_updated (GSignondSignonuiData *reply, GError *error, gpointer us
 
         err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
     }
+    else
+    {
+        GSignondSignonuiError err_id = SIGNONUI_ERROR_NONE;
+        gboolean res = gsignond_signonui_data_get_query_error (reply, &err_id);
 
-    gboolean res = gsignond_signonui_data_get_query_error (reply, &err_id);
-    g_assert (res == TRUE);
+        if (!res) {
+            DBG ("No error code set by UI daemon, treating as ERROR_NONE");
+        }
 
-    if (err_id != SIGNONUI_ERROR_NONE) {
-        switch (err_id) {
-            case SIGNONUI_ERROR_CANCELED:
-                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
+        if (err_id != SIGNONUI_ERROR_NONE) {
+            switch (err_id) {
+                case SIGNONUI_ERROR_CANCELED:
+                    err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
                         "Operation cancled");
-                break;
-            default:
-                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, 
+                    break;
+                default:
+                    err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, 
                         "signon ui returned with error : %d", err_id);
-                break;
+                    break;
+            }
         }
-    }
-    else {
-        const gchar *secret = gsignond_signonui_data_get_password (reply);
+        else {
+            const gchar *secret = gsignond_signonui_data_get_password (reply);
 
-        if (!secret) {
-            err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER,
+            if (!secret) {
+                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER,
                                 "Server internal error occured");
-        } else if (identity->priv->info) {
-            gsignond_identity_info_set_secret (identity->priv->info, secret) ;
+            } else if (identity->priv->info) {
+                gsignond_identity_info_set_secret (identity->priv->info, secret) ;
 
-            /* Save new secret in db */
-            id = gsignond_daemon_store_identity (identity->priv->owner, identity);
-            if (!id) err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_STORE_FAILED, "Failed to store secret");
+                /* Save new secret in db */
+                id = gsignond_daemon_store_identity (identity->priv->owner, identity);
+                if (!id) err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_STORE_FAILED, "Failed to store secret");
+            }
         }
     }
-
-    gsignond_signonui_data_unref (reply);
 
     g_signal_emit (identity, signals[SIG_CREDENTIALS_UPDATED], 0 , id, err);
 
@@ -629,7 +638,6 @@ gsignond_identity_request_credentials_update (GSignondIdentity *identity,
 
     ui_data = gsignond_signonui_data_new ();
 
-    gsignond_signonui_data_set_query_username (ui_data, FALSE);
     gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
     gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
@@ -649,7 +657,6 @@ _on_user_verified (GSignondSignonuiData *reply, GError *error, gpointer user_dat
     GSignondIdentity *identity = GSIGNOND_IDENTITY (user_data);
     gboolean res = FALSE;
     GError *err = NULL;
-    GSignondSignonuiError err_id = 0;
 
     if (error) {
         WARN ("failed to verify user : %s", error->message);
@@ -657,40 +664,42 @@ _on_user_verified (GSignondSignonuiData *reply, GError *error, gpointer user_dat
 
         err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
     }
-
-    gboolean query_res = gsignond_signonui_data_get_query_error (reply, &err_id);
-    g_assert (query_res == TRUE);
-
-    if (err_id != SIGNONUI_ERROR_NONE) {
-        switch (err_id) {
-            case SIGNONUI_ERROR_CANCELED:
-                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
+    else
+    {
+        GSignondSignonuiError err_id = SIGNONUI_ERROR_NONE;
+        gboolean res = gsignond_signonui_data_get_query_error (reply, &err_id);
+        if (!res) {
+            DBG ("No error code set by UI daemon, treating as ERROR_NONE");
+        }
+        if (err_id != SIGNONUI_ERROR_NONE) {
+            switch (err_id) {
+                case SIGNONUI_ERROR_CANCELED:
+                    err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
                         "Operation cancled");
-                break;
-            case SIGNONUI_ERROR_FORGOT_PASSWORD:
-                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_FORGOT_PASSWORD, "Forgot password");
-                break;
-            default:
-                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, 
+                    break;
+                case SIGNONUI_ERROR_FORGOT_PASSWORD:
+                    err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_FORGOT_PASSWORD, "Forgot password");
+                    break;
+                default:
+                    err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, 
                         "signon ui returned error : %d", err_id);
-                break;
+                    break;
+            }
         }
-    }
-    else {
-        const gchar *secret = gsignond_signonui_data_get_password (reply);
+        else {
+            const gchar *secret = gsignond_signonui_data_get_password (reply);
 
-        if (!secret) {
-            err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER,
+            if (!secret) {
+                err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER,
                                 "Server internal error occured");
-        } else if (identity->priv->info) {
-            res = g_strcmp0 (secret, gsignond_identity_info_get_secret 
+            } else if (identity->priv->info) {
+                res = g_strcmp0 (secret, gsignond_identity_info_get_secret 
                                        (identity->priv->info)) == 0;
+            }
         }
     }
 
-    gsignond_signonui_data_unref (reply);
-
-    g_signal_emit (identity, signals[SIG_USER_VERIFIED], 0, res, error);
+    g_signal_emit (identity, signals[SIG_USER_VERIFIED], 0, res, err);
 
     if (err) g_error_free (err);
 }
@@ -726,11 +735,10 @@ gsignond_identity_verify_user (GSignondIdentity *identity,
     }
 
     ui_data = gsignond_signonui_data_new_from_variant (params);
-    gsignond_signonui_data_set_query_username (ui_data, FALSE);
     gsignond_signonui_data_set_query_password (ui_data, TRUE);
     gsignond_signonui_data_set_username (ui_data, gsignond_identity_info_get_username (identity->priv->info));
     gsignond_signonui_data_set_caption (ui_data, gsignond_identity_info_get_caption (identity->priv->info));
-   
+
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT (identity),
         ui_data, _on_user_verified, NULL, identity);
 
