@@ -262,6 +262,18 @@ gsignond_plugin_proxy_status_changed_callback (
                                                 priv->active_process_userdata);
 }
 
+static void
+_on_remote_plugin_dead (gpointer data, GObject *dead_obj)
+{
+DBG("{");
+    GSignondPluginProxy *proxy = NULL;
+    if (data && (proxy = GSIGNOND_PLUGIN_PROXY(data))) {
+        proxy->priv->plugin = NULL;
+        g_object_unref (G_OBJECT(data));
+    }
+DBG("}");
+}
+
 static GObject *
 gsignond_plugin_proxy_constructor (
         GType                  gtype,
@@ -308,6 +320,8 @@ gsignond_plugin_proxy_constructor (
             priv->plugin_type = NULL;
         }
         g_free (type);
+
+        g_object_weak_ref (G_OBJECT(priv->plugin), _on_remote_plugin_dead, obj);
 
     }
     return obj;
@@ -379,6 +393,7 @@ gsignond_plugin_proxy_dispose (
         priv->active_session = NULL;
     }
     if (priv->plugin) {
+        g_object_weak_unref (G_OBJECT(priv->plugin), _on_remote_plugin_dead, self);
         g_object_unref (priv->plugin);
         priv->plugin = NULL;
     }
