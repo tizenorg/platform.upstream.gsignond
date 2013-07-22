@@ -566,7 +566,8 @@ gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *method, GSig
                       "method", method, NULL);
     auth_session->priv->proxy = proxy;
     auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
-    auth_session->priv->token_data = token_data;
+    auth_session->priv->token_data = token_data ? gsignond_dictionary_ref(token_data)
+                                                : gsignond_dictionary_new();
 
     return auth_session;
 }

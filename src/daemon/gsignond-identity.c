@@ -529,9 +529,8 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
     if ( (identity_id = gsignond_identity_info_get_id (identity->priv->info)) !=
             GSIGNOND_IDENTITY_INFO_NEW_IDENTITY) {
         token_data = gsignond_daemon_load_identity_data (identity->priv->owner, identity_id, method);
-    } else {
-        token_data = gsignond_dictionary_new();
-    }        
+    } 
+    if (!token_data) token_data = gsignond_dictionary_new();
 
     session = gsignond_auth_session_new (identity->priv->info, method, token_data);
 
