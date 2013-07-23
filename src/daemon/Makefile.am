@@ -79,3 +79,7 @@ install-exec-hook:
 	chmod u+s $(DESTDIR)$(bindir)/gsignond || true
 endif
 
+CLEANFILES = \
+    gsignond-identity-enum-types.h \
+    gsignond-identity-enum-types.c \
+    $(NULL)

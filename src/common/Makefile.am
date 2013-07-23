@@ -75,5 +75,7 @@ dist_libgsignond_common_la_SOURCES = \
     gsignond-enum.h.template \
     $(NULL)
 
-CLEANFILES = 
-
+CLEANFILES = \
+    gsignond-plugin-enum-types.h \
+    gsignond-plugin-enum-types.c \
+    $(NULL)
