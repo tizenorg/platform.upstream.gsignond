@@ -13,13 +13,13 @@ gsignond-identity-enum-types.h: $(top_srcdir)/src/common/gsignond-enum.h.templat
                     --fhead "#ifndef GSIGNOND_IDENTITY_ENUM_TYPES_H_\n#define GSIGNOND_IDENTITY_ENUM_TYPES_H_\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS" \
                     --identifier-prefix gsignond \
                     --ftail "\nG_END_DECLS\n\n#endif\n" \
-                    gsignond-identity.h > $@
+                    $(srcdir)/gsignond-identity.h > $@
 
 gsignond-identity-enum-types.c: $(top_srcdir)/src/common/gsignond-enum.c.template gsignond-identity.h
 	$(GLIB_MKENUMS) --template $(top_srcdir)/src/common/gsignond-enum.c.template \
                     --fhead "#include \"gsignond-identity-enum-types.h\"\n" \
                     --identifier-prefix gsignond \
-                    gsignond-identity.h > $@
+                    $(srcdir)/gsignond-identity.h > $@
 
 gsignond_includedir = $(includedir)/gsignond
 gsignond_pubhdr = ../../include/gsignond
@@ -56,6 +56,10 @@ gsignond_SOURCES = \
     gsignond-signonui-proxy.h \
     gsignond-types.h \
     $(BUILT_SOURCES) \
+    $(NULL)
+
+gsignond_CPPFLAGS = \
+    -I. \
     $(NULL)
 
 gsignond_CFLAGS = \

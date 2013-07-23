@@ -13,14 +13,14 @@ BUILT_SOURCES = \
 GSIGNOND_INCLUDE_DIR=$(top_srcdir)/include/gsignond
 
 gsignond-plugin-enum-types.h: gsignond-enum.h.template $(GSIGNOND_INCLUDE_DIR)/gsignond-plugin-interface.h
-	$(GLIB_MKENUMS) --template gsignond-enum.h.template \
+	$(GLIB_MKENUMS) --template $(srcdir)/gsignond-enum.h.template \
                     --fhead "#ifndef GSIGNOND_PLUGIN_ENUM_TYPES_H_\n#define GSIGNOND_PLUGIND_ENUM_TYPES_H_\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS" \
                     --identifier-prefix gsignond \
                     --ftail "\nG_END_DECLS\n\n#endif\n" \
                     $(GSIGNOND_INCLUDE_DIR)/gsignond-plugin-interface.h > $@
 
 gsignond-plugin-enum-types.c: gsignond-enum.c.template $(GSIGNOND_INCLUDE_DIR)/gsignond-plugin-interface.h
-	$(GLIB_MKENUMS) --template gsignond-enum.c.template \
+	$(GLIB_MKENUMS) --template $(srcdir)/gsignond-enum.c.template \
                     --fhead "#include \"gsignond-plugin-enum-types.h\"\n" \
                     --identifier-prefix gsignond \
                     $(GSIGNOND_INCLUDE_DIR)/gsignond-plugin-interface.h > $@
@@ -30,6 +30,7 @@ libgsignond_common_la_CPPFLAGS = \
     -I$(top_builddir) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
+    -I. \
     $(GSIGNOND_CFLAGS) \
     -DGSIGNOND_PLUGINS_DIR='"$(pluginsdir)"' \
     -DGSIGNOND_EXTENSIONS_DIR='"$(extensionsdir)"' \
