@@ -81,11 +81,23 @@ _gsignond_db_read_key_value (
         GSignondDictionary* data)
 {
     const gchar *key = NULL;
+    gpointer v_data = 0;
     GVariant *value = NULL;
+    const GVariantType *type;
+    gsize type_len ;
+    gsize size = (gsize) sqlite3_column_bytes(stmt, 1);
+
+    type = (const GVariantType *)sqlite3_column_blob(stmt, 1) ;
+    type_len = g_variant_type_get_string_length (type) + 1;
+
+    size -= type_len;
+    v_data = g_new0(gconstpointer, size);
+    mempcpy(v_data, sqlite3_column_blob(stmt, 1) + type_len, size);
+
     key = (const gchar *)sqlite3_column_text (stmt, 0);
-    value = g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, 
-        (gconstpointer) sqlite3_column_blob(stmt, 1),
-        (gsize) sqlite3_column_bytes(stmt, 1), sizeof(guchar));
+    value = g_variant_new_from_data (type, 
+                (gconstpointer)v_data, size,
+                 TRUE, (GDestroyNotify)g_free, NULL);
 
     gsignond_dictionary_set (data, key, value);
     return TRUE;
@@ -350,7 +362,9 @@ gsignond_db_secret_database_update_data (
     g_hash_table_iter_init (&iter, data);
     while (g_hash_table_iter_next (&iter,(gpointer *) &key,
             (gpointer *) &value)) {
-        data_counter = data_counter + strlen (key) + g_variant_get_size(value);
+        data_counter = data_counter + strlen (key) +
+                       g_variant_type_get_string_length (g_variant_get_type (value)) + 1 +
+                       g_variant_get_size(value);
         if (data_counter >= GSIGNOND_DB_MAX_DATA_STORAGE) {
             gsignond_db_sql_database_rollback_transaction (parent);
             DBG ("size limit is exceeded");
@@ -366,7 +380,9 @@ gsignond_db_secret_database_update_data (
     while (g_hash_table_iter_next (&iter, (gpointer *)&key,
             (gpointer *) &value )) {
         gsize val_size;
-        gconstpointer value_data;
+        const gchar *val_type;
+        gsize val_type_length;
+        gpointer value_data;
         sqlite3_stmt *sql_stmt;
 
         ret = sqlite3_prepare_v2 (parent->priv->db, statement, -1,
@@ -377,13 +393,19 @@ gsignond_db_secret_database_update_data (
             gsignond_db_sql_database_rollback_transaction (parent);
             return FALSE;
         }
-        value_data = g_variant_get_data (value);
+        val_type = g_variant_get_type_string(value);
+        val_type_length = g_variant_type_get_string_length (
+                            (const GVariantType  *)val_type) + 1;
         val_size = g_variant_get_size (value);
+
+        value_data = g_new0(gconstpointer, val_size + val_type_length);
+        sprintf ((gchar*)value_data, "%s", val_type);
+        memcpy(value_data + val_type_length, g_variant_get_data (value), val_size);
 
         sqlite3_bind_int(sql_stmt, 1, (int)id);
         sqlite3_bind_int(sql_stmt, 2, (int)method);
         sqlite3_bind_text(sql_stmt, 3, key, -1, SQLITE_STATIC);
-        sqlite3_bind_blob(sql_stmt, 4, value_data, (int)val_size, SQLITE_STATIC);
+        sqlite3_bind_blob(sql_stmt, 4, value_data, (int)val_size + val_type_length, g_free);
 
         ret = sqlite3_step (sql_stmt);
         if (G_UNLIKELY (ret != SQLITE_DONE)) {

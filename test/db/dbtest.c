@@ -61,10 +61,11 @@ _compare_key_value(
 {
     GVariant *value2 = (GVariant *)g_hash_table_lookup (user_data->table, key);
 
-    if (value2 && g_variant_get_size (value2) == g_variant_get_size (value2)
-               && memcmp (g_variant_get_data (value2), 
+    if (value2 && g_variant_get_size (value) == g_variant_get_size (value2)
+               && memcmp (g_variant_get_data(value2), 
                           g_variant_get_data(value),
-                          g_variant_get_size(value2)) == 0) {
+                          g_variant_get_size(value2)) == 0
+               && g_variant_is_of_type(value2, g_variant_get_type (value)))  {
         return;
     }
     user_data->status = 0;
@@ -476,10 +477,15 @@ START_TEST (test_sql_database)
             (GDestroyNotify)g_variant_unref);
     fail_if (data == NULL);
 
-    g_hash_table_insert (data,"key1",g_variant_new_string ("string_value"));
-    g_hash_table_insert (data,"key2",g_variant_new_double (12223.4223));
-    g_hash_table_insert (data,"key3",g_variant_new_uint16(20));
-    g_hash_table_insert (data,"key4",g_variant_new("^ay", "byte_value"));
+    GVariantBuilder builder;
+    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+    g_variant_builder_add (&builder, "{sv}", "key1", g_variant_new_string ("string_value"));
+    g_variant_builder_add (&builder, "{sv}", "key2",g_variant_new_double (12223.4223));
+    g_variant_builder_add (&builder, "{sv}", "key3",g_variant_new_uint16(20));
+    g_variant_builder_add (&builder, "{sv}", "key4",g_variant_new("^ay", "byte_value"));
+
+    g_hash_table_insert (data, "dummy_client_id", g_variant_builder_end (&builder));
+
     fail_unless (gsignond_db_secret_database_update_data (
             database, id, method, data) == TRUE);
     data2 = gsignond_db_secret_database_load_data (database, id, method);
