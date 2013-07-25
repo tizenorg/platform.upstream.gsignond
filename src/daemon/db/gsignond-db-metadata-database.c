@@ -22,6 +22,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <string.h>
 #include <sys/stat.h>
 
@@ -658,6 +661,7 @@ _gsignond_db_metadata_database_create (
             "    REFS.secctx_id = OLD.secctx_id) == 0;"
             "END;"
 
+#ifdef ENABLE_DB_ACL_TRIGGERS
             // Trigger for deleting orphan METHODS entries
             "CREATE TRIGGER fkdstale_ACL_method_id_METHODS_id"
             "BEFORE DELETE ON [ACL]"
@@ -675,6 +679,7 @@ _gsignond_db_metadata_database_create (
             "    AND (SELECT COUNT(*) FROM ACL WHERE "
             "    ACL.mechanism_id = OLD.mechanism_id) == 1;"
             "END;"
+#endif
 
             /*
              * triggers generated with

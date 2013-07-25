@@ -115,6 +115,13 @@ if test "x$enable_debug" = "xyes" ; then
     fi
 fi
 
+AC_ARG_ENABLE(acltriggers,
+              [  --enable-acltriggers    enable ACL before delete triggers],
+              [enable_acl_triggers=yes], [enable_acl_triggers=no])
+if test "x$enable_acl_triggers" = "xyes" ; then
+    AC_DEFINE(ENABLE_DB_ACL_TRIGGERS, [1], [Enable ACL triggers])
+fi
+
 AM_CONDITIONAL(USE_GTESTDBUS, [test x$gtestdbus = xyes])
 AC_SUBST(MESSAGE_BUS_TYPE, [$enable_dbus_type])
 
