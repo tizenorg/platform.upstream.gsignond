@@ -57,9 +57,9 @@ static void gsignond_password_plugin_request_initial (
     const gchar* username = gsignond_session_data_get_username(session_data);
     const gchar* secret = gsignond_session_data_get_secret(session_data);
     
-    if (secret != NULL) {
+    if (secret && secret[0]) {
         GSignondSessionData *response = gsignond_dictionary_new();
-        if (username != NULL)
+        if (username && username[0])
             gsignond_session_data_set_username(response, username);
         gsignond_session_data_set_secret(response, secret);
         gsignond_plugin_response_final(self, response);
@@ -68,7 +68,7 @@ static void gsignond_password_plugin_request_initial (
     }
     
     GSignondSignonuiData *user_action_data = gsignond_signonui_data_new();
-    if (username == NULL)
+    if (!username || !username[0])
         gsignond_signonui_data_set_query_username(user_action_data, TRUE);
     else {
         gsignond_signonui_data_set_query_username(user_action_data, FALSE);
