@@ -371,20 +371,21 @@ gsignond_db_credentials_database_update_identity (
     	gsignond_db_credentials_database_is_open_secret_storage (self)) {
         GSignondCredentials *creds = NULL;
         gboolean un_sec, pwd_sec;
+        const gchar *tmp_str = NULL;
 
     	creds = gsignond_credentials_new ();
     	gsignond_credentials_set_id (creds, id);
 
-        pwd_sec = gsignond_identity_info_get_store_secret (identity);
+        pwd_sec = gsignond_identity_info_get_store_secret (identity) &&
+                  (tmp_str = gsignond_identity_info_get_secret (identity));
     	if (pwd_sec) {
-    		gsignond_credentials_set_password (creds,
-    			gsignond_identity_info_get_secret (identity));
+    		gsignond_credentials_set_password (creds, tmp_str);
     	}
 
-    	un_sec = gsignond_identity_info_get_is_username_secret (identity);
+    	un_sec = gsignond_identity_info_get_is_username_secret (identity) &&
+                 (tmp_str = gsignond_identity_info_get_username (identity));
     	if (un_sec) {
-    		gsignond_credentials_set_username (creds,
-    			gsignond_identity_info_get_username (identity));
+    		gsignond_credentials_set_username (creds, tmp_str);
     	}
 
     	if (un_sec || pwd_sec) {
