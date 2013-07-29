@@ -226,6 +226,60 @@ _gsignond_identity_info_methods_cmp (
     return equal;
 }
 
+GSignondIdentityInfoPropFlags
+gsignond_identity_info_get_edit_flags (
+        GSignondIdentityInfo *info)
+{
+    g_assert (info != NULL);
+
+    GVariant *var = NULL;
+    var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_EDIT_FLAGS);
+
+    return (GSignondIdentityInfoPropFlags)var ? g_variant_get_uint32 (var)
+                                              : IDENTITY_INFO_PROP_NONE;
+}
+
+gboolean
+gsignond_identity_info_set_edit_flags (
+        GSignondIdentityInfo *info,
+        GSignondIdentityInfoPropFlags flag)
+{
+    g_assert (info != NULL);
+
+    flag |= gsignond_identity_info_get_edit_flags (info);
+
+    return gsignond_dictionary_set (
+                info,
+                GSIGNOND_IDENTITY_INFO_EDIT_FLAGS,
+                g_variant_new_uint32 (flag));
+}
+
+gboolean
+gsignond_identity_info_reset_edit_flags (
+        GSignondIdentityInfo *info,
+        GSignondIdentityInfoPropFlags flags)
+{
+    return gsignond_dictionary_set (
+                info,
+                GSIGNOND_IDENTITY_INFO_EDIT_FLAGS,
+                g_variant_new_uint32 (flags));
+}
+
+gboolean
+gsignond_identity_info_unset_edit_flags (
+        GSignondIdentityInfo *info,
+        GSignondIdentityInfoPropFlags unset_flags)
+{
+    guint32 flags = gsignond_identity_info_get_edit_flags (info);
+
+    flags ^= unset_flags;
+
+    return gsignond_dictionary_set (
+                info,
+                GSIGNOND_IDENTITY_INFO_EDIT_FLAGS,
+                g_variant_new_uint32(flags));
+}
+
 /**
  * gsignond_identity_info_new:
  *
@@ -241,8 +295,95 @@ gsignond_identity_info_new (void)
 
     info = gsignond_dictionary_new ();
     gsignond_identity_info_set_id (info, GSIGNOND_IDENTITY_INFO_NEW_IDENTITY);
+    gsignond_identity_info_set_edit_flags (info, IDENTITY_INFO_PROP_NONE);
 
     return info;
+}
+
+/**
+ * gsignond_identity_info_new_from_variant:
+ *
+ * Creates new instance of GSignondIdentityInfo.
+ *
+ * Returns: (transfer full) #GSignondIdentityInfo object if successful,
+ * NULL otherwise.
+ */
+GSignondIdentityInfo *
+gsignond_identity_info_new_from_variant (GVariant *variant_map)
+{
+    g_return_val_if_fail (variant_map, NULL);
+    GSignondIdentityInfo *info = 
+        gsignond_dictionary_new_from_variant (variant_map);
+
+    if (!info) return NULL;
+
+    GSignondIdentityInfoPropFlags edit_flags = IDENTITY_INFO_PROP_NONE;
+    /* update edit flags */
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_ID))
+        edit_flags |= IDENTITY_INFO_PROP_ID;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_TYPE))
+        edit_flags |= IDENTITY_INFO_PROP_TYPE;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_USERNAME))
+        edit_flags |= IDENTITY_INFO_PROP_USERNAME;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET))
+        edit_flags |= IDENTITY_INFO_PROP_USERNAME_IS_SECRET;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_SECRET))
+        edit_flags |= IDENTITY_INFO_PROP_SECRET;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_STORESECRET))
+        edit_flags |= IDENTITY_INFO_PROP_STORE_SECRET;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_CAPTION))
+        edit_flags |= IDENTITY_INFO_PROP_CAPTION;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_AUTHMETHODS))
+        edit_flags |= IDENTITY_INFO_PROP_METHODS;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_REALMS))
+        edit_flags |= IDENTITY_INFO_PROP_REALMS;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_ACL))
+        edit_flags |= IDENTITY_INFO_PROP_ACL;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_OWNER))
+        edit_flags |= IDENTITY_INFO_PROP_OWNER;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_REFCOUNT))
+        edit_flags |= IDENTITY_INFO_PROP_REF_COUNT;
+    if (g_hash_table_contains (info, GSIGNOND_IDENTITY_INFO_VALIDATED))
+        edit_flags |= IDENTITY_INFO_PROP_VALIDATED;
+
+    gsignond_identity_info_reset_edit_flags (info, edit_flags);
+
+    return info;
+}
+
+/**
+ * gsignond_identity_info_to_variant:
+ * info: instance of #GSignondIdentityInfo
+ *
+ * Converts the GSignondIdentityInfo instance to variant
+ *
+ * Returns: (transfer full) #GVariant object if successful,
+ * NULL otherwise.
+ */
+GVariant *
+gsignond_identity_info_to_variant (GSignondIdentityInfo *info)
+{
+    g_assert (info);
+    GVariant *var_flags = NULL;
+    GVariant *reply = NULL;
+
+    if ((var_flags = gsignond_dictionary_get (info, 
+                GSIGNOND_IDENTITY_INFO_EDIT_FLAGS))) {
+        g_variant_ref (var_flags);
+        gsignond_dictionary_remove (info,
+                GSIGNOND_IDENTITY_INFO_EDIT_FLAGS);
+    }
+
+    reply = gsignond_dictionary_to_variant (info);
+
+
+    if (var_flags) {
+        gsignond_dictionary_set (info, 
+            GSIGNOND_IDENTITY_INFO_EDIT_FLAGS, var_flags);
+        g_variant_unref (var_flags);
+    }
+
+    return reply;
 }
 
 /**
@@ -307,9 +448,7 @@ gsignond_identity_info_get_id (GSignondIdentityInfo *info)
     GVariant *var = NULL;
     var = gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_ID);
 
-    g_return_val_if_fail (var != NULL, -1);
-
-    return g_variant_get_uint32 (var);
+    return var ? g_variant_get_uint32 (var) : -1;
 }
 
 /**
@@ -329,10 +468,15 @@ gsignond_identity_info_set_id (
 {
     g_assert (info != NULL);
 
+    if (gsignond_identity_info_get_id (info) == id)
+        return TRUE;
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_ID,
-            g_variant_new_uint32 (id));
+            g_variant_new_uint32 (id)) &&
+           gsignond_identity_info_set_edit_flags (info,
+            IDENTITY_INFO_PROP_ID);
 }
 
 /**
@@ -409,14 +553,19 @@ gsignond_identity_info_set_username (
 {
     g_assert (info != NULL);
 
+    const gchar *current_name = gsignond_identity_info_get_username(info);
+    if (g_strcmp0 (username, current_name) == 0) return TRUE;
+
     if (!username) {
         return gsignond_dictionary_remove (info,
-                            GSIGNOND_IDENTITY_INFO_USERNAME);
+                    GSIGNOND_IDENTITY_INFO_USERNAME);
     }
+
     return gsignond_dictionary_set (
-                    info,
-                    GSIGNOND_IDENTITY_INFO_USERNAME,
-                    g_variant_new_string (username));
+                info,
+                GSIGNOND_IDENTITY_INFO_USERNAME,
+                g_variant_new_string (username)) && 
+            gsignond_identity_info_set_edit_flags (info, IDENTITY_INFO_PROP_USERNAME);
 }
 
 /**
@@ -425,12 +574,16 @@ gsignond_identity_info_set_username (
  *
  * Removes username from the info.
  */
-void
+gboolean
 gsignond_identity_info_remove_username (GSignondIdentityInfo *info)
 {
     g_assert (info != NULL);
-    
-    gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_USERNAME);
+
+    if(!gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_USERNAME))
+        return TRUE;
+
+    return gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_USERNAME) &&
+           gsignond_identity_info_set_edit_flags (info, IDENTITY_INFO_PROP_USERNAME);
 }
 
 /**
@@ -472,10 +625,15 @@ gsignond_identity_info_set_username_secret (
 {
     g_assert (info != NULL);
 
+    if (gsignond_identity_info_get_is_username_secret (info) == username_secret)
+        return TRUE;
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET,
-            g_variant_new_boolean(username_secret));
+            g_variant_new_boolean(username_secret)) &&
+           gsignond_identity_info_set_edit_flags (info, 
+            IDENTITY_INFO_PROP_USERNAME_IS_SECRET);
 }
 
 /**
@@ -515,15 +673,21 @@ gsignond_identity_info_set_secret (
         const gchar *secret)
 {
     g_assert (info != NULL);
+    const gchar *current_secret = 
+                gsignond_identity_info_get_secret (info);
+
+    if (g_strcmp0 (current_secret, secret) == 0) return TRUE;
 
     if (!secret) {
-        return gsignond_dictionary_remove (info,
-                GSIGNOND_IDENTITY_INFO_SECRET);
+        return gsignond_identity_info_remove_secret (info);
     }
+
     return gsignond_dictionary_set (
-            info,
-            GSIGNOND_IDENTITY_INFO_SECRET,
-            g_variant_new_string (secret));
+                info,
+                GSIGNOND_IDENTITY_INFO_SECRET,
+                g_variant_new_string (secret)) &&
+           gsignond_identity_info_set_edit_flags (
+                info, IDENTITY_INFO_PROP_SECRET);
 }
 
 /**
@@ -532,12 +696,13 @@ gsignond_identity_info_set_secret (
  *
  * Removes secret from the info.
  */
-void
+gboolean
 gsignond_identity_info_remove_secret (GSignondIdentityInfo *info)
 {
     g_assert (info != NULL);
 
-    gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_SECRET);
+    return gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_SECRET) &&
+           gsignond_identity_info_set_edit_flags (info, IDENTITY_INFO_PROP_SECRET);
 }
 
 /**
@@ -578,10 +743,15 @@ gsignond_identity_info_set_store_secret (
 {
     g_assert (info != NULL);
 
+    if (gsignond_identity_info_get_store_secret (info) == store_secret)
+        return TRUE;
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_STORESECRET,
-            g_variant_new_boolean(store_secret));
+            g_variant_new_boolean(store_secret)) &&
+           gsignond_identity_info_set_edit_flags (info,
+            IDENTITY_INFO_PROP_STORE_SECRET);
 }
 
 /**
@@ -621,15 +791,24 @@ gsignond_identity_info_set_caption (
         const gchar *caption)
 {
     g_assert (info != NULL);
+    const gchar *current_caption = 
+        gsignond_identity_info_get_caption (info);
+
+    if (g_strcmp0 (current_caption, caption) == 0)
+        return TRUE;
 
     if (!caption) {
         return gsignond_dictionary_remove (info,
-                GSIGNOND_IDENTITY_INFO_CAPTION);
+                GSIGNOND_IDENTITY_INFO_CAPTION) &&
+               gsignond_identity_info_set_edit_flags (info,
+                IDENTITY_INFO_PROP_CAPTION);
     }
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_CAPTION,
-            g_variant_new_string (caption));
+            g_variant_new_string (caption)) &&
+           gsignond_identity_info_set_edit_flags (info,
+                IDENTITY_INFO_PROP_CAPTION);
 }
 
 /**
@@ -672,10 +851,22 @@ gsignond_identity_info_set_realms (
     g_assert (info != NULL);
 
     g_return_val_if_fail (realms != NULL, FALSE);
+    GVariant *current_realms =
+            gsignond_dictionary_get (info, GSIGNOND_IDENTITY_INFO_REALMS);
+    GVariant *var_realms =  _gsignond_identity_info_sequence_to_variant (realms);
+
+    if (current_realms != NULL &&
+        g_variant_equal (current_realms, var_realms) == TRUE) {
+        g_variant_unref (var_realms);
+        return TRUE;
+    }
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_REALMS,
-            _gsignond_identity_info_sequence_to_variant (realms));
+            var_realms) &&
+           gsignond_identity_info_set_edit_flags (info,
+            IDENTITY_INFO_PROP_REALMS);
 }
 
 /**
@@ -739,6 +930,7 @@ gsignond_identity_info_set_methods (
 
     gchar **items = NULL;
     GVariantBuilder builder;
+    GVariant *current_mehtods, *var_methods;
 
     GHashTableIter iter;
     const gchar *method;
@@ -757,10 +949,23 @@ gsignond_identity_info_set_methods (
         g_variant_builder_add (&builder, "{s^as}", method, items);
         g_free (items);
     }
+
+    var_methods = g_variant_builder_end (&builder);
+    current_mehtods = gsignond_dictionary_get (info,
+                        GSIGNOND_IDENTITY_INFO_AUTHMETHODS);
+
+    if (current_mehtods != NULL &&
+        g_variant_equal (current_mehtods, var_methods) == TRUE) {
+        g_variant_unref (var_methods);
+        return TRUE;
+    }
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_AUTHMETHODS,
-            g_variant_builder_end (&builder));
+            var_methods) &&
+           gsignond_identity_info_set_edit_flags (info,
+            IDENTITY_INFO_PROP_METHODS);
 }
 
 /**
@@ -879,11 +1084,26 @@ gsignond_identity_info_set_access_control_list (
 {
     g_assert (info != NULL);
 
+    GVariant *current_acl = gsignond_dictionary_get (info,
+                              GSIGNOND_IDENTITY_INFO_ACL);
+    GVariant *var_acl = NULL;
+
+    if (!current_acl && !acl) return TRUE;
+
+    var_acl = gsignond_security_context_list_to_variant (acl);
+    if (current_acl != NULL &&
+        g_variant_equal (current_acl, var_acl) == TRUE) {
+        g_variant_unref (var_acl);
+        return TRUE;
+    }
+
     g_return_val_if_fail (acl != NULL, FALSE);
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_ACL,
-            gsignond_security_context_list_to_variant (acl));
+            var_acl) &&
+            gsignond_identity_info_set_edit_flags (info,
+                IDENTITY_INFO_PROP_ACL);
 }
 
 /**
@@ -913,7 +1133,7 @@ gsignond_identity_info_get_owner (GSignondIdentityInfo *info)
  * gsignond_identity_info_set_owner:
  * @info: instance of #GSignondIdentityInfo
  *
- * @owners: (transfer none): owner to be set
+ * @owner: (transfer none): owner to be set
  *
  * Sets the owner of the info.
  *
@@ -926,11 +1146,20 @@ gsignond_identity_info_set_owner (
 {
     g_assert (info != NULL);
 
-    g_return_val_if_fail (owners != NULL, FALSE);
+    g_return_val_if_fail (owner != NULL, FALSE);
+    GSignondSecurityContext *current_owner = 
+        gsignond_identity_info_get_owner (info);
+
+    if (current_owner != NULL &&
+        gsignond_security_context_compare (current_owner, owner) == 0)
+        return TRUE;
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_OWNER,
-            gsignond_security_context_to_variant (owners));
+            gsignond_security_context_to_variant (owner)) &&
+           gsignond_identity_info_set_edit_flags (info,
+            IDENTITY_INFO_PROP_OWNER);
 }
 
 /**
@@ -971,10 +1200,15 @@ gsignond_identity_info_set_validated (
 {
     g_assert (info != NULL);
 
+    if (gsignond_identity_info_get_validated (info) == validated)
+        return TRUE;
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_VALIDATED,
-            g_variant_new_boolean (validated));
+            g_variant_new_boolean (validated)) &&
+           gsignond_identity_info_set_edit_flags (info,
+            IDENTITY_INFO_PROP_VALIDATED);
 }
 
 /**
@@ -1015,10 +1249,15 @@ gsignond_identity_info_set_identity_type (
 {
     g_assert (info != NULL);
 
+    if (gsignond_identity_info_get_identity_type (info) == type)
+        return TRUE;
+
     return gsignond_dictionary_set (
             info,
             GSIGNOND_IDENTITY_INFO_TYPE,
-            g_variant_new_int32 (type));
+            g_variant_new_int32 (type)) &&
+           gsignond_identity_info_set_edit_flags (info,
+            IDENTITY_INFO_PROP_TYPE);
 }
 
 /**

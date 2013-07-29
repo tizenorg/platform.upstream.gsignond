@@ -48,6 +48,12 @@ GSignondIdentityInfo *
 gsignond_identity_info_new (void);
 
 GSignondIdentityInfo *
+gsignond_identity_info_new_from_variant (GVariant *variatn_mp);
+
+GVariant *
+gsignond_identity_info_to_variant (GSignondIdentityInfo *info);
+
+GSignondIdentityInfo *
 gsignond_identity_info_copy (GSignondIdentityInfo *info);
 
 void
@@ -78,7 +84,7 @@ gsignond_identity_info_set_username (
         GSignondIdentityInfo *info,
         const gchar *username);
 
-void
+gboolean
 gsignond_identity_info_remove_username (GSignondIdentityInfo *info);
 
 gboolean
@@ -97,7 +103,7 @@ gsignond_identity_info_set_secret (
         GSignondIdentityInfo *info,
         const gchar *secret);
 
-void
+gboolean
 gsignond_identity_info_remove_secret (GSignondIdentityInfo *info);
 
 gboolean

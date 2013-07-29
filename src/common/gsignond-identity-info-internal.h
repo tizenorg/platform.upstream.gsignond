@@ -50,6 +50,45 @@ G_BEGIN_DECLS
 #define GSIGNOND_IDENTITY_INFO_VALIDATED             "Validated"
 #define GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET    "UserNameSecret"
 
+#define GSIGNOND_IDENTITY_INFO_EDIT_FLAGS            "EditFlags"
+
+typedef enum {
+    IDENTITY_INFO_PROP_NONE = 0x0000,
+    
+    IDENTITY_INFO_PROP_ID = 0x0001,
+    IDENTITY_INFO_PROP_TYPE = 0x0002,
+    IDENTITY_INFO_PROP_CAPTION = 0x0004,
+    IDENTITY_INFO_PROP_USERNAME = 0x0008,
+    IDENTITY_INFO_PROP_SECRET = 0x0010,
+    IDENTITY_INFO_PROP_STORE_SECRET = 0x0020,
+    IDENTITY_INFO_PROP_USERNAME_IS_SECRET = 0x0040,
+    IDENTITY_INFO_PROP_OWNER = 0x0080,
+    IDENTITY_INFO_PROP_ACL = 0x0100,
+    IDENTITY_INFO_PROP_METHODS = 0x0200,
+    IDENTITY_INFO_PROP_REALMS = 0x0400,
+    IDENTITY_INFO_PROP_REF_COUNT = 0x0800,
+    IDENTITY_INFO_PROP_VALIDATED = 0x1000,
+
+    IDENTITY_INFO_PROP_ALL = 0x1ffff
+
+} GSignondIdentityInfoPropFlags;
+
+GSignondIdentityInfoPropFlags
+gsignond_identity_info_get_edit_flags (GSignondIdentityInfo *info);
+
+gboolean
+gsignond_identity_info_set_edit_flags (GSignondIdentityInfo *info,
+                                       GSignondIdentityInfoPropFlags flags);
+
+gboolean
+gsignond_identity_info_reset_edit_flags (GSignondIdentityInfo *info,
+                                         GSignondIdentityInfoPropFlags flags);
+
+gboolean
+gsignond_identity_info_unset_edit_flags (GSignondIdentityInfo *info,
+                                         GSignondIdentityInfoPropFlags flags);
+
+
 G_END_DECLS
 
 #endif /* __GSIGNOND_IDENTITY_INFO_INTERNAL_H__ */
