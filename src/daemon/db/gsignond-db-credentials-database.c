@@ -27,6 +27,7 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-credentials.h"
 #include "common/db/gsignond-db-error.h"
+#include "common/gsignond-identity-info-internal.h"
 #include "gsignond-db-credentials-database.h"
 
 #define GSIGNOND_DB_CREDENTIALS_DATABASE_GET_PRIVATE(obj) \
@@ -294,7 +295,10 @@ gsignond_db_credentials_database_load_identity (
 
     identity = gsignond_db_metadata_database_get_identity (
     		self->priv->metadata_db, identity_id);
-    if (identity && query_secret &&
+    if (!identity) 
+        return identity;
+
+    if (query_secret &&
     	!gsignond_identity_info_get_is_identity_new (identity) &&
         gsignond_db_credentials_database_is_open_secret_storage (self)) {
 
@@ -315,6 +319,8 @@ gsignond_db_credentials_database_load_identity (
             }
         }
     }
+    /* Reseting the edit state to NONE as its newly loaded identity */
+    gsignond_identity_info_reset_edit_flags (identity, IDENTITY_INFO_PROP_NONE);
 
 	return identity;
 }
@@ -367,8 +373,12 @@ gsignond_db_credentials_database_update_identity (
     id = gsignond_db_metadata_database_update_identity (self->priv->metadata_db,
     		identity);
 
-    if (id != 0 &&
-    	gsignond_db_credentials_database_is_open_secret_storage (self)) {
+    if (!id) return 0;
+
+    /* Reseting the edit state to NONE as all the changes are stored in db. */
+    gsignond_identity_info_reset_edit_flags (identity, IDENTITY_INFO_PROP_NONE);
+
+    if (gsignond_db_credentials_database_is_open_secret_storage (self)) {
         GSignondCredentials *creds = NULL;
         gboolean un_sec, pwd_sec;
         const gchar *tmp_str = NULL;

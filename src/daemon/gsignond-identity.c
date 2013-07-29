@@ -848,10 +848,11 @@ gsignond_identity_store (GSignondIdentity *identity,
                          const GSignondSecurityContext *ctx,
                          GError **error)
 {
+    GSignondIdentityPrivate *priv = NULL;
     GSignondIdentityInfo *identity_info = NULL;
     gboolean was_new_identity = FALSE;
     GSignondSecurityContextList *contexts = NULL;
-    GSignondSecurityContext *owner = NULL;
+    GSignondIdentityInfoPropFlags flags;
     guint32 id;
 
     if (!(identity && GSIGNOND_IS_IDENTITY (identity))) {
@@ -859,51 +860,73 @@ gsignond_identity_store (GSignondIdentity *identity,
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return 0;
     }
-    
+
+    priv = identity->priv;
+
     VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, 0);
 
-    identity_info = gsignond_dictionary_new_from_variant ((GVariant *)info);
-    /* dont trust 'identity id' passed via 'info' */
-    id = gsignond_identity_info_get_id (identity->priv->info);
-    gsignond_identity_info_set_id (identity_info, id);
+    was_new_identity = gsignond_identity_info_get_is_identity_new (priv->info);
 
-    was_new_identity = gsignond_identity_info_get_is_identity_new (identity_info);
+    identity_info = gsignond_identity_info_new_from_variant ((GVariant *)info);
 
     contexts = gsignond_identity_info_get_access_control_list (identity_info);
-    if (!contexts) {
-        contexts = gsignond_identity_info_get_access_control_list (identity->priv->info);
-        gsignond_identity_info_set_access_control_list (identity_info, contexts);
-    }
-    else {
+    if (contexts) {
         VALIDATE_IDENTITY_WRITE_ACL (identity, ctx, 0);
+        gsignond_security_context_list_free (contexts);
     }
-    gsignond_security_context_list_free (contexts);
    
-    owner = gsignond_identity_info_get_owner (identity_info);
-    if (!owner) {
-        owner = gsignond_identity_info_get_owner (identity->priv->info);
-        gsignond_identity_info_set_owner (identity_info, owner);
+    flags = gsignond_identity_info_get_edit_flags (identity_info);
+
+    if (flags & IDENTITY_INFO_PROP_USERNAME)
+        gsignond_identity_info_set_username (priv->info,
+            gsignond_identity_info_get_username(identity_info));
+    if (flags & IDENTITY_INFO_PROP_USERNAME_IS_SECRET)
+        gsignond_identity_info_set_username_secret (priv->info,
+            gsignond_identity_info_get_is_username_secret (identity_info));
+    if (flags & IDENTITY_INFO_PROP_SECRET)
+        gsignond_identity_info_set_secret (priv->info,
+            gsignond_identity_info_get_secret (identity_info));
+    if (flags & IDENTITY_INFO_PROP_STORE_SECRET)
+        gsignond_identity_info_set_store_secret (priv->info,
+            gsignond_identity_info_get_store_secret (identity_info));
+    if (flags & IDENTITY_INFO_PROP_CAPTION)
+        gsignond_identity_info_set_caption (priv->info,
+            gsignond_identity_info_get_caption (identity_info));
+    if (flags & IDENTITY_INFO_PROP_TYPE)
+        gsignond_identity_info_set_identity_type (priv->info,
+            gsignond_identity_info_get_identity_type (identity_info));
+    if (flags & IDENTITY_INFO_PROP_METHODS) {
+        GHashTable *methods = 
+            gsignond_identity_info_get_methods (identity_info);
+        gsignond_identity_info_set_methods (priv->info, methods);
+        g_hash_table_unref (methods);
     }
-    gsignond_security_context_free (owner);
+    if (flags & IDENTITY_INFO_PROP_REALMS) {
+        GSequence *realms = 
+            gsignond_identity_info_get_realms (identity_info);
+        gsignond_identity_info_set_realms (priv->info, realms);
+        g_sequence_free (realms);
+    }
 
+    /* FIXME : either username/secret changed reset the identity
+     * valdated state to FALSE ???
+     */          
 
-    /* update object cache */
-    if (identity->priv->info)
-        gsignond_identity_info_unref (identity->priv->info);
-    identity->priv->info = identity_info;
+    gsignond_identity_info_unref (identity_info);
 
     /* Ask daemon to store identity info to db */
-    id = gsignond_daemon_store_identity (identity->priv->owner, identity);
+    id = gsignond_daemon_store_identity (priv->owner, identity);
     if (!id) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_STORE_FAILED,
                                                         "Failed to store identity");
+        /*FIXME: Roll-back the local changes */
     }
     else {
         if (was_new_identity) {
             _set_id (identity, id);
-            _StoreCachedTokenCbInfo data = { identity->priv->owner, id };
+            _StoreCachedTokenCbInfo data = { priv->owner, id };
             /* store any cached token data if available at auth sessions */
-            g_hash_table_foreach (identity->priv->auth_sessions, (GHFunc)_store_cached_token_data, (gpointer)&data);
+            g_hash_table_foreach (priv->auth_sessions, (GHFunc)_store_cached_token_data, (gpointer)&data);
         }
 
         g_signal_emit (identity, signals[SIG_INFO_UPDATED], 0, GSIGNOND_IDENTITY_DATA_UPDATED);

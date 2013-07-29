@@ -31,6 +31,7 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-config.h"
 #include "common/db/gsignond-db-error.h"
+#include "common/gsignond-identity-info-internal.h"
 #include "gsignond-db-metadata-database.h"
 
 #define GSIGNOND_METADATA_DB_FILENAME   "metadata.db"
@@ -1061,10 +1062,22 @@ gsignond_db_metadata_database_update_identity (
     GHashTableIter method_iter;
     const gchar *method = NULL;
     GSequence *mechanisms = NULL;
+    GSignondIdentityInfoPropFlags edit_flags;
+    gboolean was_new_identity;
 
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), 0);
     g_return_val_if_fail (identity != NULL, 0);
     RETURN_IF_NOT_OPEN (GSIGNOND_DB_SQL_DATABASE (self), id);
+
+    edit_flags = gsignond_identity_info_get_edit_flags (identity);
+
+    DBG ("Identity EDIT FLAGS : %x", edit_flags);
+    if (edit_flags == IDENTITY_INFO_PROP_NONE) {
+        DBG("No Changes found to update");
+        return gsignond_identity_info_get_id (identity);
+    }
+
+    was_new_identity = gsignond_identity_info_get_is_identity_new (identity);
 
     sql = GSIGNOND_DB_SQL_DATABASE (self);
     if (!gsignond_db_sql_database_start_transaction (sql)) {
@@ -1079,50 +1092,77 @@ gsignond_db_metadata_database_update_identity (
         return 0;
     }
 
-    if (!gsignond_identity_info_get_is_identity_new (identity)) {
-        DBG ("Remove old acl and owner list as identity is not new");
-        /* remove acl */
-        _gsignond_db_metadata_database_exec (self,
-                "DELETE FROM ACL WHERE identity_id = %u;", id);
-
-        /* remove owner */
-        _gsignond_db_metadata_database_exec (self,
-                "DELETE FROM OWNER WHERE identity_id = %u;", id);
-    }
-
-    /* methods */
-    methods = gsignond_identity_info_get_methods (identity);
-    if (!_gsignond_db_metadata_database_insert_methods (self, identity,
-            methods)) {
-        DBG ("Update methods failed");
-    }
-
     /* realms */
-    realms = gsignond_identity_info_get_realms (identity);
-    if (!_gsignond_db_metadata_database_update_realms (self,
-            identity, id, realms)) {
-        DBG ("Update realms failed");
-        gsignond_db_sql_database_rollback_transaction (sql);
-        goto finished;
-    }
-
-    /* acl */
-    acl = gsignond_identity_info_get_access_control_list (identity);
-    if (!_gsignond_db_metadata_database_update_acl (self, identity, acl)) {
-        DBG ("Update acl failed");
-        gsignond_db_sql_database_rollback_transaction (sql);
-        goto finished;
+    if (edit_flags & IDENTITY_INFO_PROP_REALMS) {
+        realms = gsignond_identity_info_get_realms (identity);
+        if (!_gsignond_db_metadata_database_update_realms (self,
+                                        identity, id, realms)) {
+            DBG ("Update realms failed");
+            gsignond_db_sql_database_rollback_transaction (sql);
+            goto finished;
+        }
     }
 
     /* owner */
     owner = gsignond_identity_info_get_owner (identity);
-    if (!_gsignond_db_metadata_database_update_owner (self, identity, owner)){
-        DBG ("Update owner failed");
+    if (!owner) {
+        WARN("Missing mandatory owner field");
         gsignond_db_sql_database_rollback_transaction (sql);
         goto finished;
     }
 
+    if (edit_flags & IDENTITY_INFO_PROP_OWNER) {
+        if (!was_new_identity) {
+            /* remove owner */
+            _gsignond_db_metadata_database_exec (self,
+                    "DELETE FROM OWNER WHERE identity_id = %u;", id);
+        }
+        if (!_gsignond_db_metadata_database_update_owner (self, identity, owner)){
+            DBG ("Update owner failed");
+            gsignond_db_sql_database_rollback_transaction (sql);
+            goto finished;
+        }
 
+        /* insert owner */
+        _gsignond_db_metadata_database_exec (self,
+                    "INSERT OR REPLACE INTO OWNER "
+                    "(identity_id, secctx_id) "
+                    "VALUES ( %u, "
+                    "( SELECT id FROM SECCTX WHERE sysctx = %Q AND appctx = %Q ));",
+                    id, owner->sys_ctx, owner->app_ctx);
+    }
+
+    /* acl */
+    acl = gsignond_identity_info_get_access_control_list (identity);
+    if (!acl) {
+        WARN("Missing mandatory ACL field");
+        gsignond_db_sql_database_rollback_transaction (sql);
+        goto finished;
+    }
+    if (edit_flags & IDENTITY_INFO_PROP_ACL) {
+        if (!was_new_identity) {
+            /* remove acl */
+            _gsignond_db_metadata_database_exec (self,
+                "DELETE FROM ACL WHERE identity_id = %u;", id);
+        }
+        if (!_gsignond_db_metadata_database_update_acl (self, identity, acl)) {
+            DBG ("Update acl failed");
+            gsignond_db_sql_database_rollback_transaction (sql);
+            goto finished;
+        }
+    }
+
+    /* methods */
+    methods = gsignond_identity_info_get_methods (identity);
+    if (edit_flags & IDENTITY_INFO_PROP_METHODS) {
+        if (!_gsignond_db_metadata_database_insert_methods (self, identity,
+                methods)) {
+            DBG ("Update methods failed");
+        }
+    }
+
+    if (edit_flags & IDENTITY_INFO_PROP_ACL ||
+        edit_flags & IDENTITY_INFO_PROP_METHODS) {
     /* ACL insert, this will do basically identity level ACL */
     g_hash_table_iter_init (&method_iter, methods);
     while (g_hash_table_iter_next (&method_iter, (gpointer)&method,
@@ -1197,14 +1237,7 @@ gsignond_db_metadata_database_update_identity (
                     id, ctx->sys_ctx, ctx->app_ctx);
         }
     }
-
-    /* insert owner */
-    _gsignond_db_metadata_database_exec (self,
-                "INSERT OR REPLACE INTO OWNER "
-                "(identity_id, secctx_id) "
-                "VALUES ( %u, "
-                "( SELECT id FROM SECCTX WHERE sysctx = %Q AND appctx = %Q ));",
-                id, owner->sys_ctx, owner->app_ctx);
+    }
 
     if (gsignond_db_sql_database_commit_transaction (sql)) {
         DBG ("Identity updated");
@@ -1260,7 +1293,7 @@ gsignond_db_metadata_database_get_identity (
             identity);
     sqlite3_free (query);
     if (G_UNLIKELY (rows <= 0)) {
-        DBG ("Fetch IDENTITY failed");
+        DBG ("Fetch IDENTITY '%d' failed", identity_id);
         gsignond_identity_info_unref (identity);
         return NULL;
     }
