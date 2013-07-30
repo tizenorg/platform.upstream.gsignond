@@ -97,7 +97,7 @@ _gsignond_db_read_key_value (
     key = (const gchar *)sqlite3_column_text (stmt, 0);
     value = g_variant_new_from_data (type, 
                 (gconstpointer)v_data, size,
-                 TRUE, (GDestroyNotify)g_free, NULL);
+                 TRUE, (GDestroyNotify)g_free, v_data);
 
     gsignond_dictionary_set (data, key, value);
     return TRUE;
