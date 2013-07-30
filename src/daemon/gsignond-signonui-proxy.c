@@ -232,6 +232,8 @@ _process_next_request (GSignondSignonuiProxy *proxy)
         return;
     }
     else {
+        proxy->priv->active_request = req;
+
         if (proxy->priv->signonui_timer_id) {
             g_source_remove (proxy->priv->signonui_timer_id);
             proxy->priv->signonui_timer_id = 0;
@@ -245,16 +247,21 @@ _process_next_request (GSignondSignonuiProxy *proxy)
             GSignondSignonuiData *reply = gsignond_signonui_data_new ();
             gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_NO_SIGNONUI);
             _query_dialog_cb_internal (proxy, reply, NULL);
+            return;
         }
     }
 
-    proxy->priv->active_request = req;
 
     /* update request id */
     gsignond_signonui_data_set_request_id (req->ui_data, G_OBJECT_TYPE_NAME(req->caller));
     params =  gsignond_signonui_data_to_variant(req->ui_data) ;
-    gsignond_dbus_signonui_adapter_query_dialog (proxy->priv->signonui, 
-            params, _query_dialog_cb, proxy);
+    if (!gsignond_dbus_signonui_adapter_query_dialog (proxy->priv->signonui, 
+            params, _query_dialog_cb, proxy)) {
+        GSignondSignonuiData *reply = gsignond_signonui_data_new ();
+        gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_GENERAL);
+        _query_dialog_cb_internal (proxy, reply, NULL);
+        return;
+    }
 
     proxy->priv->is_idle = FALSE;
 }
