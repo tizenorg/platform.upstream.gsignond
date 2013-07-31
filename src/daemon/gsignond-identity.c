@@ -334,8 +334,10 @@ _on_refresh_dialog (GSignondAuthSession *session, GSignondSignonuiData *ui_data,
 {
     GSignondIdentityCbData *cb_data = (GSignondIdentityCbData *) userdata;
 
-    gsignond_daemon_refresh_dialog (GSIGNOND_DAEMON (cb_data->identity->priv->owner), 
-            G_OBJECT (cb_data->session), ui_data, _on_dialog_refreshed, userdata);
+    if (!gsignond_daemon_refresh_dialog (GSIGNOND_DAEMON (cb_data->identity->priv->owner), 
+            G_OBJECT (cb_data->session), ui_data, _on_dialog_refreshed, userdata)) {
+        WARN ("Dialog Refresh Failed");
+    }
 }
 
 static void

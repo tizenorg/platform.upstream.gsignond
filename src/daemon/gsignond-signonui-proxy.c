@@ -260,6 +260,7 @@ _process_next_request (GSignondSignonuiProxy *proxy)
         GSignondSignonuiData *reply = gsignond_signonui_data_new ();
         gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_GENERAL);
         _query_dialog_cb_internal (proxy, reply, NULL);
+        g_variant_unref (params);
         return;
     }
 
@@ -308,12 +309,15 @@ gsignond_signonui_proxy_refresh_dialog (GSignondSignonuiProxy *proxy,
     if (proxy->priv->active_request
         && proxy->priv->active_request->caller == caller) {
         _UIRefreshRequest *req = _ui_refresh_request_new (cb, userdata);
+        GVariant *var_uidata = gsignond_signonui_data_to_variant (ui_data);
 
         gsignond_signonui_data_set_request_id (ui_data, G_OBJECT_TYPE_NAME(caller));
-        gsignond_dbus_signonui_adapter_refresh_dialog (proxy->priv->signonui,
-                gsignond_signonui_data_to_variant (ui_data), _refresh_dialog_cb, req);
-
-        return TRUE;
+        if (gsignond_dbus_signonui_adapter_refresh_dialog (proxy->priv->signonui,
+                var_uidata, _refresh_dialog_cb, req)) {
+            return TRUE;
+        }
+        g_variant_unref (var_uidata);
+        g_free (req);
     }
 
     return FALSE;
@@ -356,8 +360,11 @@ gsignond_signonui_proxy_cancel_request (GSignondSignonuiProxy *proxy,
     /* cancel active request */
     if (proxy->priv->active_request->caller == caller) {
         _UICancelRequest *req = _ui_cancel_request_new (cb, userdata);
-        gsignond_dbus_signonui_adapter_cancel_request (proxy->priv->signonui,
-            G_OBJECT_TYPE_NAME (caller), _cancel_request_cb, req);
+        if (!gsignond_dbus_signonui_adapter_cancel_request (proxy->priv->signonui,
+            G_OBJECT_TYPE_NAME (caller), _cancel_request_cb, req)) {
+            g_free (req);
+            return FALSE;
+        }
         return TRUE;
     }
 
