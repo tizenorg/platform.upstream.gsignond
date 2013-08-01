@@ -74,6 +74,9 @@ G_DEFINE_TYPE (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT);
 
 static void _on_session_close (gpointer data, GObject *session);
 static void _on_refresh_dialog (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata);
+static void _on_process_canceled (GSignondAuthSession *session, GSignondIdentityCbData *cb_data);
+static void _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata);
+static void _on_store_token (GSignondAuthSession *session, GSignondDictionary *token_data, gpointer userdata);
 
 #define GSIGNOND_IDENTITY_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_IDENTITY, GSignondIdentityPrivate)
 
@@ -163,7 +166,10 @@ _set_property (GObject *object, guint property_id, const GValue *value,
 static void
 _release_weak_ref_on_session (gpointer key, gpointer value, gpointer data)
 {
-    g_object_weak_unref (G_OBJECT (value), _on_session_close, data);
+    GObject *session = G_OBJECT (value);
+    g_signal_handlers_disconnect_by_func (session, G_CALLBACK (_on_user_action_required), data);
+    g_signal_handlers_disconnect_by_func (session, G_CALLBACK (_on_store_token), data);
+    g_object_weak_unref (session, _on_session_dead, data);
 }
 
 static void
@@ -357,7 +363,10 @@ _on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer 
     GSignondIdentityPrivate *priv = GSIGNOND_IDENTITY_PRIV (cb_data->identity);
     GSignondSignonuiError ui_error = SIGNONUI_ERROR_NONE;
 
+    g_return_if_fail (cb_data && GSIGNOND_IS_AUTH_SESSION (cb_data->session));
+
     g_signal_handlers_disconnect_by_func(cb_data->session, _on_refresh_dialog, user_data);
+    g_signal_handlers_disconnect_by_func(cb_data->session, _on_process_canceled, user_data);
 
     if (error) {
         WARN ("UI-Error: %s on identity %d",
@@ -421,6 +430,22 @@ _on_user_action_completed (GSignondSignonuiData *reply, GError *error, gpointer 
 }
 
 static void
+_on_process_canceled (GSignondAuthSession *session, GSignondIdentityCbData *cb_data)
+{
+    g_signal_handlers_disconnect_by_func(session, G_CALLBACK(_on_process_canceled), cb_data);
+
+    if (!cb_data) {
+        WARN ("assert (cb_data)");
+        return;
+    }
+    if (!gsignond_daemon_cancel_dialog (
+            cb_data->identity->priv->owner, G_OBJECT(session), NULL, NULL)) {
+        WARN ("Fail to cancel dialog");
+    }
+    g_slice_free (GSignondIdentityCbData, cb_data);
+}
+
+static void
 _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (userdata);
@@ -431,6 +456,8 @@ _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui
 
     gsignond_daemon_show_dialog (GSIGNOND_DAEMON (identity->priv->owner), G_OBJECT(session), 
             ui_data, _on_user_action_completed, _on_refresh_requested_by_ui, cb_data);
+
+    g_signal_connect (session, "process-canceled", G_CALLBACK(_on_process_canceled), cb_data);
 }
 
 static void
