@@ -77,6 +77,14 @@ const gchar *
 gsignond_dbus_auth_session_adapter_get_object_path (
         GSignondDbusAuthSessionAdapter *dbus_session) G_GNUC_CONST;
 
+gboolean
+gsignond_dbus_auth_session_adapter_is_process_active (
+        GSignondDbusAuthSessionAdapter *dbus_session) G_GNUC_CONST;
+
+gboolean
+gsignond_dbus_auth_session_adapter_abort_process (
+        GSignondDbusAuthSessionAdapter *dbus_session);
+
 G_END_DECLS
 
 #endif /* __GSIGNOND_DBUS_AUTH_SESSION_ADAPTER_H_ */

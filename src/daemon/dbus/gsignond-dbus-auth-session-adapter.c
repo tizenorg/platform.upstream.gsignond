@@ -303,7 +303,7 @@ _emit_state_changed (gint state, const gchar *message, gpointer user_data)
     GSignondDbusAuthSessionAdapter *self = NULL;
     _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo*) user_data;
 
-    if (!info) return ;
+    if (!info || !GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER(info->adapter)) return ;
 
     self = info->adapter;
     gsignond_dbus_auth_session_emit_state_changed (
@@ -316,20 +316,23 @@ _on_process_done (GSignondSessionData *reply, const GError *error, gpointer user
     GSignondDbusAuthSessionAdapter *self = NULL;
     _AuthSessionDbusInfo *info = (_AuthSessionDbusInfo*) user_data;
 
-    if (!info) return ;
+    if (!info || !GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER(info->adapter)) return ;
 
     self = info->adapter;
-    self->priv->is_process_active = FALSE;
 
-    if (error) {
-        DBG("ERROR : %s(%d)", error->message, error->code);
-        GError *dbus_err = gsignond_get_gerror_for_id (error->code, error->message, NULL);
-        g_dbus_method_invocation_take_error (info->invocation, dbus_err);
-    }
-    else {
-        GVariant *result = gsignond_dictionary_to_variant ((GSignondDictionary *)reply); 
-        gsignond_dbus_auth_session_complete_process (
-                self->priv->dbus_auth_session, info->invocation, result);
+    if (self->priv->is_process_active) {
+        self->priv->is_process_active = FALSE;
+
+        if (error) {
+            DBG("ERROR : %s(%d)", error->message, error->code);
+            GError *dbus_err = gsignond_get_gerror_for_id (error->code, error->message, NULL);
+            g_dbus_method_invocation_take_error (info->invocation, dbus_err);
+        }
+        else {
+            GVariant *result = gsignond_dictionary_to_variant ((GSignondDictionary *)reply); 
+            gsignond_dbus_auth_session_complete_process (
+                    self->priv->dbus_auth_session, info->invocation, result);
+        }
     }
     gsignond_disposable_set_auto_dispose (GSIGNOND_DISPOSABLE (self), TRUE);
 
@@ -405,6 +408,27 @@ gsignond_dbus_auth_session_adapter_get_object_path (GSignondDbusAuthSessionAdapt
     g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER(self), NULL);
 
     return g_dbus_interface_skeleton_get_object_path (G_DBUS_INTERFACE_SKELETON(self->priv->dbus_auth_session));
+}
+
+gboolean
+gsignond_dbus_auth_session_adapter_is_process_active (GSignondDbusAuthSessionAdapter *self)
+{
+    g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (self), FALSE);
+
+    return self->priv->is_process_active;
+}
+
+gboolean
+gsignond_dbus_auth_session_adapter_abort_process (GSignondDbusAuthSessionAdapter *self)
+{
+    g_return_val_if_fail (self && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (self), FALSE);
+
+    if (self->priv->is_process_active) {
+        gsignond_auth_session_abort_process (self->priv->session);
+        self->priv->is_process_active = FALSE;
+    }
+
+    return TRUE;
 }
 
 GSignondDbusAuthSessionAdapter *

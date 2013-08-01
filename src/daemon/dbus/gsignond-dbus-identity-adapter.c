@@ -208,6 +208,8 @@ _destroy_session (gpointer data, gpointer user_data)
     if (data && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (data)) {
         GObject *dbus_session = G_OBJECT (data);
         g_object_weak_unref (dbus_session, _on_session_disposed, user_data);
+        gsignond_dbus_auth_session_adapter_abort_process (
+            GSIGNOND_DBUS_AUTH_SESSION_ADAPTER (dbus_session));
         g_object_unref (dbus_session);
     }
 }
