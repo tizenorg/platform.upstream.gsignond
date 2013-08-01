@@ -44,6 +44,7 @@ enum {
     SIG_PROCESS_STORE,
     SIG_PROCESS_USER_ACTION_REQUIRED,
     SIG_PROCESS_REFRESHED,
+    SIG_PROCESS_CANCELED,
  
     SIG_MAX
 };
@@ -265,6 +266,7 @@ gsignond_auth_session_cancel (GSignondAuthSession *self,
     VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
 
     gsignond_plugin_proxy_cancel(self->priv->proxy, self);
+    g_signal_emit (self, signals[SIG_PROCESS_CANCELED], 0, NULL);
 
     return TRUE;
 }
@@ -275,6 +277,7 @@ gsignond_auth_session_abort_process (GSignondAuthSession *self)
     g_return_if_fail (self && GSIGNOND_IS_AUTH_SESSION (self));
 
     gsignond_plugin_proxy_cancel (self->priv->proxy, self);
+    g_signal_emit (self, signals[SIG_PROCESS_CANCELED], 0, NULL);
 }
 
 void 
@@ -436,6 +439,18 @@ gsignond_auth_session_class_init (GSignondAuthSessionClass *klass)
             G_TYPE_NONE,
             1,
             GSIGNOND_TYPE_SIGNONUI_DATA);
+
+    signals[SIG_PROCESS_CANCELED] =  g_signal_new ("process-canceled",
+            GSIGNOND_TYPE_AUTH_SESSION,
+            G_SIGNAL_RUN_LAST,
+            0,
+            NULL,
+            NULL,
+            NULL,
+            G_TYPE_NONE,
+            0,
+            G_TYPE_NONE);
+
 }
 
 /**
@@ -519,8 +534,7 @@ gsignond_auth_session_notify_store (GSignondAuthSession *self,
     /* cache token data */
     if (self->priv->token_data)
         gsignond_dictionary_unref (self->priv->token_data);
-    self->priv->token_data = token_data;
-    gsignond_dictionary_ref (self->priv->token_data);
+    self->priv->token_data = gsignond_dictionary_ref (token_data);
 
     g_signal_emit (self, signals[SIG_PROCESS_STORE], 0, token_data);
 }
