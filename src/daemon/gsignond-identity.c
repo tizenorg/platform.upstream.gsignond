@@ -72,7 +72,7 @@ typedef struct _GSignondIdentityCbData
 G_DEFINE_TYPE (GSignondIdentity, gsignond_identity, G_TYPE_OBJECT);
 
 
-static void _on_session_close (gpointer data, GObject *session);
+static void _on_session_dead (gpointer data, GObject *session);
 static void _on_refresh_dialog (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata);
 static void _on_process_canceled (GSignondAuthSession *session, GSignondIdentityCbData *cb_data);
 static void _on_user_action_required (GSignondAuthSession *session, GSignondSignonuiData *ui_data, gpointer userdata);
@@ -483,7 +483,7 @@ _compare_session_by_pointer (gpointer key, gpointer value, gpointer dead_object)
 }
 
 static void
-_on_session_close (gpointer data, GObject *session)
+_on_session_dead (gpointer data, GObject *session)
 {
     GSignondIdentity *identity = GSIGNOND_IDENTITY (data);
 
@@ -575,7 +575,7 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
     g_signal_connect (session, "process-store", G_CALLBACK (_on_store_token), identity);
 
     g_hash_table_insert (identity->priv->auth_sessions, g_strdup (method), session);
-    g_object_weak_ref (G_OBJECT (session), _on_session_close, identity);
+    g_object_weak_ref (G_OBJECT (session), _on_session_dead, identity);
 
     DBG ("session %p creation for method '%s' complete", session, method);
 
@@ -593,7 +593,7 @@ _on_credentials_updated (GSignondSignonuiData *reply, GError *error, gpointer us
         WARN ("failed to verify user : %s", error->message);
         g_error_free (error);
 
-        err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
+        err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation canceled");
     }
     else
     {
@@ -608,7 +608,7 @@ _on_credentials_updated (GSignondSignonuiData *reply, GError *error, gpointer us
             switch (err_id) {
                 case SIGNONUI_ERROR_CANCELED:
                     err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
-                        "Operation cancled");
+                        "Operation canceled");
                     break;
                 default:
                     err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, 
@@ -690,7 +690,7 @@ _on_user_verified (GSignondSignonuiData *reply, GError *error, gpointer user_dat
         WARN ("failed to verify user : %s", error->message);
         g_error_free (error);
 
-        err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation cancled");
+        err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED, "Operation canceled");
     }
     else
     {
@@ -703,7 +703,7 @@ _on_user_verified (GSignondSignonuiData *reply, GError *error, gpointer user_dat
             switch (err_id) {
                 case SIGNONUI_ERROR_CANCELED:
                     err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED,
-                        "Operation cancled");
+                        "Operation canceled");
                     break;
                 case SIGNONUI_ERROR_FORGOT_PASSWORD:
                     err = gsignond_get_gerror_for_id (GSIGNOND_ERROR_FORGOT_PASSWORD, "Forgot password");
