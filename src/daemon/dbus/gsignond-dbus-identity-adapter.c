@@ -123,6 +123,7 @@ static gboolean _handle_store (GSignondDbusIdentityAdapter *, GDBusMethodInvocat
 static gboolean _handle_add_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
 static gboolean _handle_remove_reference (GSignondDbusIdentityAdapter *, GDBusMethodInvocation *, const gchar *, gpointer);
 static void _emit_info_updated (GSignondIdentity *identity, GSignondIdentityChangeType change, gpointer userdata);
+static void _on_session_disposed (gpointer data, GObject *session);
 
 static void
 gsignond_dbus_identity_adapter_set_property (GObject *object,
@@ -204,14 +205,21 @@ gsignond_dbus_identity_adapter_get_property (GObject *object,
 static void
 _destroy_session (gpointer data, gpointer user_data)
 {
-    (void)user_data;
-    if (data) g_object_unref (G_OBJECT(data));
+    if (data && GSIGNOND_IS_DBUS_AUTH_SESSION_ADAPTER (data)) {
+        GObject *dbus_session = G_OBJECT (data);
+        g_object_weak_unref (dbus_session, _on_session_disposed, user_data);
+        g_object_unref (dbus_session);
+    }
 }
 
 static void
 gsignond_dbus_identity_adapter_dispose (GObject *object)
 {
     GSignondDbusIdentityAdapter *self = GSIGNOND_DBUS_IDENTITY_ADAPTER (object);
+
+    if (self->priv->sessions) {
+        g_list_foreach (self->priv->sessions, _destroy_session, self);
+    }
 
     if (self->priv->identity) {
         if (self->priv->info_updated_handler_id) {
@@ -234,10 +242,6 @@ gsignond_dbus_identity_adapter_dispose (GObject *object)
 
         g_object_unref (self->priv->identity);
         self->priv->identity = NULL;
-    }
-
-    if (self->priv->sessions) {
-        g_list_foreach (self->priv->sessions, _destroy_session, NULL);
     }
 
     if (self->priv->dbus_identity) {

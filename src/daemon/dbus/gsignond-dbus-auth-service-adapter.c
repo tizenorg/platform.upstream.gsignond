@@ -72,6 +72,7 @@ static gboolean _handle_query_identities (GSignondDbusAuthServiceAdapter *,
                                       const gchar *,
                                       gpointer);
 static gboolean _handle_clear (GSignondDbusAuthServiceAdapter *, GDBusMethodInvocation *, gpointer);
+static void _on_identity_disposed (gpointer data, GObject *object);
 
 static void
 _set_property (GObject *object, guint property_id, const GValue *value, GParamSpec *pspec)
@@ -116,7 +117,11 @@ _get_property (GObject *object, guint property_id, GValue *value, GParamSpec *ps
 static void
 _identity_unref (gpointer data, gpointer user_data)
 {
-    if (data) g_object_unref (data);
+    if (data && GSIGNOND_IS_DBUS_IDENTITY_ADAPTER(data)) {
+        GObject *identity = G_OBJECT (data);
+        g_object_weak_unref (identity, _on_identity_disposed, user_data);
+        g_object_unref (identity);
+    }
 }
 
 static void
@@ -127,7 +132,7 @@ _dispose (GObject *object)
     DBG("- unregistering dubs auth service. %d", G_OBJECT (self->priv->auth_service)->ref_count);
 
     if (self->priv->identities) {
-        g_list_foreach (self->priv->identities, _identity_unref, NULL);
+        g_list_foreach (self->priv->identities, _identity_unref, self);
     }
 
     if (self->priv->auth_service) {
