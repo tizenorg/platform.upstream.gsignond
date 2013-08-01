@@ -94,7 +94,7 @@ gsignond_dbus_auth_session_adapter_set_property (GObject *object,
         }
         case PROP_CONNECTION: {
             if (self->priv->connection) g_object_unref (self->priv->connection);
-            self->priv->connection = G_DBUS_CONNECTION (g_value_get_object (value));
+            self->priv->connection = G_DBUS_CONNECTION (g_value_dup_object (value));
             break;
         }
         case PROP_APP_CONTEXT: {
