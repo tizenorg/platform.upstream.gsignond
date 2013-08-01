@@ -180,18 +180,16 @@ _query_dialog_cb_internal (GSignondSignonuiProxy *proxy, GSignondSignonuiData *u
 {
     _UIQueryRequest *req = proxy->priv->active_request;
 
-    if (req && req->cb) {
+    if (req && req->cb && G_OBJECT(req->caller)) {
         req->cb (ui_data, error, req->userdata);
+        _ui_query_request_free (req);
+        proxy->priv->active_request = NULL;
     }
     else if (error) {
         WARN ("UI-Error: %s", error->message);
         g_error_free (error);
     }
     if (ui_data) gsignond_signonui_data_unref (ui_data);
-
-    _ui_query_request_free (req);
-
-    proxy->priv->active_request = NULL;
 
     _process_next_request (proxy);
 }
@@ -365,21 +363,27 @@ gsignond_signonui_proxy_cancel_request (GSignondSignonuiProxy *proxy,
             g_free (req);
             return FALSE;
         }
+        _ui_query_request_free (proxy->priv->active_request);
+        proxy->priv->active_request =  NULL;
         return TRUE;
     }
 
     /* cancel pending request */
     element = g_queue_find_custom (proxy->priv->request_queue, caller, _find_request_by_caller);
-
     if (!element) return FALSE;
+
     req = element->data;
 
-    if (req->cb) {
+    g_queue_delete_link (proxy->priv->request_queue, element);
+
+    if (req && req->cb) {
         GSignondSignonuiData *reply = gsignond_signonui_data_new ();
         gsignond_signonui_data_set_query_error(reply, SIGNONUI_ERROR_CANCELED);
 
         req->cb (reply, NULL, req->userdata);
+        gsignond_signonui_data_unref (reply);
     }
+    _ui_query_request_free (req);
 
     if (cb) cb(NULL, userdata);
 
