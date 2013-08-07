@@ -382,7 +382,7 @@ gsignond_db_sql_database_prepare_statement (
 /**
  * gsignond_db_sql_database_exec:
  * @self: instance of #GSignondDbSqlDatabase
- * @stmts: sql statements to be executed on the database
+ * @statements: sql statements to be executed on the database
  *
  * Executes SQL statements. transaction begin and commit statements should be
  * explicitly called if needed.
