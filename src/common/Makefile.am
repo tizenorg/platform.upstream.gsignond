@@ -14,7 +14,7 @@ GSIGNOND_INCLUDE_DIR=$(top_srcdir)/include/gsignond
 
 gsignond-plugin-enum-types.h: gsignond-enum.h.template $(GSIGNOND_INCLUDE_DIR)/gsignond-plugin-interface.h
 	$(GLIB_MKENUMS) --template $(srcdir)/gsignond-enum.h.template \
-                    --fhead "#ifndef GSIGNOND_PLUGIN_ENUM_TYPES_H_\n#define GSIGNOND_PLUGIND_ENUM_TYPES_H_\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS" \
+                    --fhead "#ifndef GSIGNOND_PLUGIN_ENUM_TYPES_H_\n#define GSIGNOND_PLUGIN_ENUM_TYPES_H_\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS" \
                     --identifier-prefix gsignond \
                     --ftail "\nG_END_DECLS\n\n#endif\n" \
                     $(GSIGNOND_INCLUDE_DIR)/gsignond-plugin-interface.h > $@
