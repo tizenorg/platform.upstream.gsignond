@@ -35,7 +35,6 @@
     <xi:include href="xml/gsignond-identity-info-internal.xml"/>
     <xi:include href="xml/gsignond-log.xml"/>
     <xi:include href="xml/gsignond-pipe-stream.xml"/>
-    <xi:include href="xml/gsignond-plugin-enum-types.xml"/>
     <xi:include href="xml/gsignond-plugin-interface.xml"/>
     <xi:include href="xml/gsignond-plugin-loader.xml"/>
     <xi:include href="xml/gsignond-secret-storage.xml"/>
