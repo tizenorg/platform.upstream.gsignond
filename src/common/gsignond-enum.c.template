@@ -23,7 +23,7 @@ GType
         };
 
         the_type = g_@type@_register_static (
-                        g_intern_static_string ("GSignond@EnumName@"),
+                        g_intern_static_string ("@EnumName@"),
                         values);
     }
 

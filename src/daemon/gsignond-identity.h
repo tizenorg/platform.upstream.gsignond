@@ -48,8 +48,7 @@ typedef enum {
     GSIGNOND_IDENTITY_DATA_UPDATED = 0,
     GSIGNOND_IDENTITY_REMOVED,
     GSIGNOND_IDENTITY_SIGNED_OUT
-} IdentityChangeType;
-typedef IdentityChangeType GSignondIdentityChangeType;
+} GSignondIdentityChangeType;
 
 struct _GSignondIdentity
 {

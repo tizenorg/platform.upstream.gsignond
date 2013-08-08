@@ -92,7 +92,7 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
     signals[STATUS_CHANGED] = g_signal_new ("status-changed", 
         G_TYPE_FROM_CLASS (g_class),
         G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE,
-        2, GSIGNOND_TYPE_GSIGNOND_PLUGIN_STATE, G_TYPE_STRING);
+        2, GSIGNOND_TYPE_PLUGIN_STATE, G_TYPE_STRING);
 
     g_object_interface_install_property (g_class, g_param_spec_string ("type",
             "Type", "Plugin type", "none",

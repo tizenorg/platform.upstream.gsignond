@@ -11,14 +11,14 @@ BUILT_SOURCES = \
 gsignond-identity-enum-types.h: $(top_srcdir)/src/common/gsignond-enum.h.template gsignond-identity.h
 	$(GLIB_MKENUMS) --template $(top_srcdir)/src/common/gsignond-enum.h.template \
                     --fhead "#ifndef GSIGNOND_IDENTITY_ENUM_TYPES_H_\n#define GSIGNOND_IDENTITY_ENUM_TYPES_H_\n\n#include <glib-object.h>\n\nG_BEGIN_DECLS" \
-                    --identifier-prefix gsignond \
+                    --identifier-prefix GSignond \
                     --ftail "\nG_END_DECLS\n\n#endif\n" \
                     $(srcdir)/gsignond-identity.h > $@
 
 gsignond-identity-enum-types.c: $(top_srcdir)/src/common/gsignond-enum.c.template gsignond-identity.h
 	$(GLIB_MKENUMS) --template $(top_srcdir)/src/common/gsignond-enum.c.template \
                     --fhead "#include \"gsignond-identity-enum-types.h\"\n" \
-                    --identifier-prefix gsignond \
+                    --identifier-prefix GSignond \
                     $(srcdir)/gsignond-identity.h > $@
 
 gsignond_includedir = $(includedir)/gsignond
