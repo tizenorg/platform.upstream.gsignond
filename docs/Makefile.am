@@ -58,7 +58,17 @@ EXTRA_HFILES=
 
 # Header files or dirs to ignore when scanning. Use base file/dir names
 # e.g. IGNORE_HFILES=gtkdebug.h gtkintl.h private_code
-IGNORE_HFILES=gsignond-plugin-enum-types.h
+IGNORE_HFILES=\
+gsignond-disposable.h\
+gsignond-identity-info-internal.h\
+gsignond-pipe-stream.h\
+gsignond-plugin-enum-types.h\
+gsignond-plugin-loader.h\
+gsignond-db-defines.h\
+gsignond-db-error.h\
+gsignond-db-secret-database.h\
+gsignond-db-sql-database.h\
+gsignond-db-sql-database-private.h
 
 # Images to copy into HTML directory.
 # e.g. HTML_IMAGES=$(top_srcdir)/gtk/stock-icons/stock_about_24.png
