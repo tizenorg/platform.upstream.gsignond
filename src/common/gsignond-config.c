@@ -37,6 +37,54 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-dictionary.h"
 
+/**
+ * SECTION:gsignond-config
+ * @short_description: gSSO configuration information
+ * @include: gsignond/gsignond-config.h
+ *
+ * #GSignondConfig holds configuration information as a set of keys and values
+ * (integer or strings). The key names are defined in 
+ * <link linkend="gsignond-gsignond-config-general">general config keys</link>,
+ * <link linkend="gsignond-gsignond-config-db">database config keys</link>, and
+ * <link linkend="gsignond-gsignond-config-dbus">DBus config keys</link>.
+ * 
+ * The configuration is discovered from these sources, in decreasing order of 
+ * priority:
+ * - environment variables, if gSSO has been compiled with --enable-debug switch.
+ * See the specific keys documentation for the variable names.
+ * - gSSO configuration file. See below for where the file is searched for.
+ * - default values. See the documentation for specific keys for those.
+ * 
+ * <refsect1><title>Where the configuration file is searched for</title></refsect1>
+ * 
+ * If gSSO has been compiled with --enable-debug, then these locations are used,
+ * in decreasing order of priority:
+ * - GSIGNOND_CONFIG environment variable
+ * - g_get_user_config_dir() + "gsignond/gsignond.conf"
+ * - each of g_get_system_config_dirs() + "gsignond/gsignond.conf"
+ * 
+ * Otherwise, the config file location is determined at compilation time as 
+ * $(sysconfdir) + "gsignond/gsignond.conf"
+ * 
+ * <refsect1><title>Example configuration file</title></refsect1>
+ * 
+ * See example configuration file here:
+ * <ulink url="http://code.google.com/p/accounts-sso/source/browse/gsignond.conf?repo=gsignond">
+ * http://code.google.com/p/accounts-sso/source/browse/gsignond.conf?repo=gsignond</ulink>
+ */
+
+/**
+ * GSignondConfig:
+ *
+ * Opaque structure for the object.
+ */
+/**
+ * GSignondConfigClass:
+ *
+ * Opaque structure for the class.
+ */
+
+
 #define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "metadata.db"
 #define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "secret.db"
 
@@ -243,6 +291,16 @@ _load_environment (GSignondConfig *self)
 }
 #endif  /* ENABLE_DEBUG */
 
+/**
+ * gsignond_config_get_integer:
+ * @self: an instance of #GSignondConfig
+ * @key: the key name
+ * 
+ * Get an integer configuration value.
+ * 
+ * Returns: the value corresponding to the key as an integer. If the key does not
+ * exist or cannot be converted to the integer, 0 is returned.
+ */
 gint
 gsignond_config_get_integer (GSignondConfig *self, const gchar *key)
 {
@@ -250,6 +308,14 @@ gsignond_config_get_integer (GSignondConfig *self, const gchar *key)
     return (gint) (str_value ? atoi (str_value) : 0);
 }
 
+/**
+ * gsignond_config_set_integer:
+ * @self: an instance of #GSignondConfig
+ * @key: the key name
+ * @value: the value
+ * 
+ * Sets the configuration value to the provided integer.
+ */
 void
 gsignond_config_set_integer (GSignondConfig *self, const gchar *key,
                              gint value) 
@@ -266,6 +332,16 @@ gsignond_config_set_integer (GSignondConfig *self, const gchar *key,
 
 }
 
+/**
+ * gsignond_config_get_string:
+ * @self: an instance of #GSignondConfig
+ * @key: the key name
+ * 
+ * Get a string configuration value.
+ * 
+ * Returns: (transfer none): the value corresponding to the key as string. If the key does not
+ * exist, NULL is returned.
+ */
 const gchar *
 gsignond_config_get_string (GSignondConfig *self, const gchar *key)
 {
@@ -278,6 +354,14 @@ gsignond_config_get_string (GSignondConfig *self, const gchar *key)
     return g_variant_get_string (value, NULL);
 }
 
+/**
+ * gsignond_config_set_string:
+ * @self: an instance of #GSignondConfig
+ * @key: the key name
+ * @value: (transfer none): the value
+ * 
+ * Sets the configuration value to the provided string.
+ */
 void
 gsignond_config_set_string (GSignondConfig *self, const gchar *key,
                             const gchar *value) 
@@ -376,6 +460,14 @@ gsignond_config_class_init (GSignondConfigClass *klass)
 
 }
 
+/**
+ * gsignond_config_new:
+ * 
+ * Create a #GSignondConfig object.
+ * 
+ * Returns: an instance of #GSignondConfig. gSSO extensions should not use this
+ * as they're already provided with a config object when they're created.
+ */
 GSignondConfig *
 gsignond_config_new ()
 {

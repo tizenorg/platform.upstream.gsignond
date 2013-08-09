@@ -235,8 +235,8 @@ static void gsignond_plugin_default_init (GSignondPluginInterface *g_class)
      * 
      * This signal is issued by the plugin when an error has occured, or the
      * plugin otherwise has a reason to cancel the authentication session. The
-     * @error should be specified according in <link linkend="gsignond-error">
-     * GSignond errors.</link>
+     * @error should be specified according to 
+     * <link linkend="gsignond-Errors">GSignond errors.</link>
      * 
      */
     signals[ERROR] = g_signal_new ("error", G_TYPE_FROM_CLASS (g_class),

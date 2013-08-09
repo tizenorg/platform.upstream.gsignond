@@ -26,6 +26,14 @@
 #ifndef __GSIGNOND_CONFIG_GENERAL_H_
 #define __GSIGNOND_CONFIG_GENERAL_H_
 
+/**
+ * SECTION:gsignond-config-general
+ * @short_description: gSSO general configuration keys
+ * @include: gsignond/gsignond-config.h
+ *
+ * General configuration keys are defined below. See #GSignondConfig for how to use them.
+ */
+
 #define GSIGNOND_CONFIG_GENERAL                 "General"
 #define GSIGNOND_CONFIG_GENERAL_STORAGE_PATH    GSIGNOND_CONFIG_GENERAL \
                                                 "/StoragePath"

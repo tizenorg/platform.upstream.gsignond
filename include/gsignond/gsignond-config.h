@@ -56,6 +56,7 @@ struct _GSignondConfig
 
 struct _GSignondConfigClass
 {
+    /*< private >*/
     GObjectClass parent_class;
 };
 
@@ -64,16 +65,16 @@ GType gsignond_config_get_type (void) G_GNUC_CONST;
 GSignondConfig * gsignond_config_new ();
 
 gint
-gsignond_config_get_integer (GSignondConfig *config, const gchar *key);
+gsignond_config_get_integer (GSignondConfig *self, const gchar *key);
 
 void
-gsignond_config_set_integer (GSignondConfig *config, const gchar *key,
+gsignond_config_set_integer (GSignondConfig *self, const gchar *key,
                              gint value) ;
 const gchar*
-gsignond_config_get_string (GSignondConfig *config, const gchar *key);
+gsignond_config_get_string (GSignondConfig *self, const gchar *key);
 
 void
-gsignond_config_set_string (GSignondConfig *config, const gchar *key,
+gsignond_config_set_string (GSignondConfig *self, const gchar *key,
                              const gchar *value); 
 
 G_END_DECLS
