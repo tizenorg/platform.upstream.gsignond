@@ -25,7 +25,6 @@
     <xi:include href="xml/gsignond-dictionary.xml"/>
     <xi:include href="xml/gsignond-error.xml"/>
     <xi:include href="xml/gsignond-extension-interface.xml"/>
-    <xi:include href="xml/gsignond-identity-info.xml"/>
     <xi:include href="xml/gsignond-log.xml"/>
     <xi:include href="xml/gsignond-plugin-interface.xml"/>
     <xi:include href="xml/gsignond-secret-storage.xml"/>

@@ -27,7 +27,7 @@
 #define __GSIGNOND_IDENTITY_INFO_INTERNAL_H__
 
 #include <glib.h>
-#include <gsignond/gsignond-identity-info.h>
+#include "gsignond-identity-info.h"
 
 G_BEGIN_DECLS
 

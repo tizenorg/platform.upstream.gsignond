@@ -33,7 +33,6 @@ gsignond_include_HEADERS = \
 	$(gsignond_pubhdr)/gsignond-dictionary.h \
 	$(gsignond_pubhdr)/gsignond-error.h \
 	$(gsignond_pubhdr)/gsignond-extension-interface.h \
-	$(gsignond_pubhdr)/gsignond-identity-info.h \
 	$(gsignond_pubhdr)/gsignond-log.h \
 	$(gsignond_pubhdr)/gsignond-plugin-interface.h \
 	$(gsignond_pubhdr)/gsignond-secret-storage.h \

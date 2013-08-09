@@ -60,6 +60,7 @@ EXTRA_HFILES=
 # e.g. IGNORE_HFILES=gtkdebug.h gtkintl.h private_code
 IGNORE_HFILES=\
 gsignond-disposable.h\
+gsignond-identity-info.h\
 gsignond-identity-info-internal.h\
 gsignond-pipe-stream.h\
 gsignond-plugin-enum-types.h\

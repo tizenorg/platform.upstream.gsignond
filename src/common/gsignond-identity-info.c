@@ -23,7 +23,7 @@
  * 02110-1301 USA
  */
 
-#include <gsignond/gsignond-identity-info.h>
+#include "gsignond-identity-info.h"
 #include "gsignond-identity-info-internal.h"
 
 

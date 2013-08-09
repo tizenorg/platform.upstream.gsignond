@@ -30,7 +30,7 @@
 #include <glib-object.h>
 
 #include "gsignond-types.h"
-#include <gsignond/gsignond-identity-info.h>
+#include "common/gsignond-identity-info.h"
 #include <gsignond/gsignond-access-control-manager.h>
 
 G_BEGIN_DECLS

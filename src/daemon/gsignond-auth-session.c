@@ -27,7 +27,6 @@
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-session-data.h"
-#include "gsignond/gsignond-identity-info.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 #include "gsignond-daemon.h"
 
