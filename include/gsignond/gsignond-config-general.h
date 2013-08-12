@@ -28,25 +28,91 @@
 
 /**
  * SECTION:gsignond-config-general
+ * @title: General configuration
  * @short_description: gSSO general configuration keys
  * @include: gsignond/gsignond-config.h
  *
  * General configuration keys are defined below. See #GSignondConfig for how to use them.
  */
 
+/**
+ * GSIGNOND_CONFIG_GENERAL:
+ * 
+ * A prefix for general keys. Should be used only when defining new keys.
+ */
 #define GSIGNOND_CONFIG_GENERAL                 "General"
+/**
+ * GSIGNOND_CONFIG_GENERAL_STORAGE_PATH:
+ * 
+ * The path where gSSO is storing its metadata database.
+ * 
+ * Default value: g_get_user_data_dir ()/gsignond, can be overriden in debug 
+ * builds by setting SSO_STORAGE_PATH environment variable.
+ */
 #define GSIGNOND_CONFIG_GENERAL_STORAGE_PATH    GSIGNOND_CONFIG_GENERAL \
                                                 "/StoragePath"
+/**
+ * GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR:
+ * 
+ * The path where gSSO is looking for available extension modules.
+ * 
+ * Default value: $(pkglibdir)/extensions, can be overriden in debug 
+ * builds by setting SSO_EXTENSIONS_DIR environment variable.
+ */
 #define GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR  GSIGNOND_CONFIG_GENERAL \
                                                 "/ExtensionsDir"
+/**
+ * GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR:
+ * 
+ * The path where gSSO is looking for available plugins.
+ * 
+ * Default value: $(pkglibdir)/plugins, can be overriden in debug 
+ * builds by setting SSO_PLUGINS_DIR environment variable.
+ */
 #define GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR     GSIGNOND_CONFIG_GENERAL \
                                                 "/PluginsDir"
+/**
+ * GSIGNOND_CONFIG_GENERAL_BIN_DIR:
+ * 
+ * The path where gSSO is looking for the gsignond-plugind binary when it needs
+ * to start a plugin process. Can be used for finding other supplementary binaries in 
+ * the future.
+ * 
+ * Default value: $(bindir), can be overriden in debug 
+ * builds by setting SSO_BIN_DIR environment variable.
+ */
 #define GSIGNOND_CONFIG_GENERAL_BIN_DIR         GSIGNOND_CONFIG_GENERAL \
                                                 "/BinDir"
+/**
+ * GSIGNOND_CONFIG_GENERAL_EXTENSION:
+ * 
+ * The name of the gSSO extension to use. If not specified, the default 
+ * implementation is used (see #GSignondExtension).
+ * 
+ * Can be overriden in debug 
+ * builds by setting SSO_EXTENSION environment variable.
+ */
 #define GSIGNOND_CONFIG_GENERAL_EXTENSION       GSIGNOND_CONFIG_GENERAL \
                                                 "/Extension"
+/**
+ * GSIGNOND_CONFIG_GENERAL_SECURE_DIR:
+ * 
+ * The path where gSSO is storing its credentials database.
+ * 
+ * Default value: g_get_user_data_dir ()/gsignond, can be overriden in debug 
+ * builds by setting SSO_SECRET_PATH environment variable.
+ */
 #define GSIGNOND_CONFIG_GENERAL_SECURE_DIR      GSIGNOND_CONFIG_GENERAL \
                                                 "/SecureDir"
+/**
+ * GSIGNOND_CONFIG_PLUGIN_TIMEOUT:
+ * 
+ * A timeout in seconds, after which inactive plugin objects and processes are removed.
+ * If not set, the plugin objects will persist for possible reuse.
+ * 
+ * Can be overriden in debug 
+ * builds by setting SSO_PLUGIN_TIMEOUT environment variable.
+ */
 #define GSIGNOND_CONFIG_PLUGIN_TIMEOUT          GSIGNOND_CONFIG_GENERAL \
                                                 "/PluginTimeout"
 

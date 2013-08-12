@@ -26,9 +26,37 @@
 #ifndef __GSIGNOND_CONFIG_DB_H_
 #define __GSIGNOND_CONFIG_DB_H_
 
+/**
+ * SECTION:gsignond-config-db
+ * @title: Database configuration
+ * @short_description: gSSO database configuration keys
+ * @include: gsignond/gsignond-config.h
+ *
+ * Database configuration keys are defined below. See #GSignondConfig for how to use them.
+ */
+
+/**
+ * GSIGNOND_CONFIG_DB_SSO:
+ * 
+ * A prefix for database keys. Should be used only when defining new keys.
+ */
 #define GSIGNOND_CONFIG_DB_SSO                  "Storage"
+/**
+ * GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME:
+ * 
+ * The filename of the credentials database.
+ * 
+ * Default value: "secret.db".
+ */
 #define GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME   GSIGNOND_CONFIG_DB_SSO \
                                                 "/SecretDBFilename"
+/**
+ * GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME:
+ * 
+ * The filename of the metadata database.
+ * 
+ * Default value: "metadata.db".
+ */
 #define GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME GSIGNOND_CONFIG_DB_SSO \
                                                 "/MetadataDBFilename"
 

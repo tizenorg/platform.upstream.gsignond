@@ -26,12 +26,52 @@
 #ifndef __GSIGNOND_CONFIG_DBUS_H_
 #define __GSIGNOND_CONFIG_DBUS_H_
 
-#define GSIGNOND_CONFIG_DBUS_TIMEOUTS  "ObjectTimeouts"
+/**
+ * SECTION:gsignond-config-dbus
+ * @title: DBus configuration
+ * @short_description: gSSO dbus configuration keys
+ * @include: gsignond/gsignond-config.h
+ *
+ * DBus configuration keys are defined below. See #GSignondConfig for how to use them.
+ */
 
+/**
+ * GSIGNOND_CONFIG_DBUS_TIMEOUTS:
+ * 
+ * A prefix for dbus timeout keys. Should be used only when defining new keys.
+ */
+#define GSIGNOND_CONFIG_DBUS_TIMEOUTS  "ObjectTimeouts"
+/**
+ * GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT:
+ * 
+ * A timeout in seconds, after which the gSSO daemon will exit. If not set, 
+ * the daemon will not exit. Has no effect if P2P DBus is in use.
+ * 
+ * Can be overriden in debug 
+ * builds by setting SSO_DAEMON_TIMEOUT environment variable.
+ */
 #define GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT     GSIGNOND_CONFIG_DBUS_TIMEOUTS \
                                                 "/DaemonTimeout"
+/**
+ * GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT:
+ * 
+ * A timeout in seconds, after which inactive identity dbus objects will be removed.
+ * If not set, the dbus objects will persist.
+ * 
+ * Can be overriden in debug 
+ * builds by setting SSO_IDENTITY_TIMEOUT environment variable.
+ */
 #define GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT   GSIGNOND_CONFIG_DBUS_TIMEOUTS \
                                                 "/IdentityTimeout"
+/**
+ * GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT:
+ * 
+ * A timeout in seconds, after which inactive authentication session dbus objects will be removed.
+ * If not set, the dbus objects will persist.
+ * 
+ * Can be overriden in debug 
+ * builds by setting SSO_AUTH_SESSION_TIMEOUT environment variable.
+ */
 #define GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT GSIGNOND_CONFIG_DBUS_TIMEOUTS \
                                                   "/AuthSessionTimeout"
 #endif /* __GSIGNOND_CONFIG_DBUS_H_ */

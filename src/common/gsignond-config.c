@@ -44,9 +44,9 @@
  *
  * #GSignondConfig holds configuration information as a set of keys and values
  * (integer or strings). The key names are defined in 
- * <link linkend="gsignond-gsignond-config-general">general config keys</link>,
- * <link linkend="gsignond-gsignond-config-db">database config keys</link>, and
- * <link linkend="gsignond-gsignond-config-dbus">DBus config keys</link>.
+ * <link linkend="gsignond-General-configuration">general config keys</link>,
+ * <link linkend="gsignond-Database-configuration">database config keys</link>, and
+ * <link linkend="gsignond-DBus-configuration">DBus config keys</link>.
  * 
  * The configuration is discovered from these sources, in decreasing order of 
  * priority:
@@ -243,7 +243,7 @@ _load_environment (GSignondConfig *self)
                                     GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT,
                                     e_val);
 
-    e_val = g_getenv ("SSO_AUTHSESSION_TIMEOUT");
+    e_val = g_getenv ("SSO_AUTH_SESSION_TIMEOUT");
     if (e_val && (timeout = atoi(e_val)))
         gsignond_config_set_string (self,
                                     GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT,
