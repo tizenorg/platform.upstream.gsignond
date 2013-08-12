@@ -31,10 +31,6 @@
 
 G_BEGIN_DECLS
 
-/**
- * GSIGNOND_DB_ERROR:
- *
- */
 #define GSIGNOND_DB_ERROR   (gsignond_db_error_quark())
 
 typedef enum {

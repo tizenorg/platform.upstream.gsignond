@@ -47,6 +47,12 @@
  * ]| 
  */
 
+/**
+ * GSignondDictionary:
+ * 
+ * #GSignondDictionary is a typedef for #GHashTable, which 
+ * means the developers may also use methods associated with that structure.
+ */
 
 /**
  * gsignond_dictionary_new_from_variant:

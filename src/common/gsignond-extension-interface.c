@@ -137,28 +137,6 @@ gsignond_extension_init (GSignondExtension *self)
     self->priv->secret_storage = NULL;
 }
 
-static void
-_on_extension_dispose (gpointer data, GObject *object)
-{
-    if (data) *(GSignondExtension **)data = NULL;
-}
-
-GSignondExtension * default_extension_init ()
-{
-    static GSignondExtension *default_extension = NULL;
-
-    if (!default_extension) {
-        default_extension =
-            g_object_new (GSIGNOND_TYPE_EXTENSION, NULL);
-        
-        g_object_weak_ref (G_OBJECT (default_extension),
-                           _on_extension_dispose,
-                           &default_extension);
-    }
-
-    return default_extension;
-}
-
 /**
  * gsignond_extension_get_name:
  * @self: object instance.

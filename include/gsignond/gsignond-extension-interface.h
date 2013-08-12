@@ -139,9 +139,6 @@ GSignondAccessControlManager *
 gsignond_extension_get_access_control_manager (GSignondExtension *self,
                                                GSignondConfig *config);
 
-GSignondExtension *
-default_extension_init ();
-
 G_END_DECLS
 
 #endif  /* _GSIGNOND_EXTENSION_INTERFACE_H_ */

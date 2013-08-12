@@ -181,6 +181,29 @@ _init_extension (GSignondDaemon *self)
     return TRUE;
 }
 
+static void
+_on_extension_dispose (gpointer data, GObject *object)
+{
+    if (data) *(GSignondExtension **)data = NULL;
+}
+
+static GSignondExtension * _default_extension_init ()
+{
+    static GSignondExtension *default_extension = NULL;
+
+    if (!default_extension) {
+        default_extension =
+            g_object_new (GSIGNOND_TYPE_EXTENSION, NULL);
+        
+        g_object_weak_ref (G_OBJECT (default_extension),
+                           _on_extension_dispose,
+                           &default_extension);
+    }
+
+    return default_extension;
+}
+
+
 static gboolean
 _init_extensions (GSignondDaemon *self)
 {
@@ -223,7 +246,7 @@ _init_extensions (GSignondDaemon *self)
             return FALSE;
         }
     } else {
-        ext_init = default_extension_init;
+        ext_init = _default_extension_init;
     }
     self->priv->extension = ext_init ();
     g_return_val_if_fail (self->priv->extension &&
