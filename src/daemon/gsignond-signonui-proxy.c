@@ -180,15 +180,16 @@ _query_dialog_cb_internal (GSignondSignonuiProxy *proxy, GSignondSignonuiData *u
 {
     _UIQueryRequest *req = proxy->priv->active_request;
 
+    proxy->priv->active_request = NULL;
     if (req && req->cb && G_OBJECT(req->caller)) {
         req->cb (ui_data, error, req->userdata);
-        _ui_query_request_free (req);
-        proxy->priv->active_request = NULL;
     }
     else if (error) {
         WARN ("UI-Error: %s", error->message);
         g_error_free (error);
     }
+
+    if (req) _ui_query_request_free (req);
     if (ui_data) gsignond_signonui_data_unref (ui_data);
 
     _process_next_request (proxy);
