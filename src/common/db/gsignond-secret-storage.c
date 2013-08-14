@@ -105,62 +105,8 @@ _gsignond_secret_storage_dispose (GObject *gobject)
             gobject);
 }
 
-static void
-gsignond_secret_storage_class_init (GSignondSecretStorageClass *klass)
-{
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-    gobject_class->set_property = _set_property;
-    gobject_class->get_property = _get_property;
-    gobject_class->dispose = _gsignond_secret_storage_dispose;
-
-    properties[PROP_CONFIG] = g_param_spec_object ("config",
-                                                   "config",
-                                                   "Configuration object",
-                                                   GSIGNOND_TYPE_CONFIG,
-                                                   G_PARAM_CONSTRUCT_ONLY |
-                                                   G_PARAM_READWRITE |
-                                                   G_PARAM_STATIC_STRINGS);
-    g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
-
-    /* virtual methods */
-    klass->open_db = gsignond_secret_storage_open_db;
-    klass->close_db = gsignond_secret_storage_close_db;
-    klass->clear_db = gsignond_secret_storage_clear_db;
-    klass->is_open_db = gsignond_secret_storage_is_open_db;
-    klass->load_credentials =
-            gsignond_secret_storage_load_credentials;
-    klass->update_credentials =
-            gsignond_secret_storage_update_credentials;
-    klass->remove_credentials =
-            gsignond_secret_storage_remove_credentials;
-    klass->load_data = gsignond_secret_storage_load_data;
-    klass->update_data = gsignond_secret_storage_update_data;
-    klass->remove_data = gsignond_secret_storage_remove_data;
-
-    g_type_class_add_private (klass, sizeof (GSignondSecretStoragePrivate));
-}
-
-static void
-gsignond_secret_storage_init (GSignondSecretStorage *self)
-{
-    self->priv = GSIGNOND_SECRET_STORAGE_GET_PRIVATE (self);
-    self->priv->database = gsignond_db_secret_database_new ();
-    self->config = NULL;
-}
-
-/**
- * gsignond_secret_storage_open_db:
- *
- * @self: instance of #GSignondSecretStorage
- *
- * Opens (and initializes) DB. The implementation should take
- * care of creating the DB, if it doesn't exist.
- *
- * Returns: TRUE if successful, FALSE otherwise.
- */
-gboolean
-gsignond_secret_storage_open_db (GSignondSecretStorage *self)
+static gboolean
+_open_db (GSignondSecretStorage *self)
 {
     const gchar *dir = NULL;
     const gchar *filename = NULL;
@@ -211,17 +157,8 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
     return TRUE;
 }
 
-/**
- * gsignond_secret_storage_close_db:
- *
- * @self: instance of #GSignondSecretStorage
- *
- * Closes the secrets DB. To reopen it, call open_db().
- *
- * Returns: TRUE if successful, FALSE otherwise.
- */
-gboolean
-gsignond_secret_storage_close_db (GSignondSecretStorage *self)
+static gboolean
+_close_db (GSignondSecretStorage *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
 
@@ -232,34 +169,16 @@ gsignond_secret_storage_close_db (GSignondSecretStorage *self)
     return TRUE;
 }
 
-/**
- * gsignond_secret_storage_clear_db:
- *
- * @self: instance of #GSignondSecretStorage
- *
- * Removes all stored secrets.
- *
- * Returns: TRUE if successful, FALSE otherwise.
- */
-gboolean
-gsignond_secret_storage_clear_db (GSignondSecretStorage *self)
+static gboolean
+_clear_db (GSignondSecretStorage *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
     return gsignond_db_sql_database_clear (GSIGNOND_DB_SQL_DATABASE (
             self->priv->database));
 }
 
-/**
- * gsignond_secret_storage_is_open_db:
- *
- * @self: instance of #GSignondSecretStorage
- *
- * Checks if the db is open or not.
- *
- * Returns: TRUE if successful, FALSE otherwise.
- */
-gboolean
-gsignond_secret_storage_is_open_db (GSignondSecretStorage *self)
+static gboolean
+_is_open_db (GSignondSecretStorage *self)
 {
     g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
     return ((self->priv->database != NULL) &&
@@ -267,19 +186,8 @@ gsignond_secret_storage_is_open_db (GSignondSecretStorage *self)
                     self->priv->database)));
 }
 
-/**
- * gsignond_secret_storage_load_credentials:
- *
- * @self: instance of #GSignondSecretStorage
- * @id: the identity whose credentials are being loaded.
- *
- * Loads the credentials.
- *
- * Returns: (transfer full): #GSignondCredentials if successful,
- * NULL otherwise.
- */
-GSignondCredentials*
-gsignond_secret_storage_load_credentials (
+static GSignondCredentials*
+_load_credentials (
         GSignondSecretStorage *self,
         const guint32 id)
 {
@@ -288,18 +196,8 @@ gsignond_secret_storage_load_credentials (
             id);
 }
 
-/**
- * gsignond_secret_storage_update_credentials:
- *
- * @self: instance of #GSignondSecretStorage
- * @creds: (transfer none): the credentials that are being updated.
- *
- * Stores/updates the credentials for the given identity.
- *
- * Returns: TRUE if successful, FALSE otherwise.
- */
-gboolean
-gsignond_secret_storage_update_credentials (
+static gboolean
+_update_credentials (
         GSignondSecretStorage *self,
         GSignondCredentials *creds)
 {
@@ -308,18 +206,8 @@ gsignond_secret_storage_update_credentials (
             creds);
 }
 
-/**
- * gsignond_secret_storage_remove_credentials:
- *
- * @self: instance of #GSignondSecretStorage
- * @id: the identity whose credentials are being updated.
- *
- * Remove the credentials for the given identity.
- *
- * Returns: TRUE if successful, FALSE otherwise.
- */
-gboolean
-gsignond_secret_storage_remove_credentials (
+static gboolean
+_remove_credentials (
         GSignondSecretStorage *self,
         const guint32 id)
 {
@@ -328,19 +216,8 @@ gsignond_secret_storage_remove_credentials (
             id);
 }
 
-/**
- * gsignond_secret_storage_check_credentials:
- *
- * @self: instance of #GSignondSecretStorage
- * @creds: (transfer none): the credentials that are being checked.
- *
- * Checks whether the given credentials are correct for the
- * given identity.
- *
- * Returns: TRUE if successful, FALSE otherwise.
- */
-gboolean
-gsignond_secret_storage_check_credentials (
+static gboolean
+_check_credentials (
         GSignondSecretStorage *self,
         GSignondCredentials *creds)
 {
@@ -365,6 +242,218 @@ gsignond_secret_storage_check_credentials (
     return equal;
 }
 
+static GHashTable*
+_load_data (
+        GSignondSecretStorage *self,
+        const guint32 id,
+        const guint32 method)
+{
+    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), NULL);
+    return gsignond_db_secret_database_load_data (self->priv->database,
+            id, method);
+}
+
+static gboolean
+_update_data (
+        GSignondSecretStorage *self,
+        const guint32 id,
+        const guint32 method,
+        GHashTable *data)
+{
+    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
+    return gsignond_db_secret_database_update_data (self->priv->database,
+            id, method, data);
+}
+
+static gboolean
+_remove_data (
+        GSignondSecretStorage *self,
+        const guint32 id,
+        const guint32 method)
+{
+    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
+    return gsignond_db_secret_database_remove_data (self->priv->database,
+            id, method);
+}
+
+
+static void
+gsignond_secret_storage_class_init (GSignondSecretStorageClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+    gobject_class->set_property = _set_property;
+    gobject_class->get_property = _get_property;
+    gobject_class->dispose = _gsignond_secret_storage_dispose;
+
+    properties[PROP_CONFIG] = g_param_spec_object ("config",
+                                                   "config",
+                                                   "Configuration object",
+                                                   GSIGNOND_TYPE_CONFIG,
+                                                   G_PARAM_CONSTRUCT_ONLY |
+                                                   G_PARAM_READWRITE |
+                                                   G_PARAM_STATIC_STRINGS);
+    g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
+
+    /* virtual methods */
+    klass->open_db = _open_db;
+    klass->close_db = _close_db;
+    klass->clear_db = _clear_db;
+    klass->is_open_db = _is_open_db;
+    klass->load_credentials = _load_credentials;
+    klass->update_credentials = _update_credentials;
+    klass->remove_credentials = _remove_credentials;
+    klass->check_credentials = _check_credentials;
+    klass->load_data = _load_data;
+    klass->update_data = _update_data;
+    klass->remove_data = _remove_data;
+
+    g_type_class_add_private (klass, sizeof (GSignondSecretStoragePrivate));
+}
+
+static void
+gsignond_secret_storage_init (GSignondSecretStorage *self)
+{
+    self->priv = GSIGNOND_SECRET_STORAGE_GET_PRIVATE (self);
+    self->priv->database = gsignond_db_secret_database_new ();
+    self->config = NULL;
+}
+
+/**
+ * gsignond_secret_storage_open_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Opens (and initializes) DB. The implementation should take
+ * care of creating the DB, if it doesn't exist.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_secret_storage_open_db (GSignondSecretStorage *self)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->open_db (self);
+}
+
+/**
+ * gsignond_secret_storage_close_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Closes the secrets DB. To reopen it, call open_db().
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_secret_storage_close_db (GSignondSecretStorage *self)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->close_db (self);
+}
+
+/**
+ * gsignond_secret_storage_clear_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Removes all stored secrets.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_secret_storage_clear_db (GSignondSecretStorage *self)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->clear_db (self);
+}
+
+/**
+ * gsignond_secret_storage_is_open_db:
+ *
+ * @self: instance of #GSignondSecretStorage
+ *
+ * Checks if the db is open or not.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_secret_storage_is_open_db (GSignondSecretStorage *self)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->is_open_db (self);
+}
+
+/**
+ * gsignond_secret_storage_load_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @id: the identity whose credentials are being loaded.
+ *
+ * Loads the credentials.
+ *
+ * Returns: (transfer full): #GSignondCredentials if successful,
+ * NULL otherwise.
+ */
+GSignondCredentials*
+gsignond_secret_storage_load_credentials (
+        GSignondSecretStorage *self,
+        const guint32 id)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->load_credentials (self, id);
+}
+
+/**
+ * gsignond_secret_storage_update_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @creds: (transfer none): the credentials that are being updated.
+ *
+ * Stores/updates the credentials for the given identity.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_secret_storage_update_credentials (
+        GSignondSecretStorage *self,
+        GSignondCredentials *creds)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->update_credentials (self, creds);
+}
+
+/**
+ * gsignond_secret_storage_remove_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @id: the identity whose credentials are being updated.
+ *
+ * Remove the credentials for the given identity.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_secret_storage_remove_credentials (
+        GSignondSecretStorage *self,
+        const guint32 id)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->remove_credentials (self, id);
+}
+
+/**
+ * gsignond_secret_storage_check_credentials:
+ *
+ * @self: instance of #GSignondSecretStorage
+ * @creds: (transfer none): the credentials that are being checked.
+ *
+ * Checks whether the given credentials are correct for the
+ * given identity.
+ *
+ * Returns: TRUE if successful, FALSE otherwise.
+ */
+gboolean
+gsignond_secret_storage_check_credentials (
+        GSignondSecretStorage *self,
+        GSignondCredentials *creds)
+{
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->check_credentials (self, creds);
+}
+
 /**
  * gsignond_secret_storage_load_data:
  *
@@ -383,9 +472,7 @@ gsignond_secret_storage_load_data (
         const guint32 id,
         const guint32 method)
 {
-    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), NULL);
-    return gsignond_db_secret_database_load_data (self->priv->database,
-            id, method);
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->load_data (self, id, method);
 }
 
 /**
@@ -408,9 +495,7 @@ gsignond_secret_storage_update_data (
         const guint32 method,
         GHashTable *data)
 {
-    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    return gsignond_db_secret_database_update_data (self->priv->database,
-            id, method, data);
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->update_data (self, id, method, data);
 }
 
 /**
@@ -430,9 +515,7 @@ gsignond_secret_storage_remove_data (
         const guint32 id,
         const guint32 method)
 {
-    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), FALSE);
-    return gsignond_db_secret_database_remove_data (self->priv->database,
-            id, method);
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->remove_data (self, id, method);
 }
 
 /**
