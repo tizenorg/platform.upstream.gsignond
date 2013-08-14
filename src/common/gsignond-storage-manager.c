@@ -23,6 +23,7 @@
  * 02110-1301 USA
  */
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 #include <glib/gstdio.h>
@@ -75,17 +76,19 @@ _set_config (GSignondStorageManager *self, GSignondConfig *config)
     g_assert (self->config == NULL);
     self->config = config;
 
+    gchar *user_dir = g_strdup_printf ("gsignond.%s", g_get_user_name ());
     const gchar *secure_dir = gsignond_config_get_string (
                                         self->config,
                                         GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     if (secure_dir)
         self->location = g_build_filename (secure_dir,
-                                           "gsignond.secret",
+                                           user_dir,
                                            NULL);
     else
-        self->location = g_build_filename (g_get_user_data_dir (),
-                                           "gsignond.secret",
+        self->location = g_build_filename ("/var/db",
+                                           user_dir,
                                            NULL);
+    g_free (user_dir);
     DBG ("secure dir %s", self->location);
 }
 
@@ -160,10 +163,28 @@ _initialize_storage (GSignondStorageManager *self)
     g_return_val_if_fail (self != NULL, FALSE);
     g_return_val_if_fail (self->location, FALSE);
 
-    if (g_mkdir_with_parents (self->location, S_IRWXU))
-        return FALSE;
+    if (g_access (self->location, R_OK) == 0)
+        return TRUE;
 
-    return TRUE;
+    gboolean res = FALSE;
+
+    uid_t uid = getuid ();
+    if (seteuid (0))
+        WARN ("seteuid() failed");
+
+    if (g_mkdir_with_parents (self->location, S_IRWXU | S_IRWXG))
+        goto init_exit;
+    if (chown (self->location, 0, getegid ()))
+        WARN ("chown() failed");
+    if (chmod (self->location, S_IRWXU | S_IRWXG))
+        WARN ("chmod() failed");
+    res = TRUE;
+
+init_exit:
+    if (seteuid (uid))
+        WARN ("seteuid failed");
+
+    return res;
 }
 
 static gboolean

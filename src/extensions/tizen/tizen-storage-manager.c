@@ -77,12 +77,19 @@ _set_config (ExtensionTizenStorageManager *self, GSignondConfig *config)
     g_assert (self->priv->cdir == NULL);
     parent->config = config;
 
-    parent->location = g_strdup (gsignond_config_get_string (config,
-                                                             GSIGNOND_CONFIG_GENERAL_SECURE_DIR));
-    if (!parent->location)
-        parent->location = g_build_filename (g_get_user_data_dir (),
-                                             "gsignond", NULL);
-
+    gchar *user_dir = g_strdup_printf ("gsignond.%s", g_get_user_name ());
+    const gchar *secure_dir = gsignond_config_get_string (
+                                         config,
+                                         GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
+    if (parent->location)
+        parent->location = g_build_filename (secure_dir,
+                                             user_dir,
+                                             NULL);
+    else
+        parent->location = g_build_filename ("/var/db",
+                                             user_dir,
+                                             NULL);
+    g_free (user_dir);
     self->priv->cdir = g_strdup_printf ("%s.efs", parent->location);
     DBG ("location %s encryption point %s", parent->location, self->priv->cdir);
 }
@@ -165,16 +172,41 @@ _initialize_storage (GSignondStorageManager *parent)
     ExtensionTizenStorageManagerPrivate *priv = self->priv;
 
     g_return_val_if_fail (parent->location, FALSE);
-    DBG ("create mount point %s", parent->location);
-    if (g_mkdir_with_parents (parent->location, S_IRWXU))
-        return FALSE;
-
     g_return_val_if_fail (priv->cdir, FALSE);
-    DBG ("create storage point %s", priv->cdir);
-    if (g_mkdir_with_parents (priv->cdir, S_IRWXU))
-        return FALSE;
 
-    return TRUE;
+    if (g_access (parent->location, R_OK) == 0 &&
+        g_access (priv->cdir, R_OK) == 0)
+        return TRUE;
+
+    gboolean res = FALSE;
+
+    uid_t uid = getuid ();
+    if (seteuid (0))
+        WARN ("seteuid() failed");
+
+    DBG ("create mount point %s", parent->location);
+    if (g_mkdir_with_parents (parent->location, S_IRWXU | S_IRWXG))
+        goto init_exit;
+
+    DBG ("create storage point %s", priv->cdir);
+    if (g_mkdir_with_parents (priv->cdir, S_IRWXU | S_IRWXG))
+        goto init_exit;
+
+    if (chown (parent->location, 0, getegid ()))
+        WARN ("chown() failed");
+    if (chmod (parent->location, S_IRWXU | S_IRWXG))
+        WARN ("chmod() failed");
+    if (chown (priv->cdir, 0, getegid ()))
+        WARN ("chown() failed");
+    if (chmod (priv->cdir, S_IRWXU | S_IRWXG))
+        WARN ("chmod() failed");
+    res = TRUE;
+
+init_exit:
+    if (seteuid (uid))
+        WARN ("seteuid() failed");
+
+    return res;
 }
 
 static gboolean
@@ -216,11 +248,8 @@ _mount_filesystem (GSignondStorageManager *parent)
                                       priv->ksig);
     DBG ("mount options: %s", mntopts);
     uid_t uid = getuid ();
-    gid_t gid = getgid ();
-    if (setreuid (-1, 0))
-        WARN ("setreuid() failed");
-    if (setregid (-1, 0))
-        WARN ("setregid() failed");
+    if (seteuid (0))
+        WARN ("seteuid() failed");
     DBG ("perform mount %s -> %s", priv->cdir, parent->location);
     if (mount (priv->cdir, parent->location,
                "ecryptfs", MS_NOSUID | MS_NODEV, mntopts)) {
@@ -233,10 +262,8 @@ _mount_filesystem (GSignondStorageManager *parent)
 
 _mount_exit:
     g_free (mntopts);
-    if (setreuid (-1, uid))
-        WARN ("setreuid() failed");
-    if (setregid (-1, gid))
-        WARN ("setregid() failed");
+    if (seteuid (uid))
+        WARN ("seteuid() failed");
 
     return retval;
 }
@@ -247,16 +274,11 @@ _unmount_filesystem (GSignondStorageManager *parent)
     g_return_val_if_fail (parent != NULL, FALSE);
 
     uid_t uid = getuid ();
-    gid_t gid = getgid ();
-    if (setreuid (-1, 0))
-        WARN ("setreuid() failed");
-    if (setregid (-1, 0))
-        WARN ("setregid() failed");
+    if (seteuid (0))
+        WARN ("seteuid() failed");
     umount (parent->location);
-    if (setreuid (-1, uid))
-        WARN ("setreuid() failed");
-    if (setregid (-1, gid))
-        WARN ("setregid() failed");
+    if (seteuid (uid))
+        WARN ("seteuid() failed");
 
     return TRUE;
 }

@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
+#include <grp.h>
 #include <glib-unix.h>
 #include <glib.h>
 #include <gio/gio.h>
@@ -111,15 +112,22 @@ int main (int argc, char **argv)
     GOptionEntry opt_entries[] = {
         {NULL }
     };
+    gid_t daemon_gid;
+    struct group *daemon_group;
+
+    DBG ("before: real gid %d effective gid %d", getgid (), getegid ());
+    daemon_gid = getgid ();
+    daemon_group = getgrnam ("gsignond");
+    if (daemon_group)
+        daemon_gid = daemon_group->gr_gid;
+    if (setegid (daemon_gid))
+        WARN ("setegid() failed");
+    DBG ("after: real gid %d effective gid %d", getgid (), getegid ());
 
     DBG ("before: real uid %d effective uid %d", getuid (), geteuid ());
-    if (setreuid (-1, getuid()))
-        WARN ("setreuid() failed");
+    if (seteuid (getuid ()))
+        WARN ("seteuid() failed");
     DBG ("after: real uid %d effective uid %d", getuid (), geteuid ());
-    DBG ("before: real gid %d effective gid %d", getgid (), getegid ());
-    if (setregid (-1, getgid()))
-        WARN ("setregid() failed");
-    DBG ("after: real gid %d effective gid %d", getgid (), getegid ());
 
 #if !GLIB_CHECK_VERSION (2, 36, 0)
     g_type_init ();

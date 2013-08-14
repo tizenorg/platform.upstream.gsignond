@@ -431,7 +431,7 @@ gsignond_config_init (GSignondConfig *self)
                                 default_data_path);
     gsignond_config_set_string (self,
                                 GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
-                                default_data_path);
+                                "/var/db");
     g_free (default_data_path);
 
     gsignond_config_set_string (self,
