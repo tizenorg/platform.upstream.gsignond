@@ -30,24 +30,12 @@
 
 G_BEGIN_DECLS
 
-/**
- * Security context descriptor.
- *
- * Practically a string tuple.
- *
- * @sys_ctx: system context, such as SMACK-label, MSSF token or just a
- *           binary path.
- * @app_ctx: application context, such as a script or a web page.
- */
-typedef struct _GSignondSecurityContext
-{
+typedef struct _GSignondSecurityContext {
     gchar *sys_ctx;
     gchar *app_ctx;
 } GSignondSecurityContext;
 
-/**
- * GList of #GSignondSecurityContext items.
- */
+
 typedef GList GSignondSecurityContextList;
 
 GSignondSecurityContext *

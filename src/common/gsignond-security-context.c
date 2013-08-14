@@ -25,6 +25,45 @@
 
 #include "gsignond/gsignond-security-context.h"
 
+
+/**
+ * SECTION:gsignond-security-context
+ * @title: GSignondSecurityContext
+ * @short_description: security context descriptor used in access control checks
+ * @include: gsignond/gsignond-security-context.h
+ *
+ * Security context is a string tuple of system context and application context.
+ * 
+ * System context can be a binary path, SMACK-label, or MSSF token.
+ * 
+ * Application context identifies a script or a webpage within an application,
+ * and it's used for providing access control to runtime environments (when making an access
+ * control decision requires not only a binary identifier, but also information
+ * about what the binary is doing).
+ *
+ * When an application is trying to access the gSSO service, the system context
+ * is determined by a specific #GSignondAccessControlManager instance using
+ * system services of a specific platform. Application context is set by the
+ * application itself. Then both contexts are used by #GSignondAccessControlManager
+ * to perform an access control check.
+ */
+
+/**
+ * GSignondSecurityContext:
+ * @sys_ctx: system context
+ * @app_ctx: application context
+ * 
+ * Security context descriptor used for access control checks. System context
+ * and application context can contain a wildcard match "*" which has special
+ * meaning in gsignond_security_context_match() and
+ * gsignond_security_context_check().
+ */
+
+/**
+ * GSignondSecurityContextList:
+ * 
+ * GList of #GSignondSecurityContext items.
+ */
 static void
 _security_context_free (gpointer ptr)
 {
@@ -36,7 +75,7 @@ _security_context_free (gpointer ptr)
 /**
  * gsignond_security_context_new:
  *
- * Allocates a new security context item.
+ * Allocates a new security context item. System and app context are empty strings.
  *
  * Returns: (transfer full): allocated #GSignondSecurityContext.
  */
@@ -53,9 +92,9 @@ gsignond_security_context_new ()
 }
 
 /**
- * gsignond_security_context_new_from_vaues:
- * @system_context: system security context (such as SMACK/MSSF label/token).
- * @application_context: application security context (such as a script name).
+ * gsignond_security_context_new_from_values:
+ * @system_context: system security context
+ * @application_context: application security context
  *
  * Allocates and initializes a new security context item.
  *
@@ -83,7 +122,7 @@ gsignond_security_context_new_from_values (const gchar *system_context,
  * gsignond_security_context_copy:
  * @src_ctx: source security context to copy.
  *
- * Copy a security context item.
+ * Copies a security context item.
  *
  * Returns: (transfer full): a copy of the #GSignondSecurityContext item.
  */
@@ -117,7 +156,7 @@ gsignond_security_context_free (GSignondSecurityContext *ctx)
  * @ctx: #GSignondSecurityContext item.
  * @system_context: system security context.
  *
- * Sets the system context part (such as SMACK label or MSSF token) of the
+ * Sets the system context part of the
  * #GSignondSecurityContext.
  */
 void
@@ -135,7 +174,7 @@ gsignond_security_context_set_system_context (GSignondSecurityContext *ctx,
  * gsignond_security_context_get_system_context:
  * @ctx: #GSignondSecurityContext item.
  * 
- * Get the system context part (such as SMACK label or MSSF token) of the
+ * Get the system context partof the
  * #GSignondSecurityContext.
  *
  * Returns: (transfer none): system context.
@@ -154,7 +193,7 @@ gsignond_security_context_get_system_context (
  * @ctx: #GSignondSecurityContext item.
  * @application_context: application security context.
  *
- * Sets the application context part (such as a script name or a web page) of
+ * Sets the application context part of
  * the #GSignondSecurityContext.
  */
 void
@@ -173,7 +212,7 @@ gsignond_security_context_set_application_context (
  * gsignond_security_context_get_application_context:
  * @ctx: #GSignondSecurityContext item.
  *
- * Get the application context part (such as script name or a web page) of
+ * Get the application context part of
  * the #GSignondSecurityContext.
  *
  * Returns: (transfer none): application context.
@@ -188,7 +227,7 @@ gsignond_security_context_get_application_context (
 }
 
 /**
- * signon_security_conetxt_to_variant:
+ * gsignond_security_context_to_variant:
  * @ctx: #GSignondSecurityContext item.
  *
  * Build a GVariant of type "(ss)" from a #GSignondSecurityContext item.
@@ -238,7 +277,7 @@ gsignond_security_context_from_variant (GVariant *variant)
  * @ctx1: first item to compare.
  * @ctx2: second item to compare.
  *
- * Compare two #GSignondSecurityContext items similar in a way to strcmp().
+ * Compare two #GSignondSecurityContext items in a similar way to strcmp().
  *
  * Returns: negative if ctx1 < ctx2, 0 if ctx1 == ctx2 and positive if ctx1 > ctx2.
  */
@@ -250,8 +289,10 @@ gsignond_security_context_compare (const GSignondSecurityContext *ctx1,
 
     if (ctx1 == ctx2) return 0;
 
-    g_return_val_if_fail (ctx1 != NULL, -1);
-    g_return_val_if_fail (ctx2 != NULL, 1);
+    if (ctx1 == NULL)
+        return -1;
+    if (ctx2 == NULL)
+        return 1;
 
     res = g_strcmp0(ctx1->sys_ctx, ctx2->sys_ctx);
     if (res == 0)
@@ -267,7 +308,10 @@ gsignond_security_context_compare (const GSignondSecurityContext *ctx1,
  *
  * Compare two #GSignondSecurityContext items match.
  *
- * Returns: TRUE if contexts are equal or either side has wildcard match, otherwise FALSE. Two NULL contexts match.
+ * Returns: TRUE if contexts are equal or if either side has a wildcard match for 
+ * system context, or if system contexts are equal and either side has a wildcard
+ * match for the app context,
+ * otherwise FALSE. Two NULL contexts match.
  */
 gboolean
 gsignond_security_context_match (const GSignondSecurityContext *ctx1,
@@ -275,7 +319,8 @@ gsignond_security_context_match (const GSignondSecurityContext *ctx1,
 {
     if (ctx1 == ctx2) return TRUE;
 
-    g_return_val_if_fail (ctx1 != NULL && ctx2 != NULL, FALSE);
+    if (ctx1 == NULL || ctx2 == NULL)
+         return FALSE;
 
     if (g_strcmp0(ctx1->sys_ctx, "*") == 0 ||
         g_strcmp0(ctx2->sys_ctx, "*") == 0) return TRUE;
@@ -294,15 +339,19 @@ gsignond_security_context_match (const GSignondSecurityContext *ctx1,
  * @reference: reference security context item to check against.
  * @test: security context item to be checked.
  *
- * Check if item @test is covered by @reference.
+ * Check if @test is covered by @reference.
  *
- * Returns: TRUE if contexts are equal or wildcards of the @reference arguments match, otherwise FALSE. If either or both contexts are NULL, FALSE is returned.
+ * Returns: TRUE if contexts are equal or the @reference has a wildcard
+ * system context, or if system contexts are equal and @reference has a wildcard
+ * application context, otherwise FALSE. If either or both contexts are NULL, 
+ * FALSE is returned.
  */
 gboolean
 gsignond_security_context_check (const GSignondSecurityContext *reference,
                                  const GSignondSecurityContext *test)
 {
-    g_return_val_if_fail (reference != NULL && test != NULL, FALSE);
+    if (reference == NULL || test == NULL)
+         return FALSE;
 
     if (g_strcmp0(reference->sys_ctx, "*") == 0) return TRUE;
     if (g_strcmp0(reference->sys_ctx, test->sys_ctx) == 0) {
