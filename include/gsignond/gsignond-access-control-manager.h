@@ -69,49 +69,24 @@ struct _GSignondAccessControlManagerClass
 {
     GObjectClass parent_class;
 
-    /**
-     * security_context_of_peer:
-     *
-     * See #gsignond_access_control_manager_security_context_of_peer.
-     */
     void (*security_context_of_peer) (
                             GSignondAccessControlManager *self,
                             GSignondSecurityContext *peer_ctx,
                             int peer_fd, const gchar *peer_service,
                             const gchar *peer_app_ctx);
-    /**
-     * peer_is_allowed_to_use_identity:
-     *
-     * See #gsignond_access_control_manager_peer_is_allowed_to_use_identity.
-     */
     gboolean (*peer_is_allowed_to_use_identity) (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContext *owner_ctx,
                             const GSignondSecurityContextList *identity_acl);
-    /**
-     * peer_is_owner_of_identity:
-     *
-     * See #gsignond_access_control_manager_peer_is_owner_of_identity.
-     */
     gboolean (*peer_is_owner_of_identity) (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContext *owner_ctx);
-    /**
-     * acl_is_valid:
-     *
-     * See #gsignond_access_control_manager_acl_is_valid.
-     */
     gboolean (*acl_is_valid) (
                             GSignondAccessControlManager *self,
                             const GSignondSecurityContext *peer_ctx,
                             const GSignondSecurityContextList *identity_acl);
-    /**
-     * security_context_of_keychain:
-     *
-     * See #gsignond_access_control_manager_security_context_of_keychain.
-     */
     GSignondSecurityContext * (*security_context_of_keychain) (
                             GSignondAccessControlManager *self);
 };

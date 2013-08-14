@@ -35,6 +35,22 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-access-control-manager.h"
 
+/**
+ * SECTION:gsignond-access-control-manager
+ * @short_description: an object that performs access control checks
+ * @include: gsignond/gsignond-access-control-manager.h
+ *
+ * #GSignondAccessControlManager performs access control checks using
+ * available system services. gSSO can be configured to use a custom extension
+ * that provides a subclassed implementation of #GSignondAccessControlManager
+ * (see #GSignondExtension), otherwise a default implementation is used.
+ */
+/**
+ * GSignondAccessControlManager:
+ *
+ * Opaque #GSignondAccessControlManager data structure.
+ */
+
 #define GSIGNOND_ACCESS_CONTROL_MANAGER_GET_PRIVATE(obj) \
     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
                                   GSIGNOND_TYPE_ACCESS_CONTROL_MANAGER, \
@@ -273,6 +289,17 @@ _security_context_of_keychain (GSignondAccessControlManager *self)
     return gsignond_security_context_new_from_values (keychain_sysctx, "");
 }
 
+/**
+ * GSignondAccessControlManagerClass:
+ * @parent_class: parent class.
+ * @security_context_of_peer: an implementation of gsignond_access_control_manager_security_context_of_peer()
+ * @peer_is_allowed_to_use_identity: an implementation of gsignond_access_control_manager_peer_is_allowed_to_use_identity()
+ * @peer_is_owner_of_identity: an implementation of gsignond_access_control_manager_peer_is_owner_of_identity()
+ * @acl_is_valid: an implementation of gsignond_access_control_manager_acl_is_valid()
+ * @security_context_of_keychain: an implementation of gsignond_access_control_manager_security_context_of_keychain()
+ * 
+ * #GSignondAccessControlManagerClass class containing pointers to class methods.
+ */
 static void
 gsignond_access_control_manager_class_init (
                                        GSignondAccessControlManagerClass *klass)
@@ -313,10 +340,15 @@ gsignond_access_control_manager_init (GSignondAccessControlManager *self)
  * gsignond_access_control_manager_security_context_of_peer:
  * @self: object instance.
  * @peer_ctx: instance of security context to be set.
- * @peer_fd: file descriptor of the peer connection.
+ * @peer_fd: file descriptor of the peer connection if using peer-to-peer dbus, -1 otherwise.
+ * @peer_service: g_dbus_method_invocation_get_sender() of the peer connection, if not using peer-to-peer dbus, NULL otherwise
  * @peer_app_ctx: application context of the peer connection.
  *
- * Retrieves #GSignondSecurityContext of the specified peer.
+ * Retrieves and sets #GSignondSecurityContext of the specified peer.
+ * 
+ * The default implementation sets the app context as it was passed, and sets 
+ * the system context to the binary path of the process that is determined from
+ * @peer_fd and @peer_service parameters.
  */
 void
 gsignond_access_control_manager_security_context_of_peer (
@@ -335,9 +367,12 @@ gsignond_access_control_manager_security_context_of_peer (
  * @self: object instance.
  * @peer_ctx: security context of the peer connection.
  * @owner_ctx: security context of the identity owner.
- * @identity_acl: access control list for the identity in question.
+ * @identity_acl: access control list for the identity in question. Includes the @owner_ctx as well.
  *
  * Checks if specified peer is allowed to access the specified identity.
+ * 
+ * The default implementation goes over items in @identity_acl, using 
+ * gsignond_security_context_check() to check them against @peer_ctx.
  *
  * Returns: access is allowed?
  */
@@ -358,7 +393,10 @@ gsignond_access_control_manager_peer_is_allowed_to_use_identity (
  * @peer_ctx: security context of the peer connection.
  * @owner_ctx: security context of the identity owner.
  *
- * Checks if the specified peer is owner of the identity.
+ * Checks if the peer specified in @peer_ctx is the owner of the identity.
+ * 
+ * The default implementation is using gsignond_security_context_check() 
+ * to check @peer_ctx against @owner_ctx directly.
  *
  * Returns: is owner?
  */
@@ -379,7 +417,10 @@ gsignond_access_control_manager_peer_is_owner_of_identity (
  * @identity_acl: access control list for the identity.
  *
  * Checks if the specified peer is allowed to set the specified access
- * control list.
+ * control list. gsignond_access_control_manager_peer_is_owner_of_identity()
+ * is used before calling this method to verify identity ownership.
+ * 
+ * The default implementation always returns TRUE.
  *
  * Returns: access control list is OK?
  */
@@ -398,7 +439,12 @@ gsignond_access_control_manager_acl_is_valid (
  * @self: object instance.
  *
  * Retrieves security context of the keychain application. Keychain application
- * has a special management access to all stored identities.
+ * has a special management access to all stored identities and is able to
+ * perform deletion of all identities from storage.
+ * 
+ * The default implementation returns an empty context. If gSSO was compiled
+ * with --enable-debug and SSO_KEYCHAIN_SYSCTX environment variable is set, then
+ * the value of that variable is used to set the returned system context instead.
  *
  * Returns: security context of the keychain application.
  */
