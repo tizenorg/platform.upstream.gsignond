@@ -29,6 +29,26 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-secret-storage.h"
 
+/**
+ * SECTION:gsignond-secret-storage
+ * @short_description: provides access to the database that stores user credentials and identity/method cache
+ * @include: gsignond/gsignond-secret-storage.h
+ *
+ * #GSignondSecretStorage provides access to the database where sensitive identity
+ * data (#GSignondCredentials) and identity/method cache are stored. It's preferred 
+ * that this database is protected against access by processes other than gSSO.
+ *
+ * gSSO can be configured to use a custom extension
+ * that provides a subclassed implementation of #GSignondSecretStorage
+ * (see #GSignondExtension), otherwise a default implementation is used.
+ * 
+ */
+/**
+ * GSignondSecretStorage:
+ *
+ * Opaque #GSignondSecretStorage data structure.
+ */
+
 #define GSIGNOND_SECRET_STORAGE_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
                                            GSIGNOND_TYPE_SECRET_STORAGE, \
@@ -276,7 +296,23 @@ _remove_data (
             id, method);
 }
 
-
+/**
+ * GSignondSecretStorageClass:
+ * @parent_class: parent class.
+ * @open_db: an implementation of gsignond_secret_storage_open_db()
+ * @close_db: an implementation of gsignond_secret_storage_close_db()
+ * @clear_db: an implementation of gsignond_secret_storage_clear_db()
+ * @is_open_db: an implementation of gsignond_secret_storage_is_open_db()
+ * @load_credentials: an implementation of gsignond_secret_storage_load_credentials()
+ * @update_credentials: an implementation of gsignond_secret_storage_update_credentials()
+ * @remove_credentials: an implementation of gsignond_secret_storage_remove_credentials()
+ * @check_credentials: an implementation of gsignond_secret_storage_check_credentials()
+ * @load_data: an implementation of gsignond_secret_storage_load_data()
+ * @update_data: an implementation of gsignond_secret_storage_update_data()
+ * @remove_data: an implementation of gsignond_secret_storage_remove_data()
+ * 
+ * #GSignondSecretStorageClass class containing pointers to class methods.
+ */
 static void
 gsignond_secret_storage_class_init (GSignondSecretStorageClass *klass)
 {
@@ -321,11 +357,14 @@ gsignond_secret_storage_init (GSignondSecretStorage *self)
 
 /**
  * gsignond_secret_storage_open_db:
- *
  * @self: instance of #GSignondSecretStorage
  *
- * Opens (and initializes) DB. The implementation should take
- * care of creating the DB, if it doesn't exist.
+ * Opens (and initializes) the database. The implementation should take
+ * care of creating the DB, if it doesn't exist, and it should use
+ * #GSIGNOND_CONFIG_GENERAL_SECURE_DIR and #GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME
+ * to determine database location in the filesystem.
+ * 
+ * The default implementation is using SQLite for the storage.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -337,10 +376,9 @@ gsignond_secret_storage_open_db (GSignondSecretStorage *self)
 
 /**
  * gsignond_secret_storage_close_db:
- *
  * @self: instance of #GSignondSecretStorage
  *
- * Closes the secrets DB. To reopen it, call open_db().
+ * Closes the database. To reopen it, call gsignond_secret_storage_open_db().
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -352,10 +390,9 @@ gsignond_secret_storage_close_db (GSignondSecretStorage *self)
 
 /**
  * gsignond_secret_storage_clear_db:
- *
  * @self: instance of #GSignondSecretStorage
  *
- * Removes all stored secrets.
+ * Removes all stored secrets from the database.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -367,10 +404,9 @@ gsignond_secret_storage_clear_db (GSignondSecretStorage *self)
 
 /**
  * gsignond_secret_storage_is_open_db:
- *
  * @self: instance of #GSignondSecretStorage
  *
- * Checks if the db is open or not.
+ * Checks if the database is open or not.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -382,11 +418,10 @@ gsignond_secret_storage_is_open_db (GSignondSecretStorage *self)
 
 /**
  * gsignond_secret_storage_load_credentials:
- *
  * @self: instance of #GSignondSecretStorage
- * @id: the identity whose credentials are being loaded.
+ * @id: the identity id whose credentials are being loaded.
  *
- * Loads the credentials.
+ * Loads the credentials from the database.
  *
  * Returns: (transfer full): #GSignondCredentials if successful,
  * NULL otherwise.
@@ -401,7 +436,6 @@ gsignond_secret_storage_load_credentials (
 
 /**
  * gsignond_secret_storage_update_credentials:
- *
  * @self: instance of #GSignondSecretStorage
  * @creds: (transfer none): the credentials that are being updated.
  *
@@ -419,7 +453,6 @@ gsignond_secret_storage_update_credentials (
 
 /**
  * gsignond_secret_storage_remove_credentials:
- *
  * @self: instance of #GSignondSecretStorage
  * @id: the identity whose credentials are being updated.
  *
@@ -437,12 +470,10 @@ gsignond_secret_storage_remove_credentials (
 
 /**
  * gsignond_secret_storage_check_credentials:
- *
  * @self: instance of #GSignondSecretStorage
  * @creds: (transfer none): the credentials that are being checked.
  *
- * Checks whether the given credentials are correct for the
- * given identity.
+ * Checks whether the given credentials match what is stored in the database.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -456,17 +487,15 @@ gsignond_secret_storage_check_credentials (
 
 /**
  * gsignond_secret_storage_load_data:
- *
  * @self: instance of #GSignondSecretStorage
- * @id: the identity whose credentials are being fetched.
+ * @id: the identity id whose data are fetched
  * @method: the authentication method the data is used for.
  *
- * Loads secret data.
+ * Loads the secret data associated with a given identity and method.
  *
- * Returns: (transfer full): #GHashTable (gchar*, GBytes*) data. When done data
- * should be freed with g_hash_table_unref (data)
+ * Returns: (transfer full): the secret data
  */
-GHashTable*
+GSignondDictionary*
 gsignond_secret_storage_load_data (
         GSignondSecretStorage *self,
         const guint32 id,
@@ -477,14 +506,13 @@ gsignond_secret_storage_load_data (
 
 /**
  * gsignond_secret_storage_update_data:
- *
  * @self: instance of #GSignondSecretStorage
- * @id: the identity whose credentials are being fetched.
+ * @id: the identity whose data are fetched.
  * @method: the authentication method the data is used for.
- * @data: (transfer none): the data as #GHashTable (gchar*, GBytes*)
+ * @data: (transfer none): the data to update
  *
- * Stores/replaces secret data. Calling this method replaces any data
- * which was previously stored for the given id/method.
+ * Calling this method updates the secret data
+ * associated with the given id/method.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -493,19 +521,18 @@ gsignond_secret_storage_update_data (
         GSignondSecretStorage *self,
         const guint32 id,
         const guint32 method,
-        GHashTable *data)
+        GSignondDictionary *data)
 {
     return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->update_data (self, id, method, data);
 }
 
 /**
  * gsignond_secret_storage_remove_data:
- *
  * @self: instance of #GSignondSecretStorage
- * @id: the identity whose credentials are being checked.
+ * @id: the identity whose data are fetched.
  * @method: the authentication method the data is used for.
  *
- * Removes secret data.
+ * Removes secret data associated with a given id/method.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */

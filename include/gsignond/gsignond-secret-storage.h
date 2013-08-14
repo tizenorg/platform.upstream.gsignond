@@ -31,6 +31,7 @@
 
 #include <gsignond/gsignond-config.h>
 #include <gsignond/gsignond-credentials.h>
+#include <gsignond/gsignond-dictionary.h>
 
 G_BEGIN_DECLS
 
@@ -69,107 +70,51 @@ typedef struct {
 typedef struct {
     GObjectClass parent_class;
 
-    /**
-     * open_db:
-     *
-     * See #gsignond_secret_storage_open_db.
-     */
     gboolean
     (*open_db) (GSignondSecretStorage *self);
 
-    /**
-     * close_db:
-     *
-     * See #gsignond_secret_storage_close_db.
-     */
     gboolean
     (*close_db) (GSignondSecretStorage *self);
 
-    /**
-     * clear_db:
-     *
-     * See #gsignond_secret_storage_clear_db.
-     */
     gboolean
     (*clear_db) (GSignondSecretStorage *self);
 
-    /**
-     * is_open_db:
-     *
-     * See #gsignond_secret_storage_is_open_db.
-     */
     gboolean
     (*is_open_db) (GSignondSecretStorage *self);
 
-    /**
-     * load_credentials:
-     *
-     * See #gsignond_secret_storage_load_credentials.
-     */
     GSignondCredentials*
     (*load_credentials) (
             GSignondSecretStorage *self,
             const guint32 id);
 
-    /**
-     * update_credentials:
-     *
-     * See #gsignond_secret_storage_update_credentials.
-     */
     gboolean
     (*update_credentials) (
             GSignondSecretStorage *self,
             GSignondCredentials* creds);
 
-    /**
-     * remove_credentials:
-     *
-     * See #gsignond_secret_storage_remove_credentials.
-     */
     gboolean
     (*remove_credentials) (
             GSignondSecretStorage *self,
             const guint32 id);
 
-    /**
-     * check_credentials:
-     *
-     * See #gsignond_secret_storage_check_credentials.
-     */
     gboolean
     (*check_credentials) (
             GSignondSecretStorage *self,
             GSignondCredentials* creds);
 
-    /**
-     * load_data:
-     *
-     * See #gsignond_secret_storage_load_data.
-     *
-     */
-    GHashTable*
+    GSignondDictionary*
     (*load_data) (
             GSignondSecretStorage *self,
             const guint32 id,
             const guint32 method);
 
-    /**
-     * update_data:
-     *
-     * See #gsignond_secret_storage_update_data.
-     */
     gboolean
     (*update_data) (
             GSignondSecretStorage *self,
             const guint32 id,
             const guint32 method,
-            GHashTable *data);
+            GSignondDictionary *data);
 
-    /**
-     * remove_data:
-     *
-     * See #gsignond_secret_storage_remove_data.
-     */
     gboolean
     (*remove_data) (
             GSignondSecretStorage *self,
