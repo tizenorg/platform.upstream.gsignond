@@ -60,6 +60,7 @@ typedef struct {
 } GSignondCredentials;
 
 typedef struct {
+    /*< private >*/
     GObjectClass parent_class;
 
 } GSignondCredentialsClass;

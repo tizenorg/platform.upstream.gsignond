@@ -26,6 +26,26 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-credentials.h"
 
+/**
+ * SECTION:gsignond-credentials
+ * @short_description: credentials (username, password) associated with an identity
+ * @include: gsignond/gsignond-credentials.h
+ *
+ * #GSignondCredentials hold a username, password, and identity id, associated
+ * with an identity. This information in stored in secret storage using 
+ * #GSignondSecretStorage.
+ */
+/**
+ * GSignondCredentials:
+ *
+ * Opaque #GSignondCredentials data structure.
+ */
+/**
+ * GSignondCredentialsClass:
+ *
+ * Opaque #GSignondCredentialsClass data structure.
+ */
+
 #define GSIGNOND_CREDENTIALS_GET_PRIVATE(obj) \
                                           (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
                                            GSIGNOND_TYPE_CREDENTIALS, \
@@ -82,9 +102,9 @@ gsignond_credentials_init (GSignondCredentials *self)
 /**
  * gsignond_credentials_new:
  *
- * Creates new #GSignondCredentials object
- * Returns : (transfer full): the #GSignondCredentials object
- *
+ * Creates a new empty #GSignondCredentials object
+ * 
+ * Returns: (transfer full): the #GSignondCredentials object
  */
 GSignondCredentials *
 gsignond_credentials_new ()
@@ -95,13 +115,12 @@ gsignond_credentials_new ()
 
 /**
  * gsignond_credentials_set_data:
- *
  * @self: the object whose data is to be set.
- * @id: the identity associated with the credentials.
- * @username: the username.
- * @password: the password.
+ * @id: the identity id associated with the credentials.
+ * @username: (transfer none): the username.
+ * @password: (transfer none):the password.
  *
- * Sets the data of the object.
+ * Sets the data of the #GSignondCredentials.
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -121,11 +140,10 @@ gsignond_credentials_set_data(
 
 /**
  * gsignond_credentials_set_id:
- *
  * @self: the object whose id is to be set.
  * @id: the id.
  *
- * Sets the id of the GSignondCredentials object
+ * Sets the identity id of the #GSignondCredentials object
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -141,12 +159,11 @@ gsignond_credentials_set_id(
 
 /**
  * gsignond_credentials_get_id:
- *
  * @self: the object whose id is to be set.
  *
- * Returns the id from the #GSignondCredentials object
+ * Gets the identity id
  *
- * Returns: the id if the object is valid, NULL otherwise.
+ * Returns: the id
  */
 guint32
 gsignond_credentials_get_id(GSignondCredentials *self)
@@ -158,12 +175,10 @@ gsignond_credentials_get_id(GSignondCredentials *self)
 
 /**
  * gsignond_credentials_set_username:
- *
  * @self: the object whose username is to be set.
- * @username: the username.
+ * @username: (transfer none): the username.
  *
- * Sets the username of the GSignondCredentials object; old username is
- * freed if it exits
+ * Sets the username of the GSignondCredentials object
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -186,12 +201,11 @@ gsignond_credentials_set_username(
 
 /**
  * gsignond_credentials_get_username:
- *
  * @self: the object whose username is to be set.
  *
- * Returns the username from the #GSignondCredentials object
+ * Gets the username of the #GSignondCredentials object
  *
- * Returns: the username if the object is valid, NULL otherwise.
+ * Returns: (transfer none): the username if the object is valid, NULL otherwise.
  */
 const gchar*
 gsignond_credentials_get_username(GSignondCredentials *self)
@@ -202,12 +216,10 @@ gsignond_credentials_get_username(GSignondCredentials *self)
 
 /**
  * gsignond_credentials_set_password:
- *
  * @self: the object whose password is to be set.
- * @password: the password.
+ * @password: (transfer none): the password.
  *
- * Sets the password of the GSignondCredentials object; old password is
- * freed if it exits
+ * Sets the password of the GSignondCredentials object
  *
  * Returns: TRUE if successful, FALSE otherwise.
  */
@@ -230,12 +242,11 @@ gsignond_credentials_set_password(
 
 /**
  * gsignond_credentials_get_password:
- *
  * @self: the object whose password is to be set.
  *
- * Returns the password from the #GSignondCredentials object
+ * Gets the password from the #GSignondCredentials object
  *
- * Returns: the password if the object is valid, NULL otherwise.
+ * Returns: (transfer none): the password if the object is valid, NULL otherwise.
  */
 const gchar*
 gsignond_credentials_get_password(GSignondCredentials *self)
@@ -246,7 +257,6 @@ gsignond_credentials_get_password(GSignondCredentials *self)
 
 /**
  * gsignond_credentials_equal:
- *
  * @one: the first credential to be compared.
  * @two: the second credential to be compared.
  *
