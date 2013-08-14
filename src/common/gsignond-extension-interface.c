@@ -25,6 +25,41 @@
 
 #include "gsignond/gsignond-extension-interface.h"
 
+/**
+ * SECTION:gsignond-extension-interface
+ * @short_description: provides platform adaptation functionality
+ * @include: gsignond/gsignond-plugin-interface.h
+ *
+ * #GSignondExtension provides access to platform adaptation functionality. It
+ * contains getter methods for default implementations of #GSignondAccessControlManager, 
+ * #GSignondSecretStorage and #GSignondStorageManager.
+ *
+ * gSSO can be adapted to a specific platform environment by implementing a 
+ * custom extension module. The following steps need to be taken:
+ * 
+ * a) subclass and re-implement some (or all) of the functionality of the above
+ * three classes.
+ * 
+ * b) subclass #GSignondExtension and provide implementations of its getter methods for those
+ * of the adaptation classes that have been changed.
+ * 
+ * d) provide a function <function>GSignondExtension * extensionname_extension_init(void)</function>
+ * that returns an instance of the #GSignondExtension subclass.
+ * 
+ * c) build and install these implementations as a gSSO extension module and
+ * configure gSSO to use it.
+ * 
+ * Examples of custom extensions can be seen here:
+ * <ulink url="https://code.google.com/p/accounts-sso/source/browse/?repo=gsignond#git%2Fsrc%2Fextensions">
+ * https://code.google.com/p/accounts-sso/source/browse/?repo=gsignond#git%2Fsrc%2Fextensions</ulink>
+ * and gSSO configuration is described in #GSignondConfig.
+ */
+/**
+ * GSignondExtension:
+ *
+ * Opaque #GSignondExtension data structure.
+ */
+
 G_DEFINE_TYPE (GSignondExtension, gsignond_extension, G_TYPE_OBJECT);
 
 #define GSIGNOND_EXTENSION_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_EXTENSION, GSignondExtensionPrivate)
@@ -112,6 +147,17 @@ _get_access_control_manager (GSignondExtension *self, GSignondConfig *config)
     return priv->access_control_manager;
 }
 
+/**
+ * GSignondExtensionClass:
+ * @parent_class: the parent class
+ * @get_extension_name: implementation of gsignond_extension_get_name()
+ * @get_extension_version: implementation of gsignond_extension_get_version()
+ * @get_storage_manager: implementation of gsignond_extension_get_storage_manager()
+ * @get_secret_storage: implementation of gsignond_extension_get_secret_storage()
+ * @get_access_control_manager: implementation of gsignond_extension_get_access_control_manager()
+ * 
+ * #GSignondExtensionClass class containing pointers to class methods.
+ */
 static void
 gsignond_extension_class_init (GSignondExtensionClass *klass)
 {
@@ -141,7 +187,8 @@ gsignond_extension_init (GSignondExtension *self)
  * gsignond_extension_get_name:
  * @self: object instance.
  *
- * Get human readable name of the extension.
+ * Get a human readable name of the extension. Default implementation
+ * returns "default".
  *
  * Returns: (transfer none): name of the extension.
  */
@@ -156,7 +203,7 @@ gsignond_extension_get_name (GSignondExtension *self)
  * @self: object instance.
  *
  * Get version of the extension, split into four bytes in order from MSB to LSB;
- * major, minor, patchlevel, build.
+ * major, minor, patchlevel, build. Default implementation returns 0.
  */
 guint32
 gsignond_extension_get_version (GSignondExtension *self)
@@ -169,7 +216,8 @@ gsignond_extension_get_version (GSignondExtension *self)
  * @self: object instance.
  * @config: configuration object instance.
  *
- * Factory method to get a singleton storage manager object.
+ * Factory method to get a singleton storage manager object. See 
+ * #GSignondStorageManager for the description of the default implementation.
  *
  * Returns: (transfer none): storage manager object instance.
  */
@@ -186,7 +234,8 @@ gsignond_extension_get_storage_manager (GSignondExtension *self,
  * @self: object instance.
  * @config: configuration object instance.
  *
- * Factory method to get a singleton secret storage object.
+ * Factory method to get a singleton secret storage object. See 
+ * #GSignondSecretStorage for the description of the default implementation.
  *
  * Returns: (transfer none): secret storage object instance.
  */
@@ -203,7 +252,8 @@ gsignond_extension_get_secret_storage (GSignondExtension *self,
  * @self: object instance.
  * @config: configuration object instance.
  *
- * Factory method to get a singleton access control manager object.
+ * Factory method to get a singleton access control manager object. See 
+ * #GSignondAccessControlManager for the description of the default implementation.
  *
  * Returns: (transfer none): access control manager object instance.
  */

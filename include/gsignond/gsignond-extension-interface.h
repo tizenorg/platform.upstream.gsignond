@@ -54,7 +54,6 @@ G_BEGIN_DECLS
 typedef struct _GSignondExtension GSignondExtension;
 typedef struct _GSignondExtensionClass GSignondExtensionClass;
 typedef struct _GSignondExtensionPrivate GSignondExtensionPrivate;
-typedef GSignondExtension * (*GSignondExtensionInit) (void);
 
 struct _GSignondExtension
 {
@@ -66,54 +65,16 @@ struct _GSignondExtensionClass
 {
     GObjectClass parent_class;
 
-    /**
-     * get_extension_name:
-     * @self: object instance.
-     *
-     * Get human readable name of the extension.
-     * 
-     * Returns: (transfer none): name of the extension.
-     */
     const gchar * (*get_extension_name) (GSignondExtension *self);
-    /**
-     * get_extension_version:
-     * @self: object instance.
-     *
-     * Get version of the extension, split into four bytes in order from MSB
-     * to LSB; major, minor, patchlevel, build.
-     */
+
     guint32 (*get_extension_version) (GSignondExtension *self);
-    /**
-     * get_storage_manager:
-     * @self: object instance.
-     * @config: configuration object instance.
-     *
-     * Factory method to get a singleton storage manager object.
-     *
-     * Returns: storage manager object instance.
-     */
+
     GSignondStorageManager * (*get_storage_manager) (GSignondExtension *self,
                                                      GSignondConfig *config);
-    /**
-     * get_secret_storage:
-     * @self: object instance.
-     * @config: configuration object instance.
-     *
-     * Factory method to get a singleton secret storage object.
-     *
-     * Returns: secret storage object instance.
-     */
+
     GSignondSecretStorage * (*get_secret_storage) (GSignondExtension *self,
                                                    GSignondConfig *config);
-    /**
-     * get_access_control_manager:
-     * @self: object instance.
-     * @config: configuration object instance.
-     *
-     * Factory method to get a singleton access control manager object.
-     *
-     * Returns: access control manager object instance.
-     */
+
     GSignondAccessControlManager * (*get_access_control_manager) (
                                                     GSignondExtension *self,
                                                     GSignondConfig *config);

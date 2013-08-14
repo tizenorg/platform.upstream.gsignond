@@ -214,7 +214,7 @@ _init_extensions (GSignondDaemon *self)
     gchar *mod_name;
     gchar *mod_filename;
     gchar *initf_name;
-    GSignondExtensionInit ext_init;
+    GSignondExtension* (*ext_init) (void);
 
     ext_path = gsignond_config_get_string (self->priv->config, 
         GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR);
