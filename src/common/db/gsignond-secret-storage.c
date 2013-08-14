@@ -296,6 +296,19 @@ _remove_data (
             id, method);
 }
 
+static const GError *
+_get_last_error (GSignondSecretStorage *self)
+{
+    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), NULL);
+    if (self->priv->database != NULL) {
+        return gsignond_db_sql_database_get_last_error (
+                GSIGNOND_DB_SQL_DATABASE (self->priv->database));
+    }
+    return NULL;
+}
+
+
+
 /**
  * GSignondSecretStorageClass:
  * @parent_class: parent class.
@@ -310,6 +323,7 @@ _remove_data (
  * @load_data: an implementation of gsignond_secret_storage_load_data()
  * @update_data: an implementation of gsignond_secret_storage_update_data()
  * @remove_data: an implementation of gsignond_secret_storage_remove_data()
+ * @get_last_error: an implementation of gsignond_secret_storage_get_last_error()
  * 
  * #GSignondSecretStorageClass class containing pointers to class methods.
  */
@@ -343,6 +357,7 @@ gsignond_secret_storage_class_init (GSignondSecretStorageClass *klass)
     klass->load_data = _load_data;
     klass->update_data = _update_data;
     klass->remove_data = _remove_data;
+    klass->get_last_error = _get_last_error;
 
     g_type_class_add_private (klass, sizeof (GSignondSecretStoragePrivate));
 }
@@ -546,61 +561,16 @@ gsignond_secret_storage_remove_data (
 }
 
 /**
- * gsignond_secret_storage_set_last_error:
- * @self: instance of #GSignondDbDefaultStorage
- * @error : (transfer full): last occurred #GError
- *
- * sets the last occurred error
- *
- */
-void
-gsignond_secret_storage_set_last_error (
-        GSignondSecretStorage *self,
-        GError* error)
-{
-    g_return_if_fail (GSIGNOND_IS_SECRET_STORAGE (self));
-    g_return_if_fail (self->priv->database != NULL);
-    gsignond_db_sql_database_set_last_error (
-            GSIGNOND_DB_SQL_DATABASE (self->priv->database), error);
-}
-
-/**
  * gsignond_secret_storage_get_last_error:
- *
  * @self: instance of #GSignondSecretStorage
  *
- * retrieves the last occurred error
+ * Retrieves the last occurred error that has occured
  *
  * Returns: (transfer none): last occurred #GError
  */
 const GError *
 gsignond_secret_storage_get_last_error (GSignondSecretStorage *self)
 {
-    g_return_val_if_fail (GSIGNOND_IS_SECRET_STORAGE (self), NULL);
-    if (self->priv->database != NULL) {
-        return gsignond_db_sql_database_get_last_error (
-                GSIGNOND_DB_SQL_DATABASE (self->priv->database));
-    }
-    return NULL;
+    return GSIGNOND_SECRET_STORAGE_GET_CLASS (self)->get_last_error (self);
 }
-
-/**
- * gsignond_secret_storage_clear_last_error:
- *
- * @self: instance of #GSignondSecretStorage
- *
- * clears the last occurred error
- */
-void
-gsignond_secret_storage_clear_last_error (GSignondSecretStorage *self)
-{
-    g_return_if_fail (GSIGNOND_IS_SECRET_STORAGE (self));
-    if (self->priv->database != NULL) {
-        gsignond_db_sql_database_clear_last_error (
-                GSIGNOND_DB_SQL_DATABASE (self->priv->database));
-    }
-}
-
-
-
 
