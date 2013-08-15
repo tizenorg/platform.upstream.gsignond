@@ -65,41 +65,11 @@ struct _GSignondStorageManagerClass
 {
     GObjectClass parent_class;
 
-    /**
-     * initialize_storage:
-     *
-     * See #gsignond_storage_manager_initialize_storage.
-     */
     gboolean (*initialize_storage) (GSignondStorageManager *self);
-    /**
-     * delete_storage:
-     *
-     * See #gsignond_storage_manager_delete_storage.
-     */
     gboolean (*delete_storage) (GSignondStorageManager *self);
-    /**
-     * storage_is_initialized:
-     *
-     * See #gsignond_storage_manager_storage_is_initialized.
-     */
     gboolean (*storage_is_initialized) (GSignondStorageManager *self);
-    /**
-     * mount_filesystem:
-     *
-     * See #gsignond_storage_manager_mount_filesystem.
-     */
     const gchar * (*mount_filesystem) (GSignondStorageManager *self);
-    /**
-     * unmount_filesystem:
-     *
-     * See #gsignond_storage_manager_unmount_filesystem.
-     */
     gboolean (*unmount_filesystem) (GSignondStorageManager *self);
-    /**
-     * filesystem_is_mounted:
-     *
-     * See #gsignond_storage_manager_filesystem_is_mounted.
-     */
     gboolean (*filesystem_is_mounted) (GSignondStorageManager *self);
 };
 

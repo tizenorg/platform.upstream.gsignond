@@ -31,6 +31,24 @@
 #include "gsignond/gsignond-storage-manager.h"
 #include "gsignond/gsignond-utils.h"
 
+/**
+ * SECTION:gsignond-storage-manager
+ * @short_description: manages encrypted disk storage for storing the secret database
+ * @include: gsignond/gsignond-plugin-interface.h
+ *
+ * #GSignondStorageManager manages encrypted disk storage for storing the secret
+ * database (as provided by #GSignondSecretStorage). The default implementation
+ * is a stub that does nothing, but gSSO can be configured to use a custom extension
+ * that provides a subclassed implementation of #GSignondStorageManager
+ * (see #GSignondExtension for instructions and pointers to examples).
+ */
+/**
+ * GSignondStorageManager:
+ *
+ * Opaque #GSignondStorageManager data structure.
+ */
+ 
+
 #define GSIGNOND_STORAGE_MANAGER_GET_PRIVATE(obj) \
     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
                                   GSIGNOND_TYPE_STORAGE_MANAGER, \
@@ -191,6 +209,18 @@ _filesystem_is_mounted (GSignondStorageManager *self)
     return _storage_is_initialized (self);
 }
 
+/**
+ * GSignondStorageManagerClass:
+ * @parent_class: parent class.
+ * @initialize_storage: an implementation of gsignond_storage_manager_initialize_storage()
+ * @delete_storage: an implementation of gsignond_storage_manager_delete_storage()
+ * @storage_is_initialized: an implementation of gsignond_storage_manager_storage_is_initialized()
+ * @mount_filesystem: an implementation of gsignond_storage_manager_mount_filesystem()
+ * @unmount_filesystem: an implementation of gsignond_storage_manager_unmount_filesystem()
+ * @filesystem_is_mounted: an implementation of gsignond_storage_manager_filesystem_is_mounted()
+ * 
+ * #GSignondStorageManagerClass class containing pointers to class methods.
+ */
 static void
 gsignond_storage_manager_class_init (GSignondStorageManagerClass *klass)
 {
@@ -232,8 +262,8 @@ gsignond_storage_manager_init (GSignondStorageManager *self)
  * gsignond_storage_manager_initialize_storage:
  * @self: object instance.
  *
- * Initialize encryption storage. Initiali key should be set using
- * #gsignond_storage_manager_set_encryption_key before calling this.
+ * Initialize encryption storage. This means making sure that the 
+ * necessary directories exist and are accessible.
  *
  * Returns: success?
  */
@@ -248,7 +278,8 @@ gsignond_storage_manager_initialize_storage (GSignondStorageManager *self)
  * gsignond_storage_manager_delete_storage:
  * @self: object instance.
  *
- * Destroys all the encryption keys and wipes the storage.
+ * Destroys all the encryption keys and wipes the storage. gsignond_wipe_directory()
+ * is typically used for the latter.
  *
  * Returns: success?
  */
@@ -263,7 +294,7 @@ gsignond_storage_manager_delete_storage (GSignondStorageManager *self)
  * gsignond_storage_manager_storage_is_initialized:
  * @self: object instance.
  *
- * Checks if the storage exists, and if possible if it has been initialized.
+ * Checks if the storage has been initialized.
  *
  * Returns: storage has been initialized?
  */
@@ -278,8 +309,12 @@ gsignond_storage_manager_storage_is_initialized (GSignondStorageManager *self)
  * gsignond_storage_manager_mount_filesystem:
  * @self: object instance.
  *
- * Mounts an encrypted storage and returns filesystem path of the storage
- * mount point.
+ * Mounts an encrypted storage and returns the filesystem path of the storage
+ * mount point. This path will be used to access the secret database via
+ * #GSignondSecretStorage.
+ * 
+ * The default implemenation does nothing, and immediately returns the path for the 
+ * secret database.
  *
  * Returns: (transfer none): path of the storage mount point.
  */
@@ -294,7 +329,7 @@ gsignond_storage_manager_mount_filesystem (GSignondStorageManager *self)
  * gsignond_storage_manager_unmount_filesystem:
  * @self: object instance.
  *
- * Unmounts a previously mounted storage filesystem.
+ * Unmounts a previously mounted encrypted storage filesystem.
  *
  * Returns: success?
  */
@@ -309,7 +344,7 @@ gsignond_storage_manager_unmount_filesystem (GSignondStorageManager *self)
  * gsignond_storage_manager_filesystem_is_mounted:
  * @self: object instance.
  *
- * Checks if the filesystem is currently mounted.
+ * Checks if the encrypted storage filesystem is currently mounted.
  *
  * Returns: filesystem is currently mounted?
  */
