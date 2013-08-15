@@ -186,6 +186,9 @@ gsignond_identity_info_compare (
         GSignondIdentityInfo *other);
 
 void
+gsignond_identity_info_remove_edit_flags (GSignondIdentityInfo *info);
+
+void
 gsignond_identity_info_list_free (GSignondIdentityInfoList *list);
 
 G_END_DECLS

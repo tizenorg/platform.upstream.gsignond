@@ -352,41 +352,6 @@ gsignond_identity_info_new_from_variant (GVariant *variant_map)
 }
 
 /**
- * gsignond_identity_info_to_variant:
- * info: instance of #GSignondIdentityInfo
- *
- * Converts the GSignondIdentityInfo instance to variant
- *
- * Returns: (transfer full) #GVariant object if successful,
- * NULL otherwise.
- */
-GVariant *
-gsignond_identity_info_to_variant (GSignondIdentityInfo *info)
-{
-    g_assert (info);
-    GVariant *var_flags = NULL;
-    GVariant *reply = NULL;
-
-    if ((var_flags = gsignond_dictionary_get (info, 
-                GSIGNOND_IDENTITY_INFO_EDIT_FLAGS))) {
-        g_variant_ref (var_flags);
-        gsignond_dictionary_remove (info,
-                GSIGNOND_IDENTITY_INFO_EDIT_FLAGS);
-    }
-
-    reply = gsignond_dictionary_to_variant (info);
-
-
-    if (var_flags) {
-        gsignond_dictionary_set (info, 
-            GSIGNOND_IDENTITY_INFO_EDIT_FLAGS, var_flags);
-        g_variant_unref (var_flags);
-    }
-
-    return reply;
-}
-
-/**
  * gsignond_identity_info_copy:
  * @info: instance of #GSignondIdentityInfo
  *
@@ -1369,6 +1334,19 @@ gsignond_identity_info_compare (
     }
 
     return TRUE;
+}
+
+/**
+ * gsignond_identity_info_remove_edit_flags:
+ *
+ * Remove edit flags from the #GSignondIdentityInfo instance.
+ */
+void
+gsignond_identity_info_remove_edit_flags (GSignondIdentityInfo *info)
+{
+    g_assert (info != NULL);
+
+    gsignond_dictionary_remove (info, GSIGNOND_IDENTITY_INFO_EDIT_FLAGS);
 }
 
 void
