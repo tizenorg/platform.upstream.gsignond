@@ -31,10 +31,10 @@
 G_BEGIN_DECLS
 
 gboolean
-gsignond_wipe_file (const gchar *);
+gsignond_wipe_file (const gchar *filename);
 
 gboolean
-gsignond_wipe_directory (const gchar *);
+gsignond_wipe_directory (const gchar *dirname);
 
 gchar *
 gsignond_generate_nonce ();

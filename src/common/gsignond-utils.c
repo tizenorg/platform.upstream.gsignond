@@ -33,6 +33,14 @@
 #include "gsignond/gsignond-utils.h"
 #include "gsignond/gsignond-log.h"
 
+/**
+ * SECTION:gsignond-utils
+ * @title: Utility functions
+ * @short_description: miscellaneous utility functions
+ * @include: gsignond/gsignond-utils.h
+ *
+ * Miscellaneous utility functions are described below.
+ */
 
 typedef struct __nonce_ctx_t
 {
@@ -46,7 +54,15 @@ static size_t pagesize = 0;
 static _nonce_ctx_t _nonce_ctx = { 0, };
 G_LOCK_DEFINE_STATIC (_nonce_lock);
 
-
+/**
+ * gsignond_wipe_file:
+ * @filename: filename to wipe
+ *
+ * This function securely wipes the contents of the file, by overwriting it with
+ * 0's, then 1's, then random data. The file is then removed.
+ *
+ * Returns: TRUE if wiping and removal was successful.
+ */
 gboolean
 gsignond_wipe_file (const gchar *filename)
 {
@@ -134,7 +150,16 @@ _rng_exit:
     return retval;
 }
 
-
+/**
+ * gsignond_wipe_directory:
+ * @dirname: directory to wipe
+ *
+ * This function securely wipes the contents of the directory by calling
+ * gsignond_wipe_file() on each file. It also removes links and empty directories but 
+ * does not recursively wipe them.
+ *
+ * Returns: TRUE if wiping and removal was successful.
+ */
 gboolean
 gsignond_wipe_directory (const gchar *dirname)
 {
@@ -201,6 +226,13 @@ init_exit:
     return _nonce_ctx.initialized;
 }
 
+/**
+ * gsignond_generate_nonce:
+ *
+ * This function generates a random secure nonce using SHA1 HMAC.
+ *
+ * Returns: (transfer full): the nonce in lowercase hexadecimal format, 40 bytes long.
+ */
 gchar *
 gsignond_generate_nonce ()
 {
