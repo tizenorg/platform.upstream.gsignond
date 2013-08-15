@@ -211,6 +211,61 @@ gsignond_digest_plugin_request (
 }
 
 static void
+gsignond_digest_plugin_return_digest(GSignondPlugin *plugin,
+                                     const gchar *username,
+                                     const gchar *secret,
+                                     GSignondDictionary *session_data)
+{
+    g_return_if_fail (plugin != NULL);
+    g_return_if_fail (GSIGNOND_IS_DIGEST_PLUGIN (plugin));
+
+    GSignondDigestPlugin *self = GSIGNOND_DIGEST_PLUGIN (plugin);
+    GSignondDigestPluginPrivate *priv = self->priv;
+    g_return_if_fail (priv != NULL);
+
+    GSignondSessionData *response = NULL;
+    const gchar* realm = gsignond_session_data_get_realm (session_data);
+    const gchar* algo = gsignond_dictionary_get_string (session_data,
+                "Algo");
+    const gchar* nonce = gsignond_dictionary_get_string (session_data,
+                "Nonce");
+    const gchar* nonce_count = gsignond_dictionary_get_string (session_data,
+                "NonceCount");
+    const gchar* qop = gsignond_dictionary_get_string (session_data,
+                "Qop");
+    const gchar* method = gsignond_dictionary_get_string (session_data,
+                "Method");
+    const gchar* digest_uri = gsignond_dictionary_get_string (session_data,
+                "DigestUri");
+    const gchar* hentity = gsignond_dictionary_get_string (session_data,
+                "HEntity");
+    gchar *cnonce = _gsignond_digest_plugin_generate_nonce (priv);
+
+    if ((!realm || !algo  || !nonce  || !method  || !digest_uri)
+        || (qop && g_strcmp0 (qop, "auth-int") == 0 && !hentity)
+        || (qop && !nonce_count)) {
+        GError* error = g_error_new (GSIGNOND_ERROR,
+        		GSIGNOND_ERROR_MISSING_DATA, "Missing Session Data");
+        gsignond_plugin_error (plugin, error);
+        g_error_free (error);
+        return;
+    }
+    gchar *digest = _gsignond_digest_plugin_compute_md5_digest(algo,
+            username,realm, secret, nonce, nonce_count, cnonce, qop, method,
+            digest_uri, hentity);
+
+    response = gsignond_dictionary_new();
+    gsignond_session_data_set_username(response, username);
+    gsignond_dictionary_set_string(response, "CNonce", cnonce);
+    g_free (cnonce);
+    gsignond_dictionary_set_string(response, "Response", digest);
+    g_free(digest);
+
+    gsignond_plugin_response_final(plugin, response);
+    gsignond_dictionary_unref(response);
+}
+
+static void
 gsignond_digest_plugin_request_initial (
     GSignondPlugin *plugin,
     GSignondSessionData *session_data,
@@ -234,44 +289,9 @@ gsignond_digest_plugin_request_initial (
 
     const gchar *username = gsignond_session_data_get_username(session_data);
     const gchar *secret = gsignond_session_data_get_secret(session_data);
-    const gchar *realm = gsignond_session_data_get_realm (session_data);
-    const gchar *algo = gsignond_dictionary_get_string (session_data, "Algo");
-    const gchar *nonce = gsignond_dictionary_get_string (session_data,
-            "Nonce");
-    const gchar *nonce_count = gsignond_dictionary_get_string (session_data,
-            "NonceCount");
-    const gchar *qop = gsignond_dictionary_get_string (session_data,
-            "Qop");
-    const gchar *method = gsignond_dictionary_get_string (session_data,
-            "Method");
-    const gchar *digest_uri = gsignond_dictionary_get_string (session_data,
-            "DigestUri");
-    const gchar *hentity = gsignond_dictionary_get_string (session_data,
-            "HEntity");
-
-    if ((!realm || !algo  || !nonce  || !method  || !digest_uri)
-        || (qop && g_strcmp0 (qop, "auth-int") == 0 && !hentity)
-        || (qop && !nonce_count)) {
-        GError* error = g_error_new (GSIGNOND_ERROR, GSIGNOND_ERROR_MISSING_DATA,
-                "Missing Session Data");
-        gsignond_plugin_error (plugin, error);
-        g_error_free (error);
-        return;
-    }
-
+    
     if (username != NULL && secret != NULL) {
-        gchar *cnonce = _gsignond_digest_plugin_generate_nonce (priv);
-        GSignondSessionData *response = gsignond_dictionary_new ();
-        gsignond_session_data_set_username (response, username);
-        gsignond_dictionary_set_string (response, "CNonce", cnonce);
-        gchar *digest = _gsignond_digest_plugin_compute_md5_digest (algo,
-                username,realm, secret, nonce, nonce_count, cnonce, qop, method,
-                digest_uri, hentity);
-        g_free (cnonce);
-        gsignond_dictionary_set_string (response, "Response", digest);
-        g_free (digest);
-        gsignond_plugin_response_final (plugin, response);
-        gsignond_dictionary_unref (response);
+        gsignond_digest_plugin_return_digest(plugin, username, secret, session_data);
         return;
     }
 
@@ -283,8 +303,10 @@ gsignond_digest_plugin_request_initial (
     priv->session_data = session_data;
 
     GSignondSignonuiData *user_action_data = gsignond_dictionary_new ();
-    DATA_SET_VALUE (user_action_data, "Realm", realm);
-    DATA_SET_VALUE (user_action_data, "DigestUri", digest_uri);
+    DATA_SET_VALUE (user_action_data, "Realm", 
+                    gsignond_session_data_get_realm (session_data));
+    DATA_SET_VALUE (user_action_data, "DigestUri", 
+                    gsignond_dictionary_get_string (session_data, "DigestUri"));
     gsignond_signonui_data_set_query_username (user_action_data, TRUE);
     gsignond_signonui_data_set_query_password (user_action_data, TRUE);
     gsignond_plugin_user_action_required (plugin, user_action_data);
@@ -324,47 +346,7 @@ gsignond_digest_plugin_user_action_finished (
         username != NULL && 
         secret != NULL &&
         session_data != NULL) {
-        GSignondSessionData *response = NULL;
-        const gchar* realm = gsignond_session_data_get_realm (session_data);
-        const gchar* algo = gsignond_dictionary_get_string (session_data,
-                "Algo");
-        const gchar* nonce = gsignond_dictionary_get_string (session_data,
-                "Nonce");
-        const gchar* nonce_count = gsignond_dictionary_get_string (session_data,
-                "NonceCount");
-        const gchar* qop = gsignond_dictionary_get_string (session_data,
-                "Qop");
-        const gchar* method = gsignond_dictionary_get_string (session_data,
-                "Method");
-        const gchar* digest_uri = gsignond_dictionary_get_string (session_data,
-                "DigestUri");
-        const gchar* hentity = gsignond_dictionary_get_string (session_data,
-                "HEntity");
-        gchar *cnonce = _gsignond_digest_plugin_generate_nonce (priv);
-
-        if ((!realm || !algo  || !nonce  || !method  || !digest_uri)
-            || (qop && g_strcmp0 (qop, "auth-int") == 0 && !hentity)
-            || (qop && !nonce_count)) {
-            GError* error = g_error_new (GSIGNOND_ERROR,
-            		GSIGNOND_ERROR_MISSING_DATA, "Missing Session Data");
-            gsignond_plugin_error (plugin, error);
-            g_error_free (error);
-            return;
-        }
-        gchar *digest = _gsignond_digest_plugin_compute_md5_digest(algo,
-                username,realm, secret, nonce, nonce_count, cnonce, qop, method,
-                digest_uri, hentity);
-
-        response = gsignond_dictionary_new();
-        gsignond_session_data_set_username(response, username);
-        gsignond_dictionary_set_string(response, "CNonce", cnonce);
-        g_free (cnonce);
-        gsignond_dictionary_set_string(response, "Response", digest);
-        g_free(digest);
-
-        gsignond_plugin_response_final(plugin, response);
-        gsignond_dictionary_unref(response);
-        return;
+        gsignond_digest_plugin_return_digest(plugin, username, secret, session_data);
     } else if (query_error == SIGNONUI_ERROR_CANCELED) {
         gsignond_digest_plugin_cancel (plugin);
     } else {
