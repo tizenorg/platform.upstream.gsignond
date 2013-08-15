@@ -78,11 +78,11 @@ _set_config (ExtensionTizenStorageManager *self, GSignondConfig *config)
     parent->config = config;
 
     gchar *user_dir = g_strdup_printf ("gsignond.%s", g_get_user_name ());
-    const gchar *secure_dir = gsignond_config_get_string (
-                                         config,
-                                         GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
-    if (parent->location)
-        parent->location = g_build_filename (secure_dir,
+    const gchar *storage_path = gsignond_config_get_string (
+                                       config,
+                                       GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
+    if (storage_path)
+        parent->location = g_build_filename (storage_path,
                                              user_dir,
                                              NULL);
     else

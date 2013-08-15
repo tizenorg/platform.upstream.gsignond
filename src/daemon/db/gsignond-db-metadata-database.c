@@ -506,7 +506,7 @@ _gsignond_db_metadata_database_open (
         return FALSE;
     }
     dir = gsignond_config_get_string (self->config,
-            GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
+            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     if (!dir) {
         ERR ("Invalid Metadata DB directory");
         return FALSE;

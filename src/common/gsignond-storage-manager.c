@@ -77,11 +77,11 @@ _set_config (GSignondStorageManager *self, GSignondConfig *config)
     self->config = config;
 
     gchar *user_dir = g_strdup_printf ("gsignond.%s", g_get_user_name ());
-    const gchar *secure_dir = gsignond_config_get_string (
-                                        self->config,
-                                        GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
-    if (secure_dir)
-        self->location = g_build_filename (secure_dir,
+    const gchar *storage_path = gsignond_config_get_string (
+                                       self->config,
+                                       GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
+    if (storage_path)
+        self->location = g_build_filename (storage_path,
                                            user_dir,
                                            NULL);
     else

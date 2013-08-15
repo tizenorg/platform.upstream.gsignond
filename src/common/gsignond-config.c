@@ -424,15 +424,9 @@ gsignond_config_init (GSignondConfig *self)
                              (GSIGNOND_CONFIG_GENERAL_BIN_DIR),
                              (GSIGNOND_BIN_DIR));
 
-    gchar *default_data_path =
-        g_build_filename (g_get_user_data_dir (), "gsignond", NULL);
     gsignond_config_set_string (self,
                                 GSIGNOND_CONFIG_GENERAL_STORAGE_PATH,
-                                default_data_path);
-    gsignond_config_set_string (self,
-                                GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
                                 "/var/db");
-    g_free (default_data_path);
 
     gsignond_config_set_string (self,
                                 GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME,

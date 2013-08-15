@@ -438,9 +438,9 @@ START_TEST (test_sql_database)
 
     config = gsignond_config_new ();
     dir = gsignond_config_get_string (config,
-            GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
+            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
     if (!dir) {
-        dir = g_get_user_data_dir ();
+        dir = g_get_user_cache_dir ();
     }
     g_mkdir_with_parents (dir, S_IRWXU);
     filename = g_build_filename (dir, "sql_db_test.db", NULL);
