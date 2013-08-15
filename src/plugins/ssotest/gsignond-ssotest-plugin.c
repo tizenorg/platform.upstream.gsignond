@@ -29,6 +29,26 @@
 
 #include "gsignond-ssotest-plugin.h"
 
+/**
+ * SECTION:gsignond-ssotest-plugin
+ * @short_description: a plugin that is used internally in gsignond unit test
+ * @include: gsignond/gsignond-ssotest-plugin.h
+ *
+ * #GSignondSsoTestPlugin is used by gsignond unit tests. It should not be used
+ * by applications.
+ */
+/**
+ * GSignondSsoTestPlugin:
+ *
+ * Opaque #GSignondSsoTestPlugin data structure.
+ */
+/**
+ * GSignondSsoTestPluginClass:
+ * @parent_class: the parent class structure
+ *
+ * Opaque #GSignondSsoTestPluginClass data structure.
+ */
+
 #define GSIGNOND_SSOTEST_PLUGIN_GET_PRIVATE(obj) \
     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
                                   GSIGNOND_TYPE_SSOTEST_PLUGIN, \

@@ -27,6 +27,36 @@
 #include "gsignond-password-plugin.h"
 #include <gsignond/gsignond-error.h>
 
+/**
+ * SECTION:gsignond-password-plugin
+ * @short_description: a plugin for retrieving the username/password
+ * @include: gsignond/gsignond-password-plugin.h
+ *
+ * #GSignondPasswordPlugin is used in login/password based authorization protocols.
+ * It returns to the applications the username and password associated with an
+ * identity. The plugin first checks if the daemon has placed them in
+ * gsignond_plugin_request_initial() @session_data parameter
+ * (that means they're already stored in gSSO secure database), and if not,
+ * the user is asked for the username and password via gSSO UI.
+ *
+ * The plugin returns the username and password via #GSignondPlugin::response-final
+ * if it was able to obtain them, and issues #GSignondPlugin::error otherwise.
+ * 
+ * #GSignondPlugin:type property is set to "password", and #GSignondPlugin:mechanisms 
+ * property contains a single entry "password".
+ */
+/**
+ * GSignondPasswordPlugin:
+ *
+ * Opaque #GSignondPasswordPlugin data structure.
+ */
+/**
+ * GSignondPasswordPluginClass:
+ * @parent_class: the parent class structure
+ *
+ * Opaque #GSignondPasswordPluginClass data structure.
+ */
+
 static void gsignond_plugin_interface_init (GSignondPluginInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (GSignondPasswordPlugin, gsignond_password_plugin, 

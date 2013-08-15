@@ -35,6 +35,13 @@
     <xi:include href="xml/gsignond-utils.xml"/>
 
   </chapter>
+  <chapter>
+    <title>Standard in-tree authorization plugins</title>
+    <xi:include href="xml/gsignond-digest-plugin.xml"/>
+    <xi:include href="xml/gsignond-ssotest-plugin.xml"/>
+    <xi:include href="xml/gsignond-password-plugin.xml"/>
+
+  </chapter>
   <chapter id="object-tree">
     <title>Object Hierarchy</title>
      <xi:include href="xml/tree_index.sgml"/>

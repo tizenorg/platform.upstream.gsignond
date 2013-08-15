@@ -31,6 +31,46 @@
 #include <gsignond/gsignond-error.h>
 #include <gsignond/gsignond-log.h>
 
+/**
+ * SECTION:gsignond-digest-plugin
+ * @short_description: a plugin that performs HTTP Digest authorization
+ * @include: gsignond/gsignond-digest-plugin.h
+ *
+ * #GSignondDigestPlugin performs HTTP Digest authorization without exposing
+ * the password to the application. Digest authorization is described in 
+ * <ulink url="http://tools.ietf.org/html/rfc2617">RFC 2617</ulink>.
+ * 
+ * gsignond_plugin_request_initial() @session_data parameter should include
+ * the following string items, whose meaning is described in the RFC: 
+ * - username and secret. If they are absent, they are requested from the user
+ * via gSSO UI.
+ * - realm, "Algo", "Nonce",  "Method", "DigestUri" - mandatory items.
+ * - "NonceCount", "Qop",  "HEntity". "NonceCount" must be present if "Qop" is 
+ * present, "HEntity" must be present if "Qop" is present and set to "auth-int".
+ * 
+ * If the plugin has all the data to calculate the digest, it issues 
+ * #GSignondPlugin::response-final signal. @session_data in that signal contains
+ * the username, "CNonce" item and the digest value under the "Response" key.
+ * 
+ * If some of the data is incorrect or not available, #GSignondPlugin::error
+ * signal is issued instead.
+ * 
+ * #GSignondPlugin:type property is set to "digest", and #GSignondPlugin:mechanisms 
+ * property contains a single entry "digest".
+ */
+/**
+ * GSignondDigestPlugin:
+ *
+ * Opaque #GSignondDigestPlugin data structure.
+ */
+/**
+ * GSignondDigestPluginClass:
+ * @parent_class: the parent class structure
+ *
+ * Opaque #GSignondDigestPluginClass data structure.
+ */
+
+
 static void gsignond_plugin_interface_init (GSignondPluginInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (GSignondDigestPlugin, gsignond_digest_plugin,
