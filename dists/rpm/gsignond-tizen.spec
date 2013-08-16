@@ -39,6 +39,15 @@ Requires:   %{name} = %{version}-%{release}
 %{summary}.
 
 
+%package doc
+Summary:    Documentation files for %{name}
+Group:      Development/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description doc
+%{summary}.
+
+
 %prep
 %setup -q -n %{name}-%{version}
 if [ -f = "gtk-doc.make" ]
@@ -94,4 +103,9 @@ chmod u+s %{_bindir}/%{name}
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
 %endif
+
+
+%files doc
+%defattr(-,root,root-)
+%{_datadir}/gtk-doc/html/gsignond/*
 

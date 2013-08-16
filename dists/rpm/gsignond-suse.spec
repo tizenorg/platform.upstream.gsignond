@@ -7,7 +7,7 @@
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
 Version: 0.0.2
-Release: 10
+Release: 11
 Group: System/Daemons
 License: LGPL-2.1+
 Source: %{name}-%{version}.tar.gz
@@ -37,6 +37,15 @@ Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
+%{summary}.
+
+
+%package doc
+Summary:    Documentation files for %{name}
+Group:      Development/Libraries
+Requires:   %{name} = %{version}-%{release}
+
+%description doc
 %{summary}.
 
 
@@ -102,6 +111,11 @@ chmod u+s %{_bindir}/%{name}
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
 %endif
+
+
+%files doc
+%defattr(-,root,root-)
+%{_datadir}/gtk-doc/html/gsignond/*
 
 
 %changelog
