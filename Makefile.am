@@ -18,3 +18,27 @@ EXTRA_DIST = dists tools
 
 valgrind:
 	cd test; make valgrind
+	
+dist-hook:
+	@echo
+	@echo "==== Run 'make update-online-doc' to update online documentation ===="
+	@echo
+
+update-online-doc:
+	@tar zxf $(PACKAGE)-$(VERSION).tar.gz && \
+	pushd . > /dev/null && \
+	cd .. && \
+	git clone https://code.google.com/p/accounts-sso.gsignon-docs/ ; \
+	cd accounts-sso.gsignon-docs && \
+	git pull ; \
+	mkdir -p $(PACKAGE) && \
+	rm -rf $(PACKAGE)/* && \
+	popd > /dev/null && \
+	cp -rf $(PACKAGE)-$(VERSION)/docs/html/* ../accounts-sso.gsignon-docs/$(PACKAGE)/ && \
+	pushd . > /dev/null && \
+	cd ../accounts-sso.gsignon-docs && \
+	git add $(PACKAGE)/* && \
+	git commit -m "Updated documentation for $(PACKAGE) to version $(VERSION)" && \
+	git push ; \
+	popd > /dev/null && \
+	rm -rf $(PACKAGE)-$(VERSION)
