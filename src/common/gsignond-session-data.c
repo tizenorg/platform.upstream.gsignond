@@ -184,7 +184,7 @@ gsignond_session_data_set_caption (GSignondSessionData *data,
  * 
  * A getter for a renew token property associated with the authentication session.
  * This property tells the plugin to discard any cached tokens and start 
- * the authoriztion process anew.
+ * the authentication process anew.
  * 
  * Returns: whether the key-value pair exists in the @data dictionary or not.
  */
@@ -202,7 +202,7 @@ gsignond_session_data_get_renew_token (GSignondSessionData *data,
  * 
  * A setter for a renew token property associated with the authentication session.
  * This property tells the plugin to discard any cached tokens and start 
- * the authoriztion process anew.
+ * the authentication process anew.
  */
 void
 gsignond_session_data_set_renew_token (GSignondSessionData *data,
