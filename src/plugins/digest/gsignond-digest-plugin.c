@@ -34,11 +34,11 @@
 
 /**
  * SECTION:gsignond-digest-plugin
- * @short_description: a plugin that performs HTTP Digest authorization
+ * @short_description: a plugin that performs HTTP Digest authentication
  * @include: gsignond/gsignond-digest-plugin.h
  *
- * #GSignondDigestPlugin performs HTTP Digest authorization without exposing
- * the password to the application. Digest authorization is described in 
+ * #GSignondDigestPlugin performs HTTP Digest authentication without exposing
+ * the password to the application. Digest authentication is described in 
  * <ulink url="http://tools.ietf.org/html/rfc2617">RFC 2617</ulink>.
  * 
  * gsignond_plugin_request_initial() @session_data parameter should include

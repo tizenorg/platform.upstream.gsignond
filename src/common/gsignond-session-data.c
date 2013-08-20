@@ -53,7 +53,7 @@
  * GSignondUiPolicy:
  * @GSIGNOND_UI_POLICY_DEFAULT: use a default user interaction scenario
  * @GSIGNOND_UI_POLICY_REQUEST_PASSWORD: force an authorization request from the user;
- * any cached authorization tokens are discarded
+ * any cached access tokens should be discarded by the plugin.
  * @GSIGNOND_UI_POLICY_NO_USER_INTERACTION: force no interaction with the user
  * @GSIGNOND_UI_POLICY_VALIDATION: interaction with the user is only allowed
  * for validation captchas and similar security measures

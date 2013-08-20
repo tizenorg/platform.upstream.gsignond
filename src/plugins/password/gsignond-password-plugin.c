@@ -32,7 +32,7 @@
  * @short_description: a plugin for retrieving the username/password
  * @include: gsignond/gsignond-password-plugin.h
  *
- * #GSignondPasswordPlugin is used in login/password based authorization protocols.
+ * #GSignondPasswordPlugin is used in login/password based authentication protocols.
  * It returns to the applications the username and password associated with an
  * identity. The plugin first checks if the daemon has placed them in
  * gsignond_plugin_request_initial() @session_data parameter

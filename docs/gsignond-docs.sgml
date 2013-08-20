@@ -29,7 +29,7 @@
   </chapter>
 
    <chapter>
-    <title>GSignond API for writing authorization plugins</title>
+    <title>GSignond API for writing authentication plugins</title>
     <xi:include href="xml/gsignond-plugin-interface.xml"/>
     <xi:include href="xml/gsignond-dictionary.xml"/>
     <xi:include href="xml/gsignond-session-data.xml"/>
@@ -37,7 +37,7 @@
   </chapter>
 
    <chapter>
-    <title>Standard in-tree authorization plugins</title>
+    <title>Standard in-tree authentication plugins</title>
     <xi:include href="xml/gsignond-digest-plugin.xml"/>
     <xi:include href="xml/gsignond-ssotest-plugin.xml"/>
     <xi:include href="xml/gsignond-password-plugin.xml"/>
