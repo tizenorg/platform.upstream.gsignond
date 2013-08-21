@@ -683,11 +683,6 @@ gsignond_daemon_clear (GSignondDaemon *self,
         WARN ("gsignond_storage_manager_delete_storage() failed");
         retval = FALSE;
     }
-    if (!gsignond_wipe_directory (gsignond_config_get_string (priv->config,
-                                                              GSIGNOND_CONFIG_GENERAL_STORAGE_PATH))) {
-        WARN ("gsignond_wipe_directory() failed");
-        retval = FALSE;
-    }
 
     DBG ("re-create storage");
     if (!_init_storage (self)) {
