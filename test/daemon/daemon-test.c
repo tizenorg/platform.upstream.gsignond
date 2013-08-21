@@ -97,7 +97,6 @@ setup_daemon (void)
     fail_if (g_setenv ("SSO_DAEMON_TIMEOUT", "5", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_AUTH_SESSION_TIMEOUT", "5", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_SECRET_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
     fail_if (g_setenv ("SSO_PLUGIN_TIMEOUT", "5", TRUE) == FALSE);
 
@@ -207,7 +206,6 @@ teardown_daemon (void)
     g_unsetenv ("SSO_DAEMON_TIMEOUT");
     g_unsetenv ("SSO_AUTH_SESSION_TIMEOUT");
     g_unsetenv ("SSO_STORAGE_PATH");
-    g_unsetenv ("SSO_SECRET_PATH");
     g_unsetenv ("SSO_KEYCHAIN_SYSCTX");
 }
 

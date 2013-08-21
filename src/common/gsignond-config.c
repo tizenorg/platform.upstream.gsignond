@@ -282,12 +282,6 @@ _load_environment (GSignondConfig *self)
     e_val = g_getenv ("SSO_STORAGE_PATH");
     if (e_val)
         _set_storage_path (self, e_val);
-
-    e_val = g_getenv ("SSO_SECRET_PATH");
-    if (e_val)
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_GENERAL_SECURE_DIR,
-                                    e_val);
 }
 #endif  /* ENABLE_DEBUG */
 

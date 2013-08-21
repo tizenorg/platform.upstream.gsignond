@@ -400,7 +400,6 @@ _gsignond_query_read_string (
 START_TEST (test_sql_database)
 {
     GSignondDbSecretDatabase *database = NULL;
-    GSignondConfig *config = NULL;
     gchar *filename = NULL;
     const gchar *dir = NULL;
     GSignondCredentials *creds = NULL;
@@ -436,12 +435,7 @@ START_TEST (test_sql_database)
     fail_unless (gsignond_db_secret_database_remove_data (
             database, 1, 2) == FALSE);
 
-    config = gsignond_config_new ();
-    dir = gsignond_config_get_string (config,
-            GSIGNOND_CONFIG_GENERAL_SECURE_DIR);
-    if (!dir) {
-        dir = g_get_user_cache_dir ();
-    }
+    dir = "/tmp/gsignond";
     g_mkdir_with_parents (dir, S_IRWXU);
     filename = g_build_filename (dir, "sql_db_test.db", NULL);
     fail_unless (gsignond_db_sql_database_open (sqldb, filename,
@@ -450,7 +444,6 @@ START_TEST (test_sql_database)
     fail_unless (gsignond_db_sql_database_open (sqldb, filename,
             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) == TRUE);
     g_free (filename);
-    g_object_unref(config);
 
     creds = gsignond_credentials_new ();
     fail_if (creds == NULL);
@@ -616,6 +609,8 @@ START_TEST (test_secret_storage)
     const gchar *dir = NULL;
 
     config = gsignond_config_new ();
+    gsignond_config_set_string (config, GSIGNOND_CONFIG_GENERAL_SECURE_DIR, "/tmp/gsignond");
+    
     /* Secret Storage */
     storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
             "config", config, NULL);
@@ -719,6 +714,7 @@ START_TEST (test_metadata_database)
     GSignondSecurityContext *owner = NULL;
 
     config = gsignond_config_new ();
+    gsignond_config_set_string (config, GSIGNOND_CONFIG_GENERAL_SECURE_DIR, "/tmp/gsignond");
     GSignondDbMetadataDatabase* metadata_db = NULL;
     metadata_db = gsignond_db_metadata_database_new (config);
     g_object_unref(config);
@@ -893,6 +889,7 @@ START_TEST (test_credentials_database)
     GSignondDictionary *no_cap_filter = NULL;
 
     config = gsignond_config_new ();
+    gsignond_config_set_string (config, GSIGNOND_CONFIG_GENERAL_SECURE_DIR, "/tmp/gsignond");
     storage = g_object_new (GSIGNOND_TYPE_SECRET_STORAGE,
             "config", config, NULL);
     g_object_unref(config);

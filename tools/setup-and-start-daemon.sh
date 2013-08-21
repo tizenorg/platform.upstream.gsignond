@@ -16,7 +16,6 @@ fi
 
 killall gsignond
 
-export SSO_SECRET_PATH="/tmp/gsignond"
 export SSO_STORAGE_PATH="/tmp/gsignond"
 if [ -f "$SRC_HOME/test/daemon/.libs/lt-daemontest" ] ; then
 export SSO_KEYCHAIN_SYSCTX="$SRC_HOME/test/daemon/.libs/lt-daemontest"
