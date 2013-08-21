@@ -100,7 +100,8 @@
  * Path provided by #GSignondStorageManager for storing user-specific
  * information, including secret and metadata databases.
  * 
- * Default value: "GSIGNOND_CONFIG_GENERAL_STORAGE_PATH/gsignond.username".
+ * Value provided by the default implementation: 
+ * #GSIGNOND_CONFIG_GENERAL_STORAGE_PATH + "/gsignond." + g_get_user_name().
  */
 #define GSIGNOND_CONFIG_GENERAL_SECURE_DIR      GSIGNOND_CONFIG_GENERAL \
                                                 "/SecureDir"
