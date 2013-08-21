@@ -107,6 +107,6 @@ groupadd -f -r gsignond
 
 
 %files doc
-%defattr(-,root,root-)
+%defattr(-,root,root,-)
 %{_datadir}/gtk-doc/html/gsignond/*
 
