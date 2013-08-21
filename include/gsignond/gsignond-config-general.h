@@ -44,9 +44,9 @@
 /**
  * GSIGNOND_CONFIG_GENERAL_STORAGE_PATH:
  * 
- * The path where gSSO is storing its metadata database.
+ * Base path for #GSignondStorageManager to operate in.
  * 
- * Default value: g_get_user_data_dir ()/gsignond, can be overriden in debug 
+ * Default value: "/var/db", can be overriden in debug 
  * builds by setting SSO_STORAGE_PATH environment variable.
  */
 #define GSIGNOND_CONFIG_GENERAL_STORAGE_PATH    GSIGNOND_CONFIG_GENERAL \
@@ -97,10 +97,10 @@
 /**
  * GSIGNOND_CONFIG_GENERAL_SECURE_DIR:
  * 
- * The path where gSSO is storing its credentials database.
+ * Path provided by #GSignondStorageManager for storing user-specific
+ * information, including secret and metadata databases.
  * 
- * Default value: g_get_user_data_dir ()/gsignond, can be overriden in debug 
- * builds by setting SSO_SECRET_PATH environment variable.
+ * Default value: "GSIGNOND_CONFIG_GENERAL_STORAGE_PATH/gsignond.username".
  */
 #define GSIGNOND_CONFIG_GENERAL_SECURE_DIR      GSIGNOND_CONFIG_GENERAL \
                                                 "/SecureDir"

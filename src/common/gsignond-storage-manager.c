@@ -37,10 +37,11 @@
  * @short_description: manages encrypted disk storage for storing the secret database
  * @include: gsignond/gsignond-plugin-interface.h
  *
- * #GSignondStorageManager manages encrypted disk storage for storing the secret
- * database (as provided by #GSignondSecretStorage). The default implementation
- * is a stub that does nothing, but gSSO can be configured to use a custom extension
- * that provides a subclassed implementation of #GSignondStorageManager
+ * #GSignondStorageManager manages encrypted disk storage for storing the
+ * databases. The default implementation maintains a simple per-user
+ * directory accessible only to root and gsignond group, but gSSO can be
+ * configured to use a custom extension that provides a subclassed
+ * implementation of #GSignondStorageManager
  * (see #GSignondExtension for instructions and pointers to examples).
  */
 /**
