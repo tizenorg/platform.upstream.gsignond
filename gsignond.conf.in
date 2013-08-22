@@ -27,6 +27,9 @@
 #
 # Timeout for unloading cached plugin instances.
 #PluginTimeout = 0
+#
+# System security context of the keychain UI
+@KEYCHAIN_SYSCTX@
 
 #
 # Database related settings.

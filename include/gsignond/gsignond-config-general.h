@@ -117,4 +117,14 @@
 #define GSIGNOND_CONFIG_PLUGIN_TIMEOUT          GSIGNOND_CONFIG_GENERAL \
                                                 "/PluginTimeout"
 
+/**
+ * GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX:
+ *
+ * System security context of the keychain UI.
+ *
+ * Default value can be defined through configure flag.
+ */
+#define GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX GSIGNOND_CONFIG_GENERAL \
+                                                "/KeychainSystemContext"
+
 #endif /* __GSIGNOND_GENERAL_CONFIG_H_ */

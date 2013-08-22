@@ -105,6 +105,9 @@ AC_ARG_ENABLE(keychain,
               [enable_keychain=$enableval])
 if test "x$enable_keychain" != "x" ; then
     AC_DEFINE_UNQUOTED(KEYCHAIN_SYSCTX, ["$enable_keychain"], [Keychain system context])
+    AC_SUBST(KEYCHAIN_SYSCTX, ["#KeychainSystemContext = $enable_keychain"])
+else
+    AC_SUBST(KEYCHAIN_SYSCTX, ["#KeychainSystemContext = \"\""])
 fi
 
 AC_ARG_ENABLE(debug,
@@ -159,6 +162,7 @@ AC_OUTPUT([
 Makefile
 ${PACKAGE_NAME}.pc
 ${PACKAGE_NAME}-uninstalled.pc
+gsignond.conf
 docs/Makefile
 src/Makefile
 src/common/Makefile

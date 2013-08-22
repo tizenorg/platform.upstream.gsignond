@@ -277,18 +277,26 @@ _acl_is_valid (GSignondAccessControlManager *self,
 GSignondSecurityContext *
 _security_context_of_keychain (GSignondAccessControlManager *self)
 {
-    const gchar *keychain_sysctx = NULL;
+    g_return_val_if_fail (self != NULL, NULL);
 
-    (void) self;
+    const gchar *keychain_sysctx;
 
-#   if defined(ENABLE_DEBUG)
-    keychain_sysctx = g_getenv ("SSO_KEYCHAIN_SYSCTX");
-#   elif defined(KEYCHAIN_SYSCTX)
-    keychain_sysctx = KEYCHAIN_SYSCTX;
-#   endif
+    keychain_sysctx = gsignond_config_get_string (
+                                      self->config,
+                                      GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX);
     if (!keychain_sysctx)
+#       ifdef KEYCHAIN_SYSCTX
+        keychain_sysctx = KEYCHAIN_SYSCTX;
+#       else
         keychain_sysctx = "";
-    return gsignond_security_context_new_from_values (keychain_sysctx, "");
+#       endif
+#   ifdef ENABLE_DEBUG
+    const gchar *keychain_env = g_getenv ("SSO_KEYCHAIN_SYSCTX");
+    if (keychain_env)
+        keychain_sysctx = keychain_env;
+#   endif
+
+    return gsignond_security_context_new_from_values (keychain_sysctx, NULL);
 }
 
 /**
@@ -444,7 +452,9 @@ gsignond_access_control_manager_acl_is_valid (
  * has a special management access to all stored identities and is able to
  * perform deletion of all identities from storage.
  * 
- * The default implementation returns an empty context. If gSSO was compiled
+ * The default implementation returns a context either set in the
+ * configuration, or if not set, a value specified through a configure
+ * option. If gSSO was compiled
  * with --enable-debug and SSO_KEYCHAIN_SYSCTX environment variable is set, then
  * the value of that variable is used to set the returned system context instead.
  *

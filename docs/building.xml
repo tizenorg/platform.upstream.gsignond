@@ -163,6 +163,17 @@
       </para>
     </formalpara>
 
+    <formalpara>
+        <title><systemitem>--enable-keychain=sysctx</systemitem></title>
+        
+        <para>
+            Sets the system security context of keychain UI as returned by
+            the access control manager. This value becomes written to the
+            gsignond.conf in addition to being encoded as default value
+            through config.h.
+        </para>
+    </formalpara>
+
   </refsect1>
   <refsect1 id="building-packages">
     <title>Building distribution packages</title>

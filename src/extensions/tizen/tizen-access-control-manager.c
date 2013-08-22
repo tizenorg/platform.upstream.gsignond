@@ -202,7 +202,19 @@ GSignondSecurityContext *
 extension_tizen_access_control_manager_security_context_of_keychain (
                                              GSignondAccessControlManager *self)
 {
-    (void) self;
+    g_return_val_if_fail (self != NULL, NULL);
 
-    return gsignond_security_context_new_from_values (keychainAppId, NULL);
+    const gchar *keychain_sysctx;
+
+    keychain_sysctx = gsignond_config_get_string (
+                                      self->config,
+                                      GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX);
+    if (!keychain_sysctx)
+#       ifdef KEYCHAIN_SYSCTX
+        keychain_sysctx = KEYCHAIN_SYSCTX;
+#       else
+        keychain_sysctx = keychainAppId;
+#       endif
+
+    return gsignond_security_context_new_from_values (keychain_sysctx, NULL);
 }
