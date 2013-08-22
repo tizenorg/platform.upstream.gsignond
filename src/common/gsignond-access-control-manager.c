@@ -281,8 +281,10 @@ _security_context_of_keychain (GSignondAccessControlManager *self)
 
     (void) self;
 
-#   ifdef ENABLE_DEBUG
+#   if defined(ENABLE_DEBUG)
     keychain_sysctx = g_getenv ("SSO_KEYCHAIN_SYSCTX");
+#   elif defined(KEYCHAIN_SYSCTX)
+    keychain_sysctx = KEYCHAIN_SYSCTX;
 #   endif
     if (!keychain_sysctx)
         keychain_sysctx = "";

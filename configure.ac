@@ -98,6 +98,15 @@ if test "x$enable_dbus_type" != "xp2p" ; then
     fi
 fi
 
+AC_ARG_ENABLE(keychain,
+              [  --enable-keychain=sysctx
+                          enable keychain access with
+			  system context "sysctx"],
+              [enable_keychain=$enableval])
+if test "x$enable_keychain" != "x" ; then
+    AC_DEFINE_UNQUOTED(KEYCHAIN_SYSCTX, ["$enable_keychain"], [Keychain system context])
+fi
+
 AC_ARG_ENABLE(debug,
 	      [  --enable-debug          enable debug features],
 	      [enable_debug=yes], [enable_debug=no])
