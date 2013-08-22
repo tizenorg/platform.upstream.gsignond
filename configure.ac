@@ -132,9 +132,7 @@ AC_SUBST(DBUS_SERVICES_DIR)
 AC_SUBST(DBUS_INTERFACES_DIR)
 
 # gtk-doc
-m4_ifdef([GTK_DOC_CHECK],
-         [GTK_DOC_CHECK([1.18],[--flavour no-tmpl])],
-         [AM_CONDITIONAL([ENABLE_GTK_DOC], false)])
+GTK_DOC_CHECK([1.18],[--flavour no-tmpl])
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
