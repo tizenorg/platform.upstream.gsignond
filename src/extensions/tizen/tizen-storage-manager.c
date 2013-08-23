@@ -33,6 +33,8 @@
 #include <mntent.h>
 #include <ecryptfs.h>
 
+#include "config.h"
+
 #include "tizen-storage-manager.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-utils.h"
@@ -79,16 +81,16 @@ _set_config (ExtensionTizenStorageManager *self, GSignondConfig *config)
 
     gchar *user_dir = g_strdup_printf ("gsignond.%s", g_get_user_name ());
     const gchar *storage_path = gsignond_config_get_string (
-                                       config,
+                                       parent->config,
                                        GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
-    if (storage_path)
-        parent->location = g_build_filename (storage_path,
-                                             user_dir,
-                                             NULL);
-    else
-        parent->location = g_build_filename ("/var/db",
-                                             user_dir,
-                                             NULL);
+    if (!storage_path)
+        storage_path = BASE_STORAGE_DIR;
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv("SSO_STORAGE_PATH");
+    if (env_val)
+        storage_path = env_val;
+#   endif
+    parent->location = g_build_filename (storage_path, user_dir, NULL);
     g_free (user_dir);
     self->priv->cdir = g_strdup_printf ("%s.efs", parent->location);
     DBG ("location %s encryption point %s", parent->location, self->priv->cdir);

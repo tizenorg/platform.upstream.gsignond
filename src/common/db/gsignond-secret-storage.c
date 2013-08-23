@@ -29,6 +29,8 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-secret-storage.h"
 
+#define GSIGNOND_SECRET_DB_FILENAME     "secret.db"
+
 /**
  * SECTION:gsignond-secret-storage
  * @short_description: provides access to the database that stores user credentials and identity/method cache
@@ -129,7 +131,6 @@ static gboolean
 _open_db (GSignondSecretStorage *self)
 {
     const gchar *dir = NULL;
-    const gchar *filename = NULL;
     gchar *db_filename = NULL;
     gboolean ret = FALSE;
 
@@ -142,13 +143,7 @@ _open_db (GSignondSecretStorage *self)
         ERR ("No directory specified in config object for secret db...");
         return FALSE;
     }
-    filename = gsignond_config_get_string (self->config,
-            GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME);
-    if (!filename) {
-        ERR ("Database filename not specified");
-        return FALSE;
-    }
-    db_filename = g_build_filename (dir, filename, NULL);
+    db_filename = g_build_filename (dir, GSIGNOND_SECRET_DB_FILENAME, NULL);
     if (!db_filename) {
         ERR ("Invalid db filename...");
         return FALSE;
@@ -376,7 +371,7 @@ gsignond_secret_storage_init (GSignondSecretStorage *self)
  *
  * Opens (and initializes) the database. The implementation should take
  * care of creating the DB, if it doesn't exist, and it should use
- * #GSIGNOND_CONFIG_GENERAL_SECURE_DIR and #GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME
+ * #GSIGNOND_CONFIG_GENERAL_SECURE_DIR
  * to determine database location in the filesystem.
  * 
  * The default implementation is using SQLite for the storage.

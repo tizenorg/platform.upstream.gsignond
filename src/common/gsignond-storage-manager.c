@@ -28,6 +28,8 @@
 
 #include <glib/gstdio.h>
 
+#include "config.h"
+
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-storage-manager.h"
 #include "gsignond/gsignond-utils.h"
@@ -81,14 +83,14 @@ _set_config (GSignondStorageManager *self, GSignondConfig *config)
     const gchar *storage_path = gsignond_config_get_string (
                                        self->config,
                                        GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
-    if (storage_path)
-        self->location = g_build_filename (storage_path,
-                                           user_dir,
-                                           NULL);
-    else
-        self->location = g_build_filename ("/var/db",
-                                           user_dir,
-                                           NULL);
+    if (!storage_path)
+        storage_path = BASE_STORAGE_DIR;
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv("SSO_STORAGE_PATH");
+    if (env_val)
+        storage_path = env_val;
+#   endif
+    self->location = g_build_filename (storage_path, user_dir, NULL);
     g_free (user_dir);
     DBG ("secure dir %s", self->location);
 }

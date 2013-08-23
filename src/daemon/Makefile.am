@@ -25,7 +25,6 @@ gsignond_includedir = $(includedir)/gsignond
 gsignond_pubhdr = ../../include/gsignond
 gsignond_include_HEADERS = \
 	$(gsignond_pubhdr)/gsignond-access-control-manager.h \
-	$(gsignond_pubhdr)/gsignond-config-db.h \
 	$(gsignond_pubhdr)/gsignond-config-dbus.h \
 	$(gsignond_pubhdr)/gsignond-config-general.h \
 	$(gsignond_pubhdr)/gsignond-config.h \
@@ -64,6 +63,7 @@ gsignond_CFLAGS = \
     -I$(top_builddir) \
     -I$(top_srcdir)/include/ \
     -I$(top_srcdir)/src/ \
+    -DGSIGNOND_EXTENSIONS_DIR='"$(extensionsdir)"' \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 

@@ -33,6 +33,8 @@
 #include "common/db/gsignond-db-error.h"
 #include "gsignond-db-metadata-database.h"
 
+#define GSIGNOND_METADATA_DB_FILENAME   "metadata.db"
+
 #define RETURN_IF_NOT_OPEN(obj, retval) \
     if (gsignond_db_sql_database_is_open (obj) == FALSE) { \
         GError* last_error = gsignond_db_create_error( \
@@ -904,18 +906,14 @@ _gsignond_db_metadata_database_clear (
 gboolean
 gsignond_db_metadata_database_open (GSignondDbMetadataDatabase *self)
 {
-    const gchar *filename = NULL;
-
     g_return_val_if_fail (GSIGNOND_DB_IS_METADATA_DATABASE (self), FALSE);
 
     if (gsignond_db_sql_database_is_open (GSIGNOND_DB_SQL_DATABASE (self)))
         return TRUE;
 
-    filename = gsignond_config_get_string (self->config,
-            GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME);
-
     return _gsignond_db_metadata_database_open (
-            GSIGNOND_DB_SQL_DATABASE (self), filename,
+            GSIGNOND_DB_SQL_DATABASE (self),
+            GSIGNOND_METADATA_DB_FILENAME,
             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
 }
 

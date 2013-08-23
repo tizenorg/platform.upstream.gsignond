@@ -30,7 +30,6 @@
 #include <glib-object.h>
 
 #include "gsignond-config-general.h"
-#include "gsignond-config-db.h"
 #include "gsignond-config-dbus.h"
 
 G_BEGIN_DECLS

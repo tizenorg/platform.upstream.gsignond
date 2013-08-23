@@ -24,7 +24,6 @@
     <title>GSignond configuration</title>
     <xi:include href="xml/gsignond-config.xml"/>
     <xi:include href="xml/gsignond-config-general.xml"/>
-    <xi:include href="xml/gsignond-config-db.xml"/>
     <xi:include href="xml/gsignond-config-dbus.xml"/>
   </chapter>
 

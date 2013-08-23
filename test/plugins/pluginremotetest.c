@@ -533,25 +533,22 @@ START_TEST (test_plugind_daemon)
     GSignondPluginDaemon *daemon = NULL;
     const gchar *plugin_type = "password";
 
-    GSignondConfig* config = gsignond_config_new ();
-    fail_if(config == NULL);
+    const gchar *plugin_dir = g_getenv("SSO_PLUGINS_DIR");
+    fail_if (plugin_dir == NULL);
 
-    gchar *plugin_path = g_module_build_path (gsignond_config_get_string (
-                config, GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), "nonexisting");
+    gchar *plugin_path = g_module_build_path (plugin_dir, "nonexisting");
     fail_if (plugin_path == NULL);
     daemon = gsignond_plugin_daemon_new (plugin_path, "nonexisting", 0, 1);
     g_free (plugin_path);
     fail_if (daemon != NULL);
 
-    plugin_path = g_module_build_path (gsignond_config_get_string (
-            config, GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), plugin_type);
+    plugin_path = g_module_build_path (plugin_dir, plugin_type);
     fail_if (plugin_path == NULL);
     daemon = gsignond_plugin_daemon_new (plugin_path, plugin_type, 0, 1);
     g_free (plugin_path);
     fail_if (daemon == NULL);
     g_object_unref (daemon);
     daemon = NULL;
-    g_object_unref(config);
 }
 END_TEST
 

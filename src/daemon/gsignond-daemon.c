@@ -23,9 +23,11 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-daemon.h"
-
 #include <gmodule.h>
+
+#include "config.h"
+
+#include "gsignond-daemon.h"
 
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-log.h"
@@ -209,15 +211,18 @@ _init_extensions (GSignondDaemon *self)
 {
     gboolean res = TRUE;
     gboolean symfound;
-    const gchar *ext_path;
+    const gchar *ext_path = GSIGNOND_EXTENSIONS_DIR;
     const gchar *ext_name;
     gchar *mod_name;
     gchar *mod_filename;
     gchar *initf_name;
     GSignondExtension* (*ext_init) (void);
 
-    ext_path = gsignond_config_get_string (self->priv->config, 
-        GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR);
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv ("SSO_EXTENSIONS_DIR");
+    if (env_val)
+        ext_path = env_val;
+#   endif
     ext_name = gsignond_config_get_string (self->priv->config,
         GSIGNOND_CONFIG_GENERAL_EXTENSION);
     if (ext_name && !ext_path) return FALSE;

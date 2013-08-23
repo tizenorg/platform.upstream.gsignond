@@ -7,6 +7,8 @@ libgsignond_plugins_la_CPPFLAGS = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     -I$(top_builddir)/src \
+    -DGSIGNOND_BIN_DIR='"$(bindir)"' \
+    -DGSIGNOND_PLUGINS_DIR='"$(pluginsdir)"' \
     $(GSIGNOND_CFLAGS)
 
 libgsignond_plugins_la_LIBADD =    \

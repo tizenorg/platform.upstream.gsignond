@@ -32,7 +32,6 @@
 
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-config-general.h"
-#include "gsignond/gsignond-config-db.h"
 #include "gsignond/gsignond-config-dbus.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-dictionary.h"
@@ -85,9 +84,6 @@
  */
 
 
-#define GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME "metadata.db"
-#define GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME "secret.db"
-
 struct _GSignondConfigPrivate
 {
     gchar *config_file_path;
@@ -97,19 +93,6 @@ struct _GSignondConfigPrivate
 #define GSIGNOND_CONFIG_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_CONFIG, GSignondConfigPrivate)
 
 G_DEFINE_TYPE (GSignondConfig, gsignond_config, G_TYPE_OBJECT);
-
-
-static void
-_set_storage_path (GSignondConfig *self, const gchar *value)
-{
-    gchar *storage_path = g_build_filename (value,
-                                            "gsignond.general",
-                                            NULL);
-    gsignond_config_set_string (self,
-                                GSIGNOND_CONFIG_GENERAL_STORAGE_PATH,
-                                storage_path);
-    g_free (storage_path);
-}
 
 static gboolean
 _load_config (GSignondConfig *self)
@@ -204,12 +187,6 @@ _load_config (GSignondConfig *self)
 
             INFO ("found config : '%s/%s' - '%s'", groups[i], keys[j], value);
 
-            /* construct a full storage path for wipe safety */
-            if (g_strcmp0 (key, GSIGNOND_CONFIG_GENERAL_STORAGE_PATH) == 0)
-                _set_storage_path (self, value);
-            else
-                gsignond_config_set_string (self, key, value);
-
             g_free (key);
             g_free (value);
         }
@@ -223,67 +200,6 @@ _load_config (GSignondConfig *self)
 
     return TRUE;
 }
-
-#ifdef ENABLE_DEBUG
-static void
-_load_environment (GSignondConfig *self)
-{
-    const gchar *e_val = 0;
-    guint timeout = 0;
-    
-    e_val = g_getenv ("SSO_DAEMON_TIMEOUT");
-    if (e_val && (timeout = atoi(e_val)))
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_IDENTITY_TIMEOUT");
-    if (e_val && (timeout = atoi(e_val)))
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_AUTH_SESSION_TIMEOUT");
-    if (e_val && (timeout = atoi(e_val)))
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_PLUGIN_TIMEOUT");
-    if (e_val && (timeout = atoi(e_val)))
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_PLUGIN_TIMEOUT,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_PLUGINS_DIR");
-    if (e_val) 
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_EXTENSIONS_DIR");
-    if (e_val) 
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_BIN_DIR");
-    if (e_val)
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_GENERAL_BIN_DIR,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_EXTENSION");
-    if (e_val)
-        gsignond_config_set_string (self,
-                                    GSIGNOND_CONFIG_GENERAL_EXTENSION,
-                                    e_val);
-
-    e_val = g_getenv ("SSO_STORAGE_PATH");
-    if (e_val)
-        _set_storage_path (self, e_val);
-}
-#endif  /* ENABLE_DEBUG */
 
 /**
  * gsignond_config_get_integer:
@@ -408,32 +324,8 @@ gsignond_config_init (GSignondConfig *self)
     self->priv->config_file_path = NULL;
     self->priv->config_table = gsignond_dictionary_new();
     
-    gsignond_config_set_string (self,
-                                GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR,
-                                (GSIGNOND_PLUGINS_DIR));
-    gsignond_config_set_string (self,
-                                GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR,
-                                (GSIGNOND_EXTENSIONS_DIR));
-    gsignond_config_set_string (self,
-                             (GSIGNOND_CONFIG_GENERAL_BIN_DIR),
-                             (GSIGNOND_BIN_DIR));
-
-    gsignond_config_set_string (self,
-                                GSIGNOND_CONFIG_GENERAL_STORAGE_PATH,
-                                "/var/db");
-
-    gsignond_config_set_string (self,
-                                GSIGNOND_CONFIG_DB_SECRET_DB_FILENAME,
-                                GSIGNOND_DB_SECRET_DEFAULT_DB_FILENAME);
-    gsignond_config_set_string (self,
-                                GSIGNOND_CONFIG_DB_METADATA_DB_FILENAME,
-                                GSIGNOND_DB_METADATA_DEFAULT_DB_FILENAME);
-
     if (!_load_config (self))
         WARN ("load configuration failed, using default settings");
-#   ifdef ENABLE_DEBUG
-    _load_environment (self);
-#   endif
 }
 
 static void

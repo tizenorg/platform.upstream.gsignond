@@ -104,11 +104,27 @@ AC_ARG_ENABLE(keychain,
 			  system context "sysctx"],
               [enable_keychain=$enableval])
 if test "x$enable_keychain" != "x" ; then
-    AC_DEFINE_UNQUOTED(KEYCHAIN_SYSCTX, ["$enable_keychain"], [Keychain system context])
-    AC_SUBST(KEYCHAIN_SYSCTX, ["#KeychainSystemContext = $enable_keychain"])
+    AC_DEFINE_UNQUOTED(KEYCHAIN_SYSCTX,
+		       ["$enable_keychain"],
+		       [Keychain system context])
+    AC_SUBST(KEYCHAIN_SYSCTX,
+	     ["#KeychainSystemContext = $enable_keychain"])
 else
-    AC_SUBST(KEYCHAIN_SYSCTX, ["#KeychainSystemContext = \"\""])
+    AC_SUBST(KEYCHAIN_SYSCTX,
+	     ["#KeychainSystemContext = \"\""])
 fi
+
+AC_ARG_ENABLE(storagedir,
+	      [  --enable-storagedir=path
+	                  enable storage at location "path"
+			  instead of default "/var/db"],
+              [enable_storagedir=$enableval],
+	      [enable_storagedir="/var/db"])
+AC_DEFINE_UNQUOTED(BASE_STORAGE_DIR,
+		   ["$enable_storagedir"],
+		   [Base path for user specific storage directories])
+AC_SUBST(BASE_STORAGE_DIR,
+	 ["#StoragePath = $enable_storagedir"])
 
 AC_ARG_ENABLE(debug,
 	      [  --enable-debug          enable debug features],

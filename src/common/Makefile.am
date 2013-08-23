@@ -33,7 +33,6 @@ libgsignond_common_la_CPPFLAGS = \
     -I. \
     $(GSIGNOND_CFLAGS) \
     -DGSIGNOND_PLUGINS_DIR='"$(pluginsdir)"' \
-    -DGSIGNOND_EXTENSIONS_DIR='"$(extensionsdir)"' \
     -DGSIGNOND_BIN_DIR='"$(bindir)"' \
     -DGSIGNOND_SYSCONF_DIR='"$(sysconfdir)"' \
     $(NULL)

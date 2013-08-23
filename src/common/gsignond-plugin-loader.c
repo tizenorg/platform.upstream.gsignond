@@ -26,6 +26,8 @@
 
 #include <gmodule.h>
 
+#include "config.h"
+
 #include "gsignond/gsignond-log.h"
 #include "gsignond-plugin-loader.h"
 
@@ -34,11 +36,18 @@ gsignond_load_plugin(
         GSignondConfig* config,
         gchar* plugin_type)
 {
-    gchar* plugin_filename = g_module_build_path (
-            gsignond_config_get_string (config,
-                    GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), plugin_type);
-    GSignondPlugin *plugin = gsignond_load_plugin_with_filename (plugin_type,
-            plugin_filename);
+    const gchar *plugin_path = GSIGNOND_PLUGINS_DIR;
+    gchar *plugin_filename;
+    GSignondPlugin *plugin;
+
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv("SSO_PLUGINS_DIR");
+    if (env_val)
+        plugin_path = env_val;
+#   endif
+    plugin_filename = g_module_build_path (plugin_path, plugin_type);
+    plugin = gsignond_load_plugin_with_filename (plugin_type,
+                                                 plugin_filename);
     g_free(plugin_filename);
     return plugin;
 }

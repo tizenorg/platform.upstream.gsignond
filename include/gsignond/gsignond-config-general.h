@@ -41,6 +41,7 @@
  * A prefix for general keys. Should be used only when defining new keys.
  */
 #define GSIGNOND_CONFIG_GENERAL                 "General"
+
 /**
  * GSIGNOND_CONFIG_GENERAL_STORAGE_PATH:
  * 
@@ -51,38 +52,6 @@
  */
 #define GSIGNOND_CONFIG_GENERAL_STORAGE_PATH    GSIGNOND_CONFIG_GENERAL \
                                                 "/StoragePath"
-/**
- * GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR:
- * 
- * The path where gSSO is looking for available extension modules.
- * 
- * Default value: $(pkglibdir)/extensions, can be overriden in debug 
- * builds by setting SSO_EXTENSIONS_DIR environment variable.
- */
-#define GSIGNOND_CONFIG_GENERAL_EXTENSIONS_DIR  GSIGNOND_CONFIG_GENERAL \
-                                                "/ExtensionsDir"
-/**
- * GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR:
- * 
- * The path where gSSO is looking for available plugins.
- * 
- * Default value: $(pkglibdir)/plugins, can be overriden in debug 
- * builds by setting SSO_PLUGINS_DIR environment variable.
- */
-#define GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR     GSIGNOND_CONFIG_GENERAL \
-                                                "/PluginsDir"
-/**
- * GSIGNOND_CONFIG_GENERAL_BIN_DIR:
- * 
- * The path where gSSO is looking for the gsignond-plugind binary when it needs
- * to start a plugin process. Can be used for finding other supplementary binaries in 
- * the future.
- * 
- * Default value: $(bindir), can be overriden in debug 
- * builds by setting SSO_BIN_DIR environment variable.
- */
-#define GSIGNOND_CONFIG_GENERAL_BIN_DIR         GSIGNOND_CONFIG_GENERAL \
-                                                "/BinDir"
 /**
  * GSIGNOND_CONFIG_GENERAL_EXTENSION:
  * 
@@ -99,6 +68,9 @@
  * 
  * Path provided by #GSignondStorageManager for storing user-specific
  * information, including secret and metadata databases.
+ *
+ * This is run-time value and any value read from configuration file
+ * is overwritten.
  * 
  * Value provided by the default implementation: 
  * #GSIGNOND_CONFIG_GENERAL_STORAGE_PATH + "/gsignond." + g_get_user_name().

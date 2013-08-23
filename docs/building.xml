@@ -173,6 +173,16 @@
             through config.h.
         </para>
     </formalpara>
+    
+    <formalpara>
+        <title><systemitem>--enable-storagedir=path</systemitem></title>
+        
+        <para>
+            Sets the base path for user specific storage directories where
+            database files will be located.
+            Default location is <filename>/var/db</filename>
+        </para>
+    </formalpara>
 
   </refsect1>
   <refsect1 id="building-packages">

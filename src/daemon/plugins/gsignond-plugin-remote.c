@@ -23,6 +23,8 @@
  * 02110-1301 USA
  */
 
+#include "config.h"
+
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-plugin-interface.h"
@@ -677,6 +679,17 @@ gsignond_plugin_remote_new (
     GSignondPluginRemote *plugin = NULL;
     GSignondPipeStream *stream = NULL;
     gboolean ret = FALSE;
+    const gchar *bin_path = GSIGNOND_BIN_DIR;
+    const gchar *plugin_path = GSIGNOND_PLUGINS_DIR;
+
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv("SSO_BIN_DIR");
+    if (env_val)
+        bin_path = env_val;
+    env_val = g_getenv("SSO_PLUGINS_DIR");
+    if (env_val)
+        plugin_path = env_val;
+#   endif
 
     /* This guarantees that writes to a pipe will never cause
      * a process terminanation via SIGPIPE, and instead a proper
@@ -685,10 +698,8 @@ gsignond_plugin_remote_new (
 
     /* Spawn child process */
     argv = g_malloc0 ((3 + 1) * sizeof (gchar *));
-    argv[0] = g_build_filename (gsignond_config_get_string (config,
-            GSIGNOND_CONFIG_GENERAL_BIN_DIR), GSIGNOND_PLUGIND_NAME, NULL);
-    argv[1] = g_module_build_path (gsignond_config_get_string (config,
-            GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), plugin_type);
+    argv[0] = g_build_filename (bin_path, GSIGNOND_PLUGIND_NAME, NULL);
+    argv[1] = g_module_build_path (plugin_path, plugin_type);
     argv[2] = g_strdup(plugin_type);
     ret = g_spawn_async_with_pipes (NULL, argv, NULL,
             G_SPAWN_DO_NOT_REAP_CHILD, NULL,

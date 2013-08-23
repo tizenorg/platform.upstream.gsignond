@@ -556,12 +556,11 @@ START_TEST (test_pluginproxyfactory_proxy_timeout)
     GSignondConfig *config = NULL;
 
     /* CASE 1: proxy timeout disabled */
-    g_setenv ("SSO_PLUGIN_TIMEOUT", "0", TRUE);
-  
     config = gsignond_config_new();
     fail_if(config == NULL);
+    gsignond_config_set_integer (config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT, 0);
 
-    factory = gsignond_plugin_proxy_factory_new ( config);
+    factory = gsignond_plugin_proxy_factory_new (config);
     fail_if (factory == NULL);
 
     proxy1 = gsignond_plugin_proxy_factory_get_plugin (factory, "ssotest");
@@ -580,10 +579,9 @@ START_TEST (test_pluginproxyfactory_proxy_timeout)
     g_object_unref (factory);
 
     /* CASE 2: proxy timeout enbled */ 
-    g_setenv ("SSO_PLUGIN_TIMEOUT", "1", TRUE);
-
     config = gsignond_config_new();
     fail_if(config == NULL);
+    gsignond_config_set_integer (config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT, 1);
 
     factory = gsignond_plugin_proxy_factory_new (config);
     fail_if (factory == NULL);
@@ -603,9 +601,9 @@ START_TEST (test_pluginproxyfactory_proxy_timeout)
     g_object_unref(factory);
 
     /* CASE 3: proxy timeout enable - request recently closed plugin */
-    g_setenv ("SSO_PLUGIN_TIMEOUT", "2", TRUE);
     config = gsignond_config_new ();
     fail_if (config == NULL);
+    gsignond_config_set_integer (config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT, 2);
 
     factory = gsignond_plugin_proxy_factory_new(config);
     fail_if (factory == NULL);

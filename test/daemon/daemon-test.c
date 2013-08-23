@@ -93,12 +93,9 @@ setup_daemon (void)
     fail_if(exe_name == NULL);
     
     fail_if (g_setenv ("G_MESSAGES_DEBUG", "all", TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_IDENTITY_TIMEOUT", "5", TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_DAEMON_TIMEOUT", "5", TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_AUTH_SESSION_TIMEOUT", "5", TRUE) == FALSE);
+    fail_if (g_setenv ("GSIGNOND_CONFIG", "daemontest.conf", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
-    fail_if (g_setenv ("SSO_PLUGIN_TIMEOUT", "5", TRUE) == FALSE);
 
     DBG ("Programe pid %d, name : %s\n", getpid(), exe_name);
     free(exe_name);

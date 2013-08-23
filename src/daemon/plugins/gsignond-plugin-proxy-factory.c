@@ -26,6 +26,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "config.h"
+
 #include "gsignond/gsignond-log.h"
 #include "common/gsignond-plugin-loader.h"
 #include "gsignond-plugin-proxy-factory.h"
@@ -47,8 +49,14 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 {
-    GDir* plugin_dir = g_dir_open(gsignond_config_get_string (self->config, 
-        GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR), 0, NULL);
+    const gchar *plugin_path = GSIGNOND_PLUGINS_DIR;
+
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv("SSO_PLUGINS_DIR");
+    if (env_val)
+        plugin_path = env_val;
+#   endif
+    GDir* plugin_dir = g_dir_open(plugin_path, 0, NULL);
     if (plugin_dir == NULL) {
         WARN ("plugin directory empty");
         return;
@@ -61,11 +69,7 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
     
     self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
 
-    DBG ("enumerate plugins in %s (factory=%p)",
-         gsignond_config_get_string (self->config,
-                                     GSIGNOND_CONFIG_GENERAL_PLUGINS_DIR),
-                                     self
-        );
+    DBG ("enumerate plugins in %s (factory=%p)", plugin_path, self);
     gchar **method_iter = self->methods;
     while (1) {
         const gchar* plugin_soname = g_dir_read_name(plugin_dir);
