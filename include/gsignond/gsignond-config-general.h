@@ -69,7 +69,7 @@
  * Path provided by #GSignondStorageManager for storing user-specific
  * information, including secret and metadata databases.
  *
- * This is run-time value and any value read from configuration file
+ * This is a run-time value and any value read from configuration file
  * is overwritten.
  * 
  * Value provided by the default implementation: 
@@ -92,9 +92,11 @@
 /**
  * GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX:
  *
- * System security context of the keychain UI.
+ * System security context of the keychain UI process 
+ * (see #GSignondAccessControlManager).
  *
- * Default value can be defined through configure flag.
+ * Default value can be defined through configure --enable-keychain flag (see
+ * <link linkend="gsignond-building">Building gsignond</link>).
  */
 #define GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX GSIGNOND_CONFIG_GENERAL \
                                                 "/KeychainSystemContext"

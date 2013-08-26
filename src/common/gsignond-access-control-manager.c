@@ -452,9 +452,13 @@ gsignond_access_control_manager_acl_is_valid (
  * has a special management access to all stored identities and is able to
  * perform deletion of all identities from storage.
  * 
- * The default implementation returns a context either set in the
- * configuration, or if not set, a value specified through a configure
- * option. If gSSO was compiled
+ * The default implementation returns a context either set in #GSignondConfig, 
+ * or if not set, a value specified through a configure --enable-keychain
+ * option (see
+ * <link linkend="gsignond-building">Building gsignond</link>), or if that is not
+ * set either then an empty string "" is returned. 
+ * 
+ * If gSSO was compiled
  * with --enable-debug and SSO_KEYCHAIN_SYSCTX environment variable is set, then
  * the value of that variable is used to set the returned system context instead.
  *

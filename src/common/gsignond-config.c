@@ -44,15 +44,10 @@
  * #GSignondConfig holds configuration information as a set of keys and values
  * (integer or strings). The key names are defined in 
  * <link linkend="gsignond-General-configuration">general config keys</link>,
- * <link linkend="gsignond-Database-configuration">database config keys</link>, and
- * <link linkend="gsignond-DBus-configuration">DBus config keys</link>.
+ * and <link linkend="gsignond-DBus-configuration">DBus config keys</link>.
  * 
- * The configuration is discovered from these sources, in decreasing order of 
- * priority:
- * - environment variables, if gSSO has been compiled with --enable-debug switch.
- * See the specific keys documentation for the variable names.
- * - gSSO configuration file. See below for where the file is searched for.
- * - default values. See the documentation for specific keys for those.
+ * The configuration is retrieved from the gSSO configuration file. See below 
+ * for where the file is searched for.
  * 
  * <refsect1><title>Where the configuration file is searched for</title></refsect1>
  * 
@@ -68,8 +63,8 @@
  * <refsect1><title>Example configuration file</title></refsect1>
  * 
  * See example configuration file here:
- * <ulink url="http://code.google.com/p/accounts-sso/source/browse/gsignond.conf?repo=gsignond">
- * http://code.google.com/p/accounts-sso/source/browse/gsignond.conf?repo=gsignond</ulink>
+ * <ulink url="http://code.google.com/p/accounts-sso/source/browse/gsignond.conf.in?repo=gsignond">
+ * http://code.google.com/p/accounts-sso/source/browse/gsignond.conf.in?repo=gsignond</ulink>
  */
 
 /**

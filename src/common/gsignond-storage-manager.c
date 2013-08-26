@@ -287,7 +287,7 @@ gsignond_storage_manager_init (GSignondStorageManager *self)
  * @self: object instance.
  *
  * Initialize encryption storage. This means making sure that the 
- * necessary directories exist and are accessible.
+ * necessary directories under #GSIGNOND_CONFIG_GENERAL_STORAGE_PATH exist and are accessible.
  *
  * Returns: success?
  */
@@ -334,7 +334,8 @@ gsignond_storage_manager_storage_is_initialized (GSignondStorageManager *self)
  * @self: object instance.
  *
  * Mounts an encrypted storage and returns the filesystem path of the storage
- * mount point. This path will be used to access the secret database via
+ * mount point. This path will be set in #GSignondConfig as 
+ * #GSIGNOND_CONFIG_GENERAL_SECURE_DIR and used to access the secret database via
  * #GSignondSecretStorage.
  * 
  * The default implemenation does nothing, and immediately returns the path for the 

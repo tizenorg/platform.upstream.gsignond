@@ -167,8 +167,9 @@
         <title><systemitem>--enable-keychain=sysctx</systemitem></title>
         
         <para>
-            Sets the system security context of keychain UI as returned by
-            the access control manager. This value becomes written to the
+            Sets the system security context of keychain UI process as returned by
+            the default <link linkend="GSignondAccessControlManager">
+            GSignondAccessControlManager</link>. This value becomes written to the
             gsignond.conf in addition to being encoded as default value
             through config.h.
         </para>
@@ -179,7 +180,9 @@
         
         <para>
             Sets the base path for user specific storage directories where
-            database files will be located.
+            database files will be located as utilised by 
+            <link linkend="GSignondStorageManager">
+            GSignondStorageManager</link>.
             Default location is <filename>/var/db</filename>
         </para>
     </formalpara>
