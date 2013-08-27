@@ -342,7 +342,7 @@ _dispose (GObject *object)
     }
 
     if (self->priv->identity_info) {
-        g_hash_table_unref ((GHashTable *)self->priv->identity_info);
+        gsignond_identity_info_unref (self->priv->identity_info);
         self->priv->identity_info = NULL;
     }
 
@@ -578,7 +578,7 @@ gsignond_auth_session_new (GSignondIdentityInfo *info, const gchar *method, GSig
         g_object_new (GSIGNOND_TYPE_AUTH_SESSION,
                       "method", method, NULL);
     auth_session->priv->proxy = proxy;
-    auth_session->priv->identity_info = g_hash_table_ref ((GHashTable *)info);
+    auth_session->priv->identity_info = gsignond_identity_info_ref (info);
     auth_session->priv->token_data = token_data ? gsignond_dictionary_ref(token_data)
                                                 : gsignond_dictionary_new();
 

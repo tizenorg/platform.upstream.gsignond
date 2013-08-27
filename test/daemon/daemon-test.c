@@ -212,12 +212,12 @@ gboolean _validate_identity_info (GVariant *identity_info)
     const gchar *username = 0;
     if (!identity_info) return FALSE;
 
-    identity = (GSignondIdentityInfo *)gsignond_dictionary_new_from_variant (identity_info);
+    identity = (GSignondIdentityInfo *)gsignond_identity_info_new_from_variant (identity_info);
     if (!identity) return FALSE;
 
     username = gsignond_identity_info_get_username (identity);
 
-    gsignond_dictionary_unref (identity);
+    gsignond_identity_info_unref (identity);
 
     if (!username || strcmp (username, "test_user")) return FALSE;
 
@@ -650,7 +650,7 @@ START_TEST(test_query_identities)
     identity = _get_identity (auth_service, id, "app_context_A", &v_info, &error);
     fail_if (identity == NULL || v_info == NULL, "Failed to load identity for id '%d' : %s", id, error ? error->message : "");
     g_object_unref (identity);
-    info1 = gsignond_dictionary_new_from_variant (v_info);
+    info1 = gsignond_identity_info_new_from_variant (v_info);
 
     /* created identity2 */
     identity = _register_identity (auth_service, "app_context_B", &error);
@@ -665,7 +665,7 @@ START_TEST(test_query_identities)
     identity = _get_identity (auth_service, id, "app_context_B", &v_info, &error);
     fail_if (identity == NULL || v_info == NULL, "Failed to load identity for id '%d' : %s", id, error ? error->message : "");
     g_object_unref (identity);
-    info2 = gsignond_dictionary_new_from_variant (v_info);
+    info2 = gsignond_identity_info_new_from_variant (v_info);
 
     /* create identity3 */
     identity = _register_identity (auth_service, "app_context_A", &error);
@@ -680,7 +680,7 @@ START_TEST(test_query_identities)
     identity = _get_identity (auth_service, id, "app_context_A", &v_info, &error);
     fail_if (identity == NULL || v_info == NULL, "Failed to load identity for id '%d' : %s", id, error ? error->message : "");
     g_object_unref (identity);
-    info3 = gsignond_dictionary_new_from_variant (v_info);
+    info3 = gsignond_identity_info_new_from_variant (v_info);
 
     /* query identities for app-context: app_context_A */
     v_identities = NULL;
@@ -696,12 +696,12 @@ START_TEST(test_query_identities)
         "Expected no of identities '%d', got '%d'", 2,
         g_variant_n_children(v_identities));
     /* validated query results */
-    tmp_info = gsignond_dictionary_new_from_variant (
+    tmp_info = gsignond_identity_info_new_from_variant (
                             g_variant_get_child_value (v_identities, 0));
     fail_if (gsignond_identity_info_compare (info1, tmp_info) == FALSE);
     gsignond_identity_info_unref (tmp_info);
 
-    tmp_info = gsignond_dictionary_new_from_variant (
+    tmp_info = gsignond_identity_info_new_from_variant (
                             g_variant_get_child_value (v_identities, 1));
     fail_if (gsignond_identity_info_compare (info3, tmp_info) == FALSE);
     gsignond_identity_info_unref (tmp_info);
@@ -721,7 +721,7 @@ START_TEST(test_query_identities)
     fail_if (g_variant_n_children (v_identities) != 1, 
         "Expected no of identities '%d', got '%d'", 1,
         g_variant_n_children(v_identities));
-    tmp_info = gsignond_dictionary_new_from_variant (
+    tmp_info = gsignond_identity_info_new_from_variant (
                             g_variant_get_child_value (v_identities, 0));
     fail_if (gsignond_identity_info_compare (info2, tmp_info) == FALSE);
     gsignond_identity_info_unref (tmp_info);
@@ -741,7 +741,7 @@ START_TEST(test_query_identities)
     fail_if (g_variant_n_children (v_identities) != 1, 
         "Expected no of identities '%d', got '%d'", 1,
         g_variant_n_children(v_identities));
-    tmp_info = gsignond_dictionary_new_from_variant (
+    tmp_info = gsignond_identity_info_new_from_variant (
                             g_variant_get_child_value (v_identities, 0));
     fail_if (gsignond_identity_info_compare 
             (info2, tmp_info) == FALSE);

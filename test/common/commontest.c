@@ -206,7 +206,7 @@ START_TEST (test_identity_info)
                 identity) == NULL);
     fail_unless (gsignond_identity_info_get_owner (identity) == NULL);
     fail_unless (gsignond_identity_info_get_validated (identity) == FALSE);
-    fail_unless (gsignond_identity_info_get_identity_type (identity) == -1);
+    fail_unless (gsignond_identity_info_get_identity_type (identity) == 0);
 
     fail_unless (gsignond_identity_info_set_id (identity, id) == TRUE);
 
@@ -348,7 +348,7 @@ START_TEST (test_identity_info)
     fail_unless (type == gsignond_identity_info_get_identity_type (identity));
 
     /*copy*/
-    identity2 = gsignond_dictionary_copy (identity);
+    identity2 = gsignond_identity_info_copy (identity);
     fail_if (identity2 == NULL);
     fail_unless (gsignond_identity_info_compare (identity, identity2) == TRUE);
     gsignond_identity_info_unref (identity2);

@@ -462,7 +462,7 @@ gsignond_daemon_register_new_identity (GSignondDaemon *daemon,
     DBG("register_new_identity: cache size : %d", g_hash_table_size(daemon->priv->identities));
     identity = gsignond_identity_new (daemon, info);
     if (identity == NULL) {
-        gsignond_dictionary_unref (info);
+        gsignond_identity_info_unref (info);
         ERR("Unable to register new identity");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_INTERNAL_SERVER, "Internal server error");
         return NULL;
@@ -501,7 +501,7 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
     gsignond_security_context_list_free (acl); \
     if (!valid) { \
         WARN ("identity access check failed"); \
-        gsignond_dictionary_unref (info); \
+        gsignond_identity_info_unref (info); \
         if (error) { \
             *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_PERMISSION_DENIED, "Can not read identity"); \
         } \
@@ -512,8 +512,10 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
     identity = GSIGNOND_IDENTITY(g_hash_table_lookup (daemon->priv->identities, GUINT_TO_POINTER(id)));
     if (identity) {
         identity_info = gsignond_identity_get_identity_info (identity);
+        gsignond_identity_info_ref (identity_info);
         VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
         DBG ("using cased Identity '%p' for id %d", identity, id);
+        gsignond_identity_info_unref (identity_info);
 
         return GSIGNOND_IDENTITY (g_object_ref (identity));
     }

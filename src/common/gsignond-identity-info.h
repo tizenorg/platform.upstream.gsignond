@@ -33,16 +33,20 @@
 
 G_BEGIN_DECLS
 
-#define GSIGNOND_TYPE_IDENTITY_INFO (GSIGNOND_TYPE_DICTIONARY)
-
-#define GSIGNOND_IDENTITY_INFO(obj)  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
+#define GSIGNOND_TYPE_IDENTITY_INFO (gsignond_identity_info_get_type())
+#define GSIGNOND_IDENTITY_INFO(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
                                            GSIGNOND_TYPE_IDENTITY_INFO, \
                                            GSignondIdentityInfo))
-#define GSIGNOND_IS_IDENTITY_INFO(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj),\
-                                           GSIGNOND_TYPE_IDENTITY_INFO))
+/*#define GSIGNOND_IS_IDENTITY_INFO(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj),\
+                                           GSIGNOND_TYPE_IDENTITY_INFO))*/
 
-typedef GSignondDictionary GSignondIdentityInfo;
+#define GSIGNOND_IS_IDENTITY_INFO(obj) (obj)
+
+typedef struct _GSignondIdentityInfo GSignondIdentityInfo;
 typedef GList GSignondIdentityInfoList;
+
+GType gsignond_identity_info_get_type (void) G_GNUC_CONST;
+
 
 GSignondIdentityInfo *
 gsignond_identity_info_new (void);
@@ -56,7 +60,7 @@ gsignond_identity_info_to_variant (GSignondIdentityInfo *info);
 GSignondIdentityInfo *
 gsignond_identity_info_copy (GSignondIdentityInfo *info);
 
-void
+GSignondIdentityInfo *
 gsignond_identity_info_ref (GSignondIdentityInfo *info);
 
 void
@@ -85,9 +89,6 @@ gsignond_identity_info_set_username (
         const gchar *username);
 
 gboolean
-gsignond_identity_info_remove_username (GSignondIdentityInfo *info);
-
-gboolean
 gsignond_identity_info_get_is_username_secret (GSignondIdentityInfo *info);
 
 gboolean
@@ -102,9 +103,6 @@ gboolean
 gsignond_identity_info_set_secret (
         GSignondIdentityInfo *info,
         const gchar *secret);
-
-gboolean
-gsignond_identity_info_remove_secret (GSignondIdentityInfo *info);
 
 gboolean
 gsignond_identity_info_get_store_secret (GSignondIdentityInfo *info);
@@ -185,8 +183,8 @@ gsignond_identity_info_compare (
         GSignondIdentityInfo *info,
         GSignondIdentityInfo *other);
 
-void
-gsignond_identity_info_remove_edit_flags (GSignondIdentityInfo *info);
+GVariant *
+gsignond_identity_info_to_variant (GSignondIdentityInfo *info);
 
 void
 gsignond_identity_info_list_free (GSignondIdentityInfoList *list);

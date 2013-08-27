@@ -398,7 +398,7 @@ _handle_get_identity (GSignondDbusAuthServiceAdapter *self,
         info = gsignond_identity_get_identity_info (identity);
         gsignond_dbus_auth_service_complete_get_identity (self->priv->dbus_auth_service,
             invocation, gsignond_dbus_identity_adapter_get_object_path (dbus_identity),
-            gsignond_dictionary_to_variant (info));
+            gsignond_identity_info_to_variant(info));
     }
     else {
         g_dbus_method_invocation_return_gerror (invocation, error);
@@ -469,7 +469,7 @@ _append_identity_info (gpointer data, gpointer user_data)
 {
     GVariantBuilder *builder = (GVariantBuilder *)user_data;
 
-    g_variant_builder_add (builder, "@a{sv}", gsignond_dictionary_to_variant ((GSignondIdentityInfo*)data));
+    g_variant_builder_add (builder, "@a{sv}", gsignond_identity_info_to_variant ((GSignondIdentityInfo*)data));
 }
 
 static gboolean

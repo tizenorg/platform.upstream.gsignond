@@ -5,7 +5,7 @@ with_gdb=0
 if test $# -ge 1 ; then
     if test "$1" == "--with-duma" ; then
         with_duma=1
-        with_gdb=1
+        with_gdb=0
     else
         with_duma=0
         if test "$1" == "--with-gdb" ; then
@@ -29,7 +29,7 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SRC_HOME/src/common/.libs:$SRC_HOME/sr
 export G_MESSAGES_DEBUG="all"
 
 # Clean db
-rm -rf /tmp/gsignond
+#rm -rf /tmp/gsignond
 
 echo "--------------------------"
 echo "with_duma:  $with_duma"
@@ -40,7 +40,7 @@ if test $with_duma -eq 1 ; then
     export DUMA_PROTECT_FREE=1
     export DUMA_PROTECT_BELOW=1
 
-    LD_PRELOAD="libduma.so" $SRC_HOME/src/daemon/.libs/gsignond  &
+    LD_PRELOAD="libduma.so" $SRC_HOME/src/daemon/.libs/gsignond  
 
     if test $with_gdb -eq 1 ; then
         sudo gdb --pid=`pidof gsignond`

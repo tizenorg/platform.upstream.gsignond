@@ -290,7 +290,6 @@ gsignond_identity_get_info (GSignondIdentity *identity, const GSignondSecurityCo
         return FALSE;
     }
 
-    GSignondIdentityInfo *info = NULL;
     GVariant *vinfo = NULL;
 
     if (!identity->priv->info) {
@@ -301,21 +300,8 @@ gsignond_identity_get_info (GSignondIdentity *identity, const GSignondSecurityCo
 
     VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
 
-    info = gsignond_identity_info_copy (identity->priv->info);
-
-    /* remove password */
-    gsignond_identity_info_remove_secret (info);
-
-    /* remove username if its secret */
-    if (gsignond_identity_info_get_is_username_secret (info))
-        gsignond_identity_info_remove_username (info);
-
-    /* remove edit flags */
-    gsignond_identity_info_remove_edit_flags (info);
-
     /* prepare identity info, excluding password and username if secret */
-    vinfo = gsignond_dictionary_to_variant (identity->priv->info);
-    gsignond_identity_info_unref (info);
+    vinfo = gsignond_identity_info_to_variant (identity->priv->info);
     if (!vinfo) {
         WARN ("identity info to variant convertion failed.");
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_IDENTITY_ERR, "Identity internal eror.");
