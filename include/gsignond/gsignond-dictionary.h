@@ -116,6 +116,9 @@ gsignond_dictionary_set_string (GSignondDictionary *dict, const gchar *key,
 gboolean
 gsignond_dictionary_remove (GSignondDictionary *dict, const gchar *key);
 
+gboolean
+gsignond_dictionary_contains (GSignondDictionary *dict, const gchar *key);
+
 G_END_DECLS
 
 #endif /* __GSIGNOND_DICTIONARY_H__ */

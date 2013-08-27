@@ -515,3 +515,23 @@ gsignond_dictionary_copy (GSignondDictionary *other)
 
     return dict;
 }
+
+/**
+ * gsignond_dictionary_contains:
+ * @dict: instance of #GSignondDictionary
+ * @key: (transfer none): key to check
+ *
+ * Checks if the @dict contains @key.
+ *
+ * Returns: TRUE if found, FALSE otherwise.
+ */
+gboolean
+gsignond_dictionary_contains (GSignondDictionary *dict,
+                              const gchar *key)
+{
+    g_return_val_if_fail (dict != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
+
+    return g_hash_table_contains (dict, key);
+}
+
