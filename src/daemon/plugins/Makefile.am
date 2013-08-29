@@ -1,3 +1,4 @@
+include $(top_srcdir)/common.mk
 SUBDIRS = plugind
 
 noinst_LTLIBRARIES = libgsignond-plugins.la

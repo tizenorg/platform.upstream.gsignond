@@ -1,3 +1,4 @@
+include $(top_srcdir)/common.mk
 SUBDIRS = db dbus plugins
 NULL=
 
