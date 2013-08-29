@@ -243,8 +243,7 @@ _on_query_dialog_ready (GObject *proxy, GAsyncResult *res, gpointer user_data)
         g_object_unref (info->adapter);
         g_slice_free (_SignonuiDbusInfo, info);
     }
-    
-    if (error) g_error_free (error);
+    else if (error) g_error_free (error);
     if (reply) g_variant_unref (reply);
 }
 
@@ -290,9 +289,8 @@ _on_refresh_dialog_ready (GObject *proxy, GAsyncResult *res, gpointer user_data)
         g_object_unref (info->adapter);
         g_slice_free (_SignonuiDbusInfo, info);
     }
-   
+    else if (error) g_error_free (error);
     if (reply) g_variant_unref (reply);
-    if (error) g_error_free (error);
 }
 
 gboolean
@@ -338,9 +336,9 @@ _on_cancel_request_ready (GObject *proxy, GAsyncResult *res, gpointer user_data)
         g_object_unref (info->adapter);
         g_slice_free (_SignonuiDbusInfo, info);
     }
+    else if (error) g_error_free (error);
 
     if (reply) g_variant_unref (reply);
-    if (error) g_error_free (error);
 }
 
 gboolean
