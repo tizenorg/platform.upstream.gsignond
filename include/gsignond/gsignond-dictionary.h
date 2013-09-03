@@ -59,6 +59,9 @@ gsignond_dictionary_new_from_variant (GVariant *variant);
 GVariant *
 gsignond_dictionary_to_variant (GSignondDictionary *dict);
 
+GVariantBuilder *
+gsignond_dictionary_to_variant_builder (GSignondDictionary *dict);
+
 GVariant *
 gsignond_dictionary_get (GSignondDictionary *dict, const gchar *key);
 

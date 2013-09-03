@@ -85,6 +85,39 @@ gsignond_dictionary_new_from_variant (GVariant *variant)
 }
 
 /**
+ * gsignond_dictionary_to_variant_builder:
+ * @dict: instance of #GSignondDictionary
+ *
+ * Converts the #GSignondDictionary to a #GVariantBuilder of type 
+ * G_VARIANT_TYPE_VARDICT.
+ *
+ * Caller should use g_variant_builder_unref() on the return value when it is
+ * no longer needed.
+ *
+ * Returns: (transfer full): #GVariantBuilder if successful, NULL otherwise.
+ */
+GVariantBuilder *
+gsignond_dictionary_to_variant_builder (GSignondDictionary *dict)
+{
+    GVariantBuilder *builder;
+    GHashTableIter iter;
+    const gchar *key = NULL;
+    GVariant *value = NULL;
+
+    g_return_val_if_fail (dict != NULL, NULL);
+
+    builder = g_variant_builder_new (G_VARIANT_TYPE_VARDICT);
+
+    g_hash_table_iter_init (&iter, dict);
+    while (g_hash_table_iter_next (&iter, (gpointer)&key, (gpointer)&value))
+    {
+        g_variant_builder_add (builder, "{sv}", key, value);
+    }
+
+    return builder;
+}
+
+/**
  * gsignond_dictionary_to_variant:
  * @dict: instance of #GSignondDictionary
  *
@@ -96,25 +129,18 @@ gsignond_dictionary_new_from_variant (GVariant *variant)
 GVariant *
 gsignond_dictionary_to_variant (GSignondDictionary *dict)
 {
-    GVariantBuilder builder;
-    GHashTableIter iter;
+    GVariantBuilder *builder = NULL;
     GVariant *vdict = NULL;
-    const gchar *key = NULL;
-    GVariant *value = NULL;
 
     g_return_val_if_fail (dict != NULL, NULL);
 
-    g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
-    g_hash_table_iter_init (&iter, dict);
-    while (g_hash_table_iter_next (&iter,
-                                   (gpointer)&key,
-                                   (gpointer)&value))
-    {
-        g_variant_builder_add (&builder, "{sv}",
-                               key,
-                               value);
-    }
-    vdict = g_variant_builder_end (&builder);
+    builder = gsignond_dictionary_to_variant_builder (dict);
+    if (!builder) return NULL;
+
+    vdict = g_variant_builder_end (builder);
+
+    g_variant_builder_unref (builder);
+
     return vdict;
 }
 
