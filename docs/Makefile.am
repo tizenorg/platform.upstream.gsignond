@@ -119,3 +119,5 @@ TESTS_ENVIRONMENT = cd $(srcdir) && \
   SRCDIR=$(abs_srcdir) BUILDDIR=$(abs_builddir)
 TESTS = $(GTKDOC_CHECK)
 endif
+
+CLEANFILES += $(DOC_MODULE)-*.txt $(DOC_MODULE).types
