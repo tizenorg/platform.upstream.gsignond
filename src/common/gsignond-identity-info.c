@@ -285,6 +285,60 @@ gsignond_identity_info_unset_edit_flags (
     return TRUE;
 }
 
+GSignondIdentityInfoPropFlags
+gsignond_identity_info_selective_copy (GSignondIdentityInfo *dest,
+                                       const GSignondIdentityInfo *src,
+                                       GSignondIdentityInfoPropFlags flags)
+{
+    GSignondIdentityInfoPropFlags tmp_flag;
+    guint i;
+    g_return_val_if_fail (src, IDENTITY_INFO_PROP_NONE);
+    g_return_val_if_fail (dest, IDENTITY_INFO_PROP_NONE);
+    g_return_val_if_fail (flags != IDENTITY_INFO_PROP_NONE, flags);
+
+    /* This table should match to GSignondIdentityInfoPropFlags order */
+    const gchar *keys[] = {
+        GSIGNOND_IDENTITY_INFO_ID,
+        GSIGNOND_IDENTITY_INFO_TYPE,
+        GSIGNOND_IDENTITY_INFO_CAPTION,
+        GSIGNOND_IDENTITY_INFO_STORESECRET,
+        GSIGNOND_IDENTITY_INFO_USERNAME_IS_SECRET,
+        GSIGNOND_IDENTITY_INFO_OWNER,
+        GSIGNOND_IDENTITY_INFO_ACL,
+        GSIGNOND_IDENTITY_INFO_AUTHMETHODS,
+        GSIGNOND_IDENTITY_INFO_REALMS,
+        GSIGNOND_IDENTITY_INFO_REFCOUNT,
+        GSIGNOND_IDENTITY_INFO_VALIDATED
+    };
+
+    for (i= 0, tmp_flag = IDENTITY_INFO_PROP_ID; 
+         tmp_flag < IDENTITY_INFO_PROP_MAX;
+         tmp_flag <<= 1, i++) {
+        if (flags & tmp_flag && 
+            gsignond_dictionary_contains (src->map, keys[i])) {
+            gsignond_dictionary_set (dest->map, keys[i],
+               g_variant_ref (gsignond_dictionary_get (src->map, keys[i])));
+        }
+        else {
+            flags &= ~tmp_flag;
+        }
+    }
+
+    if (flags & IDENTITY_INFO_PROP_USERNAME) {
+        g_free (dest->username);
+        dest->username = g_strdup (src->username);
+    }
+
+    if (flags & IDENTITY_INFO_PROP_SECRET) {
+        g_free (dest->secret);
+        dest->secret = g_strdup (src->secret);
+    }
+
+    dest->edit_flags |= flags;
+
+    return flags;
+}
+
 /**
  * gsignond_identity_info_new:
  *

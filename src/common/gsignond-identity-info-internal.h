@@ -55,11 +55,13 @@ G_BEGIN_DECLS
 typedef enum {
     IDENTITY_INFO_PROP_NONE = 0x0000,
     
-    IDENTITY_INFO_PROP_ID = 0x0001,
-    IDENTITY_INFO_PROP_TYPE = 0x0002,
-    IDENTITY_INFO_PROP_CAPTION = 0x0004,
-    IDENTITY_INFO_PROP_USERNAME = 0x0008,
-    IDENTITY_INFO_PROP_SECRET = 0x0010,
+    /* Secret fields */
+    IDENTITY_INFO_PROP_USERNAME = 0x0001,
+    IDENTITY_INFO_PROP_SECRET = 0x0002,
+
+    IDENTITY_INFO_PROP_ID = 0x0004,
+    IDENTITY_INFO_PROP_TYPE = 0x0008,
+    IDENTITY_INFO_PROP_CAPTION = 0x0010,
     IDENTITY_INFO_PROP_STORE_SECRET = 0x0020,
     IDENTITY_INFO_PROP_USERNAME_IS_SECRET = 0x0040,
     IDENTITY_INFO_PROP_OWNER = 0x0080,
@@ -69,6 +71,7 @@ typedef enum {
     IDENTITY_INFO_PROP_REF_COUNT = 0x0800,
     IDENTITY_INFO_PROP_VALIDATED = 0x1000,
 
+    IDENTITY_INFO_PROP_MAX = 0x2000,
     IDENTITY_INFO_PROP_ALL = 0x1ffff
 
 } GSignondIdentityInfoPropFlags;
@@ -88,6 +91,10 @@ gboolean
 gsignond_identity_info_unset_edit_flags (GSignondIdentityInfo *info,
                                          GSignondIdentityInfoPropFlags flags);
 
+GSignondIdentityInfoPropFlags
+gsignond_identity_info_selective_copy (GSignondIdentityInfo *dest,
+                                       const GSignondIdentityInfo *src,
+                                       GSignondIdentityInfoPropFlags flags);
 
 G_END_DECLS
 

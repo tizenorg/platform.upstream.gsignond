@@ -866,36 +866,16 @@ gsignond_identity_store (GSignondIdentity *identity,
    
     flags = gsignond_identity_info_get_edit_flags (identity_info);
 
-    if (flags & IDENTITY_INFO_PROP_USERNAME)
-        gsignond_identity_info_set_username (priv->info,
-            gsignond_identity_info_get_username(identity_info));
-    if (flags & IDENTITY_INFO_PROP_USERNAME_IS_SECRET)
-        gsignond_identity_info_set_username_secret (priv->info,
-            gsignond_identity_info_get_is_username_secret (identity_info));
-    if (flags & IDENTITY_INFO_PROP_SECRET)
-        gsignond_identity_info_set_secret (priv->info,
-            gsignond_identity_info_get_secret (identity_info));
-    if (flags & IDENTITY_INFO_PROP_STORE_SECRET)
-        gsignond_identity_info_set_store_secret (priv->info,
-            gsignond_identity_info_get_store_secret (identity_info));
-    if (flags & IDENTITY_INFO_PROP_CAPTION)
-        gsignond_identity_info_set_caption (priv->info,
-            gsignond_identity_info_get_caption (identity_info));
-    if (flags & IDENTITY_INFO_PROP_TYPE)
-        gsignond_identity_info_set_identity_type (priv->info,
-            gsignond_identity_info_get_identity_type (identity_info));
-    if (flags & IDENTITY_INFO_PROP_METHODS) {
-        GHashTable *methods = 
-            gsignond_identity_info_get_methods (identity_info);
-        gsignond_identity_info_set_methods (priv->info, methods);
-        g_hash_table_unref (methods);
-    }
-    if (flags & IDENTITY_INFO_PROP_REALMS) {
-        GSequence *realms = 
-            gsignond_identity_info_get_realms (identity_info);
-        gsignond_identity_info_set_realms (priv->info, realms);
-        g_sequence_free (realms);
-    }
+    /* select only interested field */
+    flags &= (IDENTITY_INFO_PROP_USERNAME |
+              IDENTITY_INFO_PROP_USERNAME_IS_SECRET |
+              IDENTITY_INFO_PROP_SECRET |
+              IDENTITY_INFO_PROP_STORE_SECRET |
+              IDENTITY_INFO_PROP_CAPTION |
+              IDENTITY_INFO_PROP_TYPE |
+              IDENTITY_INFO_PROP_METHODS |
+              IDENTITY_INFO_PROP_REALMS);
+    gsignond_identity_info_selective_copy (priv->info, identity_info, flags);
 
     /* FIXME : either username/secret changed reset the identity
      * valdated state to FALSE ???
