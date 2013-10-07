@@ -19,6 +19,8 @@ libssotest_la_SOURCES = \
     gsignond-ssotest-plugin.c \
     $(NULL)
 
+libssotest_la_LDFLAGS = -avoid-version
+
 all-local: slink
 
 slink:

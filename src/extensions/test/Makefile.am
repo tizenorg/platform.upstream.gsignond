@@ -21,3 +21,4 @@ libextension_test_la_SOURCES = \
     test-storage-manager.h \
     test-storage-manager.c
 
+libextension_test_la_LDFLAGS = -avoid-version

@@ -19,6 +19,8 @@ libdigest_la_SOURCES = \
     gsignond-digest-plugin.c \
     $(NULL)
 
+libdigest_la_LDFLAGS = -avoid-version
+
 all-local: slink
 
 slink:

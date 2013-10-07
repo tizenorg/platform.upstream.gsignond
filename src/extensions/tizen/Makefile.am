@@ -24,3 +24,4 @@ libextension_tizen_la_SOURCES = \
     tizen-storage-manager.h \
     tizen-storage-manager.c
 
+libextension_tizen_la_LDFLAGS = -avoid-version

@@ -19,6 +19,8 @@ libpassword_la_SOURCES = \
     gsignond-password-plugin.c \
     $(NULL)
 
+libpassword_la_LDFLAGS = -avoid-version
+
 all-local: slink
 
 slink:
