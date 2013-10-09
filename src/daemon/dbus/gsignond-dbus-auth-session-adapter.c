@@ -478,7 +478,7 @@ GSignondDbusAuthSessionAdapter *
 gsignond_dbus_auth_session_adapter_new (GSignondAuthSession *session, const gchar *app_context, guint timeout)
 {
     GError *error = NULL;
-    GDBusConnection *connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
+    GDBusConnection *connection = g_bus_get_sync (GSIGNOND_BUS_TYPE, NULL, &error);
     if (error) {
         ERR ("Error getting session bus :%s", error->message);
         g_error_free (error);
