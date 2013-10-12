@@ -181,6 +181,7 @@ _load_config (GSignondConfig *self)
             }
 
             INFO ("found config : '%s/%s' - '%s'", groups[i], keys[j], value);
+            gsignond_config_set_string (self, key, value);
 
             g_free (key);
             g_free (value);
