@@ -54,11 +54,11 @@
  * If gSSO has been compiled with --enable-debug, then these locations are used,
  * in decreasing order of priority:
  * - GSIGNOND_CONFIG environment variable
- * - g_get_user_config_dir() + "gsignond/gsignond.conf"
- * - each of g_get_system_config_dirs() + "gsignond/gsignond.conf"
+ * - g_get_user_config_dir() + "gsignond.conf"
+ * - each of g_get_system_config_dirs() + "gsignond.conf"
  * 
  * Otherwise, the config file location is determined at compilation time as 
- * $(sysconfdir) + "gsignond/gsignond.conf"
+ * $(sysconfdir) + "gsignond.conf"
  * 
  * <refsect1><title>Example configuration file</title></refsect1>
  * 
@@ -106,7 +106,7 @@ _load_config (GSignondConfig *self)
         def_config = g_strdup (g_getenv ("GSIGNOND_CONFIG"));
         if (!def_config)
             def_config = g_build_filename (g_get_user_config_dir(),
-                                           "gsignond/gsignond.conf",
+                                           "gsignond.conf",
                                            NULL);
         if (g_access (def_config, R_OK) == 0) {
             self->priv->config_file_path = def_config;
@@ -115,7 +115,7 @@ _load_config (GSignondConfig *self)
             sysconfdirs = g_get_system_config_dirs ();
             while (*sysconfdirs != NULL) {
                 def_config = g_build_filename (*sysconfdirs,
-                                               "gsignond/gsignond.conf",
+                                               "gsignond.conf",
                                                NULL);
                 if (g_access (def_config, R_OK) == 0) {
                     self->priv->config_file_path = def_config;
@@ -131,7 +131,7 @@ _load_config (GSignondConfig *self)
 #   error "System configuration directory not defined!"
 #   endif
     def_config = g_build_filename (GSIGNOND_SYSCONF_DIR,
-                                   "gsignond/gsignond.conf",
+                                   "gsignond.conf",
                                    NULL);
     if (g_access (def_config, R_OK) == 0) {
         self->priv->config_file_path = def_config;
