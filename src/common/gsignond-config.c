@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2013 Intel Corporation.
  *
  * Contact: Jussi Laako <jussi.laako@linux.intel.com>
  *          Amarnath Valluri <amarnath.valluri@linux.intel.com>
@@ -55,6 +55,7 @@
  * in decreasing order of priority:
  * - GSIGNOND_CONFIG environment variable
  * - g_get_user_config_dir() + "gsignond.conf"
+ * - path specified in --sysconfdir configure option ($(sysconfdir))
  * - each of g_get_system_config_dirs() + "gsignond.conf"
  * 
  * Otherwise, the config file location is determined at compilation time as 
@@ -89,10 +90,28 @@ struct _GSignondConfigPrivate
 
 G_DEFINE_TYPE (GSignondConfig, gsignond_config, G_TYPE_OBJECT);
 
+#ifdef ENABLE_DEBUG
+
+static gchar *
+_check_config_file (const gchar *path)
+{
+    gchar *fn;
+
+    fn = g_build_filename (path,
+                           "gsignond.conf",
+                           NULL);
+    DBG ("check config at %s", fn);
+    if (g_access (fn, R_OK) == 0)
+        return fn;
+    g_free (fn);
+    return NULL;
+}
+
+#endif  /* ENABLE_DEBUG */
+
 static gboolean
 _load_config (GSignondConfig *self)
 {
-    gchar *def_config;
     GError *err = NULL;
     gchar **groups = NULL;
     gsize n_groups = 0;
@@ -103,41 +122,37 @@ _load_config (GSignondConfig *self)
     const gchar * const *sysconfdirs;
 
     if (!self->priv->config_file_path) {
-        def_config = g_strdup (g_getenv ("GSIGNOND_CONFIG"));
-        if (!def_config)
-            def_config = g_build_filename (g_get_user_config_dir(),
-                                           "gsignond.conf",
-                                           NULL);
-        if (g_access (def_config, R_OK) == 0) {
-            self->priv->config_file_path = def_config;
-        } else {
-            g_free (def_config);
-            sysconfdirs = g_get_system_config_dirs ();
-            while (*sysconfdirs != NULL) {
-                def_config = g_build_filename (*sysconfdirs,
-                                               "gsignond.conf",
-                                               NULL);
-                if (g_access (def_config, R_OK) == 0) {
-                    self->priv->config_file_path = def_config;
-                    break;
-                }
-                g_free (def_config);
-                sysconfdirs++;
+        const gchar *cfg_env = g_getenv ("GSIGNOND_CONFIG");
+        if (cfg_env)
+            self->priv->config_file_path = _check_config_file (cfg_env);
+    }
+    if (!self->priv->config_file_path) {
+        gchar *user_cfg = g_strdup_printf ("%s/%s",
+                                           g_get_user_config_dir (),
+                                           "gsignond");
+        self->priv->config_file_path = _check_config_file (user_cfg);
+        g_free (user_cfg);
+    }
+    if (!self->priv->config_file_path) {
+        self->priv->config_file_path =
+            _check_config_file (GSIGNOND_SYSCONF_DIR);
+    }
+    if (!self->priv->config_file_path) {
+        sysconfdirs = g_get_system_config_dirs ();
+        while (*sysconfdirs != NULL) {
+            gchar *sys_cfg = _check_config_file (*sysconfdirs);
+            if (sys_cfg) {
+                self->priv->config_file_path = sys_cfg;
+                break;
             }
+            sysconfdirs++;
         }
     }
 #   else  /* ENABLE_DEBUG */
 #   ifndef GSIGNOND_SYSCONF_DIR
 #   error "System configuration directory not defined!"
 #   endif
-    def_config = g_build_filename (GSIGNOND_SYSCONF_DIR,
-                                   "gsignond.conf",
-                                   NULL);
-    if (g_access (def_config, R_OK) == 0) {
-        self->priv->config_file_path = def_config;
-    } else {
-        g_free (def_config);
-    }
+    self->priv->config_file_path = _check_config_file (GSIGNOND_SYSCONF_DIR);
 #   endif  /* ENABLE_DEBUG */
 
     if (self->priv->config_file_path) {

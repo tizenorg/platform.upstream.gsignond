@@ -83,8 +83,10 @@ _set_config (GSignondStorageManager *self, GSignondConfig *config)
     const gchar *storage_path = gsignond_config_get_string (
                                        self->config,
                                        GSIGNOND_CONFIG_GENERAL_STORAGE_PATH);
-    if (!storage_path)
+    if (!storage_path) {
         storage_path = BASE_STORAGE_DIR;
+        DBG ("storage path not configured, using default location");
+    }
 #   ifdef ENABLE_DEBUG
     const gchar *env_val = g_getenv("SSO_STORAGE_PATH");
     if (env_val)
