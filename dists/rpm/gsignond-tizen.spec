@@ -11,6 +11,7 @@ Release: 1
 Group: System/Daemons
 License: LGPL-2.1+
 Source: %{name}-%{version}.tar.gz
+URL: https://01.org/gsso
 Provides: gsignon
 %if %{dbus_type} != "p2p"
 Requires: dbus-1
