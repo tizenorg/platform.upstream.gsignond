@@ -314,7 +314,7 @@ gsignond_identity_info_selective_copy (GSignondIdentityInfo *dest,
     for (i= 0, tmp_flag = IDENTITY_INFO_PROP_ID; 
          tmp_flag < IDENTITY_INFO_PROP_MAX;
          tmp_flag <<= 1, i++) {
-        if (flags & tmp_flag && 
+        if ((flags & tmp_flag) && 
             gsignond_dictionary_contains (src->map, keys[i])) {
             gsignond_dictionary_set (dest->map, keys[i],
                g_variant_ref (gsignond_dictionary_get (src->map, keys[i])));
@@ -337,6 +337,14 @@ gsignond_identity_info_selective_copy (GSignondIdentityInfo *dest,
     dest->edit_flags |= flags;
 
     return flags;
+}
+
+void
+gsignond_identity_info_remove_owner (GSignondIdentityInfo *info)
+{
+    g_return_if_fail (info && GSIGNOND_IS_IDENTITY_INFO(info));
+
+    gsignond_dictionary_remove (info->map, GSIGNOND_IDENTITY_INFO_OWNER);
 }
 
 /**
@@ -1117,7 +1125,7 @@ gsignond_identity_info_get_owner (GSignondIdentityInfo *info)
     g_return_val_if_fail (info && GSIGNOND_IS_IDENTITY_INFO (info), NULL);
 
     GVariant *var = gsignond_dictionary_get (info->map,
-                         GSIGNOND_IDENTITY_INFO_OWNER);
+                                             GSIGNOND_IDENTITY_INFO_OWNER);
     return var ? gsignond_security_context_from_variant (var) : NULL;
 }
 
@@ -1146,11 +1154,11 @@ gsignond_identity_info_set_owner (
         gsignond_security_context_compare (current_owner, owner) == 0)
         return TRUE;
 
-    return gsignond_dictionary_set (info->map,
-                GSIGNOND_IDENTITY_INFO_OWNER,
-                gsignond_security_context_to_variant (owner)) &&
-           gsignond_identity_info_set_edit_flags (info,
-                IDENTITY_INFO_PROP_OWNER);
+    return (gsignond_dictionary_set (info->map,
+                                     GSIGNOND_IDENTITY_INFO_OWNER,
+                                     gsignond_security_context_to_variant (owner)) &&
+            gsignond_identity_info_set_edit_flags (info,
+                                                   IDENTITY_INFO_PROP_OWNER));
 }
 
 /**

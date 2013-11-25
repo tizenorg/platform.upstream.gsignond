@@ -820,6 +820,7 @@ typedef struct _{
     GSignondDaemon *daemon;
     guint32 identity_id;
 }_StoreCachedTokenCbInfo;
+
 static void
 _store_cached_token_data (const gchar *method, GSignondAuthSession *session, _StoreCachedTokenCbInfo *data)
 {
@@ -831,6 +832,14 @@ _store_cached_token_data (const gchar *method, GSignondAuthSession *session, _St
         gsignond_daemon_store_identity_data (data->daemon, data->identity_id, method, token_data);
 }
 
+static long
+_ncstrlen (const gchar *strptr)
+{
+    if (strptr == NULL)
+        return -1;
+    return (long) strlen (strptr);
+}
+
 guint32
 gsignond_identity_store (GSignondIdentity *identity, 
                          const GVariant *info,
@@ -840,8 +849,10 @@ gsignond_identity_store (GSignondIdentity *identity,
     GSignondIdentityPrivate *priv = NULL;
     GSignondIdentityInfo *identity_info = NULL;
     gboolean was_new_identity = FALSE;
+    GSignondSecurityContext *owner_ctx = NULL;
     GSignondSecurityContextList *contexts = NULL;
     GSignondIdentityInfoPropFlags flags;
+    GSignondIdentityInfoPropFlags flag_mask;
     guint32 id;
 
     if (!(identity && GSIGNOND_IS_IDENTITY (identity))) {
@@ -858,6 +869,19 @@ gsignond_identity_store (GSignondIdentity *identity,
 
     identity_info = gsignond_identity_info_new_from_variant ((GVariant *)info);
 
+    /* if owner context is non-NULL but empty, remove the dictionary item,
+     * it will get filled up later when actual store happens */
+    owner_ctx = gsignond_identity_info_get_owner (identity_info);
+    if (owner_ctx) {
+        const gchar *sys_ctx =
+            gsignond_security_context_get_system_context (owner_ctx);
+        if (_ncstrlen (sys_ctx) <= 0) {
+            gsignond_identity_info_remove_owner (identity_info);
+        }
+        gsignond_security_context_free (owner_ctx);
+        owner_ctx = NULL;
+    }
+
     contexts = gsignond_identity_info_get_access_control_list (identity_info);
     if (contexts) {
         VALIDATE_IDENTITY_WRITE_ACL (identity, ctx, 0);
@@ -867,14 +891,18 @@ gsignond_identity_store (GSignondIdentity *identity,
     flags = gsignond_identity_info_get_edit_flags (identity_info);
 
     /* select only interested field */
-    flags &= (IDENTITY_INFO_PROP_USERNAME |
-              IDENTITY_INFO_PROP_USERNAME_IS_SECRET |
-              IDENTITY_INFO_PROP_SECRET |
-              IDENTITY_INFO_PROP_STORE_SECRET |
-              IDENTITY_INFO_PROP_CAPTION |
-              IDENTITY_INFO_PROP_TYPE |
-              IDENTITY_INFO_PROP_METHODS |
-              IDENTITY_INFO_PROP_REALMS);
+    flag_mask = (IDENTITY_INFO_PROP_USERNAME |
+                 IDENTITY_INFO_PROP_USERNAME_IS_SECRET |
+                 IDENTITY_INFO_PROP_SECRET |
+                 IDENTITY_INFO_PROP_STORE_SECRET |
+                 IDENTITY_INFO_PROP_CAPTION |
+                 IDENTITY_INFO_PROP_TYPE |
+                 IDENTITY_INFO_PROP_METHODS |
+                 IDENTITY_INFO_PROP_REALMS |
+                 IDENTITY_INFO_PROP_ACL);
+    if (was_new_identity)
+        flag_mask |= IDENTITY_INFO_PROP_OWNER;
+    flags &= flag_mask;
     gsignond_identity_info_selective_copy (priv->info, identity_info, flags);
 
     /* FIXME : either username/secret changed reset the identity

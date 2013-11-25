@@ -96,6 +96,9 @@ gsignond_identity_info_selective_copy (GSignondIdentityInfo *dest,
                                        const GSignondIdentityInfo *src,
                                        GSignondIdentityInfoPropFlags flags);
 
+void
+gsignond_identity_info_remove_owner (GSignondIdentityInfo *info);
+
 G_END_DECLS
 
 #endif /* __GSIGNOND_IDENTITY_INFO_INTERNAL_H__ */
