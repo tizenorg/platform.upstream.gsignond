@@ -71,6 +71,12 @@ void
 gsignond_session_data_set_realm (GSignondSessionData *data,
                                  const gchar *realm);
 
+GSequence *
+gsignond_session_data_get_allowed_realms (GSignondSessionData *data);
+
+void
+gsignond_session_data_set_allowed_realms (GSignondSessionData *data,
+                                          GSequence *realms);
 const gchar *
 gsignond_session_data_get_caption (GSignondSessionData *data);
 

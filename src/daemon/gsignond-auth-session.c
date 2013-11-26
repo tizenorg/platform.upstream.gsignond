@@ -238,6 +238,12 @@ gsignond_auth_session_process (GSignondAuthSession *self,
             if (secret)
                 gsignond_session_data_set_secret (session_data, secret);
         }
+        if (gsignond_identity_info_get_realms (self->priv->identity_info)) {
+            GSequence *realms =
+                gsignond_identity_info_get_realms (self->priv->identity_info);
+            gsignond_session_data_set_allowed_realms (session_data,
+                                                      realms);
+        }
     }
 
     _ProcessData * data = g_slice_new0 (_ProcessData);

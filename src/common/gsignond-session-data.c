@@ -23,7 +23,8 @@
  * 02110-1301 USA
  */
 
-#include <gsignond/gsignond-session-data.h>
+#include "gsignond/gsignond-session-data.h"
+#include "gsignond/gsignond-utils.h"
 
 
 /**
@@ -129,6 +130,36 @@ const gchar *
 gsignond_session_data_get_realm (GSignondSessionData *data)
 {
     return gsignond_dictionary_get_string (data, "Realm");
+}
+
+/**
+ * gsignond_session_data_set_allowed_realms:
+ * @data: a #GSignondDictionary structure
+ * @realms: a #GSequence if allowed realms
+ *
+ * A setter for a list of realms allowed for the identity use.
+ */
+void
+gsignond_session_data_set_allowed_realms (GSignondSessionData *data,
+                                          GSequence *realms)
+{
+    gsignond_dictionary_set (data, "AllowedRealms",
+                             gsignond_sequence_to_variant (realms));
+}
+
+/**
+ * gsignond_session_data_get_allowed_realms:
+ * @data: a #GSignondDictionary structure
+ *
+ * A getter for a list of realms allowed for the identity use.
+ *
+ * Returns: (transfer full): #GSequence of allowed realms
+ */
+GSequence *
+gsignond_session_data_get_allowed_realms (GSignondSessionData *data)
+{
+    return gsignond_variant_to_sequence (gsignond_dictionary_get (data,
+                                                                  "AllowedRealms"));
 }
 
 /**
