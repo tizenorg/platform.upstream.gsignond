@@ -25,6 +25,7 @@
 
 #include "gsignond-identity-info.h"
 #include "gsignond-identity-info-internal.h"
+#include "gsignond/gsignond-utils.h"
 
 G_DEFINE_BOXED_TYPE(GSignondIdentityInfo,
                     gsignond_identity_info,
@@ -80,96 +81,6 @@ _gsignond_identity_info_seq_cmp (
     }
 
     return equal;
-}
-
-static gint
-_compare_strings (
-		const gchar* a,
-		const gchar* b,
-		gpointer data)
-{
-	(void)data;
-	return g_strcmp0 (a,b);
-}
-
-static GVariant *
-_gsignond_identity_info_sequence_to_variant (GSequence *seq)
-
-{
-    GSequenceIter * iter = NULL;
-    GVariant *var = NULL;
-    GVariantBuilder builder;
-
-    if (!seq) return NULL;
-
-    g_variant_builder_init (&builder, G_VARIANT_TYPE_STRING_ARRAY);
-    iter = g_sequence_get_begin_iter (seq);
-    while (!g_sequence_iter_is_end (iter)) {
-        const gchar * d = g_sequence_get (iter);
-        g_variant_builder_add (&builder, "s", d);
-        iter = g_sequence_iter_next (iter);
-    }
-    var = g_variant_builder_end (&builder);
-    return var;
-}
-
-static GSequence *
-_gsignond_identity_info_variant_to_sequence (GVariant *var)
-
-{
-    GVariantIter iter;
-    GSequence *seq = NULL;
-    gchar *item = NULL;
-
-    if (!var) return NULL;
-
-    seq = g_sequence_new ((GDestroyNotify)g_free);
-    g_variant_iter_init (&iter, var);
-    while (g_variant_iter_next (&iter, "s", &item)) {
-        g_sequence_insert_sorted (seq,
-                                  item,
-                                  (GCompareDataFunc) _compare_strings,
-                                  NULL);
-    }
-    return seq;
-}
-
-static gchar **
-_gsignond_identity_info_sequence_to_array (GSequence *seq)
-{
-    gchar **items, **temp;
-    GSequenceIter *iter;
-
-    if (!seq) return NULL;
-
-    items = g_malloc0 ((g_sequence_get_length (seq) + 1) * sizeof (gchar *));
-    temp = items;
-    for (iter = g_sequence_get_begin_iter (seq);
-         iter != g_sequence_get_end_iter (seq);
-         iter = g_sequence_iter_next (iter)) {
-        *temp = g_sequence_get (iter);
-        temp++;
-    }
-    return items;
-}
-
-static GSequence *
-_gsignond_identity_info_array_to_sequence (gchar **items)
-
-{
-    GSequence *seq = NULL;
-
-    if (!items) return NULL;
-
-    seq = g_sequence_new ((GDestroyNotify) g_free);
-    while (*items) {
-        g_sequence_insert_sorted (seq,
-                                  *items,
-                                  (GCompareDataFunc) _compare_strings,
-                                  NULL);
-        items++;
-    }
-    return seq;
 }
 
 static gboolean
@@ -839,7 +750,7 @@ gsignond_identity_info_get_realms (GSignondIdentityInfo *info)
 
     GVariant *var = gsignond_dictionary_get (info->map,
                         GSIGNOND_IDENTITY_INFO_REALMS);
-    return var ? _gsignond_identity_info_variant_to_sequence (var) : NULL;
+    return var ? gsignond_variant_to_sequence (var) : NULL;
 }
 
 /**
@@ -862,7 +773,7 @@ gsignond_identity_info_set_realms (
     g_return_val_if_fail (realms != NULL, FALSE);
     GVariant *current_realms = gsignond_dictionary_get (info->map,
                         GSIGNOND_IDENTITY_INFO_REALMS);
-    GVariant *var_realms = _gsignond_identity_info_sequence_to_variant (realms);
+    GVariant *var_realms = gsignond_sequence_to_variant (realms);
 
     if (current_realms != NULL &&
         g_variant_equal (current_realms, var_realms) == TRUE) {
@@ -910,7 +821,7 @@ gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
         while (g_variant_iter_next (&iter, "{s^as}", &vmethod, &vmechanisms))
         {
             /* ownership of all content is transferred */
-            seq = _gsignond_identity_info_array_to_sequence (vmechanisms);
+            seq = gsignond_array_to_sequence (vmechanisms);
             g_hash_table_insert (methods, vmethod, seq);
             g_free (vmechanisms);
         }
@@ -953,7 +864,7 @@ gsignond_identity_info_set_methods (
                                    (gpointer)&method,
                                    (gpointer)&mechanisms))
     {
-        items = _gsignond_identity_info_sequence_to_array (mechanisms);
+        items = gsignond_sequence_to_array (mechanisms);
         g_variant_builder_add (&builder, "{s^as}", method, items);
         g_free (items);
     }
@@ -1011,8 +922,7 @@ gsignond_identity_info_get_mechanisms (
         {
             /* ownership of content is transferred */
             if (vmethod != NULL && g_strcmp0 (vmethod, method) == 0) {
-                mechanisms = _gsignond_identity_info_array_to_sequence (
-                                 vmechanisms);
+                mechanisms = gsignond_array_to_sequence (vmechanisms);
                 g_free (vmethod);
                 g_free (vmechanisms);
                 break;

@@ -39,6 +39,18 @@ gsignond_wipe_directory (const gchar *dirname);
 gchar *
 gsignond_generate_nonce ();
 
+GVariant *
+gsignond_sequence_to_variant (GSequence *seq);
+
+GSequence *
+gsignond_variant_to_sequence (GVariant *var);
+
+gchar **
+gsignond_sequence_to_array (GSequence *seq);
+
+GSequence *
+gsignond_array_to_sequence (gchar **items);
+
 G_END_DECLS
 
 #endif  /* _SGINOND_UTILS_H_ */

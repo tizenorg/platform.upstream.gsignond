@@ -264,3 +264,122 @@ nonce_exit:
     return nonce;
 }
 
+static gint
+_compare_strings (
+		const gchar* a,
+		const gchar* b,
+		gpointer data)
+{
+	(void)data;
+	return g_strcmp0 (a,b);
+}
+
+/**
+ * gsignond_sequence_to_variant:
+ * @seq: Sequence of strings to convert
+ *
+ * Convert a string sequence to a variant.
+ *
+ * Returns: (transfer full): #GVariant of type "as".
+ */
+GVariant *
+gsignond_sequence_to_variant (GSequence *seq)
+{
+    GSequenceIter * iter = NULL;
+    GVariant *var = NULL;
+    GVariantBuilder builder;
+
+    if (!seq) return NULL;
+
+    g_variant_builder_init (&builder, G_VARIANT_TYPE_STRING_ARRAY);
+    iter = g_sequence_get_begin_iter (seq);
+    while (!g_sequence_iter_is_end (iter)) {
+        const gchar * d = g_sequence_get (iter);
+        g_variant_builder_add (&builder, "s", d);
+        iter = g_sequence_iter_next (iter);
+    }
+    var = g_variant_builder_end (&builder);
+    return var;
+}
+
+/**
+ * gsignond_variant_to_sequence:
+ * @var: Variant of "as" to convert
+ *
+ * Convert variant containing string array to sequence.
+ *
+ * Returns: (transfer full): #GSequence of strings
+ */
+GSequence *
+gsignond_variant_to_sequence (GVariant *var)
+{
+    GVariantIter iter;
+    GSequence *seq = NULL;
+    gchar *item = NULL;
+
+    if (!var) return NULL;
+
+    seq = g_sequence_new ((GDestroyNotify)g_free);
+    g_variant_iter_init (&iter, var);
+    while (g_variant_iter_next (&iter, "s", &item)) {
+        g_sequence_insert_sorted (seq,
+                                  item,
+                                  (GCompareDataFunc) _compare_strings,
+                                  NULL);
+    }
+    return seq;
+}
+
+/**
+ * gsignond_sequence_to_array:
+ * @seq: Sequence of strings to convert
+ *
+ * Convert sequence of strings to null-terminated string array.
+ *
+ * Returns: (transfer full): Null-terminated array of strings
+ */
+gchar **
+gsignond_sequence_to_array (GSequence *seq)
+{
+    gchar **items, **temp;
+    GSequenceIter *iter;
+
+    if (!seq) return NULL;
+
+    items = g_malloc0 ((g_sequence_get_length (seq) + 1) * sizeof (gchar *));
+    temp = items;
+    for (iter = g_sequence_get_begin_iter (seq);
+         iter != g_sequence_get_end_iter (seq);
+         iter = g_sequence_iter_next (iter)) {
+        *temp = g_sequence_get (iter);
+        temp++;
+    }
+    return items;
+}
+
+/**
+ * gsignond_array_to_sequence:
+ * @items: Null-terminated array of strings to convert
+ *
+ * Convert null-terminated array of strings to a sequence.
+ *
+ * Returns: (transfer full): #GSequence of strings
+ */
+GSequence *
+gsignond_array_to_sequence (gchar **items)
+{
+    GSequence *seq = NULL;
+
+    if (!items) return NULL;
+
+    seq = g_sequence_new ((GDestroyNotify) g_free);
+    while (*items) {
+        g_sequence_insert_sorted (seq,
+                                  *items,
+                                  (GCompareDataFunc) _compare_strings,
+                                  NULL);
+        items++;
+    }
+    return seq;
+}
+
