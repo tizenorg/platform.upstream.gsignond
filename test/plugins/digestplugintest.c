@@ -31,7 +31,10 @@
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-config.h"
+#include "gsignond/gsignond-utils.h"
 #include "common/gsignond-plugin-loader.h"
+
+static const gchar *realm_list[] = { "realm1", "realm2", "realm3", NULL };
 
 static void check_plugin(GSignondPlugin* plugin)
 {
@@ -128,6 +131,9 @@ START_TEST (test_digestplugin_request)
 
     // set all the required stuff so that no ui-action is required
     gsignond_session_data_set_realm(data, "realm1");
+    GSequence *allowed_realms = gsignond_copy_array_to_sequence(realm_list);
+    gsignond_session_data_set_allowed_realms(data, allowed_realms);
+    g_sequence_free(allowed_realms);
     gsignond_dictionary_set_string(data, "Algo", "md5-sess");
     gsignond_dictionary_set_string(data, "Nonce",
             "abg10b1234ee1f0e8b11d0f600bfb0c093");
@@ -237,6 +243,10 @@ START_TEST (test_digestplugin_user_action_finished)
     //correct values
     data = gsignond_dictionary_new ();
     gsignond_session_data_set_username (data, "user1");
+    gsignond_session_data_set_realm(data, "realm1");
+    GSequence *allowed_realms = gsignond_copy_array_to_sequence(realm_list);
+    gsignond_session_data_set_allowed_realms(data, allowed_realms);
+    g_sequence_free(allowed_realms);
     gsignond_session_data_set_realm (data, "realm1");
     gsignond_dictionary_set_string (data, "Algo", "md5-sess");
     gsignond_dictionary_set_string (data, "Nonce",

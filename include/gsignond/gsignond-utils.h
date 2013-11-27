@@ -51,6 +51,9 @@ gsignond_sequence_to_array (GSequence *seq);
 GSequence *
 gsignond_array_to_sequence (gchar **items);
 
+GSequence *
+gsignond_copy_array_to_sequence (const gchar **items);
+
 G_END_DECLS
 
 #endif  /* _SGINOND_UTILS_H_ */

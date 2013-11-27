@@ -183,16 +183,34 @@ gsignond_digest_plugin_request (
 {
 }
 
+/* difference with g_strcmp0() here is that two NULLs don't compare equal */
+static gint
+_compare_realm (gconstpointer a, gconstpointer b, gpointer user_data)
+{
+    const gchar *realm1 = (const gchar *) a;
+    const gchar *realm2 = (const gchar *) b;
+    (void) user_data;
+    if (realm1 == NULL)
+        return -1;
+    if (realm2 == NULL)
+        return 1;
+
+    return g_strcmp0 (realm1, realm2);
+}
+
 static void
-_gsignond_digest_plugin_return_digest(GSignondPlugin *plugin,
-                                     const gchar *username,
-                                     const gchar *secret,
-                                     GSignondDictionary *session_data)
+_gsignond_digest_plugin_return_digest (GSignondPlugin *plugin,
+                                       const gchar *username,
+                                       const gchar *secret,
+                                       GSignondDictionary *session_data)
 {
     g_return_if_fail (plugin != NULL);
     g_return_if_fail (GSIGNOND_IS_DIGEST_PLUGIN (plugin));
 
     GSignondSessionData *response = NULL;
+    GSequenceIter *iter;
+    GSequence* allowed_realms =
+        gsignond_session_data_get_allowed_realms (session_data);
     const gchar* realm = gsignond_session_data_get_realm (session_data);
     const gchar* algo = gsignond_dictionary_get_string (session_data,
                 "Algo");
@@ -208,10 +226,34 @@ _gsignond_digest_plugin_return_digest(GSignondPlugin *plugin,
                 "DigestUri");
     const gchar* hentity = gsignond_dictionary_get_string (session_data,
                 "HEntity");
+
+    if (!allowed_realms) {
+        GError* error = g_error_new (GSIGNOND_ERROR,
+                                     GSIGNOND_ERROR_MISSING_DATA,
+                                     "Missing realm list");
+        gsignond_plugin_error (plugin, error);
+        g_error_free (error);
+        return;
+    }
+    iter = g_sequence_lookup (allowed_realms,
+                              (gpointer) realm,
+                              _compare_realm,
+                              NULL);
+    g_sequence_free (allowed_realms);
+    if (!iter) {
+        GError* error = g_error_new (GSIGNOND_ERROR,
+                                     GSIGNOND_ERROR_NOT_AUTHORIZED,
+                                     "Unauthorized realm");
+        gsignond_plugin_error (plugin, error);
+        g_error_free (error);
+        return;
+    }
+
     gchar *cnonce = gsignond_generate_nonce ();
     if (!cnonce) {
         GError* error = g_error_new (GSIGNOND_ERROR,
-        		GSIGNOND_ERROR_MISSING_DATA, "Error in generating nonce");
+                                     GSIGNOND_ERROR_MISSING_DATA,
+                                     "Error in generating nonce");
         gsignond_plugin_error (plugin, error);
         g_error_free (error);
         return;
@@ -227,7 +269,7 @@ _gsignond_digest_plugin_return_digest(GSignondPlugin *plugin,
         return;
     }
     gchar *digest = _gsignond_digest_plugin_compute_md5_digest(algo,
-            username,realm, secret, nonce, nonce_count, cnonce, qop, method,
+            username, realm, secret, nonce, nonce_count, cnonce, qop, method,
             digest_uri, hentity);
 
     response = gsignond_dictionary_new();

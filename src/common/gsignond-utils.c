@@ -359,7 +359,7 @@ gsignond_sequence_to_array (GSequence *seq)
 
 /**
  * gsignond_array_to_sequence:
- * @items: Null-terminated array of strings to convert
+ * @items: (transfer full): Null-terminated array of strings to convert
  *
  * Convert null-terminated array of strings to a sequence.
  *
@@ -383,3 +383,28 @@ gsignond_array_to_sequence (gchar **items)
     return seq;
 }
 
+/**
+ * gsignond_copy_array_to_sequence:
+ * @items: Null-terminated array of strings to copy
+ *
+ * Copy null-terminated array of strings to a sequence.
+ *
+ * Returns: (transfer full): #GSequence of strings
+ */
+GSequence *
+gsignond_copy_array_to_sequence (const gchar **items)
+{
+    GSequence *seq = NULL;
+
+    if (!items) return NULL;
+
+    seq = g_sequence_new ((GDestroyNotify) g_free);
+    while (*items) {
+        g_sequence_insert_sorted (seq,
+                                  g_strdup (*items),
+                                  (GCompareDataFunc) _compare_strings,
+                                  NULL);
+        items++;
+    }
+    return seq;
+}
