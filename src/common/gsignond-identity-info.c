@@ -820,10 +820,9 @@ gsignond_identity_info_get_methods (GSignondIdentityInfo *info)
         g_variant_iter_init (&iter, var);
         while (g_variant_iter_next (&iter, "{s^as}", &vmethod, &vmechanisms))
         {
-            /* ownership of all content is transferred */
+            /* ownership is transferred */
             seq = gsignond_array_to_sequence (vmechanisms);
             g_hash_table_insert (methods, vmethod, seq);
-            g_free (vmechanisms);
         }
     }
     return methods;
@@ -920,11 +919,10 @@ gsignond_identity_info_get_mechanisms (
         g_variant_iter_init (&iter, var);
         while (g_variant_iter_next (&iter, "{s^as}", &vmethod, &vmechanisms))
         {
-            /* ownership of content is transferred */
+            /* ownership is transferred */
             if (vmethod != NULL && g_strcmp0 (vmethod, method) == 0) {
                 mechanisms = gsignond_array_to_sequence (vmechanisms);
                 g_free (vmethod);
-                g_free (vmechanisms);
                 break;
             }
             g_free (vmethod); vmethod = NULL;

@@ -368,18 +368,20 @@ gsignond_sequence_to_array (GSequence *seq)
 GSequence *
 gsignond_array_to_sequence (gchar **items)
 {
+    gchar **item_iter = items;
     GSequence *seq = NULL;
 
     if (!items) return NULL;
 
     seq = g_sequence_new ((GDestroyNotify) g_free);
-    while (*items) {
+    while (*item_iter) {
         g_sequence_insert_sorted (seq,
-                                  *items,
+                                  *item_iter,
                                   (GCompareDataFunc) _compare_strings,
                                   NULL);
-        items++;
+        item_iter++;
     }
+    g_free (items);
     return seq;
 }
 
