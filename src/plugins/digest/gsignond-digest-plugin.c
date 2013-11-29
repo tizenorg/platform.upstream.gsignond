@@ -45,8 +45,8 @@
  * the following string items, whose meaning is described in the RFC: 
  * - username and secret. If they are absent, they are requested from the user
  * via gSSO UI.
- * - realm, "Algo", "Nonce",  "Method", "DigestUri" - mandatory items.
- * - "NonceCount", "Qop",  "HEntity". "NonceCount" must be present if "Qop" is 
+ * - realm, allowed realms, "Algo", "Nonce", "Method", "DigestUri" - mandatory items.
+ * - "NonceCount", "Qop", "HEntity". "NonceCount" must be present if "Qop" is
  * present, "HEntity" must be present if "Qop" is present and set to "auth-int".
  * 
  * If the plugin has all the data to calculate the digest, it issues 
