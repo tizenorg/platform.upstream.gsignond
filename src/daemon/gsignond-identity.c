@@ -24,15 +24,16 @@
  * 02110-1301 USA
  */
 
-#include "gsignond-identity.h"
+#include <ctype.h>
 #include <string.h>
 
+#include "gsignond-identity.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-error.h"
+#include "gsignond/gsignond-config-dbus.h"
 #include "gsignond-daemon.h"
 #include "gsignond-identity-enum-types.h"
 #include "gsignond-auth-session.h"
-#include "gsignond/gsignond-config-dbus.h"
 #include "common/gsignond-identity-info-internal.h"
 #include "plugins/gsignond-plugin-proxy-factory.h"
 
@@ -832,12 +833,18 @@ _store_cached_token_data (const gchar *method, GSignondAuthSession *session, _St
         gsignond_daemon_store_identity_data (data->daemon, data->identity_id, method, token_data);
 }
 
+/* check for alphanumeric characters in a string */
 static long
-_ncstrlen (const gchar *strptr)
+_check_string (const gchar *strptr)
 {
     if (strptr == NULL)
         return -1;
-    return (long) strlen (strptr);
+    while (*strptr != '\0') {
+        if (isalnum(*strptr))
+            return 1;
+        strptr++;
+    }
+    return 0;
 }
 
 guint32
@@ -875,7 +882,7 @@ gsignond_identity_store (GSignondIdentity *identity,
     if (owner_ctx) {
         const gchar *sys_ctx =
             gsignond_security_context_get_system_context (owner_ctx);
-        if (_ncstrlen (sys_ctx) <= 0) {
+        if (_check_string (sys_ctx) <= 0) {
             gsignond_identity_info_remove_owner (identity_info);
         }
         gsignond_security_context_free (owner_ctx);
