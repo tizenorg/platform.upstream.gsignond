@@ -54,6 +54,9 @@ gsignond_array_to_sequence (gchar **items);
 GSequence *
 gsignond_copy_array_to_sequence (const gchar **items);
 
+gboolean
+gsignond_is_host_in_domain(const gchar *host, const gchar *domain);
+
 G_END_DECLS
 
 #endif  /* _SGINOND_UTILS_H_ */

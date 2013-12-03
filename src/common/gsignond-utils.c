@@ -410,3 +410,38 @@ gsignond_copy_array_to_sequence (const gchar **items)
     }
     return seq;
 }
+
+/**
+ * gsignond_is_host_in_domain:
+ * @domain: a domain name
+ * @host: a host name
+ *
+ * Checks if @host belongs to @domain.
+ *
+ * Returns: the result
+ */
+gboolean 
+gsignond_is_host_in_domain(const gchar *host, const gchar *domain)
+{
+    gchar** domain_parts = g_strsplit(domain, ".", 0);
+    gchar** host_parts = g_strsplit(host, ".", 0);
+    gchar** truncated_host_parts = host_parts;
+    
+    guint domain_parts_n = g_strv_length(domain_parts);
+    guint host_parts_n = g_strv_length(host_parts);
+    
+    gint extra_host_parts_n = host_parts_n - domain_parts_n;
+    
+    while (extra_host_parts_n > 0) {
+        truncated_host_parts++;
+        extra_host_parts_n--;
+    }
+    gchar* truncated_host = g_strjoinv(".", truncated_host_parts);
+    gint result = g_strcmp0(domain, truncated_host);
+    
+    g_free(truncated_host);
+    g_strfreev(host_parts);
+    g_strfreev(domain_parts);
+    
+    return result == 0 ? TRUE : FALSE;
+}

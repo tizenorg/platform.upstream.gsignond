@@ -32,6 +32,7 @@
 #include "gsignond/gsignond-session-data.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
+#include "gsignond/gsignond-utils.h"
 #include "common/gsignond-identity-info.h"
 #include "common/gsignond-pipe-stream.h"
 #include "common/gsignond-plugin-loader.h"
@@ -360,6 +361,23 @@ START_TEST (test_identity_info)
 }
 END_TEST
 
+START_TEST (test_is_host_in_domain)
+{
+    fail_unless(gsignond_is_host_in_domain("somehost", "") == TRUE);
+    fail_unless(gsignond_is_host_in_domain("", "somedomain") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("", "") == TRUE);
+    fail_unless(gsignond_is_host_in_domain("somehost", "otherdomain") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("somehost", "somehost") == TRUE);
+    fail_unless(gsignond_is_host_in_domain("somehost.com", "otherdomain.com") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("somehost.com", "othersomehost.com") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("somehost.com", "host.com") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("somehost.com", "somehost.com") == TRUE);
+    fail_unless(gsignond_is_host_in_domain("somehost.com", "subhost.somehost.com") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("somehost.somedomain.com", "otherdomain.com") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("somehost.somedomain.com", "somehost.otherdomain.com") == FALSE);
+    fail_unless(gsignond_is_host_in_domain("somehost.somedomain.com", "somedomain.com") == TRUE);
+}
+END_TEST
 
 Suite* common_suite (void)
 {
@@ -371,6 +389,7 @@ Suite* common_suite (void)
     tcase_add_test (tc_core, test_pipe_stream);
     tcase_add_test (tc_core, test_session_data);
     tcase_add_test (tc_core, test_plugin_loader);
+    tcase_add_test (tc_core, test_is_host_in_domain);
     suite_add_tcase (s, tc_core);
     return s;
 }
