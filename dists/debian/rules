@@ -3,6 +3,9 @@
 
 DEB_CONFIGURE_EXTRA_FLAGS += --enable-dbus-type=session
 
+# Optionally build a debug version
+#DEB_CONFIGURE_EXTRA_FLAGS += --enable-debug
+
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 
