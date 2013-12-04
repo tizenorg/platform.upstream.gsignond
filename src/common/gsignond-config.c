@@ -90,8 +90,6 @@ struct _GSignondConfigPrivate
 
 G_DEFINE_TYPE (GSignondConfig, gsignond_config, G_TYPE_OBJECT);
 
-#ifdef ENABLE_DEBUG
-
 static gchar *
 _check_config_file (const gchar *path)
 {
@@ -106,8 +104,6 @@ _check_config_file (const gchar *path)
     g_free (fn);
     return NULL;
 }
-
-#endif  /* ENABLE_DEBUG */
 
 static gboolean
 _load_config (GSignondConfig *self)
