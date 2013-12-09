@@ -22,6 +22,7 @@ case "$1" in
     configure)
         ldconfig
 	groupadd -f -r gsignond
+	chmod 4755 /usr/bin/gsignond
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
