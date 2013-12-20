@@ -52,6 +52,11 @@ fi
 
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
 
+AC_ARG_ENABLE([coverage],
+    [AS_HELP_STRING([--enable-coverage], [compile with coverage info])])
+AS_IF([test "x$enable_coverage" = "xyes"],
+    [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"])
+
 # allow fake installations for "distcheck"
 AC_ARG_ENABLE(distcheck,
 	      [  --enable-distcheck build for distcheck target],

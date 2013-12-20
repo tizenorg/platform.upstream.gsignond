@@ -42,3 +42,10 @@ update-online-doc:
 	git push ; \
 	popd > /dev/null && \
 	rm -rf $(PACKAGE)-$(VERSION)
+
+lcov: check
+	@rm -rf lcov-report
+	@lcov -c --directory src/ --output-file lcov.output
+	@genhtml lcov.output --output-directory lcov-report
+	@rm lcov.output
+	@echo "Coverage report is in file://$(abs_srcdir)/lcov-report/index.html"
