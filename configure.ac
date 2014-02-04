@@ -174,7 +174,11 @@ AC_CHECK_HEADERS([string.h])
 GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -D_POSIX_C_SOURCE=\\\"200809L\\\" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
 
 # Checks for typedefs, structures, and compiler characteristics.
-GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall -Werror -DG_LOG_DOMAIN=\\\"gsignond\\\""
+GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall -DG_LOG_DOMAIN=\\\"gsignond\\\""
+if test "x$enable_debug" = "xno" ; then
+    GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Werror"
+fi
+
 # GSIGNOND_LIBS="$GSIGNOND_LIBS -lduma"
 
 # Checks for library functions.
