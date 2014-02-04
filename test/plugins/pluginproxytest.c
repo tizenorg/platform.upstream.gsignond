@@ -517,10 +517,15 @@ _validate_new_proxy(gpointer userdata)
     ProxyTimeoutData *data = (ProxyTimeoutData *)userdata;
     fail_if (data == NULL);
 
+    fail_if(g_hash_table_size(data->factory->plugins) != 0);
+
     GSignondPluginProxy *proxy = gsignond_plugin_proxy_factory_get_plugin (data->factory, "ssotest");
     fail_if (proxy == NULL);
+    fail_if(g_hash_table_size(data->factory->plugins) != 1);
 
-    fail_if (proxy == data->proxy, "expected new proxy object, but got cached object");
+    // This is unrealiable: the proxy object may be allocated to the same location
+    // as the old object!
+    //fail_if (proxy == data->proxy, "expected new proxy object, but got cached object");
     g_object_unref(proxy);
 
     g_free (userdata);
@@ -536,8 +541,10 @@ _validate_cached_proxy (gpointer userdata)
     ProxyTimeoutData *data = (ProxyTimeoutData *)userdata;
     fail_if (data == NULL);
     
+    fail_if(g_hash_table_size(data->factory->plugins) != 1);
     GSignondPluginProxy *proxy = gsignond_plugin_proxy_factory_get_plugin (data->factory, "ssotest");
     fail_if (proxy == NULL);
+    fail_if(g_hash_table_size(data->factory->plugins) != 1);
 
     fail_unless (proxy == data->proxy, "expected cached proxy object, but got new object");
 
@@ -566,9 +573,11 @@ START_TEST (test_pluginproxyfactory_proxy_timeout)
     proxy1 = gsignond_plugin_proxy_factory_get_plugin (factory, "ssotest");
     fail_if (proxy1 == NULL);
     g_object_unref (proxy1);
+    fail_if(g_hash_table_size(factory->plugins) != 1);
 
     proxy2 = gsignond_plugin_proxy_factory_get_plugin (factory, "ssotest");
     fail_if (proxy2 == NULL);
+    fail_if(g_hash_table_size(factory->plugins) != 1);
 
     fail_unless (proxy1 == proxy2, "got new plugin proxy object, "
                                    "where expected cached object(%p,%p)",
