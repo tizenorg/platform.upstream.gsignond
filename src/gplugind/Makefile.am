@@ -31,6 +31,7 @@ gsignond_plugind_CFLAGS = \
     -I$(top_builddir) \
     -I$(top_srcdir)/include/ \
     -I$(top_srcdir)/src/ \
+    -DGSIGNOND_GPLUGINS_DIR='"$(gpluginsdir)"' \
     $(GSIGNOND_CFLAGS) \
     $(NULL)
 

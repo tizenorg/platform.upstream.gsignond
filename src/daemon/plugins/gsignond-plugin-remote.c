@@ -563,15 +563,11 @@ gsignond_plugin_remote_new (
     GSignondPipeStream *stream = NULL;
     gboolean ret = FALSE;
     const gchar *bin_path = GSIGNOND_PLUGINLOADERS_DIR;
-    const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
 
 #   ifdef ENABLE_DEBUG
     const gchar *env_val = g_getenv("SSO_BIN_DIR");
     if (env_val)
         bin_path = env_val;
-    env_val = g_getenv("SSO_GPLUGINS_DIR");
-    if (env_val)
-        plugin_path = env_val;
 #   endif
 
     /* This guarantees that writes to a pipe will never cause
@@ -580,10 +576,9 @@ gsignond_plugin_remote_new (
     signal(SIGPIPE, SIG_IGN);
 
     /* Spawn child process */
-    argv = g_malloc0 ((3 + 1) * sizeof (gchar *));
+    argv = g_malloc0 ((2 + 1) * sizeof (gchar *));
     argv[0] = g_build_filename (bin_path, GSIGNOND_PLUGIND_NAME, NULL);
-    argv[1] = g_module_build_path (plugin_path, plugin_type);
-    argv[2] = g_strdup(plugin_type);
+    argv[1] = g_strdup(plugin_type);
     ret = g_spawn_async_with_pipes (NULL, argv, NULL,
             G_SPAWN_DO_NOT_REAP_CHILD, NULL,
             NULL, &cpid, &cin_fd, &cout_fd, NULL, &error);

@@ -130,7 +130,7 @@ int main (int argc, char **argv)
     g_type_init ();
 #endif
 
-    opt_context = g_option_context_new ("<plugin_path> <plugin_name>");
+    opt_context = g_option_context_new ("<plugin_name>");
     g_option_context_set_summary (opt_context, "gSSO helper plugin daemon");
     g_option_context_add_main_entries (opt_context, opt_entries, NULL);
     g_option_context_set_ignore_unknown_options (opt_context, TRUE);
@@ -140,13 +140,21 @@ int main (int argc, char **argv)
         WARN ("Error in arguments parsing: %s", error->message);
         g_error_free (error);
     }
-    if (!plugin_args || !plugin_args[0] || !plugin_args[1]) {
-        WARN ("plugin path or plugin type missing");
+    if (!plugin_args || !plugin_args[0] ) {
+        WARN ("plugin type missing");
         if (plugin_args) g_strfreev(plugin_args);
         return -1;
     }
 
-    _daemon = gsignond_plugin_daemon_new (plugin_args[0], plugin_args[1], in_fd,
+    const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv("SSO_GPLUGINS_DIR");
+    if (env_val)
+        plugin_path = env_val;
+#endif
+    gchar* filename = g_module_build_path (plugin_path, plugin_args[0]);
+
+    _daemon = gsignond_plugin_daemon_new (filename, plugin_args[0], in_fd,
             out_fd);
     g_strfreev(plugin_args);
     if (_daemon == NULL) {

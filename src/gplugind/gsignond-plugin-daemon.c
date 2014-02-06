@@ -355,7 +355,7 @@ gsignond_plugin_daemon_new (
 
     /* Load plugin */
     daemon->priv->plugin = gsignond_load_plugin_with_filename (
-            (gchar *)plugin_type, (gchar *)filename);
+            (gchar *)plugin_type, (gchar*)filename);
     if (!daemon->priv->plugin) {
         DBG ("failed to load plugin");
         g_object_unref (daemon);
