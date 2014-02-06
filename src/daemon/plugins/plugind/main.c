@@ -97,7 +97,6 @@ int main (int argc, char **argv)
     GMainLoop *main_loop = NULL;
     GOptionContext *opt_context = NULL;
     gchar **plugin_args = NULL;
-    gint up_signal = -1;
     gint in_fd = 0, out_fd = 1;
     GOptionEntry opt_entries[] = {
         {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &plugin_args,
@@ -143,10 +142,6 @@ int main (int argc, char **argv)
     }
     if (!plugin_args || !plugin_args[0] || !plugin_args[1]) {
         WARN ("plugin path or plugin type missing");
-        if (write (out_fd, "0", sizeof(char)) == -1)
-            WARN ("Unable to write down notification to stdout");
-        if (in_fd != 0) close (in_fd);
-        if (out_fd != 1) close (out_fd);
         if (plugin_args) g_strfreev(plugin_args);
         return -1;
     }
@@ -155,25 +150,12 @@ int main (int argc, char **argv)
             out_fd);
     g_strfreev(plugin_args);
     if (_daemon == NULL) {
-        if (write (out_fd, "0", sizeof(char)) == -1)
-            WARN ("Unable to write down notification to stdout");
-        if (in_fd != 0) close (in_fd);
-        if (out_fd != 1) close (out_fd);
         return -1;
     }
 
     main_loop = g_main_loop_new (NULL, FALSE);
     g_object_weak_ref (G_OBJECT (_daemon), _on_daemon_closed, main_loop);
     _install_sighandlers (main_loop);
-
-    /* Notification for gsignond that plugind is up and ready */
-    up_signal = write (out_fd, "1", sizeof(char));
-
-    if (up_signal == -1) {
-        g_main_loop_unref (main_loop);
-        g_object_unref (_daemon);
-        return -1;
-    }
 
     DBG ("Entering main event loop");
 

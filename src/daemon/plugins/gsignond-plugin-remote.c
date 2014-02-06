@@ -76,47 +76,6 @@ _on_child_down_cb (
         plugin->priv->is_plugind_up = FALSE;
     }
 
-    if (plugin->priv->unref_in_down_cb) {
-        plugin->priv->unref_in_down_cb = FALSE;
-        g_object_unref (plugin);
-    }
-}
-
-static gboolean
-_on_child_status_cb (
-        GIOChannel *channel,
-        GIOCondition condition,
-        gpointer data)
-{
-    GSignondPluginRemote *plugin = GSIGNOND_PLUGIN_REMOTE (data);
-    DBG ("Plugind(%p) with pid (%d) status cb", plugin, plugin->priv->cpid);
-
-    if (plugin->priv->main_loop && g_main_loop_is_running (
-            plugin->priv->main_loop)) {
-        g_main_loop_quit (plugin->priv->main_loop);
-    }
-
-    if (g_io_channel_get_flags (channel) & G_IO_FLAG_IS_READABLE) {
-        gchar string[1];
-        GError *error = NULL;
-        gsize bytes_read = 0;
-        GIOStatus status = g_io_channel_read_chars (channel, string, 1,
-                &bytes_read, &error);
-        if (status == G_IO_STATUS_NORMAL && error == NULL) {
-            if (*string == '1') {
-                DBG ("Plugind is UP and READY");
-                plugin->priv->is_plugind_up = TRUE;
-            } else if (*string == '0') {
-                DBG ("Plugind is DOWN");
-                plugin->priv->is_plugind_up = FALSE;
-            }
-        }
-        if (error) {
-            g_error_free (error);
-        }
-    }
-
-    return FALSE;
 }
 
 static gboolean
@@ -177,30 +136,6 @@ _run_main_loop_with_timeout (
 }
 
 static void
-_run_main_loop_with_ready_watch (
-        GSignondPluginRemote *self,
-        gint fd,
-        guint timeout)
-{
-    GIOChannel *ready_watch = NULL;
-    GSource *up_source = NULL;
-
-    GMainContext *context = g_main_context_new ();
-    _create_main_loop_with_timeout (self, context, timeout);
-
-    ready_watch = g_io_channel_unix_new (fd);
-    up_source = g_io_create_watch (ready_watch, G_IO_IN | G_IO_HUP);
-    g_source_set_callback (up_source, (GSourceFunc)_on_child_status_cb, self,
-            NULL);
-    g_source_attach (up_source, context);
-    g_source_unref (up_source);
-
-    _run_main_loop (self);
-
-    g_io_channel_unref (ready_watch);
-}
-
-static void
 gsignond_plugin_remote_set_property (
         GObject *object,
         guint property_id,
@@ -243,8 +178,6 @@ static void
 gsignond_plugin_remote_dispose (GObject *object)
 {
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (object);
-
-    self->priv->unref_in_down_cb = FALSE;
 
     if (self->priv->main_loop) {
         if (g_main_loop_is_running (self->priv->main_loop)) {
@@ -355,7 +288,6 @@ gsignond_plugin_remote_init (GSignondPluginRemote *self)
 
     self->priv->main_loop = NULL;
     self->priv->is_plugind_up = FALSE;
-    self->priv->unref_in_down_cb = FALSE;
 }
 
 static void
@@ -680,15 +612,7 @@ gsignond_plugin_remote_new (
     plugin->priv->child_watch_id = g_child_watch_add (cpid,
             (GChildWatchFunc)_on_child_down_cb, plugin);
     plugin->priv->cpid = cpid;
-
-    _run_main_loop_with_ready_watch (plugin, cout_fd, 1000);
-    if (!plugin->priv->is_plugind_up) {
-        DBG ("Plugind (%s) with pid %d process failed to start up", plugin_type,
-                cpid);
-        /* moved unref'ng into the cb to avoid zombies */
-        plugin->priv->unref_in_down_cb = TRUE;
-        return NULL;
-    }
+    plugin->priv->is_plugind_up = TRUE;
 
     /* Create dbus connection */
     stream = gsignond_pipe_stream_new (cout_fd, cin_fd, TRUE);

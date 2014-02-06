@@ -45,8 +45,6 @@ struct _GSignondPluginRemotePrivate
     GMainLoop *main_loop;
     gboolean is_plugind_up;
 
-    gboolean unref_in_down_cb;
-
     /* Signals */
     gulong signal_response;
     gulong signal_response_final;
