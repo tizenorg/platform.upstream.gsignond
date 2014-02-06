@@ -91,6 +91,40 @@ _install_sighandlers (GMainLoop *main_loop)
         WARN ("failed to set parent death signal");
 }
 
+static void _list_plugins()
+{
+    const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
+
+#   ifdef ENABLE_DEBUG
+    const gchar *env_val = g_getenv("SSO_GPLUGINS_DIR");
+    if (env_val)
+        plugin_path = env_val;
+#   endif
+    GDir* plugin_dir = g_dir_open(plugin_path, 0, NULL);
+    if (plugin_dir == NULL) {
+        return;
+    }
+
+    int n_plugins = 0;
+    while (g_dir_read_name(plugin_dir) != NULL)
+        n_plugins++;
+    g_dir_rewind(plugin_dir);
+
+    while (1) {
+        const gchar* plugin_soname = g_dir_read_name(plugin_dir);
+        if (plugin_soname == NULL)
+            break;
+        if (g_str_has_prefix(plugin_soname, "lib") &&
+            g_str_has_suffix(plugin_soname, ".so")) {
+            gchar* plugin_name = g_strndup(plugin_soname+3,
+                strlen(plugin_soname) - 6);
+            g_print("%s\n", plugin_name);
+            g_free(plugin_name);
+        }
+    }
+    g_dir_close(plugin_dir);
+}
+
 int main (int argc, char **argv)
 {
     GError *error = NULL;
@@ -119,7 +153,7 @@ int main (int argc, char **argv)
     g_option_context_free(opt_context);
 
     if (list_plugins) {
-        // FIXME: list plugins here
+        _list_plugins();
         return 0;
     }
 
