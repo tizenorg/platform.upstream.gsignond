@@ -10,6 +10,7 @@ libgsignond_plugind_daemon_la_CPPFLAGS = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     -I$(top_builddir)/src \
+    -DGSIGNOND_GPLUGINS_DIR='"$(gpluginsdir)"' \
     $(GSIGNOND_CFLAGS)
 
 libgsignond_plugind_daemon_la_LIBADD =    \
@@ -18,6 +19,8 @@ libgsignond_plugind_daemon_la_LIBADD =    \
         $(GSIGNOND_LIBS)
 
 libgsignond_plugind_daemon_la_SOURCES = \
+   gsignond-plugin-loader.h \
+   gsignond-plugin-loader.c \
    gsignond-plugin-daemon.h \
    gsignond-plugin-daemon.c
 

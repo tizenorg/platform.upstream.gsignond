@@ -31,7 +31,6 @@
 #include "gsignond/gsignond-plugin-interface.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-config.h"
-#include "common/gsignond-plugin-loader.h"
 
 
 static void check_plugin(GSignondPlugin* plugin)

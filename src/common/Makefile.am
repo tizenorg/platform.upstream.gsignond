@@ -60,8 +60,6 @@ libgsignond_common_la_SOURCES = \
     gsignond-dictionary.c \
     gsignond-session-data.c \
     gsignond-signonui-data.c \
-    gsignond-plugin-loader.h \
-    gsignond-plugin-loader.c \
     gsignond-utils.c \
     gsignond-pipe-stream.h \
     gsignond-pipe-stream.c \

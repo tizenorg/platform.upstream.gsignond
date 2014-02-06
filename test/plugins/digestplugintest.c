@@ -32,7 +32,6 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-config.h"
 #include "gsignond/gsignond-utils.h"
-#include "common/gsignond-plugin-loader.h"
 
 static const gchar *realm_list[] = { "realm1", "realm2", "realm3", NULL };
 

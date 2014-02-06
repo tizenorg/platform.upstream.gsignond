@@ -26,7 +26,6 @@
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
 #include "gsignond/gsignond-config.h"
-#include "common/gsignond-plugin-loader.h"
 #include "daemon/gsignond-auth-session.h"
 #include "gsignond-plugin-proxy.h"
 #include "gsignond-plugin-remote.h"

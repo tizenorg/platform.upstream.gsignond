@@ -66,7 +66,6 @@ gsignond-identity-info.h\
 gsignond-identity-info-internal.h\
 gsignond-pipe-stream.h\
 gsignond-plugin-enum-types.h\
-gsignond-plugin-loader.h\
 gsignond-db-defines.h\
 gsignond-db-error.h\
 gsignond-db-secret-database.h\

@@ -18,5 +18,6 @@ commontest_CFLAGS = \
 
 commontest_LDADD = \
     $(top_builddir)/src/common/libgsignond-common.la \
+    $(top_builddir)/src/gplugind/libgsignond-plugind-daemon.la \
     $(GSIGNOND_LIBS) \
     $(CHECK_LIBS)

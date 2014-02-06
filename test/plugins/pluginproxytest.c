@@ -33,7 +33,6 @@
 #include "gsignond-plugin-remote.h"
 #include "gsignond/gsignond-error.h"
 #include "gsignond/gsignond-log.h"
-#include "common/gsignond-plugin-loader.h"
 
 static GMainLoop *main_loop = NULL;
 

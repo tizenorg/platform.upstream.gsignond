@@ -29,7 +29,6 @@
 #include "config.h"
 
 #include "gsignond/gsignond-log.h"
-#include "common/gsignond-plugin-loader.h"
 #include "gsignond-plugin-proxy-factory.h"
 #include "gsignond-plugin-remote.h"
 

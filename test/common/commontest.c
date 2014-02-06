@@ -35,7 +35,7 @@
 #include "gsignond/gsignond-utils.h"
 #include "common/gsignond-identity-info.h"
 #include "common/gsignond-pipe-stream.h"
-#include "common/gsignond-plugin-loader.h"
+#include "gplugind/gsignond-plugin-loader.h"
 
 static GSequence*
 _sequence_new (gchar *data)
