@@ -224,40 +224,13 @@ gsignond_plugin_remote_get_property (
 
     switch (property_id) {
         case PROP_TYPE: {
-            if (!self->priv->plugin_type) {
-                GError *error = NULL;
-                gsignond_dbus_remote_plugin_call_get_info_sync (
-                    self->priv->dbus_plugin_proxy, &self->priv->plugin_type,
-                    &self->priv->plugin_mechanisms, NULL, &error);
-                if (error) {
-                    DBG ("Plugin type retrieval error :: %s", error->message);
-                    g_error_free (error);
-                    if (self->priv->plugin_type) {
-                        g_free (self->priv->plugin_type);
-                        self->priv->plugin_type = NULL;
-                    }
-                }
-            }
-            g_value_set_string (value, self->priv->plugin_type);
+            g_value_set_string (value,
+                                gsignond_dbus_remote_plugin_get_method(self->priv->dbus_plugin_proxy));
             break;
         }
         case PROP_MECHANISMS: {
-            if (!self->priv->plugin_mechanisms) {
-                GError *error = NULL;
-                gsignond_dbus_remote_plugin_call_get_info_sync (
-                    self->priv->dbus_plugin_proxy, &self->priv->plugin_type,
-                    &self->priv->plugin_mechanisms, NULL, &error);
-                if (error) {
-                    DBG ("Plugin mechanisms retrieval error :: %s",
-                            error->message);
-                    g_error_free (error);
-                    if (self->priv->plugin_mechanisms) {
-                        g_strfreev (self->priv->plugin_mechanisms);
-                        self->priv->plugin_mechanisms = NULL;
-                    }
-                }
-            }
-            g_value_set_boxed (value, self->priv->plugin_mechanisms);
+            g_value_set_boxed (value,
+                               gsignond_dbus_remote_plugin_get_mechanisms(self->priv->dbus_plugin_proxy));
             break;
         }
         default:
@@ -344,17 +317,7 @@ gsignond_plugin_remote_dispose (GObject *object)
 static void
 gsignond_plugin_remote_finalize (GObject *object)
 {
-    GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (object);
-
-    if (self->priv->plugin_type) {
-        g_free (self->priv->plugin_type);
-        self->priv->plugin_type = NULL;
-    }
-
-    if (self->priv->plugin_mechanisms) {
-        g_strfreev (self->priv->plugin_mechanisms);
-        self->priv->plugin_mechanisms = NULL;
-    }
+    //GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (object);
 
     G_OBJECT_CLASS (gsignond_plugin_remote_parent_class)->finalize (object);
 }
@@ -385,8 +348,6 @@ gsignond_plugin_remote_init (GSignondPluginRemote *self)
 
     self->priv->connection = NULL;
     self->priv->dbus_plugin_proxy = NULL;
-    self->priv->plugin_type = NULL;
-    self->priv->plugin_mechanisms = NULL;
     self->priv->cpid = 0;
 
     self->priv->err_watch_ch = NULL;
@@ -739,7 +700,7 @@ gsignond_plugin_remote_new (
     plugin->priv->dbus_plugin_proxy =
             gsignond_dbus_remote_plugin_proxy_new_sync (
                     plugin->priv->connection,
-                    G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+                    G_DBUS_PROXY_FLAGS_NONE,
                     NULL,
                     GSIGNOND_PLUGIN_OBJECTPATH,
                     NULL,

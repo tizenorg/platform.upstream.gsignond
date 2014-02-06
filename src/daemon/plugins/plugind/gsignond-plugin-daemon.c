@@ -236,27 +236,6 @@ _handle_refresh_from_dbus (
     return TRUE;
 }
 
-static gboolean
-_handle_get_info_from_dbus (
-        GSignondPluginDaemon *self,
-        GDBusMethodInvocation *invocation,
-        gpointer user_data)
-{
-    DBG ("");
-    g_return_val_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self), FALSE);
-    gchar *type = NULL;
-    gchar **mechanisms = NULL;
-
-    g_object_get (self->priv->plugin, "type", &type, "mechanisms", &mechanisms,
-            NULL);
-    gsignond_dbus_remote_plugin_complete_get_info (
-            self->priv->dbus_remote_plugin, invocation, (const gchar*)type,
-            (const gchar *const *)mechanisms);
-    g_free (type);
-    g_strfreev (mechanisms);
-    return TRUE;
-}
-
 static void
 _handle_response_from_plugin (
         GSignondPluginDaemon *self,
@@ -421,8 +400,6 @@ gsignond_plugin_daemon_new (
             G_CALLBACK(_handle_user_action_finished_from_dbus), daemon);
     g_signal_connect_swapped (daemon->priv->dbus_remote_plugin,
             "handle-refresh", G_CALLBACK(_handle_refresh_from_dbus), daemon);
-    g_signal_connect_swapped (daemon->priv->dbus_remote_plugin,
-            "handle-get-info", G_CALLBACK(_handle_get_info_from_dbus), daemon);
 
     /* Connect plugin signals to handlers */
     g_signal_connect_swapped (daemon->priv->plugin, "response",
@@ -442,6 +419,17 @@ gsignond_plugin_daemon_new (
 
     g_signal_connect (daemon->priv->connection, "closed",
             G_CALLBACK(_on_connection_closed), daemon);
+
+    /* Set DBus properties */
+    gchar* type;
+    gchar** mechanisms;
+
+    g_object_get(daemon->priv->plugin, "type", &type, "mechanisms", &mechanisms, NULL);
+    gsignond_dbus_remote_plugin_set_method(daemon->priv->dbus_remote_plugin, type);
+    gsignond_dbus_remote_plugin_set_mechanisms(daemon->priv->dbus_remote_plugin, (const gchar* const*) mechanisms);
+
+    g_free(type);
+    g_strfreev(mechanisms);
 
     g_dbus_connection_start_message_processing (daemon->priv->connection);
 
