@@ -41,14 +41,14 @@ enum
     
     PROP_TYPE,
     PROP_MECHANISMS,
-    PROP_CONFIG,
+    PROP_LOADERPATH,
     
     N_PROPERTIES
 };
 
 struct _GSignondPluginProxyPrivate
 {
-    GSignondConfig *config;
+    gchar* loader_path;
     gchar* plugin_type;
     GSignondPlugin* plugin;
     GQueue* session_queue;
@@ -288,7 +288,7 @@ gsignond_plugin_proxy_constructor (
     /* update the object state depending on constructor properties */
     GSignondPluginProxy* self = GSIGNOND_PLUGIN_PROXY (obj);
     GSignondPluginProxyPrivate *priv = self->priv;
-    priv->plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new (priv->config,
+    priv->plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new (priv->loader_path,
             priv->plugin_type));
 
     if (priv->plugin == NULL) {
@@ -342,9 +342,9 @@ gsignond_plugin_proxy_set_property (
             g_free (self->priv->plugin_type);
             priv->plugin_type = g_value_dup_string (value);
             break;
-        case PROP_CONFIG:
-            g_assert (self->priv->config == NULL);
-            priv->config = g_value_dup_object (value);
+        case PROP_LOADERPATH:
+            g_assert (self->priv->loader_path == NULL);
+            priv->loader_path = g_value_dup_string (value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -371,8 +371,8 @@ gsignond_plugin_proxy_get_property (
             g_object_get_property (G_OBJECT(priv->plugin),
                                    "mechanisms", value);
             break;
-        case PROP_CONFIG:
-            g_value_set_object (value, priv->config);
+        case PROP_LOADERPATH:
+            g_value_set_object (value, priv->loader_path);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -396,10 +396,6 @@ gsignond_plugin_proxy_dispose (
         g_object_unref (priv->plugin);
         priv->plugin = NULL;
     }
-    if (priv->config) {
-        g_object_unref (priv->config);
-        priv->config = NULL;
-    }
 
   /* Chain up to the parent class */
   G_OBJECT_CLASS (gsignond_plugin_proxy_parent_class)->dispose (gobject);
@@ -414,6 +410,10 @@ gsignond_plugin_proxy_finalize (GObject *gobject)
     if (priv->plugin_type) {
         g_free (priv->plugin_type);
         priv->plugin_type = NULL;
+    }
+    if (priv->loader_path) {
+        g_free (priv->loader_path);
+        priv->loader_path = NULL;
     }
     if (priv->session_queue)
     {
@@ -455,14 +455,13 @@ gsignond_plugin_proxy_class_init (
                             "List of plugin mechanisms", 
                             G_TYPE_STRV, G_PARAM_READABLE);
 
-    obj_properties[PROP_CONFIG] = g_param_spec_object ("config",
-                                                   "config",
-                                                   "Configuration object",
-                                                   GSIGNOND_TYPE_CONFIG,
-                                                   G_PARAM_CONSTRUCT_ONLY |
-                                                   G_PARAM_READWRITE |
+    obj_properties[PROP_LOADERPATH] = g_param_spec_string ("loaderpath",
+                                                   "Path to loader",
+                                                   "Path to plugin loader for this plugin",
+                                                   "" /* default value */,
+                                                   G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE |
                                                    G_PARAM_STATIC_STRINGS);
-    
+
     g_object_class_install_properties (gobject_class,
                                        N_PROPERTIES,
                                        obj_properties);
@@ -476,7 +475,7 @@ gsignond_plugin_proxy_init (
     GSignondPluginProxyPrivate *priv = GSIGNOND_PLUGIN_PROXY_PRIV (self);
     self->priv = priv;
 
-    priv->config = NULL;
+    priv->loader_path = NULL;
     priv->plugin_type = NULL;
     priv->plugin = NULL;
     priv->session_queue = g_queue_new ();
@@ -496,14 +495,14 @@ gsignond_plugin_proxy_get_plugin_type (
 
 GSignondPluginProxy* 
 gsignond_plugin_proxy_new (
-        GSignondConfig *config,
-        const gchar *plugin_type)
+        const gchar *loader_path,
+        const gchar *plugin_type,
+        gint timeout)
 {
-    g_return_val_if_fail (config && plugin_type, NULL);
+    g_return_val_if_fail (loader_path && plugin_type, NULL);
 
-    gint timeout = gsignond_config_get_integer (config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT);
     GSignondPluginProxy* proxy = g_object_new (GSIGNOND_TYPE_PLUGIN_PROXY,
-                                               "config", config,
+                                               "loaderpath", loader_path,
                                                "type", plugin_type,
                                                "auto-dispose", FALSE,
                                                "timeout", timeout,

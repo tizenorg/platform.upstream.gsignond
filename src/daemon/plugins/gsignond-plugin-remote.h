@@ -69,7 +69,7 @@ gsignond_plugin_remote_get_type (void) G_GNUC_CONST;
 
 GSignondPluginRemote *
 gsignond_plugin_remote_new (
-        GSignondConfig *config,
+        const gchar *loader_path,
         const gchar *plugin_type);
 
 G_END_DECLS

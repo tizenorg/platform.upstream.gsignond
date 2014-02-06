@@ -260,6 +260,16 @@ check_plugin_proxy(
     }
 }
 
+static GSignondPluginProxy* _make_plugin_proxy(GSignondConfig* config, const gchar* plugin_type)
+{
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+
+    GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(loader_path, plugin_type,
+                                      gsignond_config_get_integer (config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT));
+    g_free(loader_path);
+    return proxy;
+}
+
 START_TEST (test_pluginproxy_create)
 {
     DBG("test_pluginproxy_create\n");
@@ -269,11 +279,11 @@ START_TEST (test_pluginproxy_create)
     GSignondConfig* config = gsignond_config_new();
     fail_if(config == NULL);
 
-    GSignondPluginProxy* proxy2 = gsignond_plugin_proxy_new(config,
+    GSignondPluginProxy* proxy2 = _make_plugin_proxy(config,
             "absentplugin");
     fail_if (proxy2 != NULL);
 
-    GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(config, "password");
+    GSignondPluginProxy* proxy = _make_plugin_proxy(config, "password");
     fail_if (proxy == NULL);
     check_plugin_proxy(proxy, "password", pass_mechs);
 
@@ -289,7 +299,7 @@ START_TEST (test_pluginproxy_process)
     GSignondConfig* config = gsignond_config_new();
     fail_if(config == NULL);
     
-    GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(config, "password");
+    GSignondPluginProxy* proxy = _make_plugin_proxy(config, "password");
     fail_if (proxy == NULL);
     
     GSignondSessionData* data = gsignond_dictionary_new();
@@ -323,7 +333,7 @@ START_TEST (test_pluginproxy_process_cancel)
     GSignondConfig* config = gsignond_config_new();
     fail_if(config == NULL);
     
-    GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(config, "ssotest");
+    GSignondPluginProxy* proxy = _make_plugin_proxy(config, "ssotest");
     fail_if (proxy == NULL);
     
     GSignondSessionData* data = gsignond_dictionary_new();
@@ -355,7 +365,7 @@ START_TEST (test_pluginproxy_process_queue)
     GSignondConfig* config = gsignond_config_new();
     fail_if(config == NULL);
     
-    GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(config, "password");
+    GSignondPluginProxy* proxy = _make_plugin_proxy(config, "password");
     fail_if (proxy == NULL);
     
     GSignondSessionData* data = gsignond_dictionary_new();
@@ -387,7 +397,7 @@ START_TEST (test_pluginproxy_process_queue_cancel)
     GSignondConfig* config = gsignond_config_new();
     fail_if(config == NULL);
     
-    GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(config, "ssotest");
+    GSignondPluginProxy* proxy = _make_plugin_proxy(config, "ssotest");
     fail_if (proxy == NULL);
     
     GSignondSessionData* data = gsignond_dictionary_new();
@@ -491,7 +501,7 @@ START_TEST (test_pluginproxyfactory_add)
             config);
     fail_if(factory == NULL);
 
-    GSignondPluginProxy* proxy = gsignond_plugin_proxy_new(config, "password");
+    GSignondPluginProxy* proxy = _make_plugin_proxy(config, "password");
     fail_if (proxy == NULL);
     fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, proxy) == FALSE);
     fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, proxy) == TRUE);

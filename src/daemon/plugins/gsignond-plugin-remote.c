@@ -53,8 +53,6 @@ G_DEFINE_TYPE_WITH_CODE (GSignondPluginRemote, gsignond_plugin_remote,
         G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_PLUGIN_REMOTE, \
         GSignondPluginRemotePrivate)
 
-#define GSIGNOND_PLUGIND_NAME "gsignond-plugind"
-
 static void
 _on_child_down_cb (
         GPid  pid,
@@ -552,7 +550,7 @@ _status_changed_cb (
 
 GSignondPluginRemote *
 gsignond_plugin_remote_new (
-        GSignondConfig *config,
+        const gchar *loader_path,
         const gchar *plugin_type)
 {
     GError *error = NULL;
@@ -562,13 +560,6 @@ gsignond_plugin_remote_new (
     GSignondPluginRemote *plugin = NULL;
     GSignondPipeStream *stream = NULL;
     gboolean ret = FALSE;
-    const gchar *bin_path = GSIGNOND_PLUGINLOADERS_DIR;
-
-#   ifdef ENABLE_DEBUG
-    const gchar *env_val = g_getenv("SSO_BIN_DIR");
-    if (env_val)
-        bin_path = env_val;
-#   endif
 
     /* This guarantees that writes to a pipe will never cause
      * a process terminanation via SIGPIPE, and instead a proper
@@ -577,7 +568,7 @@ gsignond_plugin_remote_new (
 
     /* Spawn child process */
     argv = g_malloc0 ((2 + 1) * sizeof (gchar *));
-    argv[0] = g_build_filename (bin_path, GSIGNOND_PLUGIND_NAME, NULL);
+    argv[0] = g_strdup(loader_path);
     argv[1] = g_strdup_printf("--load-plugin=%s",plugin_type);
     ret = g_spawn_async_with_pipes (NULL, argv, NULL,
             G_SPAWN_DO_NOT_REAP_CHILD, NULL,

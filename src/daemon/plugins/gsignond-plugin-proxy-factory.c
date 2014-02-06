@@ -46,6 +46,18 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
+static gchar* _get_loader_path()
+{
+    const gchar *loader_dir = GSIGNOND_PLUGINLOADERS_DIR;
+#   ifdef ENABLE_DEBUG
+    const gchar* env_val = g_getenv("SSO_BIN_DIR");
+    if (env_val)
+        loader_dir = env_val;
+#   endif
+    gchar* loader_path = g_build_filename (loader_dir, "gsignond-plugind", NULL);
+    return loader_path;
+}
+
 static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 {
     const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
@@ -55,18 +67,21 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
     if (env_val)
         plugin_path = env_val;
 #   endif
+
     GDir* plugin_dir = g_dir_open(plugin_path, 0, NULL);
     if (plugin_dir == NULL) {
         WARN ("plugin directory empty");
         return;
     }
-        
+
     int n_plugins = 0;
     while (g_dir_read_name(plugin_dir) != NULL)
         n_plugins++;
     g_dir_rewind(plugin_dir);
     
     self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
+
+    gchar* loader_path = _get_loader_path();
 
     DBG ("enumerate plugins in %s (factory=%p)", plugin_path, self);
     gchar **method_iter = self->methods;
@@ -79,7 +94,7 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
             gchar* plugin_name = g_strndup(plugin_soname+3, 
                 strlen(plugin_soname) - 6);
             GSignondPlugin* plugin = GSIGNOND_PLUGIN (
-                    gsignond_plugin_remote_new (self->config, plugin_name));
+                    gsignond_plugin_remote_new (loader_path, plugin_name));
             if (plugin != NULL) {
                 gchar* plugin_type;
                 gchar** mechanisms;
@@ -101,6 +116,7 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
             g_free(plugin_name);
         }
     }
+    g_free(loader_path);
     g_dir_close(plugin_dir);
 }
 
@@ -301,7 +317,10 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
         return proxy;
     }
 
-    proxy = gsignond_plugin_proxy_new(factory->config, plugin_type);
+    gchar* loader_path = _get_loader_path();
+    proxy = gsignond_plugin_proxy_new(loader_path, plugin_type,
+                                      gsignond_config_get_integer (factory->config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT));
+    g_free(loader_path);
     if (proxy == NULL) {
         return NULL;
     }

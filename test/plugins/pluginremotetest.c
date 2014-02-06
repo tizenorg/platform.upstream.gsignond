@@ -223,7 +223,9 @@ START_TEST (test_pluginremote_create)
     GSignondConfig* config = gsignond_config_new ();
     fail_if (config == NULL);
 
-    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(loader_path, plugin_type));
+    g_free(loader_path);
     g_object_unref (config);
 
     check_plugin (plugin);
@@ -241,7 +243,9 @@ START_TEST (test_pluginremote_plugind_create)
     GSignondConfig* config = gsignond_config_new ();
     fail_if (config == NULL);
 
-    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(loader_path, plugin_type));
+    g_free(loader_path);
     g_object_unref (config);
 
     fail_if (plugin == NULL);
@@ -267,7 +271,9 @@ START_TEST (test_pluginremote_plugind_unref)
     GSignondConfig* config = gsignond_config_new ();
     fail_if (config == NULL);
 
-    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(loader_path, plugin_type));
+    g_free(loader_path);
     fail_if (plugin == NULL);
     priv = (GSignondPluginRemotePrivate *)GSIGNOND_PLUGIN_REMOTE (plugin)->priv;
 
@@ -293,7 +299,9 @@ START_TEST (test_pluginremote_plugind_kill)
     GSignondConfig* config = gsignond_config_new ();
     fail_if (config == NULL);
 
-    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(loader_path, plugin_type));
+    g_free(loader_path);
     fail_if (plugin == NULL);
     priv = (GSignondPluginRemotePrivate *)GSIGNOND_PLUGIN_REMOTE (plugin)->priv;
 
@@ -322,7 +330,9 @@ START_TEST (test_pluginremote_request)
     GSignondConfig* config = gsignond_config_new ();
     fail_if(config == NULL);
     
-    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(loader_path, plugin_type));
+    g_free(loader_path);
     fail_if(plugin == NULL);
 
     GSignondSessionData* result = NULL;
@@ -418,7 +428,9 @@ START_TEST (test_pluginremote_user_action_finished)
     GSignondConfig* config = gsignond_config_new ();
     fail_if(config == NULL);
     
-    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(loader_path, plugin_type));
+    g_free(loader_path);
     fail_if(plugin == NULL);
 
     GSignondSessionData* result = NULL;
@@ -501,7 +513,9 @@ START_TEST (test_pluginremote_refresh)
     GSignondConfig* config = gsignond_config_new ();
     fail_if(config == NULL);
     
-    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(config, plugin_type));
+    gchar* loader_path = g_build_filename (g_getenv("SSO_BIN_DIR"), "gsignond-plugind", NULL);
+    plugin = GSIGNOND_PLUGIN (gsignond_plugin_remote_new(loader_path, plugin_type));
+    g_free(loader_path);
     fail_if(plugin == NULL);
 
     GSignondSessionData* result = NULL;

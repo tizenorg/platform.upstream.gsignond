@@ -71,8 +71,9 @@ gsignond_plugin_proxy_get_type (void);
 
 GSignondPluginProxy* 
 gsignond_plugin_proxy_new(
-        GSignondConfig *config,
-        const gchar* plugin_type);
+        const gchar* loader_path,
+        const gchar* plugin_type,
+        gint timeout);
 
 void 
 gsignond_plugin_proxy_cancel (
