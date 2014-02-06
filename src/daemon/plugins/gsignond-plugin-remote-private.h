@@ -39,9 +39,6 @@ struct _GSignondPluginRemotePrivate
     GPid cpid;
     guint child_watch_id;
 
-    GIOChannel *err_watch_ch;
-    guint err_watch_id;
-
     GMainLoop *main_loop;
     gboolean is_plugind_up;
 

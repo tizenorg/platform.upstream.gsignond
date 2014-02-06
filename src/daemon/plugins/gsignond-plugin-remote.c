@@ -235,15 +235,6 @@ gsignond_plugin_remote_dispose (GObject *object)
         self->priv->dbus_plugin_proxy = NULL;
     }
 
-    if (self->priv->err_watch_ch) {
-        g_io_channel_shutdown (self->priv->err_watch_ch, FALSE, NULL);
-        g_io_channel_unref (self->priv->err_watch_ch);
-        self->priv->err_watch_ch = NULL;
-        if (self->priv->err_watch_id) {
-            g_source_remove (self->priv->err_watch_id);
-        }
-    }
-
     G_OBJECT_CLASS (gsignond_plugin_remote_parent_class)->dispose (object);
 }
 
@@ -283,7 +274,6 @@ gsignond_plugin_remote_init (GSignondPluginRemote *self)
     self->priv->dbus_plugin_proxy = NULL;
     self->priv->cpid = 0;
 
-    self->priv->err_watch_ch = NULL;
     self->priv->child_watch_id = 0;
 
     self->priv->main_loop = NULL;
