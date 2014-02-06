@@ -578,7 +578,7 @@ gsignond_plugin_remote_new (
     /* Spawn child process */
     argv = g_malloc0 ((2 + 1) * sizeof (gchar *));
     argv[0] = g_build_filename (bin_path, GSIGNOND_PLUGIND_NAME, NULL);
-    argv[1] = g_strdup(plugin_type);
+    argv[1] = g_strdup_printf("--load-plugin=%s",plugin_type);
     ret = g_spawn_async_with_pipes (NULL, argv, NULL,
             G_SPAWN_DO_NOT_REAP_CHILD, NULL,
             NULL, &cpid, &cin_fd, &cout_fd, NULL, &error);

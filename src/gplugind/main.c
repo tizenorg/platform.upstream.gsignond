@@ -96,13 +96,38 @@ int main (int argc, char **argv)
     GError *error = NULL;
     GMainLoop *main_loop = NULL;
     GOptionContext *opt_context = NULL;
-    gchar **plugin_args = NULL;
     gint in_fd = 0, out_fd = 1;
-    GOptionEntry opt_entries[] = {
-        {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &plugin_args,
-                "Plugin Args", NULL},
-        {NULL}
+
+    gboolean list_plugins = FALSE;
+    gchar* plugin_name = NULL;
+    GOptionEntry main_entries[] =
+    {
+        { "list-plugins", 0, 0, G_OPTION_ARG_NONE, &list_plugins, "List available plugins", NULL},
+        { "load-plugin", 0, 0, G_OPTION_ARG_STRING, &plugin_name, "Load a plugin and start a d-bus connection with it on stdio channel", "name"},
+        { NULL }
     };
+
+    opt_context = g_option_context_new ("gSSO glib plugin loader");
+    g_option_context_add_main_entries (opt_context, main_entries, NULL);
+
+    if (!g_option_context_parse (opt_context, &argc, &argv, &error)) {
+        WARN ("option parsing failed: %s\n", error->message);
+        g_error_free(error);
+        g_option_context_free(opt_context);
+        return -1;
+    }
+    g_option_context_free(opt_context);
+
+    if (list_plugins) {
+        // FIXME: list plugins here
+        return 0;
+    }
+
+    if (!plugin_name) {
+        g_print("Use --help to list command line options\n");
+        return -1;
+    }
+
 
     /* Duplicates stdin,stdout,stderr descriptors and point the descriptors
      * to /dev/null to avoid anyone writing to descriptors before initial
@@ -130,33 +155,17 @@ int main (int argc, char **argv)
     g_type_init ();
 #endif
 
-    opt_context = g_option_context_new ("<plugin_name>");
-    g_option_context_set_summary (opt_context, "gSSO helper plugin daemon");
-    g_option_context_add_main_entries (opt_context, opt_entries, NULL);
-    g_option_context_set_ignore_unknown_options (opt_context, TRUE);
-    g_option_context_parse (opt_context, &argc, &argv, &error);
-    g_option_context_free (opt_context);
-    if (error) {
-        WARN ("Error in arguments parsing: %s", error->message);
-        g_error_free (error);
-    }
-    if (!plugin_args || !plugin_args[0] ) {
-        WARN ("plugin type missing");
-        if (plugin_args) g_strfreev(plugin_args);
-        return -1;
-    }
-
     const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
 #   ifdef ENABLE_DEBUG
     const gchar *env_val = g_getenv("SSO_GPLUGINS_DIR");
     if (env_val)
         plugin_path = env_val;
 #endif
-    gchar* filename = g_module_build_path (plugin_path, plugin_args[0]);
+    gchar* filename = g_module_build_path (plugin_path, plugin_name);
 
-    _daemon = gsignond_plugin_daemon_new (filename, plugin_args[0], in_fd,
+    _daemon = gsignond_plugin_daemon_new (filename, plugin_name, in_fd,
             out_fd);
-    g_strfreev(plugin_args);
+    g_free(plugin_name);
     if (_daemon == NULL) {
         return -1;
     }
