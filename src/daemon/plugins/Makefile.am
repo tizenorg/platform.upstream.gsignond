@@ -1,5 +1,4 @@
 include $(top_srcdir)/common.mk
-SUBDIRS = plugind
 
 noinst_LTLIBRARIES = libgsignond-plugins.la
 
@@ -8,8 +7,8 @@ libgsignond_plugins_la_CPPFLAGS = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/include \
     -I$(top_builddir)/src \
-    -DGSIGNOND_BIN_DIR='"$(bindir)"' \
-    -DGSIGNOND_PLUGINS_DIR='"$(pluginsdir)"' \
+    -DGSIGNOND_PLUGINLOADERS_DIR='"$(pluginloadersdir)"' \
+    -DGSIGNOND_GPLUGINS_DIR='"$(gpluginsdir)"' \
     $(GSIGNOND_CFLAGS)
 
 libgsignond_plugins_la_LIBADD =    \

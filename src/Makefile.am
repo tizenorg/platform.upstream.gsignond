@@ -1,2 +1,2 @@
-SUBDIRS=common daemon extensions plugins
+SUBDIRS=common daemon gplugind extensions plugins
 

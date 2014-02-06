@@ -30,7 +30,7 @@
 #include "daemon/gsignond-types.h"
 #include "gsignond-plugin-remote-private.h"
 #include "gsignond-plugin-remote.h"
-#include "plugind/gsignond-plugin-daemon.h"
+#include "gplugind/gsignond-plugin-daemon.h"
 #include <gsignond/gsignond-plugin-interface.h>
 #include <gsignond/gsignond-error.h>
 #include <gsignond/gsignond-config.h>
@@ -533,7 +533,7 @@ START_TEST (test_plugind_daemon)
     GSignondPluginDaemon *daemon = NULL;
     const gchar *plugin_type = "password";
 
-    const gchar *plugin_dir = g_getenv("SSO_PLUGINS_DIR");
+    const gchar *plugin_dir = g_getenv("SSO_GPLUGINS_DIR");
     fail_if (plugin_dir == NULL);
 
     gchar *plugin_path = g_module_build_path (plugin_dir, "nonexisting");

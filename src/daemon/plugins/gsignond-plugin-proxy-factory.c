@@ -49,10 +49,10 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 {
-    const gchar *plugin_path = GSIGNOND_PLUGINS_DIR;
+    const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
 
 #   ifdef ENABLE_DEBUG
-    const gchar *env_val = g_getenv("SSO_PLUGINS_DIR");
+    const gchar *env_val = g_getenv("SSO_GPLUGINS_DIR");
     if (env_val)
         plugin_path = env_val;
 #   endif

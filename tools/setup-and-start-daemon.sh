@@ -23,7 +23,7 @@ else
 export SSO_KEYCHAIN_SYSCTX="$SRC_HOME/test/daemon/.libs/daemontest"
 fi
 export SSO_BIN_DIR=$SRC_HOME/src/daemon/.libs
-export SSO_PLUGINS_DIR=$SRC_HOME/src/plugins/.libs 
+export SSO_GPLUGINS_DIR=$SRC_HOME/src/plugins/.libs
 export LD_LIBRARY_PATH="$SRC_HOME/src/daemon/plugins/plugind/.libs:$SRC_HOME/src/daemon/plugins/.libs"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SRC_HOME/src/common/.libs:$SRC_HOME/src/common/db/.libs:$SRC_HOME/src/daemon/.libs:$SRC_HOME/src/daemon/db/.libs:$SRC_HOME/src/daemon/dbus/.libs"
 export G_MESSAGES_DEBUG="all"

@@ -562,14 +562,14 @@ gsignond_plugin_remote_new (
     GSignondPluginRemote *plugin = NULL;
     GSignondPipeStream *stream = NULL;
     gboolean ret = FALSE;
-    const gchar *bin_path = GSIGNOND_BIN_DIR;
-    const gchar *plugin_path = GSIGNOND_PLUGINS_DIR;
+    const gchar *bin_path = GSIGNOND_PLUGINLOADERS_DIR;
+    const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
 
 #   ifdef ENABLE_DEBUG
     const gchar *env_val = g_getenv("SSO_BIN_DIR");
     if (env_val)
         bin_path = env_val;
-    env_val = g_getenv("SSO_PLUGINS_DIR");
+    env_val = g_getenv("SSO_GPLUGINS_DIR");
     if (env_val)
         plugin_path = env_val;
 #   endif

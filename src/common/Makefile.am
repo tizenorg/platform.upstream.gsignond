@@ -32,8 +32,7 @@ libgsignond_common_la_CPPFLAGS = \
     -I$(top_srcdir)/include \
     -I. \
     $(GSIGNOND_CFLAGS) \
-    -DGSIGNOND_PLUGINS_DIR='"$(pluginsdir)"' \
-    -DGSIGNOND_BIN_DIR='"$(bindir)"' \
+    -DGSIGNOND_GPLUGINS_DIR='"$(gpluginsdir)"' \
     -DGSIGNOND_SYSCONF_DIR='"$(sysconfdir)"' \
     $(NULL)
 

@@ -1,9 +1,9 @@
 TESTS = digestplugintest passwordplugintest pluginproxytest pluginremotetest
 
-TESTS_ENVIRONMENT= SSO_PLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
+TESTS_ENVIRONMENT= SSO_GPLUGINS_DIR=$(top_builddir)/src/plugins/.libs \
 	SSO_BIN_DIR=$(top_builddir)/src/daemon/.libs \
     SSO_STORAGE_PATH=/tmp/gsignond \
-    LD_LIBRARY_PATH="$(top_builddir)/src/daemon/plugins/plugind/.libs:$(top_builddir)/src/common/.libs:$(top_builddir)/src/common/db/.libs:$(top_builddir)/src/daemon/.libs:$(top_builddir)/src/daemon/db/.libs:$(top_builddir)/src/daemon/dbus/.libs:$(top_builddir)/src/daemon/plugins/.libs"
+    LD_LIBRARY_PATH="$(top_builddir)/src/common/.libs:$(top_builddir)/src/common/db/.libs:$(top_builddir)/src/daemon/.libs:$(top_builddir)/src/daemon/db/.libs:$(top_builddir)/src/daemon/dbus/.libs:$(top_builddir)/src/daemon/plugins/.libs"
 
 VALGRIND_TESTS_DISABLE =
     
@@ -62,12 +62,11 @@ pluginremotetest_CFLAGS = \
     -I$(top_builddir) \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/daemon/plugins \
-    -I$(top_srcdir)/src/daemon/plugins/plugind \
     -I$(top_srcdir)/include
 
 pluginremotetest_LDADD = \
     $(top_builddir)/src/common/libgsignond-common.la \
     $(top_builddir)/src/daemon/plugins/libgsignond-plugins.la \
-    $(top_builddir)/src/daemon/plugins/plugind/libgsignond-plugind-daemon.la \
+    $(top_builddir)/src/gplugind/libgsignond-plugind-daemon.la \
     $(GSIGNOND_LIBS) \
     $(CHECK_LIBS)

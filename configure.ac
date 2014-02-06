@@ -197,7 +197,7 @@ src/daemon/db/Makefile
 src/daemon/dbus/Makefile
 src/daemon/dbus/services/com.google.code.AccountsSSO.gSingleSignOn.service
 src/daemon/plugins/Makefile
-src/daemon/plugins/plugind/Makefile
+src/gplugind/Makefile
 src/extensions/Makefile
 src/extensions/test/Makefile
 src/extensions/tizen/Makefile

@@ -1,3 +1,5 @@
+include $(top_srcdir)/common.mk
+
 SUBDIRS=
 NULL=
 
@@ -19,7 +21,7 @@ libgsignond_plugind_daemon_la_SOURCES = \
    gsignond-plugin-daemon.h \
    gsignond-plugin-daemon.c
 
-bin_PROGRAMS = gsignond-plugind
+pluginloaders_PROGRAMS = gsignond-plugind
 
 gsignond_plugind_SOURCES = \
     main.c \
@@ -41,4 +43,4 @@ all-local: slink
 
 slink:
 	$(MKDIR_P) $(abs_top_builddir)/src/daemon/.libs
-	ln -sf $(abs_top_builddir)/src/daemon/plugins/plugind/.libs/gsignond-plugind $(abs_top_builddir)/src/daemon/.libs/gsignond-plugind
+	ln -sf $(abs_top_builddir)/src/gplugind/.libs/gsignond-plugind $(abs_top_builddir)/src/daemon/.libs/gsignond-plugind

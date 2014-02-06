@@ -1,5 +1,5 @@
 include $(top_srcdir)/common.mk
-plugins_LTLIBRARIES = libdigest.la
+gplugins_LTLIBRARIES = libdigest.la
 NULL=
 
 libdigest_la_CPPFLAGS = \

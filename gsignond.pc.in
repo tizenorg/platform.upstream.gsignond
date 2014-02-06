@@ -3,7 +3,8 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
-pluginsdir=@libdir@/@PACKAGE@/plugins
+gpluginsdir=@libdir@/@PACKAGE@/gplugins
+pluginloadersdir = @libdir@/@PACKAGE@/pluginloaders
 extensionsdir=@libdir@/@PACKAGE@/extensions
 
 Name: @PACKAGE_NAME@

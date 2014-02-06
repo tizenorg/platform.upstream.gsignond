@@ -1,5 +1,5 @@
 include $(top_srcdir)/common.mk
-plugins_LTLIBRARIES = libpassword.la
+gplugins_LTLIBRARIES = libpassword.la
 NULL=
 
 libpassword_la_CPPFLAGS = \

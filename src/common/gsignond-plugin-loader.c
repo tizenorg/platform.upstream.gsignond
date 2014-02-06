@@ -36,12 +36,12 @@ gsignond_load_plugin(
         GSignondConfig* config,
         gchar* plugin_type)
 {
-    const gchar *plugin_path = GSIGNOND_PLUGINS_DIR;
+    const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
     gchar *plugin_filename;
     GSignondPlugin *plugin;
 
 #   ifdef ENABLE_DEBUG
-    const gchar *env_val = g_getenv("SSO_PLUGINS_DIR");
+    const gchar *env_val = g_getenv("SSO_GPLUGINS_DIR");
     if (env_val)
         plugin_path = env_val;
 #   endif

@@ -1,5 +1,5 @@
 include $(top_srcdir)/common.mk
-plugins_LTLIBRARIES = libssotest.la
+gplugins_LTLIBRARIES = libssotest.la
 NULL=
 
 libssotest_la_CPPFLAGS = \

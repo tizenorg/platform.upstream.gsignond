@@ -1,2 +1,3 @@
 extensionsdir = $(pkglibdir)/extensions
-pluginsdir = $(pkglibdir)/plugins
+pluginloadersdir = $(pkglibdir)/pluginloaders
+gpluginsdir = $(pkglibdir)/gplugins
