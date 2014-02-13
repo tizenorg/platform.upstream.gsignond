@@ -92,7 +92,6 @@ setup_daemon (void)
     gchar* exe_name = _get_executable_name();
     fail_if(exe_name == NULL);
     
-    fail_if (g_setenv ("G_MESSAGES_DEBUG", "all", TRUE) == FALSE);
     fail_if (g_setenv ("GSIGNOND_CONFIG", "daemontest.conf", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_STORAGE_PATH", "/tmp/gsignond", TRUE) == FALSE);
     fail_if (g_setenv ("SSO_KEYCHAIN_SYSCTX", exe_name, TRUE) == FALSE);
