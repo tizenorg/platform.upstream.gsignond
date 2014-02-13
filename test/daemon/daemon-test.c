@@ -216,9 +216,9 @@ gboolean _validate_identity_info (GVariant *identity_info)
 
     username = gsignond_identity_info_get_username (identity);
 
-    gsignond_identity_info_unref (identity);
-
     if (!username || strcmp (username, "test_user")) return FALSE;
+
+    gsignond_identity_info_unref (identity);
 
     return TRUE;
 }

@@ -410,6 +410,8 @@ gsignond_identity_info_unref (GSignondIdentityInfo *info)
 
     if (g_atomic_int_dec_and_test (&info->ref_count)) {
         gsignond_dictionary_unref (info->map);
+        g_free(info->username);
+        g_free(info->secret);
         g_slice_free (GSignondIdentityInfo, info);
     }
 }
