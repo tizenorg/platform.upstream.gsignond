@@ -67,10 +67,6 @@ GSignondPluginProxy*
 gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
                                          const gchar* plugin_type);
 
-gboolean gsignond_plugin_proxy_factory_add_plugin(
-    GSignondPluginProxyFactory* factory,
-    GSignondPluginProxy* proxy);
-    
 const gchar** 
 gsignond_plugin_proxy_factory_get_plugin_types(
    GSignondPluginProxyFactory* factory);

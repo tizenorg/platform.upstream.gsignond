@@ -331,27 +331,6 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
     return proxy;
 }
 
-gboolean gsignond_plugin_proxy_factory_add_plugin(
-    GSignondPluginProxyFactory* factory,
-    GSignondPluginProxy* proxy)
-{
-    g_return_val_if_fail (factory && GSIGNOND_IS_PLUGIN_PROXY_FACTORY(factory), FALSE);
-    g_return_val_if_fail (proxy && GSIGNOND_IS_PLUGIN_PROXY(proxy), FALSE);
-    
-    gchar* plugin_type = NULL;
-    g_object_get (proxy, "type", &plugin_type, NULL);
-
-    if (g_hash_table_contains(factory->plugins, plugin_type)) {
-        g_free(plugin_type);
-        return FALSE;
-    }
-    g_object_ref(proxy);
-    DBG("add plugin %s -> %p", plugin_type, proxy);
-    g_hash_table_insert(factory->plugins, plugin_type, proxy);
-
-    return TRUE;
-}
-
 const gchar** 
 gsignond_plugin_proxy_factory_get_plugin_types(
    GSignondPluginProxyFactory* factory)

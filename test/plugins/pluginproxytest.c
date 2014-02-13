@@ -491,30 +491,6 @@ START_TEST (test_pluginproxyfactory_get)
 }
 END_TEST
 
-START_TEST (test_pluginproxyfactory_add)
-{
-    DBG("");
-    GSignondConfig* config = gsignond_config_new();
-    fail_if(config == NULL);
-    
-    GSignondPluginProxyFactory* factory = gsignond_plugin_proxy_factory_new(
-            config);
-    fail_if(factory == NULL);
-
-    GSignondPluginProxy* proxy = _make_plugin_proxy(config, "password");
-    fail_if (proxy == NULL);
-    fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, proxy) == FALSE);
-    fail_if(gsignond_plugin_proxy_factory_add_plugin(factory, proxy) == TRUE);
-    fail_if(gsignond_plugin_proxy_factory_get_plugin(factory, "password")
-            != proxy);
-    g_object_unref(proxy);
-    
-    g_object_unref(proxy);
-    g_object_unref(factory);
-    g_object_unref(config);
-}
-END_TEST
-
 typedef struct {
     GSignondPluginProxyFactory *factory;
     GSignondPluginProxy *proxy;
@@ -659,7 +635,6 @@ Suite* pluginproxy_suite (void)
     tcase_add_test (tc_core, test_pluginproxy_process_queue_cancel);
     tcase_add_test (tc_core, test_pluginproxyfactory_methods_and_mechanisms);
     tcase_add_test (tc_core, test_pluginproxyfactory_get);
-    tcase_add_test (tc_core, test_pluginproxyfactory_add);
     tcase_add_test (tc_core, test_pluginproxyfactory_proxy_timeout);
 
     suite_add_tcase (s, tc_core);
