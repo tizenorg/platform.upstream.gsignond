@@ -35,7 +35,7 @@ G_BEGIN_DECLS
 struct _GSignondPluginRemotePrivate
 {
     GDBusConnection   *connection;
-    GSignondDbusRemotePlugin *dbus_plugin_proxy;
+    GSignondDbusRemotePluginV1 *dbus_plugin_proxy;
     GPid cpid;
     guint child_watch_id;
 

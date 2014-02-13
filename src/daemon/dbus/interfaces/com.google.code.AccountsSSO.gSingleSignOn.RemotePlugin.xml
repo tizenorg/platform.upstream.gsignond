@@ -1,6 +1,6 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
-  <interface name="com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin">
+  <interface name="com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.V1">
     <property type='s' name='method' access='read'/>
     <property type='as' name='mechanisms' access='read'/>
     <method name="cancel">

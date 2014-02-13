@@ -35,7 +35,7 @@
 struct _GSignondPluginDaemonPrivate
 {
     GDBusConnection   *connection;
-    GSignondDbusRemotePlugin *dbus_remote_plugin;
+    GSignondDbusRemotePluginV1 *dbus_remote_plugin;
     GSignondPlugin *plugin;
     gchar *plugin_type;
 };
@@ -137,7 +137,7 @@ _handle_cancel_from_dbus (
 {
     DBG ("");
     g_return_val_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self), FALSE);
-    gsignond_dbus_remote_plugin_complete_cancel (self->priv->dbus_remote_plugin,
+    gsignond_dbus_remote_plugin_v1_complete_cancel (self->priv->dbus_remote_plugin,
             invocation);
 
     gsignond_plugin_cancel (self->priv->plugin);
@@ -154,7 +154,7 @@ _handle_request_from_dbus (
     DBG ("");
     g_return_val_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self), FALSE);
 
-    gsignond_dbus_remote_plugin_complete_request (
+    gsignond_dbus_remote_plugin_v1_complete_request (
             self->priv->dbus_remote_plugin, invocation);
 
     GSignondSessionData *data = (GSignondSessionData *)
@@ -182,7 +182,7 @@ _handle_request_initial_from_dbus (
     DBG ("");
     g_return_val_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self), FALSE);
 
-    gsignond_dbus_remote_plugin_complete_request_initial (
+    gsignond_dbus_remote_plugin_v1_complete_request_initial (
             self->priv->dbus_remote_plugin, invocation);
 
     GSignondSessionData *data = (GSignondSessionData *)
@@ -206,7 +206,7 @@ _handle_user_action_finished_from_dbus (
     DBG ("");
     g_return_val_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self), FALSE);
 
-    gsignond_dbus_remote_plugin_complete_user_action_finished (
+    gsignond_dbus_remote_plugin_v1_complete_user_action_finished (
             self->priv->dbus_remote_plugin, invocation);
 
     GSignondSignonuiData *data = (GSignondSignonuiData *)
@@ -226,7 +226,7 @@ _handle_refresh_from_dbus (
     DBG ("");
     g_return_val_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self), FALSE);
 
-    gsignond_dbus_remote_plugin_complete_refresh (
+    gsignond_dbus_remote_plugin_v1_complete_refresh (
             self->priv->dbus_remote_plugin, invocation);
 
     GSignondSignonuiData *data = (GSignondSignonuiData *)
@@ -247,7 +247,7 @@ _handle_response_from_plugin (
 
     GVariant *data = gsignond_dictionary_to_variant (
             (GSignondDictionary *)session_data);
-    gsignond_dbus_remote_plugin_emit_response (self->priv->dbus_remote_plugin,
+    gsignond_dbus_remote_plugin_v1_emit_response (self->priv->dbus_remote_plugin,
             data);
 }
 
@@ -262,7 +262,7 @@ _handle_response_final_from_plugin (
 
     GVariant *data = gsignond_dictionary_to_variant (
             (GSignondDictionary *)session_data);
-    gsignond_dbus_remote_plugin_emit_response_final (
+    gsignond_dbus_remote_plugin_v1_emit_response_final (
             self->priv->dbus_remote_plugin, data);
 }
 
@@ -277,7 +277,7 @@ _handle_store_from_plugin (
 
     GVariant *data = gsignond_dictionary_to_variant (
             (GSignondDictionary *)session_data);
-    gsignond_dbus_remote_plugin_emit_store (self->priv->dbus_remote_plugin,
+    gsignond_dbus_remote_plugin_v1_emit_store (self->priv->dbus_remote_plugin,
             data);
 }
 
@@ -291,7 +291,7 @@ _handle_error_from_plugin (
     g_return_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self));
 
     GVariant *error = gsignond_error_to_variant (gerror);
-    gsignond_dbus_remote_plugin_emit_error (self->priv->dbus_remote_plugin,
+    gsignond_dbus_remote_plugin_v1_emit_error (self->priv->dbus_remote_plugin,
             error);
 }
 
@@ -305,7 +305,7 @@ _handle_user_action_required_from_plugin (
     g_return_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self));
 
     GVariant *data = gsignond_dictionary_to_variant (ui_data);
-    gsignond_dbus_remote_plugin_emit_user_action_required (
+    gsignond_dbus_remote_plugin_v1_emit_user_action_required (
             self->priv->dbus_remote_plugin, data);
 }
 
@@ -319,7 +319,7 @@ _handle_refreshed_from_plugin(
     g_return_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self));
 
     GVariant *data = gsignond_dictionary_to_variant (ui_data);
-    gsignond_dbus_remote_plugin_emit_refreshed (self->priv->dbus_remote_plugin,
+    gsignond_dbus_remote_plugin_v1_emit_refreshed (self->priv->dbus_remote_plugin,
             data);
 }
 
@@ -333,7 +333,7 @@ _handle_status_changed_from_plugin (
     DBG ("");
     g_return_if_fail (self && GSIGNOND_IS_PLUGIN_DAEMON (self));
 
-    gsignond_dbus_remote_plugin_emit_status_changed (
+    gsignond_dbus_remote_plugin_v1_emit_status_changed (
             self->priv->dbus_remote_plugin, (gint)status,
             (const gchar *)message);
 }
@@ -373,7 +373,7 @@ gsignond_plugin_daemon_new (
 
     /* Create dbus object */
     daemon->priv->dbus_remote_plugin =
-            gsignond_dbus_remote_plugin_skeleton_new ();
+            gsignond_dbus_remote_plugin_v1_skeleton_new ();
 
     g_dbus_interface_skeleton_export (
                 G_DBUS_INTERFACE_SKELETON(daemon->priv->dbus_remote_plugin),
@@ -425,8 +425,8 @@ gsignond_plugin_daemon_new (
     gchar** mechanisms;
 
     g_object_get(daemon->priv->plugin, "type", &type, "mechanisms", &mechanisms, NULL);
-    gsignond_dbus_remote_plugin_set_method(daemon->priv->dbus_remote_plugin, type);
-    gsignond_dbus_remote_plugin_set_mechanisms(daemon->priv->dbus_remote_plugin, (const gchar* const*) mechanisms);
+    gsignond_dbus_remote_plugin_v1_set_method(daemon->priv->dbus_remote_plugin, type);
+    gsignond_dbus_remote_plugin_v1_set_mechanisms(daemon->priv->dbus_remote_plugin, (const gchar* const*) mechanisms);
 
     g_free(type);
     g_strfreev(mechanisms);

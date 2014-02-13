@@ -158,12 +158,12 @@ gsignond_plugin_remote_get_property (
     switch (property_id) {
         case PROP_TYPE: {
             g_value_set_string (value,
-                                gsignond_dbus_remote_plugin_get_method(self->priv->dbus_plugin_proxy));
+                                gsignond_dbus_remote_plugin_v1_get_method(self->priv->dbus_plugin_proxy));
             break;
         }
         case PROP_MECHANISMS: {
             g_value_set_boxed (value,
-                               gsignond_dbus_remote_plugin_get_mechanisms(self->priv->dbus_plugin_proxy));
+                               gsignond_dbus_remote_plugin_v1_get_mechanisms(self->priv->dbus_plugin_proxy));
             break;
         }
         default:
@@ -285,10 +285,10 @@ _cancel_async_cb (
         gpointer user_data)
 {
     GError *error = NULL;
-    GSignondDbusRemotePlugin *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN (object);
+    GSignondDbusRemotePluginV1 *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN_V1 (object);
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (user_data);
 
-    gsignond_dbus_remote_plugin_call_cancel_finish (proxy, res, &error);
+    gsignond_dbus_remote_plugin_v1_call_cancel_finish (proxy, res, &error);
     if (error) {
         gsignond_plugin_error (GSIGNOND_PLUGIN(self), error);
         g_error_free (error);
@@ -302,7 +302,7 @@ gsignond_plugin_remote_cancel (
     g_return_if_fail (plugin && GSIGNOND_IS_PLUGIN_REMOTE (plugin));
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (plugin);
 
-    gsignond_dbus_remote_plugin_call_cancel (
+    gsignond_dbus_remote_plugin_v1_call_cancel (
             self->priv->dbus_plugin_proxy, NULL, _cancel_async_cb, self);
 }
 
@@ -313,9 +313,9 @@ _request_initial_async_cb (
         gpointer user_data)
 {
     GError *error = NULL;
-    GSignondDbusRemotePlugin *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN (object);
+    GSignondDbusRemotePluginV1 *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN_V1 (object);
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (user_data);
-    gsignond_dbus_remote_plugin_call_request_initial_finish (proxy,
+    gsignond_dbus_remote_plugin_v1_call_request_initial_finish (proxy,
             res, &error);
     if (error) {
         gsignond_plugin_error (GSIGNOND_PLUGIN(self), error);
@@ -343,7 +343,7 @@ gsignond_plugin_remote_request_initial (
         cache = gsignond_dictionary_to_variant (empty_cache);
         gsignond_dictionary_unref(empty_cache);
     }
-    gsignond_dbus_remote_plugin_call_request_initial (
+    gsignond_dbus_remote_plugin_v1_call_request_initial (
             self->priv->dbus_plugin_proxy, data, cache, mechanism, NULL,
             _request_initial_async_cb, self);
 }
@@ -355,10 +355,10 @@ _request_async_cb (
         gpointer user_data)
 {
     GError *error = NULL;
-    GSignondDbusRemotePlugin *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN (object);
+    GSignondDbusRemotePluginV1 *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN_V1 (object);
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (user_data);
 
-    gsignond_dbus_remote_plugin_call_request_finish (proxy, res, &error);
+    gsignond_dbus_remote_plugin_v1_call_request_finish (proxy, res, &error);
     if (error) {
         gsignond_plugin_error (GSIGNOND_PLUGIN(self), error);
         g_error_free (error);
@@ -375,7 +375,7 @@ gsignond_plugin_remote_request (
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (plugin);
 
     GVariant *data = gsignond_dictionary_to_variant (session_data);
-    gsignond_dbus_remote_plugin_call_request (
+    gsignond_dbus_remote_plugin_v1_call_request (
             self->priv->dbus_plugin_proxy, data, NULL, _request_async_cb, self);
 }
 
@@ -386,10 +386,10 @@ _user_action_finished_async_cb (
         gpointer user_data)
 {
     GError *error = NULL;
-    GSignondDbusRemotePlugin *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN (object);
+    GSignondDbusRemotePluginV1 *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN_V1 (object);
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (user_data);
 
-    gsignond_dbus_remote_plugin_call_user_action_finished_finish (proxy,
+    gsignond_dbus_remote_plugin_v1_call_user_action_finished_finish (proxy,
             res, &error);
     if (error) {
         gsignond_plugin_error (GSIGNOND_PLUGIN(self), error);
@@ -407,7 +407,7 @@ gsignond_plugin_remote_user_action_finished (
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (plugin);
 
     GVariant *data = gsignond_dictionary_to_variant (signonui_data);
-    gsignond_dbus_remote_plugin_call_user_action_finished (
+    gsignond_dbus_remote_plugin_v1_call_user_action_finished (
             self->priv->dbus_plugin_proxy, data, NULL,
             _user_action_finished_async_cb, self);
 }
@@ -419,10 +419,10 @@ _refresh_async_cb (
         gpointer user_data)
 {
     GError *error = NULL;
-    GSignondDbusRemotePlugin *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN (object);
+    GSignondDbusRemotePluginV1 *proxy = GSIGNOND_DBUS_REMOTE_PLUGIN_V1 (object);
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (user_data);
 
-    gsignond_dbus_remote_plugin_call_refresh_finish (proxy, res, &error);
+    gsignond_dbus_remote_plugin_v1_call_refresh_finish (proxy, res, &error);
     if (error) {
         gsignond_plugin_error (GSIGNOND_PLUGIN(self), error);
         g_error_free (error);
@@ -439,7 +439,7 @@ gsignond_plugin_remote_refresh (
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (plugin);
 
     GVariant *data = gsignond_dictionary_to_variant (signonui_data);
-    gsignond_dbus_remote_plugin_call_refresh (
+    gsignond_dbus_remote_plugin_v1_call_refresh (
             self->priv->dbus_plugin_proxy, data, NULL, _refresh_async_cb, self);
 }
 
@@ -598,7 +598,7 @@ gsignond_plugin_remote_new (
 
     /* Create dbus proxy */
     plugin->priv->dbus_plugin_proxy =
-            gsignond_dbus_remote_plugin_proxy_new_sync (
+            gsignond_dbus_remote_plugin_v1_proxy_new_sync (
                     plugin->priv->connection,
                     G_DBUS_PROXY_FLAGS_NONE,
                     NULL,
