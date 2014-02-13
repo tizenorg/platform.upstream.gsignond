@@ -199,6 +199,7 @@ int main (int argc, char **argv)
 
     _daemon = gsignond_plugin_daemon_new (filename, plugin_name, in_fd,
             out_fd);
+    g_free(filename);
     g_free(plugin_name);
     if (_daemon == NULL) {
         return -1;
