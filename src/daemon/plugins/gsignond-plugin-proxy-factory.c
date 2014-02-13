@@ -46,78 +46,120 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-static gchar* _get_loader_path()
+
+static gchar** _get_plugin_names_from_loader(const gchar* loader_path)
 {
-    const gchar *loader_dir = GSIGNOND_PLUGINLOADERS_DIR;
-#   ifdef ENABLE_DEBUG
-    const gchar* env_val = g_getenv("SSO_BIN_DIR");
-    if (env_val)
-        loader_dir = env_val;
-#   endif
-    gchar* loader_path = g_build_filename (loader_dir, "gsignond-plugind", NULL);
-    return loader_path;
+    gchar* command_line = g_strdup_printf("%s --list-plugins", loader_path);
+    gchar* standard_output = NULL;
+    gchar* standard_error = NULL;
+    gint exit_status;
+    GError* error = NULL;
+
+    if (g_spawn_command_line_sync(command_line, &standard_output, &standard_error,
+        &exit_status, &error)) {
+        DBG("Loader %s returned plugin list %s", loader_path, standard_output);
+        gchar** plugin_list = g_strsplit(standard_output, "\n", 0);
+        g_free(command_line);
+        g_free(standard_output);
+        g_free(standard_error);
+        return plugin_list;
+    } else {
+        DBG("Loader %s returned exit status %d, error %s", loader_path,
+            exit_status, error->message);
+        g_error_free(error);
+        g_free(command_line);
+        return NULL;
+    }
 }
+
+static void _add_plugins(GSignondPluginProxyFactory* self, const gchar* loader_path, gchar** plugins)
+{
+    DBG ("Checking mechanisms of plugins provided by %s", loader_path);
+    gchar **plugin_iter = plugins;
+    while (*plugin_iter) {
+        GSignondPlugin* plugin = GSIGNOND_PLUGIN (
+                gsignond_plugin_remote_new (loader_path, *plugin_iter));
+        if (plugin != NULL) {
+            gchar* plugin_type;
+            gchar** mechanisms;
+            g_object_get(plugin,
+                        "type", &plugin_type,
+                        "mechanisms", &mechanisms,
+                         NULL);
+            if (g_strcmp0 (plugin_type, *plugin_iter) == 0) {
+                const gchar* loader = g_hash_table_lookup(self->methods_to_loader_paths,
+                                                          plugin_type);
+                // Do not replace plugins provided by gsignond-plugind with
+                // 3rd party plugins
+                if (loader && g_str_has_suffix(loader, "/gsignond-plugind")) {
+                    DBG("Do not replace plugin %s with plugin provided by loader %s",
+                        plugin_type, loader_path);
+                    g_strfreev(mechanisms);
+                } else {
+                    DBG("Adding plugin %s to plugin enumeration", plugin_type);
+                    g_hash_table_insert(self->methods_to_mechanisms,
+                        g_strdup(plugin_type), mechanisms);
+                    g_hash_table_insert(self->methods_to_loader_paths,
+                        g_strdup(plugin_type), g_strdup(loader_path));
+                }
+            } else {
+                DBG("Plugin returned type property %s, which does not match requested type %s",
+                    plugin_type, *plugin_iter);
+                g_strfreev(mechanisms);
+            }
+            g_free(plugin_type);
+            g_object_unref(plugin);
+        }
+        plugin_iter++;
+    }
+}
+
+static void _insert_method(gchar* method, gchar*** method_iter_p)
+{
+    *(*method_iter_p) = method;
+    (*method_iter_p)++;
+}
+
 
 static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 {
-    const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
-
+    const gchar *loaders_path = GSIGNOND_PLUGINLOADERS_DIR;
 #   ifdef ENABLE_DEBUG
-    const gchar *env_val = g_getenv("SSO_GPLUGINS_DIR");
+    const gchar* env_val = g_getenv("SSO_BIN_DIR");
     if (env_val)
-        plugin_path = env_val;
+        loaders_path = env_val;
 #   endif
 
-    GDir* plugin_dir = g_dir_open(plugin_path, 0, NULL);
-    if (plugin_dir == NULL) {
+    GDir* loaders_dir = g_dir_open(loaders_path, 0, NULL);
+    if (loaders_dir == NULL) {
         WARN ("plugin directory empty");
         return;
     }
 
-    int n_plugins = 0;
-    while (g_dir_read_name(plugin_dir) != NULL)
-        n_plugins++;
-    g_dir_rewind(plugin_dir);
-    
-    self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
-
-    gchar* loader_path = _get_loader_path();
-
-    DBG ("enumerate plugins in %s (factory=%p)", plugin_path, self);
-    gchar **method_iter = self->methods;
+    DBG ("Getting lists of plugins from loaders in %s (factory=%p)", loaders_path, self);
     while (1) {
-        const gchar* plugin_soname = g_dir_read_name(plugin_dir);
-        if (plugin_soname == NULL)
+        const gchar* loader_name = g_dir_read_name(loaders_dir);
+        if (loader_name == NULL)
             break;
-        if (g_str_has_prefix(plugin_soname, "lib") && 
-            g_str_has_suffix(plugin_soname, ".so")) {
-            gchar* plugin_name = g_strndup(plugin_soname+3, 
-                strlen(plugin_soname) - 6);
-            GSignondPlugin* plugin = GSIGNOND_PLUGIN (
-                    gsignond_plugin_remote_new (loader_path, plugin_name));
-            if (plugin != NULL) {
-                gchar* plugin_type;
-                gchar** mechanisms;
-                g_object_get(plugin, 
-                            "type", &plugin_type, 
-                            "mechanisms", &mechanisms, 
-                             NULL);
-                if (g_strcmp0 (plugin_type, plugin_name) == 0) {
-                    *method_iter = plugin_type;
-                    method_iter++;
-                    g_hash_table_insert(self->mechanisms,
-                        plugin_type, mechanisms);
-                } else {
-                    g_free(plugin_type);
-                    g_strfreev(mechanisms);
-                }
-                g_object_unref(plugin);
-            }
-            g_free(plugin_name);
+        gchar* loader_path = g_build_filename(loaders_path, loader_name, NULL);
+        gchar** plugins = _get_plugin_names_from_loader(loader_path);
+        if (plugins != NULL) {
+            _add_plugins(self, loader_path, plugins);
+            g_strfreev(plugins);
         }
+        g_free(loader_path);
     }
-    g_free(loader_path);
-    g_dir_close(plugin_dir);
+    g_dir_close(loaders_dir);
+
+    // make a flat list of available plugin types
+    int n_plugins = g_hash_table_size(self->methods_to_mechanisms);
+    self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
+    gchar **method_iter = self->methods;
+
+    GList* keys = g_hash_table_get_keys(self->methods_to_mechanisms);
+    g_list_foreach(keys, (GFunc)_insert_method, &method_iter);
+
+    g_list_free(keys);
 }
 
 static GObject *
@@ -197,9 +239,13 @@ gsignond_plugin_proxy_factory_finalize (GObject *gobject)
         g_hash_table_destroy (self->plugins);
         self->plugins = NULL;
     }
-    if (self->mechanisms) {
-        g_hash_table_destroy (self->mechanisms);
-        self->mechanisms = NULL;
+    if (self->methods_to_mechanisms) {
+        g_hash_table_destroy (self->methods_to_mechanisms);
+        self->methods_to_mechanisms = NULL;
+    }
+    if (self->methods_to_loader_paths) {
+        g_hash_table_destroy (self->methods_to_loader_paths);
+        self->methods_to_loader_paths = NULL;
     }
     if (self->methods) {
         g_free (self->methods);
@@ -239,10 +285,15 @@ gsignond_plugin_proxy_factory_class_init (GSignondPluginProxyFactoryClass *klass
 static void
 gsignond_plugin_proxy_factory_init (GSignondPluginProxyFactory *self)
 {
-    self->mechanisms = g_hash_table_new_full((GHashFunc)g_str_hash,
+    self->methods_to_mechanisms = g_hash_table_new_full((GHashFunc)g_str_hash,
                                              (GEqualFunc)g_str_equal,
                                              (GDestroyNotify)g_free,
                                              (GDestroyNotify)g_strfreev);
+
+    self->methods_to_loader_paths = g_hash_table_new_full((GHashFunc)g_str_hash,
+                                             (GEqualFunc)g_str_equal,
+                                             (GDestroyNotify)g_free,
+                                             (GDestroyNotify)g_free);
 
     self->plugins = g_hash_table_new_full ((GHashFunc)g_str_hash,
                                            (GEqualFunc)g_str_equal,
@@ -305,7 +356,7 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
         _enumerate_plugins (factory);
     }
 
-    if (g_hash_table_lookup(factory->mechanisms, plugin_type) == NULL) {
+    if (g_hash_table_lookup(factory->methods_to_mechanisms, plugin_type) == NULL) {
         DBG("Plugin not known %s", plugin_type);
         return NULL;
     }
@@ -317,10 +368,8 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
         return proxy;
     }
 
-    gchar* loader_path = _get_loader_path();
-    proxy = gsignond_plugin_proxy_new(loader_path, plugin_type,
+    proxy = gsignond_plugin_proxy_new(g_hash_table_lookup(factory->methods_to_loader_paths, plugin_type), plugin_type,
                                       gsignond_config_get_integer (factory->config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT));
-    g_free(loader_path);
     if (proxy == NULL) {
         return NULL;
     }
@@ -345,11 +394,11 @@ const gchar**
 gsignond_plugin_proxy_factory_get_plugin_mechanisms(
    GSignondPluginProxyFactory* factory, const gchar* plugin_type)
 {
-    g_return_val_if_fail(factory->mechanisms, NULL);
+    g_return_val_if_fail(factory->methods_to_mechanisms, NULL);
 
     if (factory->methods == NULL) {
         _enumerate_plugins (factory);
     }
 
-    return g_hash_table_lookup(factory->mechanisms, plugin_type);
+    return g_hash_table_lookup(factory->methods_to_mechanisms, plugin_type);
 }

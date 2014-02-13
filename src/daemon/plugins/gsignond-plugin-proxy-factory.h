@@ -50,7 +50,8 @@ struct _GSignondPluginProxyFactory
     GHashTable* plugins;
     
     gchar** methods;
-    GHashTable* mechanisms;
+    GHashTable* methods_to_mechanisms;
+    GHashTable* methods_to_loader_paths;
 };
 
 struct _GSignondPluginProxyFactoryClass
