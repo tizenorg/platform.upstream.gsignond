@@ -375,18 +375,6 @@ gsignond_plugin_daemon_new (
     daemon->priv->dbus_remote_plugin =
             gsignond_dbus_remote_plugin_v1_skeleton_new ();
 
-    g_dbus_interface_skeleton_export (
-                G_DBUS_INTERFACE_SKELETON(daemon->priv->dbus_remote_plugin),
-                daemon->priv->connection, GSIGNOND_PLUGIN_OBJECTPATH, &error);
-    if (error) {
-        DBG ("failed to register object: %s", error->message);
-        g_error_free (error);
-        g_object_unref (daemon);
-        return NULL;
-    }
-    DBG("Started plugin daemon '%p' at path '%s' on conneciton '%p'",
-            daemon, GSIGNOND_PLUGIN_OBJECTPATH, daemon->priv->connection);
-
     /* Connect dbus remote plugin signals to handlers */
     g_signal_connect_swapped (daemon->priv->dbus_remote_plugin,
             "handle-cancel", G_CALLBACK (_handle_cancel_from_dbus), daemon);
@@ -430,6 +418,18 @@ gsignond_plugin_daemon_new (
 
     g_free(type);
     g_strfreev(mechanisms);
+
+    g_dbus_interface_skeleton_export (
+                G_DBUS_INTERFACE_SKELETON(daemon->priv->dbus_remote_plugin),
+                daemon->priv->connection, GSIGNOND_PLUGIN_OBJECTPATH, &error);
+    if (error) {
+        DBG ("failed to register object: %s", error->message);
+        g_error_free (error);
+        g_object_unref (daemon);
+        return NULL;
+    }
+    DBG("Started plugin daemon '%p' at path '%s' on conneciton '%p'",
+            daemon, GSIGNOND_PLUGIN_OBJECTPATH, daemon->priv->connection);
 
     g_dbus_connection_start_message_processing (daemon->priv->connection);
 
