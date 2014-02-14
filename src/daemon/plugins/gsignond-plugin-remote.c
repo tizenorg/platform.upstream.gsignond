@@ -66,71 +66,8 @@ _on_child_down_cb (
     DBG ("Plugind(%p) with pid (%d) closed with status %d", plugin, pid,
             status);
 
-    if (!g_source_is_destroyed (g_main_current_source ())) {
-        if (plugin->priv->main_loop && g_main_loop_is_running (
-                plugin->priv->main_loop)) {
-            g_main_loop_quit (plugin->priv->main_loop);
-        }
-        plugin->priv->is_plugind_up = FALSE;
-    }
+    plugin->priv->is_plugind_up = FALSE;
 
-}
-
-static gboolean
-_on_loop_timeout_cb (gpointer data)
-{
-    GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (data);
-
-    if (g_main_loop_is_running (self->priv->main_loop)) {
-        g_main_loop_quit (self->priv->main_loop);
-    }
-
-    return FALSE;
-}
-
-static guint
-_create_main_loop_with_timeout (
-        GSignondPluginRemote *self,
-        GMainContext *context,
-        guint timeout)
-{
-    guint timer_id = 0;
-    GSource *timer = g_timeout_source_new (timeout);
-    g_source_set_callback (timer, (GSourceFunc) _on_loop_timeout_cb, self,
-            NULL);
-    //g_source_attach increments the ref count of the source
-    timer_id = g_source_attach (timer, context);
-    g_source_unref (timer);
-
-    self->priv->main_loop = g_main_loop_new (context, TRUE);
-    //loop has ref'd the context
-    if (context) {
-        g_main_context_unref (context);
-    }
-    return timer_id;
-}
-
-static void
-_run_main_loop (
-        GSignondPluginRemote *self)
-{
-    if (self->priv->main_loop) {
-        g_main_loop_run (self->priv->main_loop);
-        /* attached context gets freed as well, which internally destroys all
-         * the attached sources */
-        g_main_loop_unref (self->priv->main_loop);
-        self->priv->main_loop = NULL;
-    }
-}
-
-static void
-_run_main_loop_with_timeout (
-        GSignondPluginRemote *self,
-        guint timeout)
-{
-    guint timer_id = _create_main_loop_with_timeout (self, NULL, timeout);
-    _run_main_loop (self);
-    g_source_remove (timer_id);
 }
 
 static void
@@ -172,35 +109,28 @@ gsignond_plugin_remote_get_property (
 
 }
 
+static gboolean _check_child_exited(GSignondPluginRemote *self)
+{
+    if (kill (self->priv->cpid, 0) == 0) {
+        WARN ("Plugind has to be killed with SIGKILL");
+        kill (self->priv->cpid, SIGKILL);
+    }
+    return FALSE;
+}
+
 static void
 gsignond_plugin_remote_dispose (GObject *object)
 {
     GSignondPluginRemote *self = GSIGNOND_PLUGIN_REMOTE (object);
 
-    if (self->priv->main_loop) {
-        if (g_main_loop_is_running (self->priv->main_loop)) {
-            g_main_loop_quit (self->priv->main_loop);
-        }
-        g_main_loop_unref (self->priv->main_loop);
-        self->priv->main_loop = NULL;
-    }
-
     if (self->priv->cpid > 0 && self->priv->is_plugind_up) {
         DBG ("Send SIGTERM to Plugind");
         kill (self->priv->cpid, SIGTERM);
-        _run_main_loop_with_timeout (self, 1000); //1 sec
-
-        if (kill (self->priv->cpid, 0) == 0) {
-            WARN ("Plugind have to be killed with SIGKILL");
-            kill (self->priv->cpid, SIGKILL);
-            _run_main_loop_with_timeout (self, 1000); //1 sec
-        }
-
-        if (self->priv->is_plugind_up) {
-            WARN ("Plugind did not exit even after SIGKILL");
-        } else {
-            DBG ("Plugind DESTROYED");
-        }
+        guint check_id = g_timeout_add(1000, (GSourceFunc)_check_child_exited, self);
+        while (self->priv->is_plugind_up)
+            g_main_context_iteration(NULL, TRUE);
+        g_source_remove(check_id);
+        DBG ("Plugind DESTROYED");
     }
     self->priv->cpid = 0;
 
@@ -274,7 +204,6 @@ gsignond_plugin_remote_init (GSignondPluginRemote *self)
 
     self->priv->child_watch_id = 0;
 
-    self->priv->main_loop = NULL;
     self->priv->is_plugind_up = FALSE;
 }
 

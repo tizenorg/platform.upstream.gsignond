@@ -508,7 +508,7 @@ _validate_new_proxy(gpointer userdata)
     fail_if (proxy == NULL);
     fail_if(g_hash_table_size(data->factory->plugins) != 1);
 
-    // This is unrealiable: the proxy object may be allocated to the same location
+    // This is unreliable: the proxy object may be allocated to the same location
     // as the old object!
     //fail_if (proxy == data->proxy, "expected new proxy object, but got cached object");
     g_object_unref(proxy);
@@ -583,7 +583,6 @@ START_TEST (test_pluginproxyfactory_proxy_timeout)
     proxy1 = gsignond_plugin_proxy_factory_get_plugin (factory, "ssotest");
     fail_if (proxy1 == NULL);
     g_object_unref (proxy1);
-
     ProxyTimeoutData *data = g_new0(ProxyTimeoutData, 1);
     data->factory = factory;
     data->proxy = proxy1;

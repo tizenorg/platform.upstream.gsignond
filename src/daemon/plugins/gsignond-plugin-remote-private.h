@@ -39,7 +39,6 @@ struct _GSignondPluginRemotePrivate
     GPid cpid;
     guint child_watch_id;
 
-    GMainLoop *main_loop;
     gboolean is_plugind_up;
 
     /* Signals */
