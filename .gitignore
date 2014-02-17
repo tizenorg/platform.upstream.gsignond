@@ -38,7 +38,7 @@ src/common/gsignond-plugin-enum-types.c
 src/common/gsignond-plugin-enum-types.h
 src/daemon/gsignond-identity-enum-types.c
 src/daemon/gsignond-identity-enum-types.h
-src/daemon/plugins/plugind/gsignond-plugind
+src/gplugind/gsignond-plugind
 test/daemon/gsignond-dbus.conf
 docs/gsignond-decl-list.txt
 docs/gsignond-decl.txt
