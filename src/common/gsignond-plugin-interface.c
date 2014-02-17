@@ -29,10 +29,10 @@
 
 /**
  * SECTION:gsignond-plugin-interface
- * @short_description: an interface for implementing authentication plugins
+ * @short_description: an interface for implementing GLib-based authentication plugins
  * @include: gsignond/gsignond-plugin-interface.h
  *
- * #GSignondPlugin is an interface for implementing authentication plugins.
+ * #GSignondPlugin is an interface for implementing GLib-based authentication plugins.
  * 
  * When creating a plugin, write the #GObject boilerplate code as usual, but
  * 

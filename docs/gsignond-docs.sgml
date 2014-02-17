@@ -27,8 +27,13 @@
     <xi:include href="xml/gsignond-config-dbus.xml"/>
   </chapter>
 
+  <chapter>
+  <title>Authentication plugins, plugin loaders and D-Bus IPC</title>
+    <xi:include href="plugin-loaders-overview.xml"/>
+  </chapter>
+
    <chapter>
-    <title>GSignond API for writing authentication plugins</title>
+    <title>GSignond API for writing GLib-based authentication plugins</title>
     <xi:include href="xml/gsignond-plugin-interface.xml"/>
     <xi:include href="xml/gsignond-dictionary.xml"/>
     <xi:include href="xml/gsignond-session-data.xml"/>
