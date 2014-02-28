@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2014 Intel Corporation.
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
  *
@@ -31,15 +31,15 @@
 
 G_BEGIN_DECLS
 
-GSignondPlugin*
-gsignond_load_plugin(
+GSignondPlugin *
+gsignond_load_plugin (
         GSignondConfig* config,
-        gchar* plugin_type);
+        const gchar *plugin_type);
 
-GSignondPlugin*
-gsignond_load_plugin_with_filename(
-        gchar *plugin_type,
-        gchar *plugin_filename);
+GSignondPlugin *
+gsignond_load_plugin_with_filename (
+        const gchar *plugin_type,
+        const gchar *plugin_filename);
 
 G_END_DECLS
 

@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2014 Intel Corporation.
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
  *
@@ -372,7 +372,7 @@ gsignond_plugin_proxy_get_property (
                                    "mechanisms", value);
             break;
         case PROP_LOADERPATH:
-            g_value_set_object (value, priv->loader_path);
+            g_value_set_string (value, priv->loader_path);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);

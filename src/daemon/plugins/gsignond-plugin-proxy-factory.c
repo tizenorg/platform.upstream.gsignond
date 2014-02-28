@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2014 Intel Corporation.
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
  *
@@ -153,7 +153,7 @@ static void _enumerate_plugins(GSignondPluginProxyFactory* self)
 
     // make a flat list of available plugin types
     int n_plugins = g_hash_table_size(self->methods_to_mechanisms);
-    self->methods = g_malloc0(sizeof(gchar*) * (n_plugins + 1));
+    self->methods = g_new0(gchar*, n_plugins + 1);
     gchar **method_iter = self->methods;
 
     GList* keys = g_hash_table_get_keys(self->methods_to_mechanisms);

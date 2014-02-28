@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2013 Intel Corporation.
+ * Copyright (C) 2013-2014 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@intel.com>
  *
@@ -496,7 +496,7 @@ gsignond_plugin_remote_new (
     signal(SIGPIPE, SIG_IGN);
 
     /* Spawn child process */
-    argv = g_malloc0 ((2 + 1) * sizeof (gchar *));
+    argv = g_new0 (gchar *, 2 + 1);
     argv[0] = g_strdup(loader_path);
     argv[1] = g_strdup_printf("--load-plugin=%s",plugin_type);
     ret = g_spawn_async_with_pipes (NULL, argv, NULL,

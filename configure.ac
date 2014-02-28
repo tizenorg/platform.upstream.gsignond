@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([gsignond], [0.0.3],[],[],[http://01.org/gsso])
+AC_INIT([gsignond], [0.0.4],[],[],[http://01.org/gsso])
 AC_CONFIG_SRCDIR([src/daemon/main.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])

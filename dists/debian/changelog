@@ -1,3 +1,15 @@
+gsignond (0.0.4-3) unstable; urgency=low
+
+  * Update to 0.0.4
+
+ -- Jussi Laako <jussi.laako@linux.intel.com>  Fri, 28 Feb 2014 15:44:00 +0200
+
+gsignond (0.0.3-2) unstable; urgency=low
+
+  * Minor update
+
+ -- Jussi Laako <jussi.laako@linux.intel.com>  Wed, 08 Jan 2014 17:37:00 +0200
+
 gsignond (0.0.3-1) unstable; urgency=low
 
   * Bug fixes in UI interaction

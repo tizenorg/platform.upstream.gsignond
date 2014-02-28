@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012-2014 Intel Corporation.
  *
  * Contact: Alexander Kanavin <alex.kanavin@gmail.com>
  *
@@ -31,10 +31,10 @@
 #include "gsignond/gsignond-log.h"
 #include "gsignond-plugin-loader.h"
 
-GSignondPlugin*
-gsignond_load_plugin(
+GSignondPlugin *
+gsignond_load_plugin (
         GSignondConfig* config,
-        gchar* plugin_type)
+        const gchar *plugin_type)
 {
     const gchar *plugin_path = GSIGNOND_GPLUGINS_DIR;
     gchar *plugin_filename;
@@ -52,10 +52,10 @@ gsignond_load_plugin(
     return plugin;
 }
 
-GSignondPlugin*
+GSignondPlugin *
 gsignond_load_plugin_with_filename(
-        gchar *plugin_type,
-        gchar *plugin_filename)
+        const gchar *plugin_type,
+        const gchar *plugin_filename)
 {
     DBG("Loading plugin %s", plugin_filename);
     GModule* plugin_module = g_module_open (plugin_filename, 

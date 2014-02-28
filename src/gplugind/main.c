@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2013 Intel Corporation.
+ * Copyright (C) 2013-2014 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@intel.com>
  *
@@ -105,11 +105,6 @@ static void _list_plugins()
         return;
     }
 
-    int n_plugins = 0;
-    while (g_dir_read_name(plugin_dir) != NULL)
-        n_plugins++;
-    g_dir_rewind(plugin_dir);
-
     while (1) {
         const gchar* plugin_soname = g_dir_read_name(plugin_dir);
         if (plugin_soname == NULL)
@@ -194,7 +189,7 @@ int main (int argc, char **argv)
     const gchar *env_val = g_getenv("SSO_GPLUGINS_DIR");
     if (env_val)
         plugin_path = env_val;
-#endif
+#   endif
     gchar* filename = g_module_build_path (plugin_path, plugin_name);
 
     _daemon = gsignond_plugin_daemon_new (filename, plugin_name, in_fd,

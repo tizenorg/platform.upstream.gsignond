@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2013 Intel Corporation.
+ * Copyright (C) 2013-2014 Intel Corporation.
  *
  * Contact: Imran Zaman <imran.zaman@intel.com>
  *
@@ -354,8 +354,8 @@ gsignond_plugin_daemon_new (
             GSIGNOND_TYPE_PLUGIN_DAEMON, NULL));
 
     /* Load plugin */
-    daemon->priv->plugin = gsignond_load_plugin_with_filename (
-            (gchar *)plugin_type, (gchar*)filename);
+    daemon->priv->plugin = gsignond_load_plugin_with_filename (plugin_type,
+                                                               filename);
     if (!daemon->priv->plugin) {
         DBG ("failed to load plugin");
         g_object_unref (daemon);
