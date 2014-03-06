@@ -1161,8 +1161,9 @@ gsignond_db_metadata_database_update_identity (
         }
     }
 
-    if (edit_flags & IDENTITY_INFO_PROP_ACL ||
-        edit_flags & IDENTITY_INFO_PROP_METHODS) {
+    if ((edit_flags & IDENTITY_INFO_PROP_ACL ||
+         edit_flags & IDENTITY_INFO_PROP_METHODS) &&
+        methods) {
     /* ACL insert, this will do basically identity level ACL */
     g_hash_table_iter_init (&method_iter, methods);
     while (g_hash_table_iter_next (&method_iter, (gpointer)&method,
