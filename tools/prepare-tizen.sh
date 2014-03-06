@@ -14,10 +14,11 @@ echo "CURR dir = $currdir"
 
 mkdir -p $2 && \
 cd $2 && \
-git rm -r * && \
+git rm -r *; rm -rf packaging;
 tar -xzvf $currdir/$1 -C $2 --strip-components 1 && \
 mkdir -p packaging && \
-cd packaging && \
-cp -f ../dists/rpm/gsignond-tizen.spec gsignond.spec && \
-cp -f ../dists/rpm/gsignond-tizen.changes gsignond.changes && \
-cd .. && git add *;
+cp -f dists/rpm/gsignond-tizen.spec packaging/gsignond.spec && \
+cp -f dists/rpm/gsignond-tizen.changes packaging/gsignond.changes && \
+cp -f dists/rpm/gsignond-tizen.manifest packaging/gsignond.manifest && \
+cp $currdir/.gitignore $2/ && \
+git add -f *;

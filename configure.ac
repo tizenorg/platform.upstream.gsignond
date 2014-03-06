@@ -2,13 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([gsignond], [0.0.4],[],[],[http://01.org/gsso])
+AC_INIT([gsignond], [1.0.0],[],[],[http://01.org/gsso])
 AC_CONFIG_SRCDIR([src/daemon/main.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE([1.11 nostdinc silent-rules subdir-objects tar-pax -Wno-portability serial-tests])
+AM_INIT_AUTOMAKE([1.11 nostdinc silent-rules subdir-objects tar-pax -Wno-portability])
 
 # Checks for programs.
 AC_PROG_CC

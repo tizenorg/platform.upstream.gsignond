@@ -6,8 +6,8 @@
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 0.0.4
-Release: 2
+Version: 1.0.0
+Release: 1
 Group: System/Daemons
 License: LGPL-2.1+
 Source: %{name}-%{version}.tar.gz
@@ -92,10 +92,10 @@ groupadd -f -r gsignond
 %defattr(-,root,root,-)
 %doc AUTHORS COPYING.LIB INSTALL NEWS README
 %{_bindir}/%{name}
-%{_bindir}/%{name}-plugind
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
-%{_libdir}/%{name}/plugins/*.so*
+%{_libdir}/%{name}/gplugins/*.so*
+%{_libdir}/%{name}/pluginloaders/%{name}-plugind
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif
@@ -121,6 +121,9 @@ groupadd -f -r gsignond
 
 
 %changelog
+* Thu Mar 6 2014 Imran Zaman <imran.zaman@intel.com>
+- Release 1.0.0
+
 * Fri Feb 28 2014 Jussi Laako <jussi.laako@linux.intel.com>
 - Release 0.0.4
 

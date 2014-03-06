@@ -6,12 +6,13 @@
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 0.0.4
-Release: 2
+Version: 1.0.0
+Release: 1
 Group: System/Daemons
 License: LGPL-2.1+
 Source: %{name}-%{version}.tar.gz
 URL: https://01.org/gsso
+Source1001:     %{name}.manifest
 Provides: gsignon
 %if %{dbus_type} != "p2p"
 Requires: dbus-1
@@ -72,12 +73,13 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 %make_install
+cp -a %{SOURCE1001} %{buildroot}%{_datadir}/%{name}.manifest
 
 
 %post
 /sbin/ldconfig
 chmod u+s %{_bindir}/%{name}
-groupadd -f -r gsignond
+getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 
 
 %postun -p /sbin/ldconfig
@@ -85,12 +87,13 @@ groupadd -f -r gsignond
 
 %files
 %defattr(-,root,root,-)
+%manifest %{_datadir}/%{name}.manifest
 %doc AUTHORS COPYING.LIB INSTALL NEWS README
 %{_bindir}/%{name}
-%{_bindir}/%{name}-plugind
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
-%{_libdir}/%{name}/plugins/*.so*
+%{_libdir}/%{name}/gplugins/*.so*
+%{_libdir}/%{name}/pluginloaders/%{name}-plugind
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif

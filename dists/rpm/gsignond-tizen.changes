@@ -1,3 +1,12 @@
+* Thu Mar 6 2014 Imran Zaman <imran.zaman@intel.com>
+- Release 1.0.0
+- Assorted fixes and cleanups, updated version
+- docs: add documentation for multple plugin loaders
+- Update .gitignore
+- plugins: simplify process killing
+- plugind: export the plugin object on d-bus after connecting all the signals and setting properties
+- Other memory leak and bug fixes
+
 * Fri Feb 28 2014 Jussi Laako <jussi.laako@linux.intel.com>
 - Release 0.0.4
 
