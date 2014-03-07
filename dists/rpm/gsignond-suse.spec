@@ -52,21 +52,15 @@ Requires:   %{name} = %{version}-%{release}
 
 %prep
 %setup -q -n %{name}-%{version}
-#gtkdocize
 # for repository snapshot packages
-#aclocal
-#autoheader
-#libtoolize --copy --force
-#autoconf
-#automake --add-missing --copy
-#autoreconf --install --force
+#gtkdocize
 # fore release source packages
 autoreconf -f -i
 
 
 %build
 %if %{debug_build} == 1
-%configure --enable-dbus-type=%{dbus_type} --enable-debug
+%configure --enable-dbus-type=%{dbus_type} --enable-debug --enable-gtk-doc
 %else
 %configure --enable-dbus-type=%{dbus_type}
 %endif
@@ -100,7 +94,7 @@ groupadd -f -r gsignond
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif
 %exclude %{_libdir}/gsignond/extensions/*.la
-%exclude %{_libdir}/gsignond/plugins/*.la
+%exclude %{_libdir}/gsignond/gplugins/*.la
 %config(noreplace) %{_sysconfdir}/gsignond.conf
 
 
