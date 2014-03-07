@@ -1,4 +1,7 @@
-* Thu Mar 6 2014 Imran Zaman <imran.zaman@intel.com>
+* Fri Mar 07 2014 Jussi Laako <jussi.laako@linux.intel.com>
+- Release 1.0.1
+
+* Thu Mar 06 2014 Imran Zaman <imran.zaman@intel.com>
 - Release 1.0.0
 - Assorted fixes and cleanups, updated version
 - docs: add documentation for multple plugin loaders

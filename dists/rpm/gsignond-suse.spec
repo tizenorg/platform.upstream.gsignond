@@ -6,7 +6,7 @@
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 1.0.0
+Version: 1.0.1
 Release: 1
 Group: System/Daemons
 License: LGPL-2.1+
@@ -115,7 +115,10 @@ groupadd -f -r gsignond
 
 
 %changelog
-* Thu Mar 6 2014 Imran Zaman <imran.zaman@intel.com>
+* Fri Mar 07 2014 Jussi Laako <jussi.laako@linux.intel.com>
+- Release 1.0.1
+
+* Thu Mar 06 2014 Imran Zaman <imran.zaman@intel.com>
 - Release 1.0.0
 
 * Fri Feb 28 2014 Jussi Laako <jussi.laako@linux.intel.com>

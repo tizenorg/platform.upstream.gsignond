@@ -1,3 +1,9 @@
+gsignond (1.0.1-4) unstable; urgency=low
+
+  * Update to 1.0.1
+
+ -- Jussi Laako <jussi.laako@linux.intel.com>  Fri, 07 Mar 2014 16:22:00 +0200
+
 gsignond (0.0.4-3) unstable; urgency=low
 
   * Update to 0.0.4
