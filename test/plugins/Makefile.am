@@ -15,6 +15,7 @@ digestplugintest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
     -I$(top_builddir) \
+    -I$(top_builddir)/src/ \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/plugins/digest \
     -I$(top_srcdir)/include
@@ -30,6 +31,7 @@ passwordplugintest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
     -I$(top_builddir) \
+    -I$(top_builddir)/src/ \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/plugins/password \
     -I$(top_srcdir)/include/
@@ -45,6 +47,7 @@ pluginproxytest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
     -I$(top_builddir) \
+    -I$(top_builddir)/src/ \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/daemon/plugins \
     -I$(top_srcdir)/include
@@ -60,6 +63,7 @@ pluginremotetest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
     -I$(top_builddir) \
+    -I$(top_builddir)/src/ \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/src/daemon/plugins \
     -I$(top_srcdir)/include

@@ -16,7 +16,7 @@ DBUS_BUILT_DOCS = \
     gsignond-dbus-auth-service-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
     gsignond-dbus-auth-session-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
     gsignond-dbus-identity-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.Identity.xml \
-    gsignond-dbus-remote-plugin-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.xml \
+    gsignond-dbus-remote-plugin-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.V1.xml \
     $(NULL)
 
 DBUS_INTERFACE_PREFIX="com.google.code.AccountsSSO.gSingleSignOn."
@@ -63,7 +63,7 @@ libgsignond_dbus_glue_la_LIBADD = \
     $(GSIGNOND_LIBS) \
     $(NULL)
 
-libgsignond_dbus_glue_la_SOURCES = $(DBUS_BUILT_SOURCES)
+nodist_libgsignond_dbus_glue_la_SOURCES = $(DBUS_BUILT_SOURCES)
 
 noinst_LTLIBRARIES += libgsignond-dbus.la
 
@@ -81,7 +81,6 @@ libgsignond_dbus_la_LIBADD = \
     $(NULL)
 
 libgsignond_dbus_la_SOURCES = \
-   $(DBUS_BUILT_SOURCES) \
    gsignond-dbus.h \
    gsignond-dbus-server.c \
    gsignond-dbus-server.h \
@@ -93,6 +92,10 @@ libgsignond_dbus_la_SOURCES = \
    gsignond-dbus-identity-adapter.h \
    gsignond-dbus-signonui-adapter.c \
    gsignond-dbus-signonui-adapter.h \
+   $(NULL)
+
+nodist_libgsignond_dbus_la_SOURCES = \
+   $(DBUS_BUILT_SOURCES) \
    $(NULL)
 
 dbusservicedir = $(DBUS_SERVICES_DIR)

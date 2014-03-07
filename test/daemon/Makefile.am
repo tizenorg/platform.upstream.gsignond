@@ -17,6 +17,7 @@ daemontest_CFLAGS = \
     -U G_LOG_DOMAIN \
     -DG_LOG_DOMAIN=\"gsignond-test-server\" \
     -I$(top_builddir) \
+    -I$(top_builddir)/src/ \
     -I$(top_srcdir)/src/ \
     -I$(top_srcdir)/include/
 

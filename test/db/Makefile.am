@@ -11,6 +11,7 @@ dbtest_CFLAGS = \
     $(GSIGNOND_CFLAGS) \
     $(CHECK_CFLAGS) \
     -I$(top_builddir) \
+    -I$(top_builddir)/src/ \
     -I$(top_srcdir)/src/ \
     -I$(top_srcdir)/include/ 
 
