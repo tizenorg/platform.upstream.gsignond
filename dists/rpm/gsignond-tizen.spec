@@ -6,7 +6,7 @@
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 1.0.0
+Version: 1.0.1
 Release: 1
 Group: System/Daemons
 License: LGPL-2.1+
@@ -52,12 +52,6 @@ Requires:   %{name} = %{version}-%{release}
 
 %prep
 %setup -q -n %{name}-%{version}
-if [ -f = "gtk-doc.make" ]
-then
-rm gtk-doc.make
-fi
-touch gtk-doc.make
-autoreconf -f -i
 
 
 %build
