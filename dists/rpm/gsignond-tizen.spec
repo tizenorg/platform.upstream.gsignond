@@ -12,7 +12,7 @@ Group: Security/Accounts
 License: LGPL-2.1+
 Source: %{name}-%{version}.tar.gz
 URL: https://01.org/gsso
-Source1001:     %{name}.manifest
+Source1001: %{name}.manifest
 Provides: gsignon
 %if %{dbus_type} != "p2p"
 Requires: dbus-1
@@ -26,6 +26,8 @@ BuildRequires: pkgconfig(gio-2.0)
 BuildRequires: pkgconfig(gio-unix-2.0)
 BuildRequires: pkgconfig(gmodule-2.0)
 BuildRequires: pkgconfig(sqlite3)
+BuildRequires: pkgconfig(libecryptfs)
+BuildRequires: pkgconfig(libsmack)
 
 
 %description
@@ -34,7 +36,7 @@ BuildRequires: pkgconfig(sqlite3)
 
 %package devel
 Summary:    Development files for %{name}
-Group:      Development/Libraries
+Group:      SDK/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
@@ -43,7 +45,7 @@ Requires:   %{name} = %{version}-%{release}
 
 %package doc
 Summary:    Documentation files for %{name}
-Group:      Development/Libraries
+Group:      SDK/Documentation
 Requires:   %{name} = %{version}-%{release}
 
 %description doc
@@ -52,6 +54,7 @@ Requires:   %{name} = %{version}-%{release}
 
 %prep
 %setup -q -n %{name}-%{version}
+cp %{SOURCE1001} .
 
 
 %build
@@ -67,7 +70,6 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 %make_install
-cp -a %{SOURCE1001} %{buildroot}%{_datadir}/%{name}.manifest
 
 
 %post
@@ -81,7 +83,7 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 
 %files
 %defattr(-,root,root,-)
-%manifest %{_datadir}/%{name}.manifest
+%manifest %{name}.manifest
 %doc AUTHORS COPYING.LIB INSTALL NEWS README
 %{_bindir}/%{name}
 %{_libdir}/lib%{name}-*.so.*
