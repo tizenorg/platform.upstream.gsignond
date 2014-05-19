@@ -1,0 +1,46 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.V1">
+    <property type='s' name='method' access='read'/>
+    <property type='as' name='mechanisms' access='read'/>
+    <method name="cancel">
+    </method>
+    <method name="requestInitial">
+      <arg name="sessionData" type="a{sv}" direction="in"/>
+      <arg name="identityMethodCache" type="a{sv}" direction="in"/>
+      <arg name="mechanism" type="s" direction="in"/>
+    </method>
+    <method name="request">
+      <arg name="sessionData" type="a{sv}" direction="in"/>
+    </method>
+    <method name="userActionFinished">
+      <arg name="uiData" type="a{sv}" direction="in"/>
+    </method>
+    <method name="refresh">
+      <arg name="uiData" type="a{sv}" direction="in"/>
+    </method>
+        
+    <signal name="response">
+      <arg name="sessionData" type="a{sv}" direction="out"/>
+    </signal>
+    <signal name="responseFinal">
+      <arg name="sessionData" type="a{sv}" direction="out"/>
+    </signal>
+    <signal name="store">
+      <arg name="sessionData" type="a{sv}" direction="out"/>
+    </signal>
+    <signal name="error">
+      <arg name="error" type="(uis)" direction="out"/>
+    </signal>
+    <signal name="userActionRequired">
+      <arg name="uiData" type="a{sv}" direction="out"/>
+    </signal>
+    <signal name="refreshed">
+      <arg name="uiData" type="a{sv}" direction="out"/>
+    </signal>
+    <signal name="statusChanged">
+      <arg name="state" type="i" direction="out"/>
+      <arg name="message" type="s" direction="out"/>
+    </signal>
+  </interface>
+</node>

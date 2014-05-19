@@ -1,0 +1,377 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: GSignondAccessControlManager</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch06.html" title="GSignond API for writing platform adaptation extensions">
+<link rel="prev" href="GSignondExtension.html" title="GSignondExtension">
+<link rel="next" href="gsignond-GSignondSecurityContext.html" title="GSignondSecurityContext">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#GSignondAccessControlManager.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#GSignondAccessControlManager.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties"> <span class="dim">|</span> 
+                  <a href="#GSignondAccessControlManager.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch06.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSignondExtension.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gsignond-GSignondSecurityContext.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSignondAccessControlManager"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSignondAccessControlManager.top_of_page"></a>GSignondAccessControlManager</span></h2>
+<p>GSignondAccessControlManager — an object that performs access control checks</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondAccessControlManager.html#gsignond-access-control-manager-security-context-of-peer" title="gsignond_access_control_manager_security_context_of_peer ()">gsignond_access_control_manager_security_context_of_peer</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondAccessControlManager.html#gsignond-access-control-manager-peer-is-allowed-to-use-identity" title="gsignond_access_control_manager_peer_is_allowed_to_use_identity ()">gsignond_access_control_manager_peer_is_allowed_to_use_identity</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondAccessControlManager.html#gsignond-access-control-manager-peer-is-owner-of-identity" title="gsignond_access_control_manager_peer_is_owner_of_identity ()">gsignond_access_control_manager_peer_is_owner_of_identity</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondAccessControlManager.html#gsignond-access-control-manager-acl-is-valid" title="gsignond_access_control_manager_acl_is_valid ()">gsignond_access_control_manager_acl_is_valid</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSignondAccessControlManager.html#gsignond-access-control-manager-security-context-of-keychain" title="gsignond_access_control_manager_security_context_of_keychain ()">gsignond_access_control_manager_security_context_of_keychain</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type">
+<a class="link" href="GSignondConfig.html" title="GSignondConfig"><span class="type">GSignondConfig</span></a> *</td>
+<td class="property_name"><a class="link" href="GSignondAccessControlManager.html#GSignondAccessControlManager--config" title="The “config” property">config</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+    <span class="lineart">╰──</span> GSignondAccessControlManager
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-access-control-manager.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.description"></a><h2>Description</h2>
+<p><a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a> performs access control checks using
+available system services. gSSO can be configured to use a custom extension
+that provides a subclassed implementation of <a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a>
+(see <a class="link" href="GSignondExtension.html" title="GSignondExtension"><span class="type">GSignondExtension</span></a>), otherwise a default implementation is used.</p>
+</div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="gsignond-access-control-manager-security-context-of-peer"></a><h3>gsignond_access_control_manager_security_context_of_peer ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_access_control_manager_security_context_of_peer
+                               (<em class="parameter"><code><a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a> *self</code></em>,
+                                <em class="parameter"><code><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *peer_ctx</code></em>,
+                                <em class="parameter"><code><span class="type">int</span> peer_fd</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *peer_service</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *peer_app_ctx</code></em>);</pre>
+<p>Retrieves and sets <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> of the specified peer.</p>
+<p>The default implementation sets the app context as it was passed, and sets 
+the system context to the binary path of the process that is determined from
+<em class="parameter"><code>peer_fd</code></em>
+ and <em class="parameter"><code>peer_service</code></em>
+ parameters.</p>
+<div class="refsect3">
+<a name="id-1.7.3.8.2.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_ctx</p></td>
+<td class="parameter_description"><p>instance of security context to be set.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_fd</p></td>
+<td class="parameter_description"><p>file descriptor of the peer connection if using peer-to-peer dbus, -1 otherwise.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_service</p></td>
+<td class="parameter_description"><p>g_dbus_method_invocation_get_sender() of the peer connection, if not using peer-to-peer dbus, NULL otherwise</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_app_ctx</p></td>
+<td class="parameter_description"><p>application context of the peer connection.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-access-control-manager-peer-is-allowed-to-use-identity"></a><h3>gsignond_access_control_manager_peer_is_allowed_to_use_identity ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_access_control_manager_peer_is_allowed_to_use_identity
+                               (<em class="parameter"><code><a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *peer_ctx</code></em>,
+                                <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *owner_ctx</code></em>,
+                                <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> *identity_acl</code></em>);</pre>
+<p>Checks if specified peer is allowed to access the specified identity.</p>
+<p>The default implementation goes over items in <em class="parameter"><code>identity_acl</code></em>
+, using 
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-check" title="gsignond_security_context_check ()"><code class="function">gsignond_security_context_check()</code></a> to check them against <em class="parameter"><code>peer_ctx</code></em>
+.</p>
+<div class="refsect3">
+<a name="id-1.7.3.8.3.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_ctx</p></td>
+<td class="parameter_description"><p>security context of the peer connection.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>owner_ctx</p></td>
+<td class="parameter_description"><p>security context of the identity owner.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>identity_acl</p></td>
+<td class="parameter_description"><p>access control list for the identity in question. Includes the <em class="parameter"><code>owner_ctx</code></em>
+as well.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.3.8.3.7"></a><h4>Returns</h4>
+<p> access is allowed?</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-access-control-manager-peer-is-owner-of-identity"></a><h3>gsignond_access_control_manager_peer_is_owner_of_identity ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_access_control_manager_peer_is_owner_of_identity
+                               (<em class="parameter"><code><a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *peer_ctx</code></em>,
+                                <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *owner_ctx</code></em>);</pre>
+<p>Checks if the peer specified in <em class="parameter"><code>peer_ctx</code></em>
+ is the owner of the identity.</p>
+<p>The default implementation is using <a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-check" title="gsignond_security_context_check ()"><code class="function">gsignond_security_context_check()</code></a> 
+to check <em class="parameter"><code>peer_ctx</code></em>
+ against <em class="parameter"><code>owner_ctx</code></em>
+ directly.</p>
+<div class="refsect3">
+<a name="id-1.7.3.8.4.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_ctx</p></td>
+<td class="parameter_description"><p>security context of the peer connection.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>owner_ctx</p></td>
+<td class="parameter_description"><p>security context of the identity owner.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.3.8.4.7"></a><h4>Returns</h4>
+<p> is owner?</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-access-control-manager-acl-is-valid"></a><h3>gsignond_access_control_manager_acl_is_valid ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_access_control_manager_acl_is_valid
+                               (<em class="parameter"><code><a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a> *self</code></em>,
+                                <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *peer_ctx</code></em>,
+                                <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> *identity_acl</code></em>);</pre>
+<p>Checks if the specified peer is allowed to set the specified access
+control list. <a class="link" href="GSignondAccessControlManager.html#gsignond-access-control-manager-peer-is-owner-of-identity" title="gsignond_access_control_manager_peer_is_owner_of_identity ()"><code class="function">gsignond_access_control_manager_peer_is_owner_of_identity()</code></a>
+is used before calling this method to verify identity ownership.</p>
+<p>The default implementation always returns TRUE.</p>
+<div class="refsect3">
+<a name="id-1.7.3.8.5.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>peer_ctx</p></td>
+<td class="parameter_description"><p>security context of the peer connection.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>identity_acl</p></td>
+<td class="parameter_description"><p>access control list for the identity.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.3.8.5.7"></a><h4>Returns</h4>
+<p> access control list is OK?</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-access-control-manager-security-context-of-keychain"></a><h3>gsignond_access_control_manager_security_context_of_keychain ()</h3>
+<pre class="programlisting"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+gsignond_access_control_manager_security_context_of_keychain
+                               (<em class="parameter"><code><a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a> *self</code></em>);</pre>
+<p>Retrieves security context of the keychain application. Keychain application
+has a special management access to all stored identities and is able to
+perform deletion of all identities from storage.</p>
+<p>The default implementation returns a context either set in <a class="link" href="GSignondConfig.html" title="GSignondConfig"><span class="type">GSignondConfig</span></a>, 
+or if not set, a value specified through a configure --enable-keychain
+option (see</p>
+<a class="link" href="gsignond-building.html" title="Building and installing the gsignond daemon">Building gsignond</a>), or if that is not
+<p>set either then an empty string "" is returned. </p>
+<p>If gSSO was compiled
+with --enable-debug and SSO_KEYCHAIN_SYSCTX environment variable is set, then
+the value of that variable is used to set the returned system context instead.</p>
+<div class="refsect3">
+<a name="id-1.7.3.8.6.9"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.3.8.6.10"></a><h4>Returns</h4>
+<p> security context of the keychain application.</p>
+<p></p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.other_details"></a><h2>Types and Values</h2>
+</div>
+<div class="refsect1">
+<a name="GSignondAccessControlManager.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GSignondAccessControlManager--config"></a><h3>The <code class="literal">“config”</code> property</h3>
+<pre class="programlisting">  “config”                   <a class="link" href="GSignondConfig.html" title="GSignondConfig"><span class="type">GSignondConfig</span></a> *</pre>
+<p>Configuration object.</p>
+<p>Flags: Read / Write / Construct Only</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

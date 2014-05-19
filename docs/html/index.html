@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: gsignond API Reference Manual</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="next" href="ch01.html" title="GSignond building and installation">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="book">
+<div class="titlepage">
+<div>
+<div><table class="navigation" id="top" width="100%" cellpadding="2" cellspacing="0"><tr><th valign="middle"><p class="title">gsignond API Reference Manual</p></th></tr></table></div>
+<div><p class="releaseinfo">
+      for gsignond daemon.
+      The latest version of this documentation can be found on-line at
+      <a class="ulink" href="http://gsignon-docs.accounts-sso.googlecode.com/git/gsignond/index.html" target="_top">
+      http://gsignon-docs.accounts-sso.googlecode.com/git/gsignond/index.html</a>.
+    </p></div>
+</div>
+<hr>
+</div>
+<div class="toc"><dl class="toc">
+<dt><span class="chapter"><a href="ch01.html">GSignond building and installation</a></span></dt>
+<dd><dl><dt>
+<span class="refentrytitle"><a href="gsignond-building.html">Building and installing the gsignond daemon</a></span><span class="refpurpose"></span>
+</dt></dl></dd>
+<dt><span class="chapter"><a href="ch02.html">GSignond configuration</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSignondConfig.html">GSignondConfig</a></span><span class="refpurpose"> — gSSO configuration information</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-General-configuration.html">General configuration</a></span><span class="refpurpose"> — gSSO general configuration keys</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-DBus-configuration.html">DBus configuration</a></span><span class="refpurpose"> — gSSO dbus configuration keys</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="ch03.html">Authentication plugins, plugin loaders and D-Bus IPC</a></span></dt>
+<dd><dl><dt>
+<span class="refentrytitle"><a href="gsignond-plugin-loaders-overview.html">Overview of GSignond's authentication plugin subsystem</a></span><span class="refpurpose"></span>
+</dt></dl></dd>
+<dt><span class="chapter"><a href="ch04.html">GSignond API for writing GLib-based authentication plugins</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSignondPlugin.html">GSignondPlugin</a></span><span class="refpurpose"> — an interface for implementing GLib-based authentication plugins</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-GSignondDictionary.html">GSignondDictionary</a></span><span class="refpurpose"> — a dictionary container holding string keys and variant values</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-GSignondSessionData.html">GSignondSessionData</a></span><span class="refpurpose"> — definitions for authentication session parameters</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-GSignondSignonuiData.html">GSignondSignonuiData</a></span><span class="refpurpose"> — definitions for user interaction parameters</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="ch05.html">Standard in-tree authentication plugins</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSignondDigestPlugin.html">GSignondDigestPlugin</a></span><span class="refpurpose"> — a plugin that performs HTTP Digest authentication</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSignondSsoTestPlugin.html">GSignondSsoTestPlugin</a></span><span class="refpurpose"> — a plugin that is used internally in gsignond unit test</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSignondPasswordPlugin.html">GSignondPasswordPlugin</a></span><span class="refpurpose"> — a plugin for retrieving the username/password</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="ch06.html">GSignond API for writing platform adaptation extensions</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="GSignondExtension.html">GSignondExtension</a></span><span class="refpurpose"> — provides platform adaptation functionality</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSignondAccessControlManager.html">GSignondAccessControlManager</a></span><span class="refpurpose"> — an object that performs access control checks</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-GSignondSecurityContext.html">GSignondSecurityContext</a></span><span class="refpurpose"> — security context descriptor used in access control checks</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSignondStorageManager.html">GSignondStorageManager</a></span><span class="refpurpose"> — manages encrypted disk storage for storing the secret database</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSignondSecretStorage.html">GSignondSecretStorage</a></span><span class="refpurpose"> — provides access to the database that stores user credentials and identity/method cache</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="GSignondCredentials.html">GSignondCredentials</a></span><span class="refpurpose"> — credentials (username, password) associated with an identity</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="ch07.html">Miscellaneous</a></span></dt>
+<dd><dl>
+<dt>
+<span class="refentrytitle"><a href="gsignond-Errors.html">Errors</a></span><span class="refpurpose"> — error definitions and utilities</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-Logging.html">Logging</a></span><span class="refpurpose"> — logging facilities</span>
+</dt>
+<dt>
+<span class="refentrytitle"><a href="gsignond-Utility-functions.html">Utility functions</a></span><span class="refpurpose"> — miscellaneous utility functions</span>
+</dt>
+</dl></dd>
+<dt><span class="chapter"><a href="object-tree.html">Object Hierarchy</a></span></dt>
+<dt><span class="index"><a href="api-index-full.html">API Index</a></span></dt>
+<dt><span class="index"><a href="deprecated-api-index.html">Index of deprecated API</a></span></dt>
+<dt><span class="glossary"><a href="annotation-glossary.html">Annotation Glossary</a></span></dt>
+</dl></div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

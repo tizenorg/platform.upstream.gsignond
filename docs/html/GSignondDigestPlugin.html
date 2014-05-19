@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: GSignondDigestPlugin</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch05.html" title="Standard in-tree authentication plugins">
+<link rel="prev" href="ch05.html" title="Standard in-tree authentication plugins">
+<link rel="next" href="GSignondSsoTestPlugin.html" title="GSignondSsoTestPlugin">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#GSignondDigestPlugin.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#GSignondDigestPlugin.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch05.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch05.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSignondSsoTestPlugin.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSignondDigestPlugin"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSignondDigestPlugin.top_of_page"></a>GSignondDigestPlugin</span></h2>
+<p>GSignondDigestPlugin — a plugin that performs HTTP Digest authentication</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSignondDigestPlugin.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+    <span class="lineart">╰──</span> GSignondDigestPlugin
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondDigestPlugin.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-digest-plugin.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondDigestPlugin.description"></a><h2>Description</h2>
+<p><a class="link" href="GSignondDigestPlugin.html" title="GSignondDigestPlugin"><span class="type">GSignondDigestPlugin</span></a> performs HTTP Digest authentication without exposing
+the password to the application. Digest authentication is described in </p>
+<a class="ulink" href="http://tools.ietf.org/html/rfc2617" target="_top">RFC 2617</a>.
+<p>gsignond_plugin_request_initial() <em class="parameter"><code>session_data</code></em>
+ parameter should include
+the following string items, whose meaning is described in the RFC: </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>username and secret. If they are absent, they are requested from the user
+via gSSO UI.</p></li>
+<li class="listitem"><p>realm, allowed realms, "Algo", "Nonce", "Method", "DigestUri" - mandatory items.</p></li>
+<li class="listitem"><p>"NonceCount", "Qop", "HEntity". "NonceCount" must be present if "Qop" is
+present, "HEntity" must be present if "Qop" is present and set to "auth-int".</p></li>
+</ul></div>
+<p>If the plugin has all the data to calculate the digest, it issues 
+<a class="link" href="GSignondPlugin.html#GSignondPlugin-response-final" title="The “response-final” signal"><span class="type">“response-final”</span></a> signal. <em class="parameter"><code>session_data</code></em>
+ in that signal contains
+the username, "CNonce" item and the digest value under the "Response" key.</p>
+<p>If some of the data is incorrect or not available, <a class="link" href="GSignondPlugin.html#GSignondPlugin-error" title="The “error” signal"><span class="type">“error”</span></a>
+signal is issued instead.</p>
+<p><a class="link" href="GSignondPlugin.html#GSignondPlugin--type" title="The “type” property"><span class="type">“type”</span></a> property is set to "digest", and <a class="link" href="GSignondPlugin.html#GSignondPlugin--mechanisms" title="The “mechanisms” property"><span class="type">“mechanisms”</span></a> 
+property contains a single entry "digest".</p>
+</div>
+<div class="refsect1">
+<a name="GSignondDigestPlugin.functions_details"></a><h2>Functions</h2>
+</div>
+<div class="refsect1">
+<a name="GSignondDigestPlugin.other_details"></a><h2>Types and Values</h2>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

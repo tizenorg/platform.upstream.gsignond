@@ -1,0 +1,918 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: GSignondSessionData</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch04.html" title="GSignond API for writing GLib-based authentication plugins">
+<link rel="prev" href="gsignond-GSignondDictionary.html" title="GSignondDictionary">
+<link rel="next" href="gsignond-GSignondSignonuiData.html" title="GSignondSignonuiData">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#gsignond-GSignondSessionData.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#gsignond-GSignondSessionData.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch04.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gsignond-GSignondDictionary.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gsignond-GSignondSignonuiData.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gsignond-GSignondSessionData"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gsignond-GSignondSessionData.top_of_page"></a>GSignondSessionData</span></h2>
+<p>GSignondSessionData — definitions for authentication session parameters</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gsignond-GSignondSessionData.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-username" title="gsignond_session_data_get_username ()">gsignond_session_data_get_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-username" title="gsignond_session_data_set_username ()">gsignond_session_data_set_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-secret" title="gsignond_session_data_get_secret ()">gsignond_session_data_get_secret</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-secret" title="gsignond_session_data_set_secret ()">gsignond_session_data_set_secret</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-realm" title="gsignond_session_data_get_realm ()">gsignond_session_data_get_realm</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-realm" title="gsignond_session_data_set_realm ()">gsignond_session_data_set_realm</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Sequences.html#GSequence"><span class="returnvalue">GSequence</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-allowed-realms" title="gsignond_session_data_get_allowed_realms ()">gsignond_session_data_get_allowed_realms</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-allowed-realms" title="gsignond_session_data_set_allowed_realms ()">gsignond_session_data_set_allowed_realms</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-caption" title="gsignond_session_data_get_caption ()">gsignond_session_data_get_caption</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-caption" title="gsignond_session_data_set_caption ()">gsignond_session_data_set_caption</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-renew-token" title="gsignond_session_data_get_renew_token ()">gsignond_session_data_get_renew_token</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-renew-token" title="gsignond_session_data_set_renew_token ()">gsignond_session_data_set_renew_token</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-ui-policy" title="gsignond_session_data_get_ui_policy ()">gsignond_session_data_get_ui_policy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-ui-policy" title="gsignond_session_data_set_ui_policy ()">gsignond_session_data_set_ui_policy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-network-proxy" title="gsignond_session_data_get_network_proxy ()">gsignond_session_data_get_network_proxy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-network-proxy" title="gsignond_session_data_set_network_proxy ()">gsignond_session_data_set_network_proxy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-network-timeout" title="gsignond_session_data_get_network_timeout ()">gsignond_session_data_get_network_timeout</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-network-timeout" title="gsignond_session_data_set_network_timeout ()">gsignond_session_data_set_network_timeout</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-get-window-id" title="gsignond_session_data_get_window_id ()">gsignond_session_data_get_window_id</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSessionData.html#gsignond-session-data-set-window-id" title="gsignond_session_data_set_window_id ()">gsignond_session_data_set_window_id</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSessionData.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gsignond-GSignondSessionData.html#GSignondUiPolicy" title="enum GSignondUiPolicy">GSignondUiPolicy</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSessionData.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSessionData.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-session-data.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSessionData.description"></a><h2>Description</h2>
+<p>This file provides commonly used parameters for authentication sessions.
+For each of those a getter and setter is defined, on <span class="type">GSignondSessionData</span>
+container. The plugins may not use all of these parameters, and they commonly
+require additional, custom parameters which are set using <span class="type">GSignondDictionary</span>
+setters with explicit key string.</p>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSessionData.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="gsignond-session-data-get-username"></a><h3>gsignond_session_data_get_username ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_session_data_get_username (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>);</pre>
+<p>A getter for a username associated with the authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.2.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.2.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-username"></a><h3>gsignond_session_data_set_username ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_username (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *username</code></em>);</pre>
+<p>A setter for a username associated with the authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>username</p></td>
+<td class="parameter_description"><p>username to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-secret"></a><h3>gsignond_session_data_get_secret ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_session_data_get_secret (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>);</pre>
+<p>A getter for a secret (e.g. a password) associated with the authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.4.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.4.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-secret"></a><h3>gsignond_session_data_set_secret ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_secret (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                  <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *secret</code></em>);</pre>
+<p>A setter for a secret (e.g. a password) associated with the authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.5.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>secret</p></td>
+<td class="parameter_description"><p>a secret to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-realm"></a><h3>gsignond_session_data_get_realm ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_session_data_get_realm (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>);</pre>
+<p>A getter for a realm associated with the authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.6.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-realm"></a><h3>gsignond_session_data_set_realm ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_realm (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                 <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *realm</code></em>);</pre>
+<p>A setter for a realm associated with the authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.7.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>realm</p></td>
+<td class="parameter_description"><p>a realm to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-allowed-realms"></a><h3>gsignond_session_data_get_allowed_realms ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Sequences.html#GSequence"><span class="returnvalue">GSequence</span></a> *
+gsignond_session_data_get_allowed_realms
+                               (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>);</pre>
+<p>A getter for a list of realms allowed for the identity use.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.8.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.8.6"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Sequences.html#GSequence"><span class="type">GSequence</span></a> of allowed realms. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-allowed-realms"></a><h3>gsignond_session_data_set_allowed_realms ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_allowed_realms
+                               (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Sequences.html#GSequence"><span class="type">GSequence</span></a> *realms</code></em>);</pre>
+<p>A setter for a list of realms allowed for the identity use.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.9.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>realms</p></td>
+<td class="parameter_description"><p>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Sequences.html#GSequence"><span class="type">GSequence</span></a> if allowed realms</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-caption"></a><h3>gsignond_session_data_get_caption ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_session_data_get_caption (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>);</pre>
+<p>A getter for a caption associated with the authentication session.
+Caption tells the user which application/credentials/provider is requestion
+authentication.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.10.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.10.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-caption"></a><h3>gsignond_session_data_set_caption ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_caption (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                   <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *caption</code></em>);</pre>
+<p>A setter for a caption associated with the authentication session.
+Caption tells the user which application/credentials/provider is requestion
+authentication.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.11.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>caption</p></td>
+<td class="parameter_description"><p>a caption to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-renew-token"></a><h3>gsignond_session_data_get_renew_token ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_session_data_get_renew_token (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                       <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> *renew_token</code></em>);</pre>
+<p>A getter for a renew token property associated with the authentication session.
+This property tells the plugin to discard any cached tokens and start 
+the authentication process anew.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.12.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>renew_token</p></td>
+<td class="parameter_description"><p>the value for the parameter is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.12.6"></a><h4>Returns</h4>
+<p> whether the key-value pair exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-renew-token"></a><h3>gsignond_session_data_set_renew_token ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_renew_token (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                       <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> renew_token</code></em>);</pre>
+<p>A setter for a renew token property associated with the authentication session.
+This property tells the plugin to discard any cached tokens and start 
+the authentication process anew.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.13.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>renew_token</p></td>
+<td class="parameter_description"><p>whether to renew the token set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-ui-policy"></a><h3>gsignond_session_data_get_ui_policy ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_session_data_get_ui_policy (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                     <em class="parameter"><code><a class="link" href="gsignond-GSignondSessionData.html#GSignondUiPolicy" title="enum GSignondUiPolicy"><span class="type">GSignondUiPolicy</span></a> *ui_policy</code></em>);</pre>
+<p>A getter for UI policy setting associated with the authentication session.
+The UI policy indicates how the authentication plugin should interact with the user.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.14.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_policy</p></td>
+<td class="parameter_description"><p>the value for the parameter is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.14.6"></a><h4>Returns</h4>
+<p> whether the key-value pair exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-ui-policy"></a><h3>gsignond_session_data_set_ui_policy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_ui_policy (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                     <em class="parameter"><code><a class="link" href="gsignond-GSignondSessionData.html#GSignondUiPolicy" title="enum GSignondUiPolicy"><span class="type">GSignondUiPolicy</span></a> ui_policy</code></em>);</pre>
+<p>A getter for UI policy setting associated with the authentication session.
+The UI policy indicates how the authentication plugin should interact with the user.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.15.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_policy</p></td>
+<td class="parameter_description"><p>ui policy to set</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-network-proxy"></a><h3>gsignond_session_data_get_network_proxy ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_session_data_get_network_proxy
+                               (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>);</pre>
+<p>A getter for a network proxy setting associated with the authentication session.
+If this property is not set, the default system proxy settings should be used.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.16.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.16.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-network-proxy"></a><h3>gsignond_session_data_set_network_proxy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_network_proxy
+                               (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *network_proxy</code></em>);</pre>
+<p>A setter for a network proxy setting associated with the authentication session.
+If this property is not set, the default system proxy settings should be used.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.17.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>network_proxy</p></td>
+<td class="parameter_description"><p>network proxy to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-network-timeout"></a><h3>gsignond_session_data_get_network_timeout ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_session_data_get_network_timeout
+                               (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                <em class="parameter"><code><span class="type">guint32</span> *network_timeout</code></em>);</pre>
+<p>A getter for a network timeout setting associated with the authentication session.
+This can be used to change the default timeout in case of unresponsive servers.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.18.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>network_timeout</p></td>
+<td class="parameter_description"><p>the value for the parameter is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.18.6"></a><h4>Returns</h4>
+<p> whether the key-value pair exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-network-timeout"></a><h3>gsignond_session_data_set_network_timeout ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_network_timeout
+                               (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                <em class="parameter"><code><span class="type">guint32</span> network_timeout</code></em>);</pre>
+<p>A setter for a network timeout setting associated with the authentication session.
+This can be used to change the default timeout in case of unresponsive servers.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.19.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>network_timeout</p></td>
+<td class="parameter_description"><p>network timeout to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-get-window-id"></a><h3>gsignond_session_data_get_window_id ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_session_data_get_window_id (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                     <em class="parameter"><code><span class="type">guint32</span> *window_id</code></em>);</pre>
+<p>A getter for a window id setting associated with the authentication session.
+This can be used to embed the user interaction window produced by the authentication
+session into an application window.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.20.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>window_id</p></td>
+<td class="parameter_description"><p>the value for the parameter is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.4.8.20.6"></a><h4>Returns</h4>
+<p> whether the key-value pair exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-session-data-set-window-id"></a><h3>gsignond_session_data_set_window_id ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_session_data_set_window_id (<em class="parameter"><code><span class="type">GSignondSessionData</span> *data</code></em>,
+                                     <em class="parameter"><code><span class="type">guint32</span> window_id</code></em>);</pre>
+<p>A setter for a window id setting associated with the authentication session.
+This can be used to embed the user interaction window produced by the authentication
+session into an application window.</p>
+<div class="refsect3">
+<a name="id-1.5.4.8.21.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>window_id</p></td>
+<td class="parameter_description"><p>window id to use</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSessionData.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSignondUiPolicy"></a><h3>enum GSignondUiPolicy</h3>
+<p>Policy setting to define how plugins should handle interaction with the user.</p>
+<div class="refsect3">
+<a name="id-1.5.4.9.2.4"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-UI-POLICY-DEFAULT:CAPS"></a>GSIGNOND_UI_POLICY_DEFAULT</p></td>
+<td class="enum_member_description">
+<p>use a default user interaction scenario</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-UI-POLICY-REQUEST-PASSWORD:CAPS"></a>GSIGNOND_UI_POLICY_REQUEST_PASSWORD</p></td>
+<td class="enum_member_description">
+<p>force an authorization request from the user;
+any cached access tokens should be discarded by the plugin.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-UI-POLICY-NO-USER-INTERACTION:CAPS"></a>GSIGNOND_UI_POLICY_NO_USER_INTERACTION</p></td>
+<td class="enum_member_description">
+<p>force no interaction with the user</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-UI-POLICY-VALIDATION:CAPS"></a>GSIGNOND_UI_POLICY_VALIDATION</p></td>
+<td class="enum_member_description">
+<p>interaction with the user is only allowed
+for validation captchas and similar security measures</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

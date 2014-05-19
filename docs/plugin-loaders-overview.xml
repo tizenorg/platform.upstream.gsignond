@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<refentry id="gsignond-plugin-loaders-overview">
+  <refmeta>
+    <refentrytitle>Overview of GSignond's authentication plugin subsystem</refentrytitle>
+    <manvolnum>3</manvolnum>
+    <refmiscinfo>GSignond</refmiscinfo>
+  </refmeta>
+
+    <refsect1 id="intro">
+        <title>Introduction</title>
+        <para>
+            For security and flexibility reasons, authentication sessions in GSSO are performed
+            by authentication plugins that run in separate processes and communicate with
+            the GSSO daemon using D-Bus IPC. This page describes that IPC, and the
+            options that plugin writers have for implementing additional plugins.
+        </para>
+    </refsect1>
+
+    <refsect1>
+        <title>GLib plugins</title>
+        <para>
+            The standard, most simple way to write plugins is by using GLib to
+            implement <link linkend="GSignondPlugin">GSignondPlugin</link> interface,
+            package the code as a shared library, and install the library into
+            gsso's standard location for GLib plugins. This approach is described
+           in detail in <link linkend="GSignondPlugin">GSignondPlugin chapter</link>.
+        </para>
+    </refsect1>
+
+    <refsect1>
+        <title>Plugin loaders</title>
+        <para>
+            If using GLib to implement authentication plugins is undesirable or
+            impossible, you can provide a binary that implements a GSSO plugin
+            loader, which should be installed in
+            <command>pkg-config gsignond --variable=pluginloadersdir</command>.
+        </para>
+        <para>
+            The GLib plugin loader that manages GLib-based plugins is a reference
+            implementation for such a loader. It is possible to fork and tweak its
+            code (as long as the IPC protocol, described below, is preserved),
+            or it's also possible to write such a loader from scratch. The source
+            code for the GLib plugin loader can be found
+            <ulink url="https://code.google.com/p/accounts-sso/source/browse/?repo=gsignond#git%2Fsrc%2Fgplugind">
+            here</ulink>.
+        </para>
+    </refsect1>
+
+    <refsect1>
+        <title>Plugin loaders' command line options</title>
+        <para>
+            The plugin loader binary should implement the following command line options:
+            <itemizedlist>
+                <listitem>
+                    <systemitem>--list-plugins</systemitem> command line option
+                    must be supported. The plugin loader binary should then list
+                    available plugin names, one name per line, for example:
+                    <literallayout>
+                    <userinput>> gsignond-plugind --list-plugins</userinput>
+                    password
+                    ssotest
+                    digest
+                    </literallayout>
+                    NOTE: it is recommended that plugin names are either hardcoded
+                    in the plugin loader, or determined from plugin filenames in
+                    the filesystem. It's less secure to determine the names by
+                    loading the plugins' code and calling into each plugin.
+                </listitem>
+                <listitem>
+                    <systemitem>--load-plugin=name</systemitem> command line option
+                    must also be supported. The plugin loader binary should then
+                    load and prepare the plugin with the corresponding name (or
+                    simply prepare the plugin that is provided within the plugin
+                    loader itself), and export a d-bus object on standard input and
+                    output streams that gsso daemon will communicate with. The next
+                    session describes this in more detail.
+                </listitem>
+            </itemizedlist>
+        </para>
+    </refsect1>
+
+    <refsect1>
+        <title>Plugin loaders' D-Bus IPC</title>
+        <para>
+            When run with a <systemitem>--load-plugin</systemitem> command line
+            option, the plugin loader process is expected to export a D-Bus object
+            on path "/" that implements
+            <ulink url="https://code.google.com/p/accounts-sso/source/browse/src/daemon/dbus/interfaces/com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.xml?repo=gsignond">
+                this interface</ulink>.
+        </para>
+        <para>
+            The interface declarations map directly to the plugin API. See
+            <link linkend="GSignondPlugin">GSignondPlugin</link> interface for
+            the meaning of various methods, signals and properties.
+        </para>
+        <para>
+            The object is exported on a connection that is formed from standard
+            input and standard output streams. This is the most secure way
+            to communicate with the gsso daemon, because these streams are visible
+            only to the two ends of the connection - the plugin loader process
+            and the parent process (the gsso daemon).
+        </para>
+        <para>
+            NOTE: at the moment input and output should happen on two separate
+            streams, the standard input and the standard output respectively.
+            In the future, gsso will set both streams to the same
+            bidirectional channel, for compatibility with
+            <ulink url="http://dbus.freedesktop.org/doc/dbus-specification.html#transports-exec">
+                D-Bus' unixexec transport</ulink>.
+        </para>
+    </refsect1>
+</refentry>

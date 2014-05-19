@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
+<book xmlns="http://www.devhelp.net/book" title="gsignond API Reference Manual" link="index.html" author="" name="gsignond" version="2" language="c">
+  <chapters>
+    <sub name="GSignond building and installation" link="ch01.html">
+      <sub name="Building and installing the gsignond daemon" link="gsignond-building.html"/>
+    </sub>
+    <sub name="GSignond configuration" link="ch02.html">
+      <sub name="GSignondConfig" link="GSignondConfig.html"/>
+      <sub name="General configuration" link="gsignond-General-configuration.html"/>
+      <sub name="DBus configuration" link="gsignond-DBus-configuration.html"/>
+    </sub>
+    <sub name="Authentication plugins, plugin loaders and D-Bus IPC" link="ch03.html">
+      <sub name="Overview of GSignond's authentication plugin subsystem" link="gsignond-plugin-loaders-overview.html"/>
+    </sub>
+    <sub name="GSignond API for writing GLib-based authentication plugins" link="ch04.html">
+      <sub name="GSignondPlugin" link="GSignondPlugin.html"/>
+      <sub name="GSignondDictionary" link="gsignond-GSignondDictionary.html"/>
+      <sub name="GSignondSessionData" link="gsignond-GSignondSessionData.html"/>
+      <sub name="GSignondSignonuiData" link="gsignond-GSignondSignonuiData.html"/>
+    </sub>
+    <sub name="Standard in-tree authentication plugins" link="ch05.html">
+      <sub name="GSignondDigestPlugin" link="GSignondDigestPlugin.html"/>
+      <sub name="GSignondSsoTestPlugin" link="GSignondSsoTestPlugin.html"/>
+      <sub name="GSignondPasswordPlugin" link="GSignondPasswordPlugin.html"/>
+    </sub>
+    <sub name="GSignond API for writing platform adaptation extensions" link="ch06.html">
+      <sub name="GSignondExtension" link="GSignondExtension.html"/>
+      <sub name="GSignondAccessControlManager" link="GSignondAccessControlManager.html"/>
+      <sub name="GSignondSecurityContext" link="gsignond-GSignondSecurityContext.html"/>
+      <sub name="GSignondStorageManager" link="GSignondStorageManager.html"/>
+      <sub name="GSignondSecretStorage" link="GSignondSecretStorage.html"/>
+      <sub name="GSignondCredentials" link="GSignondCredentials.html"/>
+    </sub>
+    <sub name="Miscellaneous" link="ch07.html">
+      <sub name="Errors" link="gsignond-Errors.html"/>
+      <sub name="Logging" link="gsignond-Logging.html"/>
+      <sub name="Utility functions" link="gsignond-Utility-functions.html"/>
+    </sub>
+    <sub name="Object Hierarchy" link="object-tree.html"/>
+    <sub name="API Index" link="api-index-full.html"/>
+    <sub name="Index of deprecated API" link="deprecated-api-index.html"/>
+    <sub name="Annotation Glossary" link="annotation-glossary.html"/>
+  </chapters>
+  <functions>
+    <keyword type="function" name="gsignond_config_new ()" link="GSignondConfig.html#gsignond-config-new"/>
+    <keyword type="function" name="gsignond_config_get_integer ()" link="GSignondConfig.html#gsignond-config-get-integer"/>
+    <keyword type="function" name="gsignond_config_set_integer ()" link="GSignondConfig.html#gsignond-config-set-integer"/>
+    <keyword type="function" name="gsignond_config_get_string ()" link="GSignondConfig.html#gsignond-config-get-string"/>
+    <keyword type="function" name="gsignond_config_set_string ()" link="GSignondConfig.html#gsignond-config-set-string"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_GENERAL" link="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_GENERAL_STORAGE_PATH" link="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-STORAGE-PATH:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_GENERAL_EXTENSION" link="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-EXTENSION:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_GENERAL_SECURE_DIR" link="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-SECURE-DIR:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_PLUGIN_TIMEOUT" link="gsignond-General-configuration.html#GSIGNOND-CONFIG-PLUGIN-TIMEOUT:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX" link="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-KEYCHAIN-SYSCTX:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_DBUS_TIMEOUTS" link="gsignond-DBus-configuration.html#GSIGNOND-CONFIG-DBUS-TIMEOUTS:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_DBUS_DAEMON_TIMEOUT" link="gsignond-DBus-configuration.html#GSIGNOND-CONFIG-DBUS-DAEMON-TIMEOUT:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_DBUS_IDENTITY_TIMEOUT" link="gsignond-DBus-configuration.html#GSIGNOND-CONFIG-DBUS-IDENTITY-TIMEOUT:CAPS"/>
+    <keyword type="macro" name="GSIGNOND_CONFIG_DBUS_AUTH_SESSION_TIMEOUT" link="gsignond-DBus-configuration.html#GSIGNOND-CONFIG-DBUS-AUTH-SESSION-TIMEOUT:CAPS"/>
+    <keyword type="function" name="gsignond_plugin_cancel ()" link="GSignondPlugin.html#gsignond-plugin-cancel"/>
+    <keyword type="function" name="gsignond_plugin_request_initial ()" link="GSignondPlugin.html#gsignond-plugin-request-initial"/>
+    <keyword type="function" name="gsignond_plugin_request ()" link="GSignondPlugin.html#gsignond-plugin-request"/>
+    <keyword type="function" name="gsignond_plugin_user_action_finished ()" link="GSignondPlugin.html#gsignond-plugin-user-action-finished"/>
+    <keyword type="function" name="gsignond_plugin_refresh ()" link="GSignondPlugin.html#gsignond-plugin-refresh"/>
+    <keyword type="function" name="gsignond_plugin_response ()" link="GSignondPlugin.html#gsignond-plugin-response"/>
+    <keyword type="function" name="gsignond_plugin_response_final ()" link="GSignondPlugin.html#gsignond-plugin-response-final"/>
+    <keyword type="function" name="gsignond_plugin_store ()" link="GSignondPlugin.html#gsignond-plugin-store"/>
+    <keyword type="function" name="gsignond_plugin_error ()" link="GSignondPlugin.html#gsignond-plugin-error"/>
+    <keyword type="function" name="gsignond_plugin_user_action_required ()" link="GSignondPlugin.html#gsignond-plugin-user-action-required"/>
+    <keyword type="function" name="gsignond_plugin_refreshed ()" link="GSignondPlugin.html#gsignond-plugin-refreshed"/>
+    <keyword type="function" name="gsignond_plugin_status_changed ()" link="GSignondPlugin.html#gsignond-plugin-status-changed"/>
+    <keyword type="enum" name="enum GSignondPluginState" link="GSignondPlugin.html#GSignondPluginState"/>
+    <keyword type="struct" name="struct GSignondPluginInterface" link="GSignondPlugin.html#GSignondPluginInterface"/>
+    <keyword type="property" name="The “mechanisms” property" link="GSignondPlugin.html#GSignondPlugin--mechanisms"/>
+    <keyword type="property" name="The “type” property" link="GSignondPlugin.html#GSignondPlugin--type"/>
+    <keyword type="signal" name="The “error” signal" link="GSignondPlugin.html#GSignondPlugin-error"/>
+    <keyword type="signal" name="The “refreshed” signal" link="GSignondPlugin.html#GSignondPlugin-refreshed"/>
+    <keyword type="signal" name="The “response” signal" link="GSignondPlugin.html#GSignondPlugin-response"/>
+    <keyword type="signal" name="The “response-final” signal" link="GSignondPlugin.html#GSignondPlugin-response-final"/>
+    <keyword type="signal" name="The “status-changed” signal" link="GSignondPlugin.html#GSignondPlugin-status-changed"/>
+    <keyword type="signal" name="The “store” signal" link="GSignondPlugin.html#GSignondPlugin-store"/>
+    <keyword type="signal" name="The “user-action-required” signal" link="GSignondPlugin.html#GSignondPlugin-user-action-required"/>
+    <keyword type="function" name="gsignond_dictionary_new ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-new"/>
+    <keyword type="function" name="gsignond_dictionary_ref ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-ref"/>
+    <keyword type="function" name="gsignond_dictionary_unref ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-unref"/>
+    <keyword type="function" name="gsignond_dictionary_copy ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-copy"/>
+    <keyword type="function" name="gsignond_dictionary_new_from_variant ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-new-from-variant"/>
+    <keyword type="function" name="gsignond_dictionary_to_variant ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-to-variant"/>
+    <keyword type="function" name="gsignond_dictionary_to_variant_builder ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-to-variant-builder"/>
+    <keyword type="function" name="gsignond_dictionary_get ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-get"/>
+    <keyword type="function" name="gsignond_dictionary_set ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-set"/>
+    <keyword type="function" name="gsignond_dictionary_get_boolean ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-get-boolean"/>
+    <keyword type="function" name="gsignond_dictionary_set_boolean ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-set-boolean"/>
+    <keyword type="function" name="gsignond_dictionary_get_int32 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-get-int32"/>
+    <keyword type="function" name="gsignond_dictionary_set_int32 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-set-int32"/>
+    <keyword type="function" name="gsignond_dictionary_get_uint32 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-get-uint32"/>
+    <keyword type="function" name="gsignond_dictionary_set_uint32 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-set-uint32"/>
+    <keyword type="function" name="gsignond_dictionary_get_int64 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-get-int64"/>
+    <keyword type="function" name="gsignond_dictionary_set_int64 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-set-int64"/>
+    <keyword type="function" name="gsignond_dictionary_get_uint64 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-get-uint64"/>
+    <keyword type="function" name="gsignond_dictionary_set_uint64 ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-set-uint64"/>
+    <keyword type="function" name="gsignond_dictionary_get_string ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-get-string"/>
+    <keyword type="function" name="gsignond_dictionary_set_string ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-set-string"/>
+    <keyword type="function" name="gsignond_dictionary_remove ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-remove"/>
+    <keyword type="function" name="gsignond_dictionary_contains ()" link="gsignond-GSignondDictionary.html#gsignond-dictionary-contains"/>
+    <keyword type="function" name="gsignond_session_data_get_username ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-username"/>
+    <keyword type="function" name="gsignond_session_data_set_username ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-username"/>
+    <keyword type="function" name="gsignond_session_data_get_secret ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-secret"/>
+    <keyword type="function" name="gsignond_session_data_set_secret ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-secret"/>
+    <keyword type="function" name="gsignond_session_data_get_realm ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-realm"/>
+    <keyword type="function" name="gsignond_session_data_set_realm ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-realm"/>
+    <keyword type="function" name="gsignond_session_data_get_allowed_realms ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-allowed-realms"/>
+    <keyword type="function" name="gsignond_session_data_set_allowed_realms ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-allowed-realms"/>
+    <keyword type="function" name="gsignond_session_data_get_caption ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-caption"/>
+    <keyword type="function" name="gsignond_session_data_set_caption ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-caption"/>
+    <keyword type="function" name="gsignond_session_data_get_renew_token ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-renew-token"/>
+    <keyword type="function" name="gsignond_session_data_set_renew_token ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-renew-token"/>
+    <keyword type="function" name="gsignond_session_data_get_ui_policy ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-ui-policy"/>
+    <keyword type="function" name="gsignond_session_data_set_ui_policy ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-ui-policy"/>
+    <keyword type="function" name="gsignond_session_data_get_network_proxy ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-network-proxy"/>
+    <keyword type="function" name="gsignond_session_data_set_network_proxy ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-network-proxy"/>
+    <keyword type="function" name="gsignond_session_data_get_network_timeout ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-network-timeout"/>
+    <keyword type="function" name="gsignond_session_data_set_network_timeout ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-network-timeout"/>
+    <keyword type="function" name="gsignond_session_data_get_window_id ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-get-window-id"/>
+    <keyword type="function" name="gsignond_session_data_set_window_id ()" link="gsignond-GSignondSessionData.html#gsignond-session-data-set-window-id"/>
+    <keyword type="enum" name="enum GSignondUiPolicy" link="gsignond-GSignondSessionData.html#GSignondUiPolicy"/>
+    <keyword type="function" name="gsignond_signonui_data_get_captcha_response ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-captcha-response"/>
+    <keyword type="function" name="gsignond_signonui_data_set_captcha_response ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-captcha-response"/>
+    <keyword type="function" name="gsignond_signonui_data_get_captcha_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-captcha-url"/>
+    <keyword type="function" name="gsignond_signonui_data_set_captcha_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-captcha-url"/>
+    <keyword type="function" name="gsignond_signonui_data_get_caption ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-caption"/>
+    <keyword type="function" name="gsignond_signonui_data_set_caption ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-caption"/>
+    <keyword type="function" name="gsignond_signonui_data_get_confirm ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-confirm"/>
+    <keyword type="function" name="gsignond_signonui_data_set_confirm ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-confirm"/>
+    <keyword type="function" name="gsignond_signonui_data_get_final_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-final-url"/>
+    <keyword type="function" name="gsignond_signonui_data_set_final_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-final-url"/>
+    <keyword type="function" name="gsignond_signonui_data_get_forgot_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-forgot-password"/>
+    <keyword type="function" name="gsignond_signonui_data_set_forgot_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-forgot-password"/>
+    <keyword type="function" name="gsignond_signonui_data_get_forgot_password_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-forgot-password-url"/>
+    <keyword type="function" name="gsignond_signonui_data_set_forgot_password_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-forgot-password-url"/>
+    <keyword type="function" name="gsignond_signonui_data_get_message ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-message"/>
+    <keyword type="function" name="gsignond_signonui_data_set_message ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-message"/>
+    <keyword type="function" name="gsignond_signonui_data_get_open_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-open-url"/>
+    <keyword type="function" name="gsignond_signonui_data_set_open_url ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-open-url"/>
+    <keyword type="function" name="gsignond_signonui_data_get_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-password"/>
+    <keyword type="function" name="gsignond_signonui_data_set_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-password"/>
+    <keyword type="function" name="gsignond_signonui_data_get_query_error ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-query-error"/>
+    <keyword type="function" name="gsignond_signonui_data_set_query_error ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-query-error"/>
+    <keyword type="function" name="gsignond_signonui_data_get_query_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-query-password"/>
+    <keyword type="function" name="gsignond_signonui_data_set_query_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-query-password"/>
+    <keyword type="function" name="gsignond_signonui_data_get_query_username ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-query-username"/>
+    <keyword type="function" name="gsignond_signonui_data_set_query_username ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-query-username"/>
+    <keyword type="function" name="gsignond_signonui_data_get_remember_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-remember-password"/>
+    <keyword type="function" name="gsignond_signonui_data_set_remember_password ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-remember-password"/>
+    <keyword type="function" name="gsignond_signonui_data_get_request_id ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-request-id"/>
+    <keyword type="function" name="gsignond_signonui_data_set_request_id ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-request-id"/>
+    <keyword type="function" name="gsignond_signonui_data_get_test_reply ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-test-reply"/>
+    <keyword type="function" name="gsignond_signonui_data_set_test_reply ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-test-reply"/>
+    <keyword type="function" name="gsignond_signonui_data_get_title ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-title"/>
+    <keyword type="function" name="gsignond_signonui_data_set_title ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-title"/>
+    <keyword type="function" name="gsignond_signonui_data_get_url_response ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-url-response"/>
+    <keyword type="function" name="gsignond_signonui_data_set_url_response ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-url-response"/>
+    <keyword type="function" name="gsignond_signonui_data_get_username ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-username"/>
+    <keyword type="function" name="gsignond_signonui_data_set_username ()" link="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-username"/>
+    <keyword type="enum" name="enum GSignondSignonuiError" link="gsignond-GSignondSignonuiData.html#GSignondSignonuiError"/>
+    <keyword type="function" name="gsignond_extension_get_name ()" link="GSignondExtension.html#gsignond-extension-get-name"/>
+    <keyword type="function" name="gsignond_extension_get_version ()" link="GSignondExtension.html#gsignond-extension-get-version"/>
+    <keyword type="function" name="gsignond_extension_get_storage_manager ()" link="GSignondExtension.html#gsignond-extension-get-storage-manager"/>
+    <keyword type="function" name="gsignond_extension_get_secret_storage ()" link="GSignondExtension.html#gsignond-extension-get-secret-storage"/>
+    <keyword type="function" name="gsignond_extension_get_access_control_manager ()" link="GSignondExtension.html#gsignond-extension-get-access-control-manager"/>
+    <keyword type="function" name="gsignond_access_control_manager_security_context_of_peer ()" link="GSignondAccessControlManager.html#gsignond-access-control-manager-security-context-of-peer"/>
+    <keyword type="function" name="gsignond_access_control_manager_peer_is_allowed_to_use_identity ()" link="GSignondAccessControlManager.html#gsignond-access-control-manager-peer-is-allowed-to-use-identity"/>
+    <keyword type="function" name="gsignond_access_control_manager_peer_is_owner_of_identity ()" link="GSignondAccessControlManager.html#gsignond-access-control-manager-peer-is-owner-of-identity"/>
+    <keyword type="function" name="gsignond_access_control_manager_acl_is_valid ()" link="GSignondAccessControlManager.html#gsignond-access-control-manager-acl-is-valid"/>
+    <keyword type="function" name="gsignond_access_control_manager_security_context_of_keychain ()" link="GSignondAccessControlManager.html#gsignond-access-control-manager-security-context-of-keychain"/>
+    <keyword type="property" name="The “config” property" link="GSignondAccessControlManager.html#GSignondAccessControlManager--config"/>
+    <keyword type="function" name="gsignond_security_context_new ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-new"/>
+    <keyword type="function" name="gsignond_security_context_new_from_values ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-new-from-values"/>
+    <keyword type="function" name="gsignond_security_context_free ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-free"/>
+    <keyword type="function" name="gsignond_security_context_copy ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-copy"/>
+    <keyword type="function" name="gsignond_security_context_set_system_context ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-set-system-context"/>
+    <keyword type="function" name="gsignond_security_context_get_system_context ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-get-system-context"/>
+    <keyword type="function" name="gsignond_security_context_set_application_context ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-set-application-context"/>
+    <keyword type="function" name="gsignond_security_context_get_application_context ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-get-application-context"/>
+    <keyword type="function" name="gsignond_security_context_to_variant ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-to-variant"/>
+    <keyword type="function" name="gsignond_security_context_from_variant ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-from-variant"/>
+    <keyword type="function" name="gsignond_security_context_compare ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-compare"/>
+    <keyword type="function" name="gsignond_security_context_match ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-match"/>
+    <keyword type="function" name="gsignond_security_context_check ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-check"/>
+    <keyword type="function" name="gsignond_security_context_list_to_variant ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-to-variant"/>
+    <keyword type="function" name="gsignond_security_context_list_from_variant ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-from-variant"/>
+    <keyword type="function" name="gsignond_security_context_list_copy ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-copy"/>
+    <keyword type="function" name="gsignond_security_context_list_free ()" link="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-free"/>
+    <keyword type="struct" name="GSignondSecurityContext" link="gsignond-GSignondSecurityContext.html#GSignondSecurityContext"/>
+    <keyword type="typedef" name="GSignondSecurityContextList" link="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList"/>
+    <keyword type="function" name="gsignond_storage_manager_initialize_storage ()" link="GSignondStorageManager.html#gsignond-storage-manager-initialize-storage"/>
+    <keyword type="function" name="gsignond_storage_manager_delete_storage ()" link="GSignondStorageManager.html#gsignond-storage-manager-delete-storage"/>
+    <keyword type="function" name="gsignond_storage_manager_storage_is_initialized ()" link="GSignondStorageManager.html#gsignond-storage-manager-storage-is-initialized"/>
+    <keyword type="function" name="gsignond_storage_manager_mount_filesystem ()" link="GSignondStorageManager.html#gsignond-storage-manager-mount-filesystem"/>
+    <keyword type="function" name="gsignond_storage_manager_unmount_filesystem ()" link="GSignondStorageManager.html#gsignond-storage-manager-unmount-filesystem"/>
+    <keyword type="function" name="gsignond_storage_manager_filesystem_is_mounted ()" link="GSignondStorageManager.html#gsignond-storage-manager-filesystem-is-mounted"/>
+    <keyword type="property" name="The “config” property" link="GSignondStorageManager.html#GSignondStorageManager--config"/>
+    <keyword type="function" name="gsignond_secret_storage_open_db ()" link="GSignondSecretStorage.html#gsignond-secret-storage-open-db"/>
+    <keyword type="function" name="gsignond_secret_storage_close_db ()" link="GSignondSecretStorage.html#gsignond-secret-storage-close-db"/>
+    <keyword type="function" name="gsignond_secret_storage_clear_db ()" link="GSignondSecretStorage.html#gsignond-secret-storage-clear-db"/>
+    <keyword type="function" name="gsignond_secret_storage_is_open_db ()" link="GSignondSecretStorage.html#gsignond-secret-storage-is-open-db"/>
+    <keyword type="function" name="gsignond_secret_storage_load_credentials ()" link="GSignondSecretStorage.html#gsignond-secret-storage-load-credentials"/>
+    <keyword type="function" name="gsignond_secret_storage_update_credentials ()" link="GSignondSecretStorage.html#gsignond-secret-storage-update-credentials"/>
+    <keyword type="function" name="gsignond_secret_storage_remove_credentials ()" link="GSignondSecretStorage.html#gsignond-secret-storage-remove-credentials"/>
+    <keyword type="function" name="gsignond_secret_storage_check_credentials ()" link="GSignondSecretStorage.html#gsignond-secret-storage-check-credentials"/>
+    <keyword type="function" name="gsignond_secret_storage_load_data ()" link="GSignondSecretStorage.html#gsignond-secret-storage-load-data"/>
+    <keyword type="function" name="gsignond_secret_storage_update_data ()" link="GSignondSecretStorage.html#gsignond-secret-storage-update-data"/>
+    <keyword type="function" name="gsignond_secret_storage_remove_data ()" link="GSignondSecretStorage.html#gsignond-secret-storage-remove-data"/>
+    <keyword type="function" name="gsignond_secret_storage_get_last_error ()" link="GSignondSecretStorage.html#gsignond-secret-storage-get-last-error"/>
+    <keyword type="property" name="The “config” property" link="GSignondSecretStorage.html#GSignondSecretStorage--config"/>
+    <keyword type="function" name="gsignond_credentials_new ()" link="GSignondCredentials.html#gsignond-credentials-new"/>
+    <keyword type="function" name="gsignond_credentials_set_data ()" link="GSignondCredentials.html#gsignond-credentials-set-data"/>
+    <keyword type="function" name="gsignond_credentials_set_id ()" link="GSignondCredentials.html#gsignond-credentials-set-id"/>
+    <keyword type="function" name="gsignond_credentials_get_id ()" link="GSignondCredentials.html#gsignond-credentials-get-id"/>
+    <keyword type="function" name="gsignond_credentials_set_username ()" link="GSignondCredentials.html#gsignond-credentials-set-username"/>
+    <keyword type="function" name="gsignond_credentials_get_username ()" link="GSignondCredentials.html#gsignond-credentials-get-username"/>
+    <keyword type="function" name="gsignond_credentials_set_password ()" link="GSignondCredentials.html#gsignond-credentials-set-password"/>
+    <keyword type="function" name="gsignond_credentials_get_password ()" link="GSignondCredentials.html#gsignond-credentials-get-password"/>
+    <keyword type="function" name="gsignond_credentials_equal ()" link="GSignondCredentials.html#gsignond-credentials-equal"/>
+    <keyword type="macro" name="GSIGNOND_ERROR" link="gsignond-Errors.html#GSIGNOND-ERROR:CAPS"/>
+    <keyword type="function" name="gsignond_error_quark ()" link="gsignond-Errors.html#gsignond-error-quark"/>
+    <keyword type="function" name="gsignond_error_new_from_variant ()" link="gsignond-Errors.html#gsignond-error-new-from-variant"/>
+    <keyword type="function" name="gsignond_error_to_variant ()" link="gsignond-Errors.html#gsignond-error-to-variant"/>
+    <keyword type="macro" name="gsignond_get_gerror_for_id()" link="gsignond-Errors.html#gsignond-get-gerror-for-id"/>
+    <keyword type="enum" name="enum GSignondError" link="gsignond-Errors.html#GSignondError"/>
+    <keyword type="macro" name="TRACEBACK" link="gsignond-Logging.html#TRACEBACK:CAPS"/>
+    <keyword type="macro" name="INFO()" link="gsignond-Logging.html#INFO:CAPS"/>
+    <keyword type="macro" name="ERR()" link="gsignond-Logging.html#ERR:CAPS"/>
+    <keyword type="macro" name="WARN()" link="gsignond-Logging.html#WARN:CAPS"/>
+    <keyword type="macro" name="DBG()" link="gsignond-Logging.html#DBG:CAPS"/>
+    <keyword type="function" name="gsignond_wipe_file ()" link="gsignond-Utility-functions.html#gsignond-wipe-file"/>
+    <keyword type="function" name="gsignond_wipe_directory ()" link="gsignond-Utility-functions.html#gsignond-wipe-directory"/>
+    <keyword type="function" name="gsignond_generate_nonce ()" link="gsignond-Utility-functions.html#gsignond-generate-nonce"/>
+    <keyword type="function" name="gsignond_sequence_to_variant ()" link="gsignond-Utility-functions.html#gsignond-sequence-to-variant"/>
+    <keyword type="function" name="gsignond_variant_to_sequence ()" link="gsignond-Utility-functions.html#gsignond-variant-to-sequence"/>
+    <keyword type="function" name="gsignond_sequence_to_array ()" link="gsignond-Utility-functions.html#gsignond-sequence-to-array"/>
+    <keyword type="function" name="gsignond_array_to_sequence ()" link="gsignond-Utility-functions.html#gsignond-array-to-sequence"/>
+    <keyword type="function" name="gsignond_copy_array_to_sequence ()" link="gsignond-Utility-functions.html#gsignond-copy-array-to-sequence"/>
+    <keyword type="function" name="gsignond_is_host_in_domain ()" link="gsignond-Utility-functions.html#gsignond-is-host-in-domain"/>
+  </functions>
+</book>

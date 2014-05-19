@@ -1,0 +1,1240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: GSignondPlugin</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch04.html" title="GSignond API for writing GLib-based authentication plugins">
+<link rel="prev" href="ch04.html" title="GSignond API for writing GLib-based authentication plugins">
+<link rel="next" href="gsignond-GSignondDictionary.html" title="GSignondDictionary">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#GSignondPlugin.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#GSignondPlugin.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties"> <span class="dim">|</span> 
+                  <a href="#GSignondPlugin.properties" class="shortcut">Properties</a></span><span id="nav_signals"> <span class="dim">|</span> 
+                  <a href="#GSignondPlugin.signals" class="shortcut">Signals</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch04.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch04.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gsignond-GSignondDictionary.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSignondPlugin"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSignondPlugin.top_of_page"></a>GSignondPlugin</span></h2>
+<p>GSignondPlugin — an interface for implementing GLib-based authentication plugins</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSignondPlugin.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-cancel" title="gsignond_plugin_cancel ()">gsignond_plugin_cancel</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-request-initial" title="gsignond_plugin_request_initial ()">gsignond_plugin_request_initial</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-request" title="gsignond_plugin_request ()">gsignond_plugin_request</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-user-action-finished" title="gsignond_plugin_user_action_finished ()">gsignond_plugin_user_action_finished</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-refresh" title="gsignond_plugin_refresh ()">gsignond_plugin_refresh</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-response" title="gsignond_plugin_response ()">gsignond_plugin_response</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-response-final" title="gsignond_plugin_response_final ()">gsignond_plugin_response_final</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-store" title="gsignond_plugin_store ()">gsignond_plugin_store</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-error" title="gsignond_plugin_error ()">gsignond_plugin_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-user-action-required" title="gsignond_plugin_user_action_required ()">gsignond_plugin_user_action_required</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-refreshed" title="gsignond_plugin_refreshed ()">gsignond_plugin_refreshed</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-status-changed" title="gsignond_plugin_status_changed ()">gsignond_plugin_status_changed</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Boxed-Types.html#GStrv"><span class="type">GStrv</span></a></td>
+<td class="property_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin--mechanisms" title="The “mechanisms” property">mechanisms</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<td class="property_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin--type" title="The “type” property">type</a></td>
+<td class="property_flags">Read</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table border="0">
+<colgroup>
+<col width="150px" class="signals_return">
+<col width="300px" class="signals_name">
+<col width="200px" class="signals_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-error" title="The “error” signal">error</a></td>
+<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-refreshed" title="The “refreshed” signal">refreshed</a></td>
+<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-response" title="The “response” signal">response</a></td>
+<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-response-final" title="The “response-final” signal">response-final</a></td>
+<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-status-changed" title="The “status-changed” signal">status-changed</a></td>
+<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-store" title="The “store” signal">store</a></td>
+<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr>
+<tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-user-action-required" title="The “user-action-required” signal">user-action-required</a></td>
+<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="GSignondPlugin.html#GSignondPluginState" title="enum GSignondPluginState">GSignondPluginState</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">struct</td>
+<td class="function_name"><a class="link" href="GSignondPlugin.html#GSignondPluginInterface" title="struct GSignondPluginInterface">GSignondPluginInterface</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    GInterface
+    <span class="lineart">╰──</span> GSignondPlugin
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-plugin-interface.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.description"></a><h2>Description</h2>
+<p><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> is an interface for implementing GLib-based authentication plugins.</p>
+<p>When creating a plugin, write the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> boilerplate code as usual, but</p>
+<p>a) declare the type as follows:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3</pre></td>
+        <td class="listing_code"><pre class="programlisting">G_TYPE_OBJECT<span class="gtkdoc opt">,</span>
+<span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</a></span> <span class="gtkdoc opt">(</span>GSIGNOND_TYPE_PLUGIN<span class="gtkdoc opt">,</span>
+                       gsignond_plugin_interface_init<span class="gtkdoc opt">));</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>b) implement <code class="function">gsignond_plugin_interface_init</code> as follows:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function">gsignond_plugin_interface_init</span> <span class="gtkdoc opt">(</span>GSignondPluginInterface <span class="gtkdoc opt">*</span>iface<span class="gtkdoc opt">)</span>
+<span class="gtkdoc opt">{</span>
+    iface<span class="gtkdoc opt">-&gt;</span>cancel <span class="gtkdoc opt">=</span> gsignond_password_plugin_cancel<span class="gtkdoc opt">;</span>
+    iface<span class="gtkdoc opt">-&gt;</span>request_initial <span class="gtkdoc opt">=</span> gsignond_password_plugin_request_initial<span class="gtkdoc opt">;</span>
+    iface<span class="gtkdoc opt">-&gt;</span>request <span class="gtkdoc opt">=</span> gsignond_password_plugin_request<span class="gtkdoc opt">;</span>
+    iface<span class="gtkdoc opt">-&gt;</span>user_action_finished <span class="gtkdoc opt">=</span> gsignond_password_plugin_user_action_finished<span class="gtkdoc opt">;</span>
+    iface<span class="gtkdoc opt">-&gt;</span>refresh <span class="gtkdoc opt">=</span> gsignond_password_plugin_refresh<span class="gtkdoc opt">;</span>
+<span class="gtkdoc opt">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+<p>where the <code class="function">gsignond_password_plugin_cancel</code> etc. are specific implementations of
+plugin interface methods that every plugin must provide (see below for when
+and how they're used by the daemon).</p>
+<p>c) override <a class="link" href="GSignondPlugin.html#GSignondPlugin--type" title="The “type” property"><span class="type">“type”</span></a> and <a class="link" href="GSignondPlugin.html#GSignondPlugin--mechanisms" title="The “mechanisms” property"><span class="type">“mechanisms”</span></a> property 
+implementations in the plugin class constructor like this:</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="function">gsignond_password_plugin_class_init</span> <span class="gtkdoc opt">(</span>GSignondPasswordPluginClass <span class="gtkdoc opt">*</span>klass<span class="gtkdoc opt">)</span>
+<span class="gtkdoc opt">{</span>
+    GObjectClass <span class="gtkdoc opt">*</span>gobject_class <span class="gtkdoc opt">=</span> <span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#G-OBJECT-CLASS:CAPS">G_OBJECT_CLASS</a></span> <span class="gtkdoc opt">(</span>klass<span class="gtkdoc opt">);</span>
+    
+    gobject_class<span class="gtkdoc opt">-&gt;</span>set_property <span class="gtkdoc opt">=</span> gsignond_password_plugin_set_property<span class="gtkdoc opt">;</span>
+    gobject_class<span class="gtkdoc opt">-&gt;</span>get_property <span class="gtkdoc opt">=</span> gsignond_password_plugin_get_property<span class="gtkdoc opt">;</span>
+    
+    <span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-class-override-property">g_object_class_override_property</a></span> <span class="gtkdoc opt">(</span>gobject_class<span class="gtkdoc opt">,</span> PROP_TYPE<span class="gtkdoc opt">,</span> <span class="string">&quot;type&quot;</span><span class="gtkdoc opt">);</span>
+    <span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-class-override-property">g_object_class_override_property</a></span> <span class="gtkdoc opt">(</span>gobject_class<span class="gtkdoc opt">,</span> PROP_MECHANISMS<span class="gtkdoc opt">,</span> 
+                                      <span class="string">&quot;mechanisms&quot;</span><span class="gtkdoc opt">);</span>
+<span class="gtkdoc opt">}</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+(naturally, plugin's property setter should ignore attempts to set these properties,
+and plugin's property getter should provide their values when asked)</p>
+<div class="refsect1">
+<a name="id-1.5.2.9.14"></a><h2>The plugin API</h2>
+</div>
+<p>Plugins implement authentication sessions which are controlled through the
+plugin API. Authentication sessions follow one another so there is only one active
+session at a time.</p>
+<p>The plugin API is a set of methods and signals that should be used in a specific
+sequence:</p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>successful authentication session begins with <a class="link" href="GSignondPlugin.html#gsignond-plugin-request-initial" title="gsignond_plugin_request_initial ()"><code class="function">gsignond_plugin_request_initial()</code></a> and ends
+with the plugin issuing a <a class="link" href="GSignondPlugin.html#GSignondPlugin-response-final" title="The “response-final” signal"><span class="type">“response-final”</span></a> signal</p></li>
+<li class="listitem"><p>at any point the application can cancel an active session with 
+<a class="link" href="GSignondPlugin.html#gsignond-plugin-cancel" title="gsignond_plugin_cancel ()"><code class="function">gsignond_plugin_cancel()</code></a></p></li>
+<li class="listitem"><p>at any point the plugin can cancel an active session by issuing <a class="link" href="GSignondPlugin.html#GSignondPlugin-error" title="The “error” signal"><span class="type">“error”</span></a>
+signal, which also provides some details about the cancellation reason.</p></li>
+<li class="listitem"><p>if a session is active, and the plugin has an intermediate response or needs
+additional information, it issues <a class="link" href="GSignondPlugin.html#GSignondPlugin-response" title="The “response” signal"><span class="type">“response”</span></a> signal, which the 
+application should respond to with <a class="link" href="GSignondPlugin.html#gsignond-plugin-request" title="gsignond_plugin_request ()"><code class="function">gsignond_plugin_request()</code></a> method. This can
+happen more than once.</p></li>
+<li class="listitem"><p>if the plugin needs to launch UI interaction with the user, it's issuing
+<a class="link" href="GSignondPlugin.html#GSignondPlugin-user-action-required" title="The “user-action-required” signal"><span class="type">“user-action-required”</span></a> signal, which the application should
+follow up with <a class="link" href="GSignondPlugin.html#gsignond-plugin-user-action-finished" title="gsignond_plugin_user_action_finished ()"><code class="function">gsignond_plugin_user_action_finished()</code></a> method. This can happen
+more than once as well.</p></li>
+<li class="listitem"><p>if, during an active UI session, the application needs a UI refresh 
+(for example, to fetch a new captcha image), it's
+requested from the plugin with <a class="link" href="GSignondPlugin.html#gsignond-plugin-refresh" title="gsignond_plugin_refresh ()"><code class="function">gsignond_plugin_refresh()</code></a> method, followed
+by the plugin's response via <a class="link" href="GSignondPlugin.html#GSignondPlugin-refreshed" title="The “refreshed” signal"><span class="type">“refreshed”</span></a> signal. This can happen
+more than once.</p></li>
+<li class="listitem"><p>changes in plugin state are reported through <a class="link" href="GSignondPlugin.html#GSignondPlugin-status-changed" title="The “status-changed” signal"><span class="type">“status-changed”</span></a> signal.</p></li>
+<li class="listitem"><p>if the plugin needs to store information in persistent storage, it issues
+<a class="link" href="GSignondPlugin.html#GSignondPlugin-store" title="The “store” signal"><span class="type">“store”</span></a> signal. Later, that same information is provided as a
+parameter to <a class="link" href="GSignondPlugin.html#gsignond-plugin-request-initial" title="gsignond_plugin_request_initial ()"><code class="function">gsignond_plugin_request_initial()</code></a>.</p></li>
+</ul></div>
+<div class="refsect1">
+<a name="id-1.5.2.9.18"></a><h2>Example plugins</h2>
+</div>
+<p>See example plugin implementation here:</p>
+<a class="ulink" href="https://code.google.com/p/accounts-sso/source/browse/?repo=gsignond#git%2Fsrc%2Fplugins" target="_top">
+https://code.google.com/p/accounts-sso/source/browse/?repo=gsignond#git%2Fsrc%2Fplugins</a>.
+<p>For examples of out of tree plugins, you can have a look at SASL or OAuth plugin
+implementations:</p>
+<a class="ulink" href="http://code.google.com/p/accounts-sso/source/browse?repo=gsignond-plugin-sasl" target="_top">
+http://code.google.com/p/accounts-sso/source/browse?repo=gsignond-plugin-sasl</a>.
+<a class="ulink" href="http://code.google.com/p/accounts-sso/source/browse?repo=gsignond-plugin-oa" target="_top">
+http://code.google.com/p/accounts-sso/source/browse?repo=gsignond-plugin-oa</a>.
+
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="gsignond-plugin-cancel"></a><h3>gsignond_plugin_cancel ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_cancel (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>);</pre>
+<p>This method cancels an ongoing authentication session. The plugin implementations
+should issue a <a class="link" href="GSignondPlugin.html#GSignondPlugin-error" title="The “error” signal"><span class="type">“error”</span></a> signal with <a class="link" href="gsignond-Errors.html#GSIGNOND-ERROR-SESSION-CANCELED:CAPS"><span class="type">GSIGNOND_ERROR_SESSION_CANCELED</span></a>
+error, and prepare for a new authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.2.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-request-initial"></a><h3>gsignond_plugin_request_initial ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_request_initial (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                                 <em class="parameter"><code><span class="type">GSignondSessionData</span> *session_data</code></em>,
+                                 <em class="parameter"><code><span class="type">GSignondDictionary</span> *identity_method_cache</code></em>,
+                                 <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *mechanism</code></em>);</pre>
+<p>This method starts a new authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>session_data</p></td>
+<td class="parameter_description"><p>parameters for the session</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>identity_method_cache</p></td>
+<td class="parameter_description"><p>data from persistent storage, saved previously via
+<a class="link" href="GSignondPlugin.html#GSignondPlugin-store" title="The “store” signal"><span class="type">“store”</span></a> signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>mechanism</p></td>
+<td class="parameter_description"><p>mechanism to use for the authentication</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-request"></a><h3>gsignond_plugin_request ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_request (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                         <em class="parameter"><code><span class="type">GSignondSessionData</span> *session_data</code></em>);</pre>
+<p>This method provides the plugin with additional parameters for the session
+after the plugin has asked for it via <a class="link" href="GSignondPlugin.html#GSignondPlugin-response" title="The “response” signal"><span class="type">“response”</span></a> signal.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.4.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>session_data</p></td>
+<td class="parameter_description"><p>additional parameters for the session</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-user-action-finished"></a><h3>gsignond_plugin_user_action_finished ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_user_action_finished (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                                      <em class="parameter"><code><span class="type">GSignondSignonuiData</span> *ui_data</code></em>);</pre>
+<p>This method provides the plugin with the results of UI interaction
+after the plugin has asked for it via <a class="link" href="GSignondPlugin.html#GSignondPlugin-user-action-required" title="The “user-action-required” signal"><span class="type">“user-action-required”</span></a> signal.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.5.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_data</p></td>
+<td class="parameter_description"><p>results of UI interaction</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-refresh"></a><h3>gsignond_plugin_refresh ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_refresh (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                         <em class="parameter"><code><span class="type">GSignondSignonuiData</span> *ui_data</code></em>);</pre>
+<p>This method asks the plugin to refresh the UI. The plugin responds with
+<a class="link" href="GSignondPlugin.html#GSignondPlugin-refreshed" title="The “refreshed” signal"><span class="type">“refreshed”</span></a> signal.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance </p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_data</p></td>
+<td class="parameter_description"><p>UI refresh parameters</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-response"></a><h3>gsignond_plugin_response ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_response (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                          <em class="parameter"><code><span class="type">GSignondSessionData</span> *session_data</code></em>);</pre>
+<p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-response" title="The “response” signal"><span class="type">“response”</span></a>
+signal. This method should not be used otherwise.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.7.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>session_data</p></td>
+<td class="parameter_description"><p>session data</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-response-final"></a><h3>gsignond_plugin_response_final ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_response_final (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                                <em class="parameter"><code><span class="type">GSignondSessionData</span> *session_data</code></em>);</pre>
+<p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-response-final" title="The “response-final” signal"><span class="type">“response-final”</span></a>
+signal. This method should not be used otherwise.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.8.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>session_data</p></td>
+<td class="parameter_description"><p>session data</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-store"></a><h3>gsignond_plugin_store ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_store (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                       <em class="parameter"><code><span class="type">GSignondDictionary</span> *identity_method_cache</code></em>);</pre>
+<p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-store" title="The “store” signal"><span class="type">“store”</span></a>
+signal. This method should not be used otherwise.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.9.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>identity_method_cache</p></td>
+<td class="parameter_description"><p>data to store</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-error"></a><h3>gsignond_plugin_error ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_error (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                       <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-error" title="The “error” signal"><span class="type">“error”</span></a>
+signal. This method should not be used otherwise.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.10.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>the error</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-user-action-required"></a><h3>gsignond_plugin_user_action_required ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_user_action_required (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                                      <em class="parameter"><code><span class="type">GSignondSignonuiData</span> *ui_data</code></em>);</pre>
+<p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-user-action-required" title="The “user-action-required” signal"><span class="type">“user-action-required”</span></a>
+signal. This method should not be used otherwise.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.11.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_data</p></td>
+<td class="parameter_description"><p>UI data</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-refreshed"></a><h3>gsignond_plugin_refreshed ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_refreshed (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                           <em class="parameter"><code><span class="type">GSignondSignonuiData</span> *ui_data</code></em>);</pre>
+<p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-refreshed" title="The “refreshed” signal"><span class="type">“refreshed”</span></a>
+signal. This method should not be used otherwise.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.12.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_data</p></td>
+<td class="parameter_description"><p>UI data</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-plugin-status-changed"></a><h3>gsignond_plugin_status_changed ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_plugin_status_changed (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
+                                <em class="parameter"><code><a class="link" href="GSignondPlugin.html#GSignondPluginState" title="enum GSignondPluginState"><span class="type">GSignondPluginState</span></a> state</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *message</code></em>);</pre>
+<p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-status-changed" title="The “status-changed” signal"><span class="type">“status-changed”</span></a>
+signal. This method should not be used otherwise.</p>
+<div class="refsect3">
+<a name="id-1.5.2.10.13.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>plugin instance</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>state</p></td>
+<td class="parameter_description"><p>the new state</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>the message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSignondPluginState"></a><h3>enum GSignondPluginState</h3>
+<p>The plugin provides state updates by emitting <a class="link" href="GSignondPlugin.html#GSignondPlugin-status-changed" title="The “status-changed” signal"><span class="type">“status-changed”</span></a>
+signal with this enum and a string describing what happened.</p>
+<div class="refsect3">
+<a name="id-1.5.2.11.2.4"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-NONE:CAPS"></a>GSIGNOND_PLUGIN_STATE_NONE</p></td>
+<td class="enum_member_description">
+<p>State unknown</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-RESOLVING:CAPS"></a>GSIGNOND_PLUGIN_STATE_RESOLVING</p></td>
+<td class="enum_member_description">
+<p>Resolving remote server host name</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-CONNECTING:CAPS"></a>GSIGNOND_PLUGIN_STATE_CONNECTING</p></td>
+<td class="enum_member_description">
+<p>Connecting to remote server</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-SENDING-DATA:CAPS"></a>GSIGNOND_PLUGIN_STATE_SENDING_DATA</p></td>
+<td class="enum_member_description">
+<p>Sending data to remote server</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-WAITING:CAPS"></a>GSIGNOND_PLUGIN_STATE_WAITING</p></td>
+<td class="enum_member_description">
+<p>Waiting for reply from remote server</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-USER-PENDING:CAPS"></a>GSIGNOND_PLUGIN_STATE_USER_PENDING</p></td>
+<td class="enum_member_description">
+<p>Waiting for response from user</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-REFRESHING:CAPS"></a>GSIGNOND_PLUGIN_STATE_REFRESHING</p></td>
+<td class="enum_member_description">
+<p>Refreshing ui request</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-PROCESS-PENDING:CAPS"></a>GSIGNOND_PLUGIN_STATE_PROCESS_PENDING</p></td>
+<td class="enum_member_description">
+<p>Request has been queued</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-STARTED:CAPS"></a>GSIGNOND_PLUGIN_STATE_STARTED</p></td>
+<td class="enum_member_description">
+<p>Request has been dequeued</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-CANCELING:CAPS"></a>GSIGNOND_PLUGIN_STATE_CANCELING</p></td>
+<td class="enum_member_description">
+<p>Canceling current process</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-DONE:CAPS"></a>GSIGNOND_PLUGIN_STATE_DONE</p></td>
+<td class="enum_member_description">
+<p>Process is finished</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-PLUGIN-STATE-HOLDING:CAPS"></a>GSIGNOND_PLUGIN_STATE_HOLDING</p></td>
+<td class="enum_member_description">
+<p>Holding long non-expired token</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPluginInterface"></a><h3>struct GSignondPluginInterface</h3>
+<pre class="programlisting">struct GSignondPluginInterface {
+    GTypeInterface parent;
+
+    void (*cancel) (GSignondPlugin *self);
+    void (*request_initial) (GSignondPlugin *self, 
+                     GSignondSessionData *session_data,
+                     GSignondDictionary *identity_method_cache, 
+                     const gchar *mechanism);
+    void (*request) (GSignondPlugin *self, 
+                     GSignondSessionData *session_data);
+    void (*user_action_finished) (GSignondPlugin *self, 
+                                  GSignondSignonuiData *session_data);
+    void (*refresh) (GSignondPlugin *self, 
+                     GSignondSignonuiData *session_data);
+};
+</pre>
+<p><a class="link" href="GSignondPlugin.html#GSignondPluginInterface" title="struct GSignondPluginInterface"><span class="type">GSignondPluginInterface</span></a> interface containing pointers to methods that all
+plugin implementations should provide.</p>
+<div class="refsect3">
+<a name="id-1.5.2.11.3.5"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="GSignondPluginInterface.parent"></a>parent</code></em>;</p></td>
+<td class="struct_member_description"><p>parent interface type.</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GSignondPluginInterface.cancel"></a>cancel</code></em> ()</p></td>
+<td class="struct_member_description"><p>implementation of <a class="link" href="GSignondPlugin.html#gsignond-plugin-cancel" title="gsignond_plugin_cancel ()"><code class="function">gsignond_plugin_cancel()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GSignondPluginInterface.request-initial"></a>request_initial</code></em> ()</p></td>
+<td class="struct_member_description"><p>implementation of <a class="link" href="GSignondPlugin.html#gsignond-plugin-request-initial" title="gsignond_plugin_request_initial ()"><code class="function">gsignond_plugin_request_initial()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GSignondPluginInterface.request"></a>request</code></em> ()</p></td>
+<td class="struct_member_description"><p>implementation of <a class="link" href="GSignondPlugin.html#gsignond-plugin-request" title="gsignond_plugin_request ()"><code class="function">gsignond_plugin_request()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GSignondPluginInterface.user-action-finished"></a>user_action_finished</code></em> ()</p></td>
+<td class="struct_member_description"><p>implementation of <a class="link" href="GSignondPlugin.html#gsignond-plugin-user-action-finished" title="gsignond_plugin_user_action_finished ()"><code class="function">gsignond_plugin_user_action_finished()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><em class="structfield"><code><a name="GSignondPluginInterface.refresh"></a>refresh</code></em> ()</p></td>
+<td class="struct_member_description"><p>implementation of <a class="link" href="GSignondPlugin.html#gsignond-plugin-refresh" title="gsignond_plugin_refresh ()"><code class="function">gsignond_plugin_refresh()</code></a></p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GSignondPlugin--mechanisms"></a><h3>The <code class="literal">“mechanisms”</code> property</h3>
+<pre class="programlisting">  “mechanisms”               <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Boxed-Types.html#GStrv"><span class="type">GStrv</span></a></pre>
+<p>This property holds a list of authentication mechanisms that the plugin
+implements, all specified within the authentication method. For example,
+OAuth plugin could implement "oauth1" and "oauth2" mechanisms.</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPlugin--type"></a><h3>The <code class="literal">“type”</code> property</h3>
+<pre class="programlisting">  “type”                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>This property holds a plugin type, or authentication method it implements
+(for example "oauth" or "sasl").</p>
+<p>Flags: Read</p>
+<p>Default value: "none"</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSignondPlugin.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="GSignondPlugin-error"></a><h3>The <code class="literal">“error”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>         *error,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>This signal is issued by the plugin when an error has occured, or the
+plugin otherwise has a reason to cancel the authentication session. The
+<em class="parameter"><code>error</code></em>
+ should be specified according to </p>
+<a class="link" href="gsignond-Errors.html" title="Errors">GSignond errors.</a><div class="refsect3">
+<a name="id-1.5.2.13.2.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>plugin</p></td>
+<td class="parameter_description"><p>the plugin which emitted the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>the details of the error</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPlugin-refreshed"></a><h3>The <code class="literal">“refreshed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *ui_data,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>This signal is issued by the plugin when the UI interaction is ongoing
+and the UI needs to be refreshed. This can be used for example to update
+captcha image in the UI.</p>
+<div class="refsect3">
+<a name="id-1.5.2.13.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>plugin</p></td>
+<td class="parameter_description"><p>the plugin which emitted the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_data</p></td>
+<td class="parameter_description"><p>parameters for UI refresh</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPlugin-response"></a><h3>The <code class="literal">“response”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *session_data,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>This signal is issued by the plugin when it wants to provide an intermediate
+response to the application or needs additional information from the application.</p>
+<p>After issuing this signal the plugin expects a <a class="link" href="GSignondPlugin.html#gsignond-plugin-response" title="gsignond_plugin_response ()"><code class="function">gsignond_plugin_response()</code></a> call.</p>
+<div class="refsect3">
+<a name="id-1.5.2.13.4.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>plugin</p></td>
+<td class="parameter_description"><p>the plugin which emitted the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>session_data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondSessionData</span> containing signal parameters</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPlugin-response-final"></a><h3>The <code class="literal">“response-final”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *session_data,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>This signal is issued by the plugin when it has completed the authentication
+sequence and is used to provide the final response to the application.</p>
+<p>After issuing this signal the plugin is idle and is ready for a new
+authentication session.</p>
+<div class="refsect3">
+<a name="id-1.5.2.13.5.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>plugin</p></td>
+<td class="parameter_description"><p>the plugin which emitted the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>session_data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondSessionData</span> containing signal parameters</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPlugin-status-changed"></a><h3>The <code class="literal">“status-changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a>     *plugin,
+               <a class="link" href="GSignondPlugin.html#GSignondPluginState" title="enum GSignondPluginState"><span class="type">GSignondPluginState</span></a> state,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>              *message,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+<p>This signal is issued by the plugin when plugin state has changed. This
+can be used by applications to report authentication progress.</p>
+<div class="refsect3">
+<a name="id-1.5.2.13.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>plugin</p></td>
+<td class="parameter_description"><p>the plugin which emitted the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>state</p></td>
+<td class="parameter_description"><p>the plugin state</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>the message that accompanies the state change</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPlugin-store"></a><h3>The <code class="literal">“store”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *data,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>This signal is issued by the plugin when it has data to store in persistant
+storage. The same data would later be provided to plugin via
+
+gsignond_plugin_request_initial <em class="parameter"><code>identity_method_cache</code></em>
+ parameter.</p>
+<div class="refsect3">
+<a name="id-1.5.2.13.7.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>plugin</p></td>
+<td class="parameter_description"><p>the plugin which emitted the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> containing data to place in persistent storage</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondPlugin-user-action-required"></a><h3>The <code class="literal">“user-action-required”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *ui_data,
+               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+<p>This signal is issued by the plugin when it needs a UI interaction with
+the user to happen. When the interaction is complete, <a class="link" href="GSignondPlugin.html#gsignond-plugin-user-action-finished" title="gsignond_plugin_user_action_finished ()"><code class="function">gsignond_plugin_user_action_finished()</code></a>
+should be issued.</p>
+<div class="refsect3">
+<a name="id-1.5.2.13.8.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>plugin</p></td>
+<td class="parameter_description"><p>the plugin which emitted the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ui_data</p></td>
+<td class="parameter_description"><p>parameters for UI interaction</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

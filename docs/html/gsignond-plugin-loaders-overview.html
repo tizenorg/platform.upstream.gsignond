@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: Overview of GSignond's authentication plugin subsystem</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch03.html" title="Authentication plugins, plugin loaders and D-Bus IPC">
+<link rel="prev" href="ch03.html" title="Authentication plugins, plugin loaders and D-Bus IPC">
+<link rel="next" href="ch04.html" title="GSignond API for writing GLib-based authentication plugins">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch03.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch03.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch04.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gsignond-plugin-loaders-overview"></a><div class="titlepage"></div>
+<div class="refsect1">
+<a name="intro"></a><h2>Introduction</h2>
+<p>
+            For security and flexibility reasons, authentication sessions in GSSO are performed
+            by authentication plugins that run in separate processes and communicate with
+            the GSSO daemon using D-Bus IPC. This page describes that IPC, and the
+            options that plugin writers have for implementing additional plugins.
+        </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.2.3"></a><h2>GLib plugins</h2>
+<p>
+            The standard, most simple way to write plugins is by using GLib to
+            implement <a class="link" href="GSignondPlugin.html" title="GSignondPlugin">GSignondPlugin</a> interface,
+            package the code as a shared library, and install the library into
+            gsso's standard location for GLib plugins. This approach is described
+           in detail in <a class="link" href="GSignondPlugin.html" title="GSignondPlugin">GSignondPlugin chapter</a>.
+        </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.2.4"></a><h2>Plugin loaders</h2>
+<p>
+            If using GLib to implement authentication plugins is undesirable or
+            impossible, you can provide a binary that implements a GSSO plugin
+            loader, which should be installed in
+            <span class="command"><strong>pkg-config gsignond --variable=pluginloadersdir</strong></span>.
+        </p>
+<p>
+            The GLib plugin loader that manages GLib-based plugins is a reference
+            implementation for such a loader. It is possible to fork and tweak its
+            code (as long as the IPC protocol, described below, is preserved),
+            or it's also possible to write such a loader from scratch. The source
+            code for the GLib plugin loader can be found
+            <a class="ulink" href="https://code.google.com/p/accounts-sso/source/browse/?repo=gsignond#git%2Fsrc%2Fgplugind" target="_top">
+            here</a>.
+        </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.2.5"></a><h2>Plugin loaders' command line options</h2>
+<p>
+            The plugin loader binary should implement the following command line options:
+            </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem">
+<code class="systemitem">--list-plugins</code> command line option
+                    must be supported. The plugin loader binary should then list
+                    available plugin names, one name per line, for example:
+                    <div class="literallayout"><p><br>
+                    <strong class="userinput"><code>&gt; gsignond-plugind --list-plugins</code></strong><br>
+                    password<br>
+                    ssotest<br>
+                    digest<br>
+                    </p></div>
+                    NOTE: it is recommended that plugin names are either hardcoded
+                    in the plugin loader, or determined from plugin filenames in
+                    the filesystem. It's less secure to determine the names by
+                    loading the plugins' code and calling into each plugin.
+                </li>
+<li class="listitem">
+<code class="systemitem">--load-plugin=name</code> command line option
+                    must also be supported. The plugin loader binary should then
+                    load and prepare the plugin with the corresponding name (or
+                    simply prepare the plugin that is provided within the plugin
+                    loader itself), and export a d-bus object on standard input and
+                    output streams that gsso daemon will communicate with. The next
+                    session describes this in more detail.
+                </li>
+</ul></div>
+<p>
+        </p>
+</div>
+<div class="refsect1">
+<a name="id-1.4.2.6"></a><h2>Plugin loaders' D-Bus IPC</h2>
+<p>
+            When run with a <code class="systemitem">--load-plugin</code> command line
+            option, the plugin loader process is expected to export a D-Bus object
+            on path "/" that implements
+            <a class="ulink" href="https://code.google.com/p/accounts-sso/source/browse/src/daemon/dbus/interfaces/com.google.code.AccountsSSO.gSingleSignOn.RemotePlugin.xml?repo=gsignond" target="_top">
+                this interface</a>.
+        </p>
+<p>
+            The interface declarations map directly to the plugin API. See
+            <a class="link" href="GSignondPlugin.html" title="GSignondPlugin">GSignondPlugin</a> interface for
+            the meaning of various methods, signals and properties.
+        </p>
+<p>
+            The object is exported on a connection that is formed from standard
+            input and standard output streams. This is the most secure way
+            to communicate with the gsso daemon, because these streams are visible
+            only to the two ends of the connection - the plugin loader process
+            and the parent process (the gsso daemon).
+        </p>
+<p>
+            NOTE: at the moment input and output should happen on two separate
+            streams, the standard input and the standard output respectively.
+            In the future, gsso will set both streams to the same
+            bidirectional channel, for compatibility with
+            <a class="ulink" href="http://dbus.freedesktop.org/doc/dbus-specification.html#transports-exec" target="_top">
+                D-Bus' unixexec transport</a>.
+        </p>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>
