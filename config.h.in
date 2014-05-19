@@ -1,0 +1,92 @@
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Base path for user specific storage directories */
+#undef BASE_STORAGE_DIR
+
+/* Enable ACL triggers */
+#undef ENABLE_DB_ACL_TRIGGERS
+
+/* Enable debug features */
+#undef ENABLE_DEBUG
+
+/* Enable SQL log feature */
+#undef ENABLE_SQL_LOG
+
+/* Use system bus */
+#undef GSIGNOND_BUS_TYPE
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define if GTestDBus exists. */
+#undef HAVE_GTESTDBUS
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define if libecryptfs exists. */
+#undef HAVE_LIBECRYPTFS
+
+/* Define if libsmack exists. */
+#undef HAVE_LIBSMACK
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Keychain system context */
+#undef KEYCHAIN_SYSCTX
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Use peer to peer dbus */
+#undef USE_P2P
+
+/* Version number of package */
+#undef VERSION

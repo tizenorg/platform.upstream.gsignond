@@ -1,0 +1,529 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: Errors</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch07.html" title="Miscellaneous">
+<link rel="prev" href="ch07.html" title="Miscellaneous">
+<link rel="next" href="gsignond-Logging.html" title="Logging">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#gsignond-Errors.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#gsignond-Errors.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch07.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch07.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gsignond-Logging.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gsignond-Errors"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gsignond-Errors.top_of_page"></a>Errors</span></h2>
+<p>Errors — error definitions and utilities</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gsignond-Errors.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gsignond-Errors.html#GSIGNOND-ERROR:CAPS" title="GSIGNOND_ERROR">GSIGNOND_ERROR</a></td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-Errors.html#gsignond-error-quark" title="gsignond_error_quark ()">gsignond_error_quark</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="returnvalue">GError</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-Errors.html#gsignond-error-new-from-variant" title="gsignond_error_new_from_variant ()">gsignond_error_new_from_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-Errors.html#gsignond-error-to-variant" title="gsignond_error_to_variant ()">gsignond_error_to_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="gsignond-Errors.html#gsignond-get-gerror-for-id" title="gsignond_get_gerror_for_id()">gsignond_get_gerror_for_id</a><span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-Errors.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gsignond-Errors.html#GSignondError" title="enum GSignondError">GSignondError</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-Errors.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-Errors.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-error.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-Errors.description"></a><h2>Description</h2>
+<p>This file provides GSignond error definitions and utilities.
+When creating an error, use <a class="link" href="gsignond-Errors.html#GSIGNOND-ERROR:CAPS" title="GSIGNOND_ERROR"><span class="type">GSIGNOND_ERROR</span></a> for the error domain and errors 
+from <a class="link" href="gsignond-Errors.html#GSignondError" title="enum GSignondError"><span class="type">GSignondError</span></a> for the error code.</p>
+<div class="informalexample">
+  <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td class="listing_lines" align="right"><pre>1</pre></td>
+        <td class="listing_code"><pre class="programlisting"><span class="string">&quot;Not enough data&quot;</span><span class="gtkdoc opt">);</span></pre></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p></p>
+</div>
+<div class="refsect1">
+<a name="gsignond-Errors.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="GSIGNOND-ERROR:CAPS"></a><h3>GSIGNOND_ERROR</h3>
+<pre class="programlisting">#define GSIGNOND_ERROR   (gsignond_error_quark())
+</pre>
+<p>This macro should be used when creating a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> in GSignond plugins and extensions.
+(for example with <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#g-error-new"><code class="function">g_error_new()</code></a> )</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-error-quark"></a><h3>gsignond_error_quark ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>
+gsignond_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates and returns a domain for GSignond errors.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-error-new-from-variant"></a><h3>gsignond_error_new_from_variant ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="returnvalue">GError</span></a> *
+gsignond_error_new_from_variant (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *var</code></em>);</pre>
+<p>Converts the GVariant to GError.</p>
+<div class="refsect3">
+<a name="id-1.8.2.8.4.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>var</p></td>
+<td class="parameter_description"><p>instance of <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.8.2.8.4.6"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> object if successful, NULL otherwise. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-error-to-variant"></a><h3>gsignond_error_to_variant ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+gsignond_error_to_variant (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+<p>Converts the GError to GVariant.</p>
+<div class="refsect3">
+<a name="id-1.8.2.8.5.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>instance of <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.8.2.8.5.6"></a><h4>Returns</h4>
+<p> <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> object if successful, NULL otherwise. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-get-gerror-for-id"></a><h3>gsignond_get_gerror_for_id()</h3>
+<pre class="programlisting">#define             gsignond_get_gerror_for_id(err, message, args...)</pre>
+<p>A helper macro that creates a <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> with the proper gsignond domain</p>
+<div class="refsect3">
+<a name="id-1.8.2.8.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>err</p></td>
+<td class="parameter_description"><p>A <a class="link" href="gsignond-Errors.html#GSignondError" title="enum GSignondError"><span class="type">GSignondError</span></a> specifying the error</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>Format string for the error message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>...</p></td>
+<td class="parameter_description"><p>parameters for the error string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gsignond-Errors.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSignondError"></a><h3>enum GSignondError</h3>
+<p>This enum provides a list of errors that plugins and extensions can use.</p>
+<div class="refsect3">
+<a name="id-1.8.2.9.2.4"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-NONE:CAPS"></a>GSIGNOND_ERROR_NONE</p></td>
+<td class="enum_member_description">
+<p>No error</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-UNKNOWN:CAPS"></a>GSIGNOND_ERROR_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>Catch-all for errors not distinguished by another code.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-INTERNAL-SERVER:CAPS"></a>GSIGNOND_ERROR_INTERNAL_SERVER</p></td>
+<td class="enum_member_description">
+<p>Signon Daemon internal error. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-INTERNAL-COMMUNICATION:CAPS"></a>GSIGNOND_ERROR_INTERNAL_COMMUNICATION</p></td>
+<td class="enum_member_description">
+<p>Communication with Signon Daemon error. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-PERMISSION-DENIED:CAPS"></a>GSIGNOND_ERROR_PERMISSION_DENIED</p></td>
+<td class="enum_member_description">
+<p>The operation cannot be performed due to insufficient client permissions. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-ENCRYPTION-FAILURE:CAPS"></a>GSIGNOND_ERROR_ENCRYPTION_FAILURE</p></td>
+<td class="enum_member_description">
+<p>Failure during data encryption/decryption. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-AUTH-SERVICE-ERR:CAPS"></a>GSIGNOND_ERROR_AUTH_SERVICE_ERR</p></td>
+<td class="enum_member_description">
+<p>Placeholder to rearrange enumeration - AuthService specific </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-METHOD-NOT-KNOWN:CAPS"></a>GSIGNOND_ERROR_METHOD_NOT_KNOWN</p></td>
+<td class="enum_member_description">
+<p>The method with this name is not found.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-SERVICE-NOT-AVAILABLE:CAPS"></a>GSIGNOND_ERROR_SERVICE_NOT_AVAILABLE</p></td>
+<td class="enum_member_description">
+<p>The service is temporarily unavailable. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-INVALID-QUERY:CAPS"></a>GSIGNOND_ERROR_INVALID_QUERY</p></td>
+<td class="enum_member_description">
+<p>Parameters for the query are invalid. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-IDENTITY-ERR:CAPS"></a>GSIGNOND_ERROR_IDENTITY_ERR</p></td>
+<td class="enum_member_description">
+<p>Placeholder to rearrange enumeration - Identity specific </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-METHOD-NOT-AVAILABLE:CAPS"></a>GSIGNOND_ERROR_METHOD_NOT_AVAILABLE</p></td>
+<td class="enum_member_description">
+<p>The requested method is not available. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-IDENTITY-NOT-FOUND:CAPS"></a>GSIGNOND_ERROR_IDENTITY_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>The identity matching this Identity object was not found on the service. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-STORE-FAILED:CAPS"></a>GSIGNOND_ERROR_STORE_FAILED</p></td>
+<td class="enum_member_description">
+<p>Storing credentials failed. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-REMOVE-FAILED:CAPS"></a>GSIGNOND_ERROR_REMOVE_FAILED</p></td>
+<td class="enum_member_description">
+<p>Removing credentials failed. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-SIGN-OUT-FAILED:CAPS"></a>GSIGNOND_ERROR_SIGN_OUT_FAILED</p></td>
+<td class="enum_member_description">
+<p>SignOut failed. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-IDENTITY-OPERATION-CANCELED:CAPS"></a>GSIGNOND_ERROR_IDENTITY_OPERATION_CANCELED</p></td>
+<td class="enum_member_description">
+<p>Identity operation was canceled by user. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-CREDENTIALS-NOT-AVAILABLE:CAPS"></a>GSIGNOND_ERROR_CREDENTIALS_NOT_AVAILABLE</p></td>
+<td class="enum_member_description">
+<p>Query failed. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-REFERENCE-NOT-FOUND:CAPS"></a>GSIGNOND_ERROR_REFERENCE_NOT_FOUND</p></td>
+<td class="enum_member_description">
+<p>Trying to remove nonexistent reference. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-AUTH-SESSION-ERR:CAPS"></a>GSIGNOND_ERROR_AUTH_SESSION_ERR</p></td>
+<td class="enum_member_description">
+<p>Placeholder to rearrange enumeration - AuthSession/PluginInterface specific </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-MECHANISM-NOT-AVAILABLE:CAPS"></a>GSIGNOND_ERROR_MECHANISM_NOT_AVAILABLE</p></td>
+<td class="enum_member_description">
+<p>The requested mechanism is not available. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-MISSING-DATA:CAPS"></a>GSIGNOND_ERROR_MISSING_DATA</p></td>
+<td class="enum_member_description">
+<p>The SessionData object does not contain necessary information. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-INVALID-CREDENTIALS:CAPS"></a>GSIGNOND_ERROR_INVALID_CREDENTIALS</p></td>
+<td class="enum_member_description">
+<p>The supplied credentials are invalid for the mechanism implementation. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-NOT-AUTHORIZED:CAPS"></a>GSIGNOND_ERROR_NOT_AUTHORIZED</p></td>
+<td class="enum_member_description">
+<p>Authorization failed. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-WRONG-STATE:CAPS"></a>GSIGNOND_ERROR_WRONG_STATE</p></td>
+<td class="enum_member_description">
+<p>An operation method has been called in a wrong state. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-OPERATION-NOT-SUPPORTED:CAPS"></a>GSIGNOND_ERROR_OPERATION_NOT_SUPPORTED</p></td>
+<td class="enum_member_description">
+<p>The operation is not supported by the mechanism implementation. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-NO-CONNECTION:CAPS"></a>GSIGNOND_ERROR_NO_CONNECTION</p></td>
+<td class="enum_member_description">
+<p>No Network connetion. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-NETWORK:CAPS"></a>GSIGNOND_ERROR_NETWORK</p></td>
+<td class="enum_member_description">
+<p>Network connetion failed. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-SSL:CAPS"></a>GSIGNOND_ERROR_SSL</p></td>
+<td class="enum_member_description">
+<p>Ssl connection failed. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-RUNTIME:CAPS"></a>GSIGNOND_ERROR_RUNTIME</p></td>
+<td class="enum_member_description">
+<p>Casting SessionData into subclass failed </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-SESSION-CANCELED:CAPS"></a>GSIGNOND_ERROR_SESSION_CANCELED</p></td>
+<td class="enum_member_description">
+<p>Challenge was cancelled. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-TIMED-OUT:CAPS"></a>GSIGNOND_ERROR_TIMED_OUT</p></td>
+<td class="enum_member_description">
+<p>Challenge was timed out. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-USER-INTERACTION:CAPS"></a>GSIGNOND_ERROR_USER_INTERACTION</p></td>
+<td class="enum_member_description">
+<p>User interaction dialog failed </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-OPERATION-FAILED:CAPS"></a>GSIGNOND_ERROR_OPERATION_FAILED</p></td>
+<td class="enum_member_description">
+<p>Temporary failure in authentication. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-ENCRYPTION-FAILED:CAPS"></a>GSIGNOND_ERROR_ENCRYPTION_FAILED</p></td>
+<td class="enum_member_description">
+<p>Failure during data encryption/decryption. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-TOS-NOT-ACCEPTED:CAPS"></a>GSIGNOND_ERROR_TOS_NOT_ACCEPTED</p></td>
+<td class="enum_member_description">
+<p>User declined Terms of Service. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-FORGOT-PASSWORD:CAPS"></a>GSIGNOND_ERROR_FORGOT_PASSWORD</p></td>
+<td class="enum_member_description">
+<p>User requested reset password sequence. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-METHOD-OR-MECHANISM-NOT-ALLOWED:CAPS"></a>GSIGNOND_ERROR_METHOD_OR_MECHANISM_NOT_ALLOWED</p></td>
+<td class="enum_member_description">
+<p>Method or mechanism not allowed for this identity. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-INCORRECT-DATE:CAPS"></a>GSIGNOND_ERROR_INCORRECT_DATE</p></td>
+<td class="enum_member_description">
+<p>Date time incorrect on device. </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="GSIGNOND-ERROR-USER-ERR:CAPS"></a>GSIGNOND_ERROR_USER_ERR</p></td>
+<td class="enum_member_description">
+<p>Placeholder to rearrange enumeration - User space specific </p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

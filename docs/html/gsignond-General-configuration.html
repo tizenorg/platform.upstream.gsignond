@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: General configuration</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch02.html" title="GSignond configuration">
+<link rel="prev" href="GSignondConfig.html" title="GSignondConfig">
+<link rel="next" href="gsignond-DBus-configuration.html" title="DBus configuration">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#gsignond-General-configuration.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#gsignond-General-configuration.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch02.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSignondConfig.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="gsignond-DBus-configuration.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gsignond-General-configuration"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gsignond-General-configuration.top_of_page"></a>General configuration</span></h2>
+<p>General configuration — gSSO general configuration keys</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gsignond-General-configuration.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL:CAPS" title="GSIGNOND_CONFIG_GENERAL">GSIGNOND_CONFIG_GENERAL</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-STORAGE-PATH:CAPS" title="GSIGNOND_CONFIG_GENERAL_STORAGE_PATH">GSIGNOND_CONFIG_GENERAL_STORAGE_PATH</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-EXTENSION:CAPS" title="GSIGNOND_CONFIG_GENERAL_EXTENSION">GSIGNOND_CONFIG_GENERAL_EXTENSION</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-SECURE-DIR:CAPS" title="GSIGNOND_CONFIG_GENERAL_SECURE_DIR">GSIGNOND_CONFIG_GENERAL_SECURE_DIR</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-PLUGIN-TIMEOUT:CAPS" title="GSIGNOND_CONFIG_PLUGIN_TIMEOUT">GSIGNOND_CONFIG_PLUGIN_TIMEOUT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-KEYCHAIN-SYSCTX:CAPS" title="GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX">GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-General-configuration.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-General-configuration.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-config.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-General-configuration.description"></a><h2>Description</h2>
+<p>General configuration keys are defined below. See <a class="link" href="GSignondConfig.html" title="GSignondConfig"><span class="type">GSignondConfig</span></a> for how to use them.</p>
+</div>
+<div class="refsect1">
+<a name="gsignond-General-configuration.functions_details"></a><h2>Functions</h2>
+</div>
+<div class="refsect1">
+<a name="gsignond-General-configuration.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSIGNOND-CONFIG-GENERAL:CAPS"></a><h3>GSIGNOND_CONFIG_GENERAL</h3>
+<pre class="programlisting">#define GSIGNOND_CONFIG_GENERAL                 "General"
+</pre>
+<p>A prefix for general keys. Should be used only when defining new keys.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSIGNOND-CONFIG-GENERAL-STORAGE-PATH:CAPS"></a><h3>GSIGNOND_CONFIG_GENERAL_STORAGE_PATH</h3>
+<pre class="programlisting">#define             GSIGNOND_CONFIG_GENERAL_STORAGE_PATH</pre>
+<p>Base path for <a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> to operate in.</p>
+<p>Default value: "/var/db", can be overriden in debug 
+builds by setting SSO_STORAGE_PATH environment variable.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSIGNOND-CONFIG-GENERAL-EXTENSION:CAPS"></a><h3>GSIGNOND_CONFIG_GENERAL_EXTENSION</h3>
+<pre class="programlisting">#define             GSIGNOND_CONFIG_GENERAL_EXTENSION</pre>
+<p>The name of the gSSO extension to use. If not specified, the default 
+implementation is used (see <a class="link" href="GSignondExtension.html" title="GSignondExtension"><span class="type">GSignondExtension</span></a>).</p>
+<p>Can be overriden in debug 
+builds by setting SSO_EXTENSION environment variable.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSIGNOND-CONFIG-GENERAL-SECURE-DIR:CAPS"></a><h3>GSIGNOND_CONFIG_GENERAL_SECURE_DIR</h3>
+<pre class="programlisting">#define             GSIGNOND_CONFIG_GENERAL_SECURE_DIR</pre>
+<p>Path provided by <a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> for storing user-specific
+information, including secret and metadata databases.</p>
+<p>This is a run-time value and any value read from configuration file
+is overwritten.</p>
+<p>Value provided by the default implementation: 
+<a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-STORAGE-PATH:CAPS" title="GSIGNOND_CONFIG_GENERAL_STORAGE_PATH"><span class="type">GSIGNOND_CONFIG_GENERAL_STORAGE_PATH</span></a> + "/gsignond." + <a href="http://library.gnome.org/devel/glib/unstable/glib-Miscellaneous-Utility-Functions.html#g-get-user-name"><code class="function">g_get_user_name()</code></a>.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSIGNOND-CONFIG-PLUGIN-TIMEOUT:CAPS"></a><h3>GSIGNOND_CONFIG_PLUGIN_TIMEOUT</h3>
+<pre class="programlisting">#define             GSIGNOND_CONFIG_PLUGIN_TIMEOUT</pre>
+<p>A timeout in seconds, after which inactive plugin objects and processes are removed.
+If not set, the plugin objects will persist for possible reuse.</p>
+<p>Can be overriden in debug 
+builds by setting SSO_PLUGIN_TIMEOUT environment variable.</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSIGNOND-CONFIG-GENERAL-KEYCHAIN-SYSCTX:CAPS"></a><h3>GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX</h3>
+<pre class="programlisting">#define             GSIGNOND_CONFIG_GENERAL_KEYCHAIN_SYSCTX</pre>
+<p>System security context of the keychain UI process 
+(see <a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a>).</p>
+<p>Default value can be defined through configure --enable-keychain flag (see</p>
+<a class="link" href="gsignond-building.html" title="Building and installing the gsignond daemon">Building gsignond</a>).
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

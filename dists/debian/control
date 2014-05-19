@@ -1,0 +1,27 @@
+Source: gsignond
+Section: net
+Priority: extra
+Maintainer: Jussi Laako <jussi.laako@linux.intel.com>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, pkg-config, libdbus-1-dev, gtk-doc-tools, libsqlite3-dev, libglib2.0-dev
+Standards-Version: 3.9.2
+Homepage: https://01.org/gsso
+Vcs-Git: http://code.google.com/p/accounts-sso.gsignond/
+Vcs-Browser: http://code.google.com/p/accounts-sso/source/browse/?repo=gsignond
+
+Package: gsignond
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: gSSO daemon and default plugins
+ gSSO is a single sign-on framework, providing secure storage and single sign-on service.
+
+Package: gsignond-dev
+Architecture: any
+Depends: ${shlibs:Depens}, ${misc:Depends}
+Description: development files for gsignond
+ Headers and libraries necessary for developing plugins and extensions.
+
+Package: gsignond-doc
+Architecture: all
+Description: documentation for gsignond
+ Developer documentation for developing plugins and extensions.
+

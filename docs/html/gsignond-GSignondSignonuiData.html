@@ -1,0 +1,1680 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: GSignondSignonuiData</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch04.html" title="GSignond API for writing GLib-based authentication plugins">
+<link rel="prev" href="gsignond-GSignondSessionData.html" title="GSignondSessionData">
+<link rel="next" href="ch05.html" title="Standard in-tree authentication plugins">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#gsignond-GSignondSignonuiData.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#gsignond-GSignondSignonuiData.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch04.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gsignond-GSignondSessionData.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch05.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gsignond-GSignondSignonuiData"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gsignond-GSignondSignonuiData.top_of_page"></a>GSignondSignonuiData</span></h2>
+<p>GSignondSignonuiData — definitions for user interaction parameters</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gsignond-GSignondSignonuiData.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-captcha-response" title="gsignond_signonui_data_get_captcha_response ()">gsignond_signonui_data_get_captcha_response</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-captcha-response" title="gsignond_signonui_data_set_captcha_response ()">gsignond_signonui_data_set_captcha_response</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-captcha-url" title="gsignond_signonui_data_get_captcha_url ()">gsignond_signonui_data_get_captcha_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-captcha-url" title="gsignond_signonui_data_set_captcha_url ()">gsignond_signonui_data_set_captcha_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-caption" title="gsignond_signonui_data_get_caption ()">gsignond_signonui_data_get_caption</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-caption" title="gsignond_signonui_data_set_caption ()">gsignond_signonui_data_set_caption</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-confirm" title="gsignond_signonui_data_get_confirm ()">gsignond_signonui_data_get_confirm</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-confirm" title="gsignond_signonui_data_set_confirm ()">gsignond_signonui_data_set_confirm</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-final-url" title="gsignond_signonui_data_get_final_url ()">gsignond_signonui_data_get_final_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-final-url" title="gsignond_signonui_data_set_final_url ()">gsignond_signonui_data_set_final_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-forgot-password" title="gsignond_signonui_data_get_forgot_password ()">gsignond_signonui_data_get_forgot_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-forgot-password" title="gsignond_signonui_data_set_forgot_password ()">gsignond_signonui_data_set_forgot_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-forgot-password-url" title="gsignond_signonui_data_get_forgot_password_url ()">gsignond_signonui_data_get_forgot_password_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-forgot-password-url" title="gsignond_signonui_data_set_forgot_password_url ()">gsignond_signonui_data_set_forgot_password_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-message" title="gsignond_signonui_data_get_message ()">gsignond_signonui_data_get_message</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-message" title="gsignond_signonui_data_set_message ()">gsignond_signonui_data_set_message</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-open-url" title="gsignond_signonui_data_get_open_url ()">gsignond_signonui_data_get_open_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-open-url" title="gsignond_signonui_data_set_open_url ()">gsignond_signonui_data_set_open_url</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-password" title="gsignond_signonui_data_get_password ()">gsignond_signonui_data_get_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-password" title="gsignond_signonui_data_set_password ()">gsignond_signonui_data_set_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-query-error" title="gsignond_signonui_data_get_query_error ()">gsignond_signonui_data_get_query_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-query-error" title="gsignond_signonui_data_set_query_error ()">gsignond_signonui_data_set_query_error</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-query-password" title="gsignond_signonui_data_get_query_password ()">gsignond_signonui_data_get_query_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-query-password" title="gsignond_signonui_data_set_query_password ()">gsignond_signonui_data_set_query_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-query-username" title="gsignond_signonui_data_get_query_username ()">gsignond_signonui_data_get_query_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-query-username" title="gsignond_signonui_data_set_query_username ()">gsignond_signonui_data_set_query_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-remember-password" title="gsignond_signonui_data_get_remember_password ()">gsignond_signonui_data_get_remember_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-remember-password" title="gsignond_signonui_data_set_remember_password ()">gsignond_signonui_data_set_remember_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-request-id" title="gsignond_signonui_data_get_request_id ()">gsignond_signonui_data_get_request_id</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-request-id" title="gsignond_signonui_data_set_request_id ()">gsignond_signonui_data_set_request_id</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-test-reply" title="gsignond_signonui_data_get_test_reply ()">gsignond_signonui_data_get_test_reply</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-test-reply" title="gsignond_signonui_data_set_test_reply ()">gsignond_signonui_data_set_test_reply</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-title" title="gsignond_signonui_data_get_title ()">gsignond_signonui_data_get_title</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-title" title="gsignond_signonui_data_set_title ()">gsignond_signonui_data_set_title</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-url-response" title="gsignond_signonui_data_get_url_response ()">gsignond_signonui_data_get_url_response</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-url-response" title="gsignond_signonui_data_set_url_response ()">gsignond_signonui_data_set_url_response</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-get-username" title="gsignond_signonui_data_get_username ()">gsignond_signonui_data_get_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSignonuiData.html#gsignond-signonui-data-set-username" title="gsignond_signonui_data_set_username ()">gsignond_signonui_data_set_username</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSignonuiData.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody><tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="gsignond-GSignondSignonuiData.html#GSignondSignonuiError" title="enum GSignondSignonuiError">GSignondSignonuiError</a></td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSignonuiData.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSignonuiData.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-signonui-data.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSignonuiData.description"></a><h2>Description</h2>
+<p>This file provides commonly used parameters for user interaction during
+authentication sessions.
+For each of those a getter and setter is defined, on <span class="type">GSignondSessionData</span>
+container. </p>
+<p>This container is used in two directions: by plugins to specify the parameters 
+for user interaction that is then performed by SignonUI component, and by SignonUI
+to return the results of that interaction to the plugins. See <a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a>
+for the user interaction API from the plugins' perspective.</p>
+<p>The parameters that are set by the plugin and read by signon UI are captcha url,
+caption, confirm, final url, forgot password, forgot password url, message,
+open url, password, query password, query username, remember
+password, request id, test reply values, title, username.</p>
+<p>The parameters that are returned by signon UI to the plugin are captcha response,
+password, query error code, remember password, url response.</p>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSignonuiData.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-captcha-response"></a><h3>gsignond_signonui_data_get_captcha_response ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_captcha_response
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the user's response to a captcha query.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.2.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.2.6"></a><h4>Returns</h4>
+<p> the string entered by the user in response to a captcha query. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-captcha-response"></a><h3>gsignond_signonui_data_set_captcha_response ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_captcha_response
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *response</code></em>);</pre>
+<p>A setter for the user's response to a captcha query.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>response</p></td>
+<td class="parameter_description"><p>the string entered by the user in response to a captcha query.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-captcha-url"></a><h3>gsignond_signonui_data_get_captcha_url ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_captcha_url
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the captcha URL.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.4.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.4.6"></a><h4>Returns</h4>
+<p> the URL to the captcha image to be verified by user. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-captcha-url"></a><h3>gsignond_signonui_data_set_captcha_url ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_captcha_url
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *url</code></em>);</pre>
+<p>A setter for the captcha URL.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.5.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>url</p></td>
+<td class="parameter_description"><p>the URL to the captcha image to be verified by user</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-caption"></a><h3>gsignond_signonui_data_get_caption ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_caption (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the caption string. Caption tells the user which 
+application/credentials/provider is requestion authentication.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.6.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-caption"></a><h3>gsignond_signonui_data_set_caption ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_caption (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *caption</code></em>);</pre>
+<p>A setter for the caption string. Caption tells the user which 
+application/credentials/provider is requestion authentication.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.7.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>caption</p></td>
+<td class="parameter_description"><p>the caption string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-confirm"></a><h3>gsignond_signonui_data_get_confirm ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_signonui_data_get_confirm (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                    <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> *confirm</code></em>);</pre>
+<p>A getter for the confirm mode. In confirm mode the user is asked to enter
+an old password (which is compared to the supplied password), and a new password twice
+(which is returned).</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.8.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>confirm</p></td>
+<td class="parameter_description"><p>the value for the property is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.8.6"></a><h4>Returns</h4>
+<p> whether this property exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-confirm"></a><h3>gsignond_signonui_data_set_confirm ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_confirm (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                    <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> confirm</code></em>);</pre>
+<p>A setter for the confirm mode. In confirm mode the user is asked to enter
+an old password (which is compared to the supplied password), and a new password twice
+(which is returned).</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.9.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>confirm</p></td>
+<td class="parameter_description"><p>the value for the property</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-final-url"></a><h3>gsignond_signonui_data_get_final_url ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_final_url (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the final URL. When the signon UI detects that the user is at 
+the final URL (possibly with additional query or fragment parameters), it 
+will close the window and return the full URL via url response property.
+This is used by redirection-based authentication, such as OAuth.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.10.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.10.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-final-url"></a><h3>gsignond_signonui_data_set_final_url ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_final_url (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                      <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *url</code></em>);</pre>
+<p>A setter for the final URL. When the signon UI detects that the user is at 
+the final URL (possibly with additional query or fragment parameters), it 
+will close the window and return the full URL via url response property.
+This is used by redirection-based authentication, such as OAuth.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.11.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>url</p></td>
+<td class="parameter_description"><p>the final url</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-forgot-password"></a><h3>gsignond_signonui_data_get_forgot_password ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_forgot_password
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the forgot password string which is shown to the user as a link to
+reset the password or remind him of the password.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.12.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.12.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-forgot-password"></a><h3>gsignond_signonui_data_set_forgot_password ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_forgot_password
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *forgot</code></em>);</pre>
+<p>A setter for the forgot password string, which is shown to the user as a link to
+reset the password or remind him of the password.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.13.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>forgot</p></td>
+<td class="parameter_description"><p>the forgot password string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.13.6"></a><h4>Returns</h4>
+<p>. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-forgot-password-url"></a><h3>gsignond_signonui_data_get_forgot_password_url ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_forgot_password_url
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the forgot password URL, where the user can reset or request a 
+reminder of the password.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.14.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.14.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-forgot-password-url"></a><h3>gsignond_signonui_data_set_forgot_password_url ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_forgot_password_url
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *url</code></em>);</pre>
+<p>A setter for the forgot password URL, where the user can reset or request a 
+reminder of the password.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.15.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>url</p></td>
+<td class="parameter_description"><p>the forgot password URL</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.15.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-message"></a><h3>gsignond_signonui_data_get_message ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_message (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the message which is show to the user in the signon UI dialog.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.16.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.16.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-message"></a><h3>gsignond_signonui_data_set_message ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_message (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                    <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *message</code></em>);</pre>
+<p>A setter for the message which is show to the user in the signon UI dialog.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.17.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>message</p></td>
+<td class="parameter_description"><p>the message</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-open-url"></a><h3>gsignond_signonui_data_get_open_url ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_open_url (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the URL that should be opened by signon UI.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.18.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.18.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-open-url"></a><h3>gsignond_signonui_data_set_open_url ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_open_url (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *url</code></em>);</pre>
+<p>A setter for the URL that should be opened by signon UI.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.19.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>url</p></td>
+<td class="parameter_description"><p>the url to open</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-password"></a><h3>gsignond_signonui_data_get_password ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_password (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the password string.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.20.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.20.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-password"></a><h3>gsignond_signonui_data_set_password ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_password (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *password</code></em>);</pre>
+<p>A setter for the password string.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.21.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>password</p></td>
+<td class="parameter_description"><p>the password string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-query-error"></a><h3>gsignond_signonui_data_get_query_error ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_signonui_data_get_query_error
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a class="link" href="gsignond-GSignondSignonuiData.html#GSignondSignonuiError" title="enum GSignondSignonuiError"><span class="type">GSignondSignonuiError</span></a> *error</code></em>);</pre>
+<p>A getter for the UI interaction error. Signon UI sets this to <em class="parameter"><code>SIGNONUI_ERROR_NONE</code></em>
+ if
+there were no errors.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.22.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>the error is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.22.6"></a><h4>Returns</h4>
+<p> whether this property exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-query-error"></a><h3>gsignond_signonui_data_set_query_error ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_query_error
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a class="link" href="gsignond-GSignondSignonuiData.html#GSignondSignonuiError" title="enum GSignondSignonuiError"><span class="type">GSignondSignonuiError</span></a> error</code></em>);</pre>
+<p>A setter for the UI interaction error. Signon UI sets this to <em class="parameter"><code>SIGNONUI_ERROR_NONE</code></em>
+ if
+there were no errors.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.23.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>the error</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-query-password"></a><h3>gsignond_signonui_data_get_query_password ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_signonui_data_get_query_password
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> *query_password</code></em>);</pre>
+<p>A getter for the query password property. It indicates whether the signon UI
+should ask the user for a password (and return it in the password property).</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.24.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>query_password</p></td>
+<td class="parameter_description"><p>the property is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.24.6"></a><h4>Returns</h4>
+<p> whether this property exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-query-password"></a><h3>gsignond_signonui_data_set_query_password ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_query_password
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> query</code></em>);</pre>
+<p>A setter for the query password property. It indicates whether the signon UI
+should ask the user for a password (and return it in the password property).</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.25.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>query</p></td>
+<td class="parameter_description"><p>the property value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-query-username"></a><h3>gsignond_signonui_data_get_query_username ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_signonui_data_get_query_username
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> *query_username</code></em>);</pre>
+<p>A getter for the query username property. It indicates whether the signon UI
+should ask the user for a username (and return it in the username property).</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.26.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>query_username</p></td>
+<td class="parameter_description"><p>the property is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.26.6"></a><h4>Returns</h4>
+<p> whether this property exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-query-username"></a><h3>gsignond_signonui_data_set_query_username ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_query_username
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> query</code></em>);</pre>
+<p>A setter for the query username property. It indicates whether the signon UI
+should ask the user for a username (and return it in the username property).</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.27.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>query</p></td>
+<td class="parameter_description"><p>the property value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-remember-password"></a><h3>gsignond_signonui_data_get_remember_password ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_signonui_data_get_remember_password
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> *remember_password</code></em>);</pre>
+<p>A getter for whether the password should be remembered.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.28.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>remember_password</p></td>
+<td class="parameter_description"><p>the property is written here</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.28.6"></a><h4>Returns</h4>
+<p> whether this property exists in the <em class="parameter"><code>data</code></em>
+dictionary or not.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-remember-password"></a><h3>gsignond_signonui_data_set_remember_password ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_remember_password
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> remember</code></em>);</pre>
+<p>A setter for whether the password should be remembered.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.29.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>remember</p></td>
+<td class="parameter_description"><p>the property value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-request-id"></a><h3>gsignond_signonui_data_get_request_id ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_request_id (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the dialog request id. The id identifies the dialog so that it
+can be refreshed or updated.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.30.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.30.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-request-id"></a><h3>gsignond_signonui_data_set_request_id ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_request_id (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                       <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>);</pre>
+<p>A setter for the dialog request id. The id identifies the dialog so that it
+can be refreshed or updated.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.31.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>id</p></td>
+<td class="parameter_description"><p>request id</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-test-reply"></a><h3>gsignond_signonui_data_get_test_reply ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_test_reply (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the test reply values. It's used only by the signon ui 
+implementations to test themselves.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.32.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.32.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-test-reply"></a><h3>gsignond_signonui_data_set_test_reply ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_test_reply (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                       <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *reply</code></em>);</pre>
+<p>A setter for the test reply values. It's used only by the signon ui 
+implementations to test themselves.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.33.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>reply</p></td>
+<td class="parameter_description"><p>test reply values</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-title"></a><h3>gsignond_signonui_data_get_title ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_title (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the UI dialog title.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.34.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.34.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-title"></a><h3>gsignond_signonui_data_set_title ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_title (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                  <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *title</code></em>);</pre>
+<p>A setter for the UI dialog title.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.35.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>title</p></td>
+<td class="parameter_description"><p>the title</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-url-response"></a><h3>gsignond_signonui_data_get_url_response ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_url_response
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the response URL. If the final URL was set in the request to the signon UI, and the signon UI
+detects that it has been reached, then the full final URL is returned using
+this property. This is used by redirection-based authentication such as OAauth.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.36.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.36.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-url-response"></a><h3>gsignond_signonui_data_set_url_response ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_url_response
+                               (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *response</code></em>);</pre>
+<p>A getter for the response URL. If the final URL was set in the request to the 
+signon UI, and the signon UI
+detects that it has been reached, then the full final URL is returned using
+this property. This is used by redirection-based authentication such as OAauth.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.37.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>response</p></td>
+<td class="parameter_description"><p>the response URL</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.37.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-get-username"></a><h3>gsignond_signonui_data_get_username ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_signonui_data_get_username (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>);</pre>
+<p>A getter for the username string.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.38.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.5.8.38.6"></a><h4>Returns</h4>
+<p> (transfer none)</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-signonui-data-set-username"></a><h3>gsignond_signonui_data_set_username ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_signonui_data_set_username (<em class="parameter"><code><span class="type">GSignondSignonuiData</span> *data</code></em>,
+                                     <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *username</code></em>);</pre>
+<p>A setter for the username string.</p>
+<div class="refsect3">
+<a name="id-1.5.5.8.39.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>data</p></td>
+<td class="parameter_description"><p>a <span class="type">GSignondDictionary</span> structure</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>username</p></td>
+<td class="parameter_description"><p>the username string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSignonuiData.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSignondSignonuiError"></a><h3>enum GSignondSignonuiError</h3>
+<p>This enum defines errors that may happen during user interaction.</p>
+<div class="refsect3">
+<a name="id-1.5.5.9.2.4"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-NONE:CAPS"></a>SIGNONUI_ERROR_NONE</p></td>
+<td class="enum_member_description">
+<p>No errors</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-GENERAL:CAPS"></a>SIGNONUI_ERROR_GENERAL</p></td>
+<td class="enum_member_description">
+<p>Generic error during interaction</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-NO-SIGNONUI:CAPS"></a>SIGNONUI_ERROR_NO_SIGNONUI</p></td>
+<td class="enum_member_description">
+<p>Cannot send request to signon-ui</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-BAD-PARAMETERS:CAPS"></a>SIGNONUI_ERROR_BAD_PARAMETERS</p></td>
+<td class="enum_member_description">
+<p>Signon-Ui cannot create dialog based on the given UiSessionData</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-CANCELED:CAPS"></a>SIGNONUI_ERROR_CANCELED</p></td>
+<td class="enum_member_description">
+<p>User canceled action. Plugin should not retry automatically after this</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-NOT-AVAILABLE:CAPS"></a>SIGNONUI_ERROR_NOT_AVAILABLE</p></td>
+<td class="enum_member_description">
+<p>Requested ui is not available. For example browser cannot be started</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-BAD-URL:CAPS"></a>SIGNONUI_ERROR_BAD_URL</p></td>
+<td class="enum_member_description">
+<p>Given url was not valid</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-BAD-CAPTCHA:CAPS"></a>SIGNONUI_ERROR_BAD_CAPTCHA</p></td>
+<td class="enum_member_description">
+<p>Given captcha image was not valid</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-BAD-CAPTCHA-URL:CAPS"></a>SIGNONUI_ERROR_BAD_CAPTCHA_URL</p></td>
+<td class="enum_member_description">
+<p>Given url for capctha loading was not valid</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-REFRESH-FAILED:CAPS"></a>SIGNONUI_ERROR_REFRESH_FAILED</p></td>
+<td class="enum_member_description">
+<p>Refresh failed</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-FORBIDDEN:CAPS"></a>SIGNONUI_ERROR_FORBIDDEN</p></td>
+<td class="enum_member_description">
+<p>Showing ui forbidden by ui policy</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="SIGNONUI-ERROR-FORGOT-PASSWORD:CAPS"></a>SIGNONUI_ERROR_FORGOT_PASSWORD</p></td>
+<td class="enum_member_description">
+<p>User pressed forgot password</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

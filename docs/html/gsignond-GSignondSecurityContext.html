@@ -1,0 +1,770 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: GSignondSecurityContext</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch06.html" title="GSignond API for writing platform adaptation extensions">
+<link rel="prev" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager">
+<link rel="next" href="GSignondStorageManager.html" title="GSignondStorageManager">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#gsignond-GSignondSecurityContext.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#gsignond-GSignondSecurityContext.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch06.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="GSignondAccessControlManager.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSignondStorageManager.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gsignond-GSignondSecurityContext"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="gsignond-GSignondSecurityContext.top_of_page"></a>GSignondSecurityContext</span></h2>
+<p>GSignondSecurityContext — security context descriptor used in access control checks</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="gsignond-GSignondSecurityContext.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-new" title="gsignond_security_context_new ()">gsignond_security_context_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-new-from-values" title="gsignond_security_context_new_from_values ()">gsignond_security_context_new_from_values</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-free" title="gsignond_security_context_free ()">gsignond_security_context_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-copy" title="gsignond_security_context_copy ()">gsignond_security_context_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-set-system-context" title="gsignond_security_context_set_system_context ()">gsignond_security_context_set_system_context</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-get-system-context" title="gsignond_security_context_get_system_context ()">gsignond_security_context_get_system_context</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-set-application-context" title="gsignond_security_context_set_application_context ()">gsignond_security_context_set_application_context</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-get-application-context" title="gsignond_security_context_get_application_context ()">gsignond_security_context_get_application_context</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-to-variant" title="gsignond_security_context_to_variant ()">gsignond_security_context_to_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-from-variant" title="gsignond_security_context_from_variant ()">gsignond_security_context_from_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-compare" title="gsignond_security_context_compare ()">gsignond_security_context_compare</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-match" title="gsignond_security_context_match ()">gsignond_security_context_match</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-check" title="gsignond_security_context_check ()">gsignond_security_context_check</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-to-variant" title="gsignond_security_context_list_to_variant ()">gsignond_security_context_list_to_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="returnvalue">GSignondSecurityContextList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-from-variant" title="gsignond_security_context_list_from_variant ()">gsignond_security_context_list_from_variant</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="returnvalue">GSignondSecurityContextList</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-copy" title="gsignond_security_context_list_copy ()">gsignond_security_context_list_copy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-list-free" title="gsignond_security_context_list_free ()">gsignond_security_context_list_free</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSecurityContext.other"></a><h2>Types and Values</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="name">
+<col class="description">
+</colgroup>
+<tbody>
+<tr>
+<td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext">GSignondSecurityContext</a></td>
+</tr>
+<tr>
+<td class="typedef_keyword">typedef</td>
+<td class="function_name"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList">GSignondSecurityContextList</a></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSecurityContext.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSecurityContext.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-security-context.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSecurityContext.description"></a><h2>Description</h2>
+<p>Security context is a string tuple of system context and application context.</p>
+<p>System context can be a binary path, SMACK-label, or MSSF token.</p>
+<p>Application context identifies a script or a webpage within an application,
+and it's used for providing access control to runtime environments (when making an access
+control decision requires not only a binary identifier, but also information
+about what the binary is doing).</p>
+<p>When an application is trying to access the gSSO service, the system context
+is determined by a specific <a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a> instance using
+system services of a specific platform. Application context is set by the
+application itself. Then both contexts are used by <a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager"><span class="type">GSignondAccessControlManager</span></a>
+to perform an access control check.</p>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSecurityContext.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="gsignond-security-context-new"></a><h3>gsignond_security_context_new ()</h3>
+<pre class="programlisting"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+gsignond_security_context_new ();</pre>
+<p>Allocates a new security context item. System and app context are empty strings.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.2.5"></a><h4>Returns</h4>
+<p> allocated <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-new-from-values"></a><h3>gsignond_security_context_new_from_values ()</h3>
+<pre class="programlisting"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+gsignond_security_context_new_from_values
+                               (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *system_context</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_context</code></em>);</pre>
+<p>Allocates and initializes a new security context item.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>system_context</p></td>
+<td class="parameter_description"><p>system security context</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>application_context</p></td>
+<td class="parameter_description"><p>application security context</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.3.6"></a><h4>Returns</h4>
+<p> allocated <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-free"></a><h3>gsignond_security_context_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_security_context_free (<em class="parameter"><code><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx</code></em>);</pre>
+<p>Frees a security context item.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.4.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>ctx</p></td>
+<td class="parameter_description"><p><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> to be freed.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-copy"></a><h3>gsignond_security_context_copy ()</h3>
+<pre class="programlisting"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+gsignond_security_context_copy (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *src_ctx</code></em>);</pre>
+<p>Copies a security context item.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.5.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>src_ctx</p></td>
+<td class="parameter_description"><p>source security context to copy.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.5.6"></a><h4>Returns</h4>
+<p> a copy of the <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-set-system-context"></a><h3>gsignond_security_context_set_system_context ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_security_context_set_system_context
+                               (<em class="parameter"><code><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *system_context</code></em>);</pre>
+<p>Sets the system context part of the
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>ctx</p></td>
+<td class="parameter_description"><p><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>system_context</p></td>
+<td class="parameter_description"><p>system security context.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-get-system-context"></a><h3>gsignond_security_context_get_system_context ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_security_context_get_system_context
+                               (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx</code></em>);</pre>
+<p>Get the system context partof the
+<a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.7.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>ctx</p></td>
+<td class="parameter_description"><p><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.7.6"></a><h4>Returns</h4>
+<p> system context. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-set-application-context"></a><h3>gsignond_security_context_set_application_context ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_security_context_set_application_context
+                               (<em class="parameter"><code><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx</code></em>,
+                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_context</code></em>);</pre>
+<p>Sets the application context part of
+the <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.8.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>ctx</p></td>
+<td class="parameter_description"><p><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>application_context</p></td>
+<td class="parameter_description"><p>application security context.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-get-application-context"></a><h3>gsignond_security_context_get_application_context ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_security_context_get_application_context
+                               (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx</code></em>);</pre>
+<p>Get the application context part of
+the <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.9.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>ctx</p></td>
+<td class="parameter_description"><p><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.9.6"></a><h4>Returns</h4>
+<p> application context. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-to-variant"></a><h3>gsignond_security_context_to_variant ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+gsignond_security_context_to_variant (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx</code></em>);</pre>
+<p>Build a GVariant of type "(ss)" from a <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.10.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>ctx</p></td>
+<td class="parameter_description"><p><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.10.6"></a><h4>Returns</h4>
+<p> GVariant construct of a <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-from-variant"></a><h3>gsignond_security_context_from_variant ()</h3>
+<pre class="programlisting"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="returnvalue">GSignondSecurityContext</span></a> *
+gsignond_security_context_from_variant
+                               (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *variant</code></em>);</pre>
+<p>Builds a <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item from a GVariant of type "(ss)".</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.11.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>variant</p></td>
+<td class="parameter_description"><p>GVariant item with a <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> construct.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.11.6"></a><h4>Returns</h4>
+<p> <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> item. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-compare"></a><h3>gsignond_security_context_compare ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+gsignond_security_context_compare (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx1</code></em>,
+                                   <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx2</code></em>);</pre>
+<p>Compare two <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> items in a similar way to <code class="function">strcmp()</code>.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.12.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>ctx1</p></td>
+<td class="parameter_description"><p>first item to compare.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ctx2</p></td>
+<td class="parameter_description"><p>second item to compare.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.12.6"></a><h4>Returns</h4>
+<p> negative if ctx1 &lt; ctx2, 0 if ctx1 == ctx2 and positive if ctx1 &gt; ctx2.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-match"></a><h3>gsignond_security_context_match ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_security_context_match (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx1</code></em>,
+                                 <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *ctx2</code></em>);</pre>
+<p>Compare two <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> items match.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.13.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>ctx1</p></td>
+<td class="parameter_description"><p>first item to compare.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ctx2</p></td>
+<td class="parameter_description"><p>second item to compare.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.13.6"></a><h4>Returns</h4>
+<p> TRUE if contexts are equal or if either side has a wildcard match for
+system context, or if system contexts are equal and either side has a wildcard
+match for the app context,
+otherwise FALSE. Two NULL contexts match.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-check"></a><h3>gsignond_security_context_check ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_security_context_check (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *reference</code></em>,
+                                 <em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> *test</code></em>);</pre>
+<p>Check if <em class="parameter"><code>test</code></em>
+ is covered by <em class="parameter"><code>reference</code></em>
+.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.14.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>reference</p></td>
+<td class="parameter_description"><p>reference security context item to check against.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>test</p></td>
+<td class="parameter_description"><p>security context item to be checked.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.14.6"></a><h4>Returns</h4>
+<p> TRUE if contexts are equal or the <em class="parameter"><code>reference</code></em>
+has a wildcard
+system context, or if system contexts are equal and <em class="parameter"><code>reference</code></em>
+has a wildcard
+application context, otherwise FALSE. If either or both contexts are NULL,
+FALSE is returned.</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-list-to-variant"></a><h3>gsignond_security_context_list_to_variant ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *
+gsignond_security_context_list_to_variant
+                               (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> *list</code></em>);</pre>
+<p>Builds a GVariant of type "a(ss)" from a GList of <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>
+items.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.15.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>list</p></td>
+<td class="parameter_description"><p><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> item.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.15.6"></a><h4>Returns</h4>
+<p> GVariant construct of a <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-list-from-variant"></a><h3>gsignond_security_context_list_from_variant ()</h3>
+<pre class="programlisting"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="returnvalue">GSignondSecurityContextList</span></a> *
+gsignond_security_context_list_from_variant
+                               (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *variant</code></em>);</pre>
+<p>Builds a GList of <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> items from a GVariant of type
+"a(ss)".</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.16.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>variant</p></td>
+<td class="parameter_description"><p>GVariant item with a list of security context tuples.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.16.6"></a><h4>Returns</h4>
+<p> <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> item. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-list-copy"></a><h3>gsignond_security_context_list_copy ()</h3>
+<pre class="programlisting"><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="returnvalue">GSignondSecurityContextList</span></a> *
+gsignond_security_context_list_copy (<em class="parameter"><code>const <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> *src_list</code></em>);</pre>
+<p>Copies a GList of <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> items.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.17.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>src_list</p></td>
+<td class="parameter_description"><p>source <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a>.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.4.8.17.6"></a><h4>Returns</h4>
+<p> <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> item. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-security-context-list-free"></a><h3>gsignond_security_context_list_free ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+gsignond_security_context_list_free (<em class="parameter"><code><a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> *seclist</code></em>);</pre>
+<p>Frees all items and the GList of <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a>.</p>
+<div class="refsect3">
+<a name="id-1.7.4.8.18.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>seclist</p></td>
+<td class="parameter_description"><p> <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContextList" title="GSignondSecurityContextList"><span class="type">GSignondSecurityContextList</span></a> item. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="gsignond-GSignondSecurityContext.other_details"></a><h2>Types and Values</h2>
+<div class="refsect2">
+<a name="GSignondSecurityContext"></a><h3>GSignondSecurityContext</h3>
+<pre class="programlisting">typedef struct {
+    gchar *sys_ctx;
+    gchar *app_ctx;
+} GSignondSecurityContext;
+</pre>
+<p>Security context descriptor used for access control checks. System context
+and application context can contain a wildcard match "*" which has special
+meaning in <a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-match" title="gsignond_security_context_match ()"><code class="function">gsignond_security_context_match()</code></a> and
+<a class="link" href="gsignond-GSignondSecurityContext.html#gsignond-security-context-check" title="gsignond_security_context_check ()"><code class="function">gsignond_security_context_check()</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.7.4.9.2.5"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="struct_members_name">
+<col class="struct_members_description">
+<col width="200px" class="struct_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="struct_member_name"><p><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GSignondSecurityContext.sys-ctx"></a>sys_ctx</code></em>;</p></td>
+<td class="struct_member_description"><p>system context</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+<tr>
+<td class="struct_member_name"><p><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *<em class="structfield"><code><a name="GSignondSecurityContext.app-ctx"></a>app_ctx</code></em>;</p></td>
+<td class="struct_member_description"><p>application context</p></td>
+<td class="struct_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="GSignondSecurityContextList"></a><h3>GSignondSecurityContextList</h3>
+<pre class="programlisting">typedef GList GSignondSecurityContextList;
+</pre>
+<p>GList of <a class="link" href="gsignond-GSignondSecurityContext.html#GSignondSecurityContext" title="GSignondSecurityContext"><span class="type">GSignondSecurityContext</span></a> items.</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

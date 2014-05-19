@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: Building and installing the gsignond daemon</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch01.html" title="GSignond building and installation">
+<link rel="prev" href="ch01.html" title="GSignond building and installation">
+<link rel="next" href="ch02.html" title="GSignond configuration">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ch01.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ch02.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="gsignond-building"></a><div class="titlepage"></div>
+<div class="refsect1">
+<a name="building"></a><h2>Building gsignond</h2>
+<p>
+      GSignond uses the standard GNU build system,
+      using <span class="application">autoconf</span> for package
+      configuration and resolving portability issues,
+      <span class="application">automake</span> for building makefiles
+      that comply with the GNU Coding Standards, and
+      <span class="application">libtool</span> for building shared
+      libraries on multiple platforms.  The normal sequence for
+      compiling and installing gsignond from distribution tarballs is thus:
+
+      </p>
+<div class="literallayout"><p><br>
+        <strong class="userinput"><code>./configure</code></strong><br>
+        <strong class="userinput"><code>make</code></strong><br>
+        <strong class="userinput"><code>make install</code></strong><br>
+      </p></div>
+<p>
+      
+      If you have obtained the source code directly from git repository,
+      execute the <span class="command"><strong>./autogen.sh</strong></span> script 
+      before the steps above.
+    </p>
+<p>
+      The standard options provided by <span class="application">GNU
+      autoconf</span> may be passed to the
+      <span class="command"><strong>configure</strong></span> script.  Please see the
+      <span class="application">autoconf</span> documentation or run
+      <span class="command"><strong>./configure --help</strong></span> for information about
+      the standard options.
+    </p>
+</div>
+<div class="refsect1">
+<a name="dependencies"></a><h2>Dependencies</h2>
+<p>
+      Before you can compile GSignond, you need to have
+      various other tools and libraries installed on your
+      system. The two tools needed during the build process
+      are <span class="command"><strong>pkg-config</strong></span> and
+      <a class="ulink" href="http://www.gnu.org/software/make" target="_top">GNU make</a>.
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+          <a class="ulink" href="http://www.freedesktop.org/software/pkgconfig/" target="_top">pkg-config</a>
+          is a tool for tracking the compilation flags needed for
+          libraries that are used by the GSignond. (For each
+          library, a small <code class="literal">.pc</code> text file is
+          installed in a standard location that contains the compilation
+          flags needed for that library along with version number
+          information.) 
+        </p></li></ul></div>
+<p>
+      GSignond depends on a number of other libraries.
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+            The <a class="ulink" href="https://developer.gnome.org/glib/" target="_top">GLib
+            library</a> is the development framework that GSignond is built on.
+        </p></li>
+<li class="listitem"><p>
+            The <a class="ulink" href="http://www.sqlite.org/" target="_top">SQLite library</a>
+            provides a database implementation that GSignond is using for
+            storing data.
+        </p></li>
+<li class="listitem"><p>
+            The <a class="ulink" href="http://check.sourceforge.net/" target="_top">check library</a>
+            provides a unit testing framework. It is needed only if you would
+            like to run unit tests with <span class="command"><strong>make check</strong></span>.
+        </p></li>
+<li class="listitem"><p>
+            For building Tizen extension module that integrates gsignond into
+            the Tizen platform, the 
+            <a class="ulink" href="http://schaufler-ca.com/" target="_top">libsmack</a> and 
+            <a class="ulink" href="http://ecryptfs.org/" target="_top">ecryptfs</a> are required. 
+            They are not needed otherwise.
+        </p></li>
+</ul></div>
+</div>
+<div class="refsect1">
+<a name="extra-configuration-options"></a><h2>Extra Configuration Options</h2>
+<p>
+      In addition to the normal options, the
+      <span class="command"><strong>configure</strong></span> script supports these additional arguments:
+    </p>
+<p><b><code class="systemitem">--enable-debug</code>. </b>
+        Turns on debugging support. This enables unit tests and allows setting 
+        environment variables to influence the runtime behaviour of GSignond
+        (see <a class="link" href="GSignondConfig.html" title="GSignondConfig">GSignondConfig</a> and
+        <a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager">GSignondAccessControlManager</a>).
+        Also, the daemon will exit in case of critical errors.
+      </p>
+<p><b><code class="systemitem">--enable-sql-log</code>. </b>
+          Turns on SQL statement logging. For this, also 
+          <code class="systemitem">--enable-debug</code> must be used.
+      </p>
+<p><b><code class="systemitem">--enable-dbus-type=dbus-type</code>. </b>
+          Sets the way in which GSignond is using DBus to communicate with 
+          the client library. <code class="systemitem">dbus-type</code> can be one of
+        </p>
+<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
+<li class="listitem"><p>
+              <code class="systemitem">'p2p'</code> which is the default and recommended
+              value. GSignond will use direct connection over a UNIX domain socket
+              with the client library without involving the DBus daemon.
+            </p></li>
+<li class="listitem"><p>
+              <code class="systemitem">'session'</code> which will use the session bus.
+              This is not recommended to use because session bus isn't secure
+              against eavesdropping, but it can be used for debugging purposes,
+              as it allows the use of standard tools such as
+              <span class="command"><strong>dbus-monitor</strong></span>, <span class="command"><strong>d-feet</strong></span> and
+              so on.
+            </p></li>
+<li class="listitem"><p>
+              <code class="systemitem">'system'</code> which will use the system bus.
+              Can be used on a single-user systems, but 'p2p' is preferred.
+            </p></li>
+</ul></div>
+<p>
+      </p>
+<p><b><code class="systemitem">--enable-keychain=sysctx</code>. </b>
+            Sets the system security context of keychain UI process as returned by
+            the default <a class="link" href="GSignondAccessControlManager.html" title="GSignondAccessControlManager">
+            GSignondAccessControlManager</a>. This value becomes written to the
+            gsignond.conf in addition to being encoded as default value
+            through config.h.
+        </p>
+<p><b><code class="systemitem">--enable-storagedir=path</code>. </b>
+            Sets the base path for user specific storage directories where
+            database files will be located as utilised by 
+            <a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager">
+            GSignondStorageManager</a>.
+            Default location is <code class="filename">/var/db</code>
+        </p>
+</div>
+<div class="refsect1">
+<a name="building-packages"></a><h2>Building distribution packages</h2>
+<p>
+        Instead of running <span class="command"><strong>make install</strong></span> to install gsignond
+        into a system location it is possible to build distribution-specific
+        packages. <code class="filename">dists/</code> directory in the source tree
+        contains a number of package confuguration files, and to use them also
+        a distribution tarball is needed. If you are building from a git tree,
+        use <span class="command"><strong>make dist</strong></span> to create such a tarball.
+    </p>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>

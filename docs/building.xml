@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<refentry id="gsignond-building">
+  <refmeta>
+    <refentrytitle>Building and installing the gsignond daemon</refentrytitle>
+    <manvolnum>3</manvolnum>
+    <refmiscinfo>GSignond</refmiscinfo>
+  </refmeta>
+
+  <refsect1 id="building">
+    <title>Building gsignond</title>
+    <para>
+      GSignond uses the standard GNU build system,
+      using <application>autoconf</application> for package
+      configuration and resolving portability issues,
+      <application>automake</application> for building makefiles
+      that comply with the GNU Coding Standards, and
+      <application>libtool</application> for building shared
+      libraries on multiple platforms.  The normal sequence for
+      compiling and installing gsignond from distribution tarballs is thus:
+
+      <literallayout>
+        <userinput>./configure</userinput>
+        <userinput>make</userinput>
+        <userinput>make install</userinput>
+      </literallayout>
+      
+      If you have obtained the source code directly from git repository,
+      execute the <command>./autogen.sh</command> script 
+      before the steps above.
+    </para>
+
+    <para>
+      The standard options provided by <application>GNU
+      autoconf</application> may be passed to the
+      <command>configure</command> script.  Please see the
+      <application>autoconf</application> documentation or run
+      <command>./configure --help</command> for information about
+      the standard options.
+    </para>
+    
+  </refsect1>
+  <refsect1 id="dependencies">
+    <title>Dependencies</title>
+    <para>
+      Before you can compile GSignond, you need to have
+      various other tools and libraries installed on your
+      system. The two tools needed during the build process
+      are <command>pkg-config</command> and
+      <ulink url="http://www.gnu.org/software/make">GNU make</ulink>.
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          <ulink url="http://www.freedesktop.org/software/pkgconfig/">pkg-config</ulink>
+          is a tool for tracking the compilation flags needed for
+          libraries that are used by the GSignond. (For each
+          library, a small <literal>.pc</literal> text file is
+          installed in a standard location that contains the compilation
+          flags needed for that library along with version number
+          information.) 
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      GSignond depends on a number of other libraries.
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+            The <ulink url="https://developer.gnome.org/glib/">GLib
+            library</ulink> is the development framework that GSignond is built on.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+            The <ulink url="http://www.sqlite.org/">SQLite library</ulink>
+            provides a database implementation that GSignond is using for
+            storing data.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+            The <ulink url="http://check.sourceforge.net/">check library</ulink>
+            provides a unit testing framework. It is needed only if you would
+            like to run unit tests with <command>make check</command>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+            For building Tizen extension module that integrates gsignond into
+            the Tizen platform, the 
+            <ulink url="http://schaufler-ca.com/">libsmack</ulink> and 
+            <ulink url="http://ecryptfs.org/">ecryptfs</ulink> are required. 
+            They are not needed otherwise.
+        </para>
+      </listitem>
+    </itemizedlist>
+
+  </refsect1>
+  <refsect1 id="extra-configuration-options">
+    <title>Extra Configuration Options</title>
+
+    <para>
+      In addition to the normal options, the
+      <command>configure</command> script supports these additional arguments:
+    </para>
+
+    <formalpara>
+      <title><systemitem>--enable-debug</systemitem></title>
+
+      <para>
+        Turns on debugging support. This enables unit tests and allows setting 
+        environment variables to influence the runtime behaviour of GSignond
+        (see <link linkend="GSignondConfig">GSignondConfig</link> and
+        <link linkend="GSignondAccessControlManager">GSignondAccessControlManager</link>).
+        Also, the daemon will exit in case of critical errors.
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><systemitem>--enable-sql-log</systemitem></title>
+
+      <para>
+          Turns on SQL statement logging. For this, also 
+          <systemitem>--enable-debug</systemitem> must be used.
+      </para>
+    </formalpara>
+
+    <formalpara>
+      <title><systemitem>--enable-dbus-type=dbus-type</systemitem></title>
+
+      <para>
+          Sets the way in which GSignond is using DBus to communicate with 
+          the client library. <systemitem>dbus-type</systemitem> can be one of
+        <itemizedlist>
+          <listitem>
+            <para>
+              <systemitem>'p2p'</systemitem> which is the default and recommended
+              value. GSignond will use direct connection over a UNIX domain socket
+              with the client library without involving the DBus daemon.
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <systemitem>'session'</systemitem> which will use the session bus.
+              This is not recommended to use because session bus isn't secure
+              against eavesdropping, but it can be used for debugging purposes,
+              as it allows the use of standard tools such as
+              <command>dbus-monitor</command>, <command>d-feet</command> and
+              so on.
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <systemitem>'system'</systemitem> which will use the system bus.
+              Can be used on a single-user systems, but 'p2p' is preferred.
+            </para>
+          </listitem>
+        </itemizedlist>
+      </para>
+    </formalpara>
+
+    <formalpara>
+        <title><systemitem>--enable-keychain=sysctx</systemitem></title>
+        
+        <para>
+            Sets the system security context of keychain UI process as returned by
+            the default <link linkend="GSignondAccessControlManager">
+            GSignondAccessControlManager</link>. This value becomes written to the
+            gsignond.conf in addition to being encoded as default value
+            through config.h.
+        </para>
+    </formalpara>
+    
+    <formalpara>
+        <title><systemitem>--enable-storagedir=path</systemitem></title>
+        
+        <para>
+            Sets the base path for user specific storage directories where
+            database files will be located as utilised by 
+            <link linkend="GSignondStorageManager">
+            GSignondStorageManager</link>.
+            Default location is <filename>/var/db</filename>
+        </para>
+    </formalpara>
+
+  </refsect1>
+  <refsect1 id="building-packages">
+    <title>Building distribution packages</title>
+
+    <para>
+        Instead of running <command>make install</command> to install gsignond
+        into a system location it is possible to build distribution-specific
+        packages. <filename>dists/</filename> directory in the source tree
+        contains a number of package confuguration files, and to use them also
+        a distribution tarball is needed. If you are building from a git tree,
+        use <command>make dist</command> to create such a tarball.
+    </para>
+  </refsect1>
+
+</refentry>

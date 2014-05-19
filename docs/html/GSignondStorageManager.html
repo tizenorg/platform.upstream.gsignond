@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>gsignond API Reference Manual: GSignondStorageManager</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="gsignond API Reference Manual">
+<link rel="up" href="ch06.html" title="GSignond API for writing platform adaptation extensions">
+<link rel="prev" href="gsignond-GSignondSecurityContext.html" title="GSignondSecurityContext">
+<link rel="next" href="GSignondSecretStorage.html" title="GSignondSecretStorage">
+<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description"> <span class="dim">|</span> 
+                  <a href="#GSignondStorageManager.description" class="shortcut">Description</a></span><span id="nav_hierarchy"> <span class="dim">|</span> 
+                  <a href="#GSignondStorageManager.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties"> <span class="dim">|</span> 
+                  <a href="#GSignondStorageManager.properties" class="shortcut">Properties</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch06.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="gsignond-GSignondSecurityContext.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="GSignondSecretStorage.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="refentry">
+<a name="GSignondStorageManager"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="GSignondStorageManager.top_of_page"></a>GSignondStorageManager</span></h2>
+<p>GSignondStorageManager — manages encrypted disk storage for storing the secret database</p>
+</td>
+<td class="gallery_image" valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsect1">
+<a name="GSignondStorageManager.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondStorageManager.html#gsignond-storage-manager-initialize-storage" title="gsignond_storage_manager_initialize_storage ()">gsignond_storage_manager_initialize_storage</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondStorageManager.html#gsignond-storage-manager-delete-storage" title="gsignond_storage_manager_delete_storage ()">gsignond_storage_manager_delete_storage</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondStorageManager.html#gsignond-storage-manager-storage-is-initialized" title="gsignond_storage_manager_storage_is_initialized ()">gsignond_storage_manager_storage_is_initialized</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="GSignondStorageManager.html#gsignond-storage-manager-mount-filesystem" title="gsignond_storage_manager_mount_filesystem ()">gsignond_storage_manager_mount_filesystem</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondStorageManager.html#gsignond-storage-manager-unmount-filesystem" title="gsignond_storage_manager_unmount_filesystem ()">gsignond_storage_manager_unmount_filesystem</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="GSignondStorageManager.html#gsignond-storage-manager-filesystem-is-mounted" title="gsignond_storage_manager_filesystem_is_mounted ()">gsignond_storage_manager_filesystem_is_mounted</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondStorageManager.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody><tr>
+<td class="property_type">
+<a class="link" href="GSignondConfig.html" title="GSignondConfig"><span class="type">GSignondConfig</span></a> *</td>
+<td class="property_name"><a class="link" href="GSignondStorageManager.html#GSignondStorageManager--config" title="The “config” property">config</a></td>
+<td class="property_flags">Read / Write / Construct Only</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="GSignondStorageManager.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="screen">    <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+    <span class="lineart">╰──</span> GSignondStorageManager
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondStorageManager.includes"></a><h2>Includes</h2>
+<pre class="synopsis">#include &lt;gsignond/gsignond-plugin-interface.h&gt;
+</pre>
+</div>
+<div class="refsect1">
+<a name="GSignondStorageManager.description"></a><h2>Description</h2>
+<p><a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> manages encrypted disk storage for storing the
+databases. The default implementation maintains a simple per-user
+directory accessible only to root and gsignond group, but gSSO can be
+configured to use a custom extension that provides a subclassed
+implementation of <a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a>
+(see <a class="link" href="GSignondExtension.html" title="GSignondExtension"><span class="type">GSignondExtension</span></a> for instructions and pointers to examples).</p>
+</div>
+<div class="refsect1">
+<a name="GSignondStorageManager.functions_details"></a><h2>Functions</h2>
+<div class="refsect2">
+<a name="gsignond-storage-manager-initialize-storage"></a><h3>gsignond_storage_manager_initialize_storage ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_storage_manager_initialize_storage
+                               (<em class="parameter"><code><a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> *self</code></em>);</pre>
+<p>Initialize encryption storage. This means making sure that the 
+necessary directories under <a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-STORAGE-PATH:CAPS" title="GSIGNOND_CONFIG_GENERAL_STORAGE_PATH"><span class="type">GSIGNOND_CONFIG_GENERAL_STORAGE_PATH</span></a> exist and are accessible.</p>
+<div class="refsect3">
+<a name="id-1.7.5.8.2.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.5.8.2.6"></a><h4>Returns</h4>
+<p> success?</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-storage-manager-delete-storage"></a><h3>gsignond_storage_manager_delete_storage ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_storage_manager_delete_storage
+                               (<em class="parameter"><code><a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> *self</code></em>);</pre>
+<p>Destroys all the encryption keys and wipes the storage. <a class="link" href="gsignond-Utility-functions.html#gsignond-wipe-directory" title="gsignond_wipe_directory ()"><code class="function">gsignond_wipe_directory()</code></a>
+is typically used for the latter.</p>
+<div class="refsect3">
+<a name="id-1.7.5.8.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.5.8.3.6"></a><h4>Returns</h4>
+<p> success?</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-storage-manager-storage-is-initialized"></a><h3>gsignond_storage_manager_storage_is_initialized ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_storage_manager_storage_is_initialized
+                               (<em class="parameter"><code><a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> *self</code></em>);</pre>
+<p>Checks if the storage has been initialized.</p>
+<div class="refsect3">
+<a name="id-1.7.5.8.4.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.5.8.4.6"></a><h4>Returns</h4>
+<p> storage has been initialized?</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-storage-manager-mount-filesystem"></a><h3>gsignond_storage_manager_mount_filesystem ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *
+gsignond_storage_manager_mount_filesystem
+                               (<em class="parameter"><code><a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> *self</code></em>);</pre>
+<p>Mounts an encrypted storage and returns the filesystem path of the storage
+mount point. This path will be set in <a class="link" href="GSignondConfig.html" title="GSignondConfig"><span class="type">GSignondConfig</span></a> as 
+<a class="link" href="gsignond-General-configuration.html#GSIGNOND-CONFIG-GENERAL-SECURE-DIR:CAPS" title="GSIGNOND_CONFIG_GENERAL_SECURE_DIR"><span class="type">GSIGNOND_CONFIG_GENERAL_SECURE_DIR</span></a> and used to access the secret database via
+<a class="link" href="GSignondSecretStorage.html" title="GSignondSecretStorage"><span class="type">GSignondSecretStorage</span></a>.</p>
+<p>The default implemenation does nothing, and immediately returns the path for the 
+secret database.</p>
+<div class="refsect3">
+<a name="id-1.7.5.8.5.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.5.8.5.7"></a><h4>Returns</h4>
+<p> path of the storage mount point. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-storage-manager-unmount-filesystem"></a><h3>gsignond_storage_manager_unmount_filesystem ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_storage_manager_unmount_filesystem
+                               (<em class="parameter"><code><a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> *self</code></em>);</pre>
+<p>Unmounts a previously mounted encrypted storage filesystem.</p>
+<div class="refsect3">
+<a name="id-1.7.5.8.6.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.5.8.6.6"></a><h4>Returns</h4>
+<p> success?</p>
+<p></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gsignond-storage-manager-filesystem-is-mounted"></a><h3>gsignond_storage_manager_filesystem_is_mounted ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+gsignond_storage_manager_filesystem_is_mounted
+                               (<em class="parameter"><code><a class="link" href="GSignondStorageManager.html" title="GSignondStorageManager"><span class="type">GSignondStorageManager</span></a> *self</code></em>);</pre>
+<p>Checks if the encrypted storage filesystem is currently mounted.</p>
+<div class="refsect3">
+<a name="id-1.7.5.8.7.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>object instance.</p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.7.5.8.7.6"></a><h4>Returns</h4>
+<p> filesystem is currently mounted?</p>
+<p></p>
+</div>
+</div>
+</div>
+<div class="refsect1">
+<a name="GSignondStorageManager.other_details"></a><h2>Types and Values</h2>
+</div>
+<div class="refsect1">
+<a name="GSignondStorageManager.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="GSignondStorageManager--config"></a><h3>The <code class="literal">“config”</code> property</h3>
+<pre class="programlisting">  “config”                   <a class="link" href="GSignondConfig.html" title="GSignondConfig"><span class="type">GSignondConfig</span></a> *</pre>
+<p>Configuration object.</p>
+<p>Flags: Read / Write / Construct Only</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.20</div>
+</body>
+</html>
