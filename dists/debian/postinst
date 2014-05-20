@@ -23,6 +23,7 @@ case "$1" in
         ldconfig
 	groupadd -f -r gsignond
 	chmod 4755 /usr/bin/gsignond
+	install -d -m 755 -o root -g root /var/db
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
