@@ -1,3 +1,6 @@
+* Wed Jun 11 2014 Jussi Laako <jussi.laako@linux.intel.com>
+- Add service file so the daemon gets auto-started inside the user session
+
 * Fri Mar 07 2014 Jussi Laako <jussi.laako@linux.intel.com>
 - Release 1.0.1
 

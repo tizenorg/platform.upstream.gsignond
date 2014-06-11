@@ -7,7 +7,7 @@
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
 Version: 1.0.1
-Release: 2
+Release: 3
 Group: Security/Accounts
 License: LGPL-2.1+, GPL-2.0+
 Source: %{name}-%{version}.tar.gz
@@ -70,6 +70,10 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 %make_install
+install -m 755 -d %{buildroot}%{_libdir}/systemd/user
+install -m 644 data/gsignond.service %{buildroot}%{_libdir}/systemd/user/
+install -m 755 -d %{buildroot}%{_libdir}/systemd/user/weston.target.wants
+ln -s ../gsignond.service %{buildroot}%{_libdir}/systemd/user/weston.target.wants/gsignond.service
 
 
 %post
@@ -93,6 +97,8 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif
+%{_libdir}/systemd/user/gsignond.service
+%{_libdir}/systemd/user/weston.target.wants/gsignond.service
 %config(noreplace) %{_sysconfdir}/gsignond.conf
 
 
