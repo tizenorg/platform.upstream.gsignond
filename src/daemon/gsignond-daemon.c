@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 - 2013 Intel Corporation.
+ * Copyright (C) 2012 - 2014 Intel Corporation.
  *
  * Contact: Jussi Laako <jussi.laako@linux.intel.com>
  *
@@ -491,7 +491,7 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
     GSignondIdentity *identity = NULL;
     GSignondIdentityInfo *identity_info = NULL;
 
-#define VALIDATE_IDENTITY_READ_ACCESS(info, ctx, ret) \
+#define VALIDATE_IDENTITY_X_ACCESS(info, ctx, ret) \
 { \
     GSignondAccessControlManager *acm = daemon->priv->acm; \
     GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (info); \
@@ -513,7 +513,7 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
     if (identity) {
         identity_info = gsignond_identity_get_identity_info (identity);
         gsignond_identity_info_ref (identity_info);
-        VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
+        VALIDATE_IDENTITY_X_ACCESS (identity_info, ctx, NULL);
         DBG ("using cased Identity '%p' for id %d", identity, id);
         gsignond_identity_info_unref (identity_info);
 
@@ -532,7 +532,7 @@ gsignond_daemon_get_identity (GSignondDaemon *daemon,
         return NULL;
     }
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity_info, ctx, NULL);
+    VALIDATE_IDENTITY_X_ACCESS (identity_info, ctx, NULL);
 
     identity = gsignond_identity_new (daemon, identity_info);
     if (!identity) {
