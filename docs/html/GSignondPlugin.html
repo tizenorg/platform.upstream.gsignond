@@ -151,13 +151,13 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="property_type"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Boxed-Types.html#GStrv"><span class="type">GStrv</span></a></td>
+<td class="property_type"><span class="type">GStrv</span></td>
 <td class="property_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin--mechanisms" title="The “mechanisms” property">mechanisms</a></td>
 <td class="property_flags">Read</td>
 </tr>
 <tr>
 <td class="property_type">
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin--type" title="The “type” property">type</a></td>
 <td class="property_flags">Read</td>
 </tr>
@@ -176,37 +176,37 @@
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-error" title="The “error” signal">error</a></td>
-<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-refreshed" title="The “refreshed” signal">refreshed</a></td>
-<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-response" title="The “response” signal">response</a></td>
-<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-response-final" title="The “response-final” signal">response-final</a></td>
-<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-status-changed" title="The “status-changed” signal">status-changed</a></td>
-<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-store" title="The “store” signal">store</a></td>
-<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="GSignondPlugin.html#GSignondPlugin-user-action-required" title="The “user-action-required” signal">user-action-required</a></td>
-<td class="signal_flags"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 </tbody>
 </table></div>
@@ -244,7 +244,7 @@
 <div class="refsect1">
 <a name="GSignondPlugin.description"></a><h2>Description</h2>
 <p><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> is an interface for implementing GLib-based authentication plugins.</p>
-<p>When creating a plugin, write the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> boilerplate code as usual, but</p>
+<p>When creating a plugin, write the <span class="type">GObject</span> boilerplate code as usual, but</p>
 <p>a) declare the type as follows:</p>
 <div class="informalexample">
   <table class="listing_frame" border="0" cellpadding="0" cellspacing="0">
@@ -254,7 +254,7 @@
 2
 3</pre></td>
         <td class="listing_code"><pre class="programlisting">G_TYPE_OBJECT<span class="gtkdoc opt">,</span>
-<span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#G-IMPLEMENT-INTERFACE:CAPS">G_IMPLEMENT_INTERFACE</a></span> <span class="gtkdoc opt">(</span>GSIGNOND_TYPE_PLUGIN<span class="gtkdoc opt">,</span>
+<span class="function">G_IMPLEMENT_INTERFACE</span> <span class="gtkdoc opt">(</span>GSIGNOND_TYPE_PLUGIN<span class="gtkdoc opt">,</span>
                        gsignond_plugin_interface_init<span class="gtkdoc opt">));</span></pre></td>
       </tr>
     </tbody>
@@ -311,13 +311,13 @@ implementations in the plugin class constructor like this:</p>
 11</pre></td>
         <td class="listing_code"><pre class="programlisting"><span class="function">gsignond_password_plugin_class_init</span> <span class="gtkdoc opt">(</span>GSignondPasswordPluginClass <span class="gtkdoc opt">*</span>klass<span class="gtkdoc opt">)</span>
 <span class="gtkdoc opt">{</span>
-    GObjectClass <span class="gtkdoc opt">*</span>gobject_class <span class="gtkdoc opt">=</span> <span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#G-OBJECT-CLASS:CAPS">G_OBJECT_CLASS</a></span> <span class="gtkdoc opt">(</span>klass<span class="gtkdoc opt">);</span>
+    GObjectClass <span class="gtkdoc opt">*</span>gobject_class <span class="gtkdoc opt">=</span> <span class="function">G_OBJECT_CLASS</span> <span class="gtkdoc opt">(</span>klass<span class="gtkdoc opt">);</span>
     
     gobject_class<span class="gtkdoc opt">-&gt;</span>set_property <span class="gtkdoc opt">=</span> gsignond_password_plugin_set_property<span class="gtkdoc opt">;</span>
     gobject_class<span class="gtkdoc opt">-&gt;</span>get_property <span class="gtkdoc opt">=</span> gsignond_password_plugin_get_property<span class="gtkdoc opt">;</span>
     
-    <span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-class-override-property">g_object_class_override_property</a></span> <span class="gtkdoc opt">(</span>gobject_class<span class="gtkdoc opt">,</span> PROP_TYPE<span class="gtkdoc opt">,</span> <span class="string">&quot;type&quot;</span><span class="gtkdoc opt">);</span>
-    <span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-class-override-property">g_object_class_override_property</a></span> <span class="gtkdoc opt">(</span>gobject_class<span class="gtkdoc opt">,</span> PROP_MECHANISMS<span class="gtkdoc opt">,</span> 
+    <span class="function">g_object_class_override_property</span> <span class="gtkdoc opt">(</span>gobject_class<span class="gtkdoc opt">,</span> PROP_TYPE<span class="gtkdoc opt">,</span> <span class="string">&quot;type&quot;</span><span class="gtkdoc opt">);</span>
+    <span class="function">g_object_class_override_property</span> <span class="gtkdoc opt">(</span>gobject_class<span class="gtkdoc opt">,</span> PROP_MECHANISMS<span class="gtkdoc opt">,</span> 
                                       <span class="string">&quot;mechanisms&quot;</span><span class="gtkdoc opt">);</span>
 <span class="gtkdoc opt">}</span></pre></td>
       </tr>
@@ -407,7 +407,7 @@ error, and prepare for a new authentication session.</p>
 gsignond_plugin_request_initial (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
                                  <em class="parameter"><code><span class="type">GSignondSessionData</span> *session_data</code></em>,
                                  <em class="parameter"><code><span class="type">GSignondDictionary</span> *identity_method_cache</code></em>,
-                                 <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *mechanism</code></em>);</pre>
+                                 <em class="parameter"><code>const <span class="type">gchar</span> *mechanism</code></em>);</pre>
 <p>This method starts a new authentication session.</p>
 <div class="refsect3">
 <a name="id-1.5.2.10.3.5"></a><h4>Parameters</h4>
@@ -634,7 +634,7 @@ signal. This method should not be used otherwise.</p>
 <a name="gsignond-plugin-error"></a><h3>gsignond_plugin_error ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 gsignond_plugin_error (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
-                       <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>);</pre>
+                       <em class="parameter"><code><span class="type">GError</span> *error</code></em>);</pre>
 <p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-error" title="The “error” signal"><span class="type">“error”</span></a>
 signal. This method should not be used otherwise.</p>
 <div class="refsect3">
@@ -728,7 +728,7 @@ signal. This method should not be used otherwise.</p>
 <pre class="programlisting"><span class="returnvalue">void</span>
 gsignond_plugin_status_changed (<em class="parameter"><code><a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *self</code></em>,
                                 <em class="parameter"><code><a class="link" href="GSignondPlugin.html#GSignondPluginState" title="enum GSignondPluginState"><span class="type">GSignondPluginState</span></a> state</code></em>,
-                                <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *message</code></em>);</pre>
+                                <em class="parameter"><code>const <span class="type">gchar</span> *message</code></em>);</pre>
 <p>Plugin implementations should use this to issue <a class="link" href="GSignondPlugin.html#GSignondPlugin-status-changed" title="The “status-changed” signal"><span class="type">“status-changed”</span></a>
 signal. This method should not be used otherwise.</p>
 <div class="refsect3">
@@ -894,7 +894,7 @@ plugin implementations should provide.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="struct_member_name"><p><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="GSignondPluginInterface.parent"></a>parent</code></em>;</p></td>
+<td class="struct_member_name"><p><span class="type">GTypeInterface</span> <em class="structfield"><code><a name="GSignondPluginInterface.parent"></a>parent</code></em>;</p></td>
 <td class="struct_member_description"><p>parent interface type.</p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
@@ -932,7 +932,7 @@ plugin implementations should provide.</p>
 <a name="GSignondPlugin.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="GSignondPlugin--mechanisms"></a><h3>The <code class="literal">“mechanisms”</code> property</h3>
-<pre class="programlisting">  “mechanisms”               <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Boxed-Types.html#GStrv"><span class="type">GStrv</span></a></pre>
+<pre class="programlisting">  “mechanisms”               <span class="type">GStrv</span></pre>
 <p>This property holds a list of authentication mechanisms that the plugin
 implements, all specified within the authentication method. For example,
 OAuth plugin could implement "oauth1" and "oauth2" mechanisms.</p>
@@ -941,7 +941,7 @@ OAuth plugin could implement "oauth1" and "oauth2" mechanisms.</p>
 <hr>
 <div class="refsect2">
 <a name="GSignondPlugin--type"></a><h3>The <code class="literal">“type”</code> property</h3>
-<pre class="programlisting">  “type”                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “type”                     <span class="type">gchar</span> *</pre>
 <p>This property holds a plugin type, or authentication method it implements
 (for example "oauth" or "sasl").</p>
 <p>Flags: Read</p>
@@ -954,8 +954,8 @@ OAuth plugin could implement "oauth1" and "oauth2" mechanisms.</p>
 <a name="GSignondPlugin-error"></a><h3>The <code class="literal">“error”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>         *error,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+               <span class="type">GError</span>         *error,
+               <span class="type">gpointer</span>        user_data)</pre>
 <p>This signal is issued by the plugin when an error has occured, or the
 plugin otherwise has a reason to cancel the authentication session. The
 <em class="parameter"><code>error</code></em>
@@ -987,15 +987,15 @@ plugin otherwise has a reason to cancel the authentication session. The
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="GSignondPlugin-refreshed"></a><h3>The <code class="literal">“refreshed”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *ui_data,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+               <span class="type">GHashTable</span>     *ui_data,
+               <span class="type">gpointer</span>        user_data)</pre>
 <p>This signal is issued by the plugin when the UI interaction is ongoing
 and the UI needs to be refreshed. This can be used for example to update
 captcha image in the UI.</p>
@@ -1026,15 +1026,15 @@ captcha image in the UI.</p>
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="GSignondPlugin-response"></a><h3>The <code class="literal">“response”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *session_data,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+               <span class="type">GHashTable</span>     *session_data,
+               <span class="type">gpointer</span>        user_data)</pre>
 <p>This signal is issued by the plugin when it wants to provide an intermediate
 response to the application or needs additional information from the application.</p>
 <p>After issuing this signal the plugin expects a <a class="link" href="GSignondPlugin.html#gsignond-plugin-response" title="gsignond_plugin_response ()"><code class="function">gsignond_plugin_response()</code></a> call.</p>
@@ -1065,15 +1065,15 @@ response to the application or needs additional information from the application
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="GSignondPlugin-response-final"></a><h3>The <code class="literal">“response-final”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *session_data,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+               <span class="type">GHashTable</span>     *session_data,
+               <span class="type">gpointer</span>        user_data)</pre>
 <p>This signal is issued by the plugin when it has completed the authentication
 sequence and is used to provide the final response to the application.</p>
 <p>After issuing this signal the plugin is idle and is ready for a new
@@ -1105,7 +1105,7 @@ authentication session.</p>
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1113,8 +1113,8 @@ authentication session.</p>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a>     *plugin,
                <a class="link" href="GSignondPlugin.html#GSignondPluginState" title="enum GSignondPluginState"><span class="type">GSignondPluginState</span></a> state,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>              *message,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+               <span class="type">gchar</span>              *message,
+               <span class="type">gpointer</span>            user_data)</pre>
 <p>This signal is issued by the plugin when plugin state has changed. This
 can be used by applications to report authentication progress.</p>
 <div class="refsect3">
@@ -1149,15 +1149,15 @@ can be used by applications to report authentication progress.</p>
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="GSignondPlugin-store"></a><h3>The <code class="literal">“store”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *data,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+               <span class="type">GHashTable</span>     *data,
+               <span class="type">gpointer</span>        user_data)</pre>
 <p>This signal is issued by the plugin when it has data to store in persistant
 storage. The same data would later be provided to plugin via
 
@@ -1190,15 +1190,15 @@ gsignond_plugin_request_initial <em class="parameter"><code>identity_method_cach
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="GSignondPlugin-user-action-required"></a><h3>The <code class="literal">“user-action-required”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="GSignondPlugin.html" title="GSignondPlugin"><span class="type">GSignondPlugin</span></a> *plugin,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>     *ui_data,
-               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)</pre>
+               <span class="type">GHashTable</span>     *ui_data,
+               <span class="type">gpointer</span>        user_data)</pre>
 <p>This signal is issued by the plugin when it needs a UI interaction with
 the user to happen. When the interaction is complete, <a class="link" href="GSignondPlugin.html#gsignond-plugin-user-action-finished" title="gsignond_plugin_user_action_finished ()"><code class="function">gsignond_plugin_user_action_finished()</code></a>
 should be issued.</p>
@@ -1229,7 +1229,7 @@ should be issued.</p>
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 </div>
 </div>

@@ -3,7 +3,7 @@
 /*
  * This file is part of gsignond
  *
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2012 - 2014 Intel Corporation.
  *
  * Contact: Jussi Laako <jussi.laako@linux.intel.com>
             Amarnath Valluri <amarnath.valluri@linux.intel.com>
@@ -80,7 +80,7 @@ static void _on_store_token (GSignondAuthSession *session, GSignondDictionary *t
 
 #define GSIGNOND_IDENTITY_PRIV(obj) G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_IDENTITY, GSignondIdentityPrivate)
 
-#define VALIDATE_IDENTITY_READ_ACCESS(identity, ctx, ret) \
+#define VALIDATE_IDENTITY_X_ACCESS(identity, ctx, ret) \
 { \
     GSignondAccessControlManager *acm = gsignond_daemon_get_access_control_manager (identity->priv->owner); \
     GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (identity->priv->info); \
@@ -95,7 +95,7 @@ static void _on_store_token (GSignondAuthSession *session, GSignondDictionary *t
     } \
 }
 
-#define VALIDATE_IDENTITY_WRITE_ACCESS(identity, ctx, ret) \
+#define VALIDATE_IDENTITY_RW_ACCESS(identity, ctx, ret) \
 { \
     GSignondAccessControlManager *acm = gsignond_daemon_get_access_control_manager (identity->priv->owner); \
     GSignondSecurityContext *owner = gsignond_identity_info_get_owner (identity->priv->info); \
@@ -299,7 +299,7 @@ gsignond_identity_get_info (GSignondIdentity *identity, const GSignondSecurityCo
         return NULL;
     }
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
+    VALIDATE_IDENTITY_RW_ACCESS (identity, ctx, NULL);
 
     /* prepare identity info, excluding password and username if secret */
     vinfo = gsignond_identity_info_to_variant (identity->priv->info);
@@ -499,7 +499,7 @@ gsignond_identity_get_auth_session (GSignondIdentity *identity,
     guint32 identity_id ;
     GSignondDictionary *token_data = NULL;
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, NULL);
+    VALIDATE_IDENTITY_X_ACCESS (identity, ctx, NULL);
 
     if (!method) {
         WARN ("assertion (method) failed");
@@ -646,7 +646,7 @@ gsignond_identity_request_credentials_update (GSignondIdentity *identity,
         return FALSE;
     }
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+    VALIDATE_IDENTITY_X_ACCESS (identity, ctx, FALSE);
 
     if (!gsignond_identity_info_get_store_secret (identity->priv->info)) {
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_CREDENTIALS_NOT_AVAILABLE, "Password can not be stored.");
@@ -741,7 +741,7 @@ gsignond_identity_verify_user (GSignondIdentity *identity,
         return FALSE;
     }
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+    VALIDATE_IDENTITY_X_ACCESS (identity, ctx, FALSE);
 
     if (!gsignond_identity_info_get_store_secret (identity->priv->info) ||
         !(passwd = gsignond_identity_info_get_secret (identity->priv->info)) ||
@@ -776,7 +776,7 @@ gsignond_identity_verify_secret (GSignondIdentity *identity,
         return FALSE;
     }
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+    VALIDATE_IDENTITY_X_ACCESS (identity, ctx, FALSE);
 
     if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Not supported");
 
@@ -796,7 +796,7 @@ gsignond_identity_sign_out (GSignondIdentity *identity,
     gboolean success = FALSE;
     guint32 identity_id = GSIGNOND_IDENTITY_INFO_NEW_IDENTITY;
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, FALSE);
+    VALIDATE_IDENTITY_X_ACCESS (identity, ctx, FALSE);
 
     identity_id = gsignond_identity_info_get_id (identity->priv->info);
 
@@ -870,7 +870,7 @@ gsignond_identity_store (GSignondIdentity *identity,
 
     priv = identity->priv;
 
-    VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, 0);
+    VALIDATE_IDENTITY_RW_ACCESS (identity, ctx, 0);
 
     was_new_identity = gsignond_identity_info_get_is_identity_new (priv->info);
 
@@ -951,7 +951,7 @@ gsignond_identity_remove (GSignondIdentity *identity,
     }
     gboolean is_removed = FALSE;
     
-    VALIDATE_IDENTITY_WRITE_ACCESS (identity, ctx, FALSE);
+    VALIDATE_IDENTITY_RW_ACCESS (identity, ctx, FALSE);
 
     is_removed = gsignond_identity_clear (identity);
 
@@ -1002,7 +1002,7 @@ gsignond_identity_add_reference (GSignondIdentity *identity,
     guint32 res = 0;
     guint32 identity_id = 0;
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
+    VALIDATE_IDENTITY_X_ACCESS (identity, ctx, 0);
 
     identity_id = gsignond_identity_info_get_id (identity->priv->info);
     if (!identity_id) {
@@ -1033,7 +1033,7 @@ gsignond_identity_remove_reference (GSignondIdentity *identity,
     gboolean res = 0;
     guint32 identity_id = 0;
 
-    VALIDATE_IDENTITY_READ_ACCESS (identity, ctx, 0);
+    VALIDATE_IDENTITY_X_ACCESS (identity, ctx, 0);
 
     identity_id = gsignond_identity_info_get_id (identity->priv->info);
     if (!identity_id) {

@@ -67,7 +67,7 @@ _on_child_down_cb (
             status);
 
     plugin->priv->is_plugind_up = FALSE;
-
+    plugin->priv->child_watch_id = 0;
 }
 
 static void

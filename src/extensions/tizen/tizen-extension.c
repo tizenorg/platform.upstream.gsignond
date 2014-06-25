@@ -72,7 +72,6 @@ _get_extension_version (GSignondExtension *self)
     return 0x01000000;
 }
 
-#if 0
 static GSignondStorageManager *
 _get_storage_manager (GSignondExtension *self, GSignondConfig *config)
 {
@@ -103,7 +102,6 @@ _get_secret_storage (GSignondExtension *self, GSignondConfig *config)
 
     return priv->secret_storage;
 }
-#endif
 
 static GSignondAccessControlManager *
 _get_access_control_manager (GSignondExtension *self, GSignondConfig *config)
@@ -131,11 +129,8 @@ extension_tizen_class_init (ExtensionTizenClass *klass)
     G_OBJECT_CLASS (klass)->dispose = _dispose;
     parent_class->get_extension_name = _get_extension_name;
     parent_class->get_extension_version = _get_extension_version;
-    // disable storage manager for now until TEE API has been settled
-#   if 0
     parent_class->get_storage_manager = _get_storage_manager;
     parent_class->get_secret_storage = _get_secret_storage;
-#   endif
     parent_class->get_access_control_manager = _get_access_control_manager;
 }
 

@@ -72,7 +72,7 @@ G_DEFINE_TYPE (GSignondAuthSession, gsignond_auth_session, G_TYPE_OBJECT)
     G_TYPE_INSTANCE_GET_PRIVATE ((obj), GSIGNOND_TYPE_AUTH_SESSION, \
                                  GSignondAuthSessionPrivate)
 
-#define VALIDATE_READ_ACCESS(info, ctx, ret) \
+#define VALIDATE_X_ACCESS(info, ctx, ret) \
 { \
     GSignondAccessControlManager *acm = gsignond_get_access_control_manager(); \
     GSignondSecurityContextList *acl = gsignond_identity_info_get_access_control_list (info); \
@@ -171,7 +171,7 @@ gsignond_auth_session_query_available_mechanisms (GSignondAuthSession *self,
         return NULL;
     }
 
-    VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, NULL);
+    VALIDATE_X_ACCESS (self->priv->identity_info, ctx, NULL);
 
     gchar **mechanisms, **iter;
     const gchar **src_iter;
@@ -213,7 +213,7 @@ gsignond_auth_session_process (GSignondAuthSession *self,
         return FALSE;
     }
 
-    VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
+    VALIDATE_X_ACCESS (self->priv->identity_info, ctx, FALSE);
 
     _create_mechanism_cache (self);
     if (!g_sequence_lookup (self->priv->available_mechanisms,
@@ -267,7 +267,7 @@ gsignond_auth_session_cancel (GSignondAuthSession *self,
         if (error) *error = gsignond_get_gerror_for_id (GSIGNOND_ERROR_UNKNOWN, "Unknown error");
         return FALSE;
     }
-    VALIDATE_READ_ACCESS (self->priv->identity_info, ctx, FALSE);
+    VALIDATE_X_ACCESS (self->priv->identity_info, ctx, FALSE);
 
     gsignond_plugin_proxy_cancel(self->priv->proxy, self);
     g_signal_emit (self, signals[SIG_PROCESS_CANCELED], 0, NULL);

@@ -1,9 +1,0 @@
-[Unit]
-Description=Single SignOn Daemon
-Requires=dbus.service
-
-[Service]
-ExecStart=/usr/bin/gsignond
-
-[Install]
-WantedBy=default.target
