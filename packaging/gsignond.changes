@@ -1,0 +1,34 @@
+* Wed Jun 25 2014 Jussi Laako <jussi.laako@linux.intel.com>
+- Release 1.0.2
+
+* Wed Jun 11 2014 Jussi Laako <jussi.laako@linux.intel.com>
+- Add service file so the daemon gets auto-started inside the user session
+
+* Fri Mar 07 2014 Jussi Laako <jussi.laako@linux.intel.com>
+- Release 1.0.1
+
+* Thu Mar 06 2014 Imran Zaman <imran.zaman@intel.com>
+- Release 1.0.0
+- Assorted fixes and cleanups, updated version
+- docs: add documentation for multple plugin loaders
+- Update .gitignore
+- plugins: simplify process killing
+- plugind: export the plugin object on d-bus after connecting all the signals and setting properties
+- Other memory leak and bug fixes
+
+* Fri Feb 28 2014 Jussi Laako <jussi.laako@linux.intel.com>
+- Release 0.0.4
+
+* Thu Aug 22 2013 Amarnath Valluri <amarnath.valluri@linux.intel.com>
+- Release 0.0.3 
+- Bug fixes in UI interaction
+- Documentation support
+
+* Mon Jun 24 2013 Imran Zaman <imran.zaman@intel.com>
+- Release 0.0.2 that comprises of bug fixes
+
+* Wed Jun 12 2013 Jussi Laako <jussi.laako@linux.intel.com>
+- Prepare for first release
+
+* Thu Feb 08 2013 Jussi Laako <jussi.laako@linux.intel.com>
+- Initial RPM packaging
