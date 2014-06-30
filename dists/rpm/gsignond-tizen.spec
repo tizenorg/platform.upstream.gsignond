@@ -6,8 +6,8 @@
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 1.0.1
-Release: 2
+Version: 1.0.3
+Release: 1
 Group: Security/Accounts
 License: LGPL-2.1+
 Source: %{name}-%{version}.tar.gz
