@@ -1594,7 +1594,7 @@ gsignond_db_metadata_database_remove_reference (
                 "WHERE identity_id = %u AND "
                 "secctx_id = ( SELECT id FROM SECCTX "
                 "WHERE sysctx = %Q AND appctx = %Q ) "
-                "AND ref = :ref;",
+                "AND ref = %Q;",
                 identity_id, ref_owner->sys_ctx, ref_owner->app_ctx, reference);
     }
     if (!ret) {
