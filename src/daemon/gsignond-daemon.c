@@ -156,14 +156,12 @@ _finalize (GObject *object)
 static gboolean
 _init_extension (GSignondDaemon *self)
 {
-    guint32 ext_ver = gsignond_extension_get_version (self->priv->extension);
-
     DBG ("Initializing extension '%s' %d.%d.%d.%d",
          gsignond_extension_get_name (self->priv->extension),
-         (ext_ver >> 24),
-         (ext_ver >> 16) & 0xff,
-         (ext_ver >> 8) & 0xff,
-         ext_ver & 0xff);
+         (gsignond_extension_get_version (self->priv->extension) >> 24),
+         (gsignond_extension_get_version (self->priv->extension) >> 16) & 0xff,
+         (gsignond_extension_get_version (self->priv->extension) >> 8) & 0xff,
+         gsignond_extension_get_version (self->priv->extension) & 0xff);
 
     self->priv->storage_manager =
         gsignond_extension_get_storage_manager (self->priv->extension,
