@@ -1,3 +1,9 @@
+gsignond (1.0.3-1) unstable; urgency=low
+
+  * Update to 1.0.3
+
+ -- Imran Zamam <imran.zaman@.intel.com>  Mon, 30 Jun 2014 16:22:00 +0200
+
 gsignond (1.0.1-4) unstable; urgency=low
 
   * Update to 1.0.1

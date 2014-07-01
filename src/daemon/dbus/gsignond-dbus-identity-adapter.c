@@ -713,7 +713,7 @@ _handle_add_reference (GSignondDbusIdentityAdapter *self,
 
     id = gsignond_identity_add_reference (self->priv->identity, reference, self->priv->sec_context, &error);
 
-    if (id) {
+    if (!error) {
         gsignond_dbus_identity_complete_add_reference (self->priv->dbus_identity, invocation, id);
     }
     else {
@@ -743,7 +743,7 @@ _handle_remove_reference (GSignondDbusIdentityAdapter *self,
 
     id = gsignond_identity_remove_reference (self->priv->identity, reference, self->priv->sec_context, &error);
 
-    if (id) {
+    if (!error) {
         gsignond_dbus_identity_complete_remove_reference (self->priv->dbus_identity, invocation, id);
     } else {
         g_dbus_method_invocation_return_gerror (invocation, error);

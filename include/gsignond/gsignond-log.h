@@ -25,6 +25,8 @@
 #ifndef __GSIGNOND_LOG_H_
 #define __GSIGNOND_LOG_H_
 
+#include "config.h"
+
 #include <glib.h>
 
 #include <execinfo.h>
@@ -65,18 +67,6 @@
 }
 
 /**
- * INFO:
- * @frmt: format string for the message
- * @...: arguments for the format string
- * 
- * Use this macro to log informational messages. GSignond will take care of
- * correctly saving them.
- */
-#define INFO(frmt, args...) g_message("%f %s:%d %s " frmt , \
-        g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
-        __PRETTY_FUNCTION__, ##args)
-
-/**
  * ERR:
  * @frmt: format string for the message
  * @...: arguments for the format string
@@ -99,6 +89,20 @@
 #define WARN(frmt, args...) g_warning("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
+
+#ifdef ENABLE_DEBUG
+/**
+ * INFO:
+ * @frmt: format string for the message
+ * @...: arguments for the format string
+ * 
+ * Use this macro to log informational messages. GSignond will take care of
+ * correctly saving them.
+ */
+#define INFO(frmt, args...) g_message("%f %s:%d %s " frmt , \
+        g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
+        __PRETTY_FUNCTION__, ##args)
+
 /**
  * DBG:
  * @frmt: format string for the message
@@ -110,5 +114,9 @@
 #define DBG(frmt, args...)  g_debug("%f %s:%d %s " frmt , \
         g_get_monotonic_time()*1.0e-6, __FILE__, __LINE__, \
         __PRETTY_FUNCTION__, ##args)
+#else
+# define INFO(frmt, args...)
+# define DBG(frmt, args...)
+#endif
 
 #endif /* __GSIGNOND_LOG_H_ */
