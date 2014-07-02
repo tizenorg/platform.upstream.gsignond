@@ -11,10 +11,6 @@ fi
 
 mkdir -p $2 && \
 cd $2 && \
-git rm -f -r *; rm -rf packaging;
+git rm -f -r *;
 tar -xzvf $1 -C $2 --strip-components 1 && \
-mkdir -p packaging && \
-cp -f dists/rpm/gsignond-tizen.spec packaging/gsignond.spec && \
-cp -f dists/rpm/gsignond-tizen.changes packaging/gsignond.changes && \
-cp -f dists/rpm/gsignond-tizen.manifest packaging/gsignond.manifest && \
 git add -f *;

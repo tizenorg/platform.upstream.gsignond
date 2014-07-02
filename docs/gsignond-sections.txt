@@ -164,9 +164,9 @@ gsignond_extension_get_type
 <SECTION>
 <FILE>gsignond-log</FILE>
 TRACEBACK
-INFO
 ERR
 WARN
+INFO
 DBG
 </SECTION>
 
