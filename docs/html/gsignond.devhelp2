@@ -230,9 +230,9 @@
     <keyword type="macro" name="gsignond_get_gerror_for_id()" link="gsignond-Errors.html#gsignond-get-gerror-for-id"/>
     <keyword type="enum" name="enum GSignondError" link="gsignond-Errors.html#GSignondError"/>
     <keyword type="macro" name="TRACEBACK" link="gsignond-Logging.html#TRACEBACK:CAPS"/>
-    <keyword type="macro" name="INFO()" link="gsignond-Logging.html#INFO:CAPS"/>
     <keyword type="macro" name="ERR()" link="gsignond-Logging.html#ERR:CAPS"/>
     <keyword type="macro" name="WARN()" link="gsignond-Logging.html#WARN:CAPS"/>
+    <keyword type="macro" name="INFO()" link="gsignond-Logging.html#INFO:CAPS"/>
     <keyword type="macro" name="DBG()" link="gsignond-Logging.html#DBG:CAPS"/>
     <keyword type="function" name="gsignond_wipe_file ()" link="gsignond-Utility-functions.html#gsignond-wipe-file"/>
     <keyword type="function" name="gsignond_wipe_directory ()" link="gsignond-Utility-functions.html#gsignond-wipe-directory"/>
