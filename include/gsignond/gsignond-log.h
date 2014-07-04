@@ -25,8 +25,6 @@
 #ifndef __GSIGNOND_LOG_H_
 #define __GSIGNOND_LOG_H_
 
-#include "config.h"
-
 #include <glib.h>
 
 #include <execinfo.h>
