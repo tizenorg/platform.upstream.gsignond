@@ -490,6 +490,13 @@ gsignond_plugin_remote_new (
     GSignondPipeStream *stream = NULL;
     gboolean ret = FALSE;
 
+    if (!loader_path || strlen(loader_path) == 0 ||
+        !plugin_type || strlen(plugin_type) == 0) {
+        DBG ("Invalid loader path %s or plugin type %s",
+            loader_path?loader_path:"null", plugin_type?plugin_type:"null");
+        return NULL;
+    }
+
     /* This guarantees that writes to a pipe will never cause
      * a process terminanation via SIGPIPE, and instead a proper
      * error will be returned */

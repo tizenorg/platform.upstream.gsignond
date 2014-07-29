@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([gsignond], [1.0.1],[],[],[http://01.org/gsso])
+AC_INIT([gsignond], [1.0.3],[],[],[http://01.org/gsso])
 AC_CONFIG_SRCDIR([src/daemon/main.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -177,6 +177,8 @@ GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -D_POSIX_C_SOURCE=\\\"200809L\\\" -D_GNU_SOURC
 GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Wall -DG_LOG_DOMAIN=\\\"gsignond\\\""
 if test "x$enable_debug" = "xno" ; then
     GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -Werror"
+else
+    GSIGNOND_CFLAGS="$GSIGNOND_CFLAGS -DENABLE_DEBUG"
 fi
 
 # GSIGNOND_LIBS="$GSIGNOND_LIBS -lduma"
