@@ -7,9 +7,9 @@
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
 Version: 1.0.3
-Release: 1
+Release: 0
 Group: Security/Accounts
-License: LGPL-2.1+, GPL-2.0+
+License: LGPL-2.1+ and GPL-2.0+
 Source: %{name}-%{version}.tar.gz
 URL: https://01.org/gsso
 Source1001: %{name}.manifest
@@ -29,10 +29,8 @@ BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(libecryptfs)
 BuildRequires: pkgconfig(libsmack)
 
-
 %description
-%{summary}.
-
+%{summary} package
 
 %package devel
 Summary:    Development files for %{name}
@@ -40,8 +38,7 @@ Group:      SDK/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
-%{summary}.
-
+%{summary} package
 
 %package doc
 Summary:    Documentation files for %{name}
@@ -49,13 +46,11 @@ Group:      SDK/Documentation
 Requires:   %{name} = %{version}-%{release}
 
 %description doc
-%{summary}.
-
+%{summary} package
 
 %prep
 %setup -q -n %{name}-%{version}
 cp %{SOURCE1001} .
-
 
 %build
 %if %{debug_build} == 1
@@ -64,26 +59,22 @@ cp %{SOURCE1001} .
 %configure --enable-dbus-type=%{dbus_type}
 %endif
 
-make %{?_smp_mflags}
-
+%__make %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
 %make_install
-install -m 755 -d %{buildroot}%{_libdir}/systemd/user
-install -m 644 data/gsignond.service %{buildroot}%{_libdir}/systemd/user/
-install -m 755 -d %{buildroot}%{_libdir}/systemd/user/weston.target.wants
-ln -s ../gsignond.service %{buildroot}%{_libdir}/systemd/user/weston.target.wants/gsignond.service
-
+install -m 755 -d %{buildroot}%{_unitdir_user}
+install -m 644 data/gsignond.service %{buildroot}%{_unitdir_user}/
+install -m 755 -d %{buildroot}%{_unitdir_user}/weston.target.wants
+ln -s ../gsignond.service %{buildroot}%{_unitdir_user}/weston.target.wants/gsignond.service
 
 %post
 /sbin/ldconfig
 chmod u+s %{_bindir}/%{name}
 getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 
-
 %postun -p /sbin/ldconfig
-
 
 %files
 %defattr(-,root,root,-)
@@ -97,10 +88,9 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif
-%{_libdir}/systemd/user/gsignond.service
-%{_libdir}/systemd/user/weston.target.wants/gsignond.service
+%{_unitdir_user}/gsignond.service
+%{_unitdir_user}/weston.target.wants/gsignond.service
 %config(noreplace) %{_sysconfdir}/gsignond.conf
-
 
 %files devel
 %defattr(-,root,root,-)
@@ -111,8 +101,6 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
 %endif
 
-
 %files doc
 %defattr(-,root,root,-)
 %{_datadir}/gtk-doc/html/gsignond/*
-
