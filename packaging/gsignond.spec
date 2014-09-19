@@ -67,7 +67,7 @@ rm -rf %{buildroot}
 install -m 755 -d %{buildroot}%{_unitdir_user}
 install -m 644 data/gsignond.service %{buildroot}%{_unitdir_user}/
 install -m 755 -d %{buildroot}%{_unitdir_user}/weston.target.wants
-ln -s ../gsignond.service %{buildroot}%{_unitdir_user}/weston.target.wants/gsignond.service
+ln -sf ../gsignond.service %{buildroot}%{_unitdir_user}/weston.target.wants/gsignond.service
 
 %post
 /sbin/ldconfig
@@ -79,7 +79,7 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 %files
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
-%doc AUTHORS COPYING.LIB INSTALL NEWS README
+%doc AUTHORS COPYING.LIB
 %{_bindir}/%{name}
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
