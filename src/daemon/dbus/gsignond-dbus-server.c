@@ -350,8 +350,11 @@ GSignondDbusServer * gsignond_dbus_server_new_with_address (const gchar *address
 
     g_dbus_server_start (server->priv->bus_server);
 
-    if (file_path)
-        g_chmod (file_path, S_IRUSR | S_IWUSR);
+    if (file_path) {
+        if (g_chmod (file_path, S_IRUSR | S_IWUSR) < 0) {
+            WARN ("Failed to set socket permissions : %s", strerror(errno));
+        }
+    }
 
     return server;
 }
