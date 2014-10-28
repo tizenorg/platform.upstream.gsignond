@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# gsignond-cleandb
+#
+# This script is executed by 'gumd-daemon' on post delete of a user
+# gsignond-clean-db <<username>> <<uid>> <<gid>> <<homeddir>>
+#
+# NOTE: currently we do not support cleaningup the database that was set via
+#       build configuration, i.e, ./configure --enable-storagedir=<<path>>.
+#       In this case we need to manually set the $DB_BASE_PATH.
+#
+LOG_FILE=/tmp/gsignond-cleandb.log
+CONF_FILE_PATH='/etc/gsignond.conf'
+DB_BASE_PATH='/var/db'
+DB_PATH=""
+
+LOG() {
+  echo $* >> $LOG_FILE;
+}
+
+touch $LOG_FILE
+LOG `date`
+
+if [ $# -le 1 ]; then
+  LOG "Error: invalid arguments passed";
+  exit 1;
+fi
+
+LOG "Cleaning database for user $1"
+
+# Consider configured storage path if any
+if [ -f $CONF_FILE_PATH ]; then  
+  storage_path=`sed -e 's/^[ \t]*//' < $CONF_FILE_PATH | grep "^StoragePath"`
+  if [ `expr length "$storage_path"` -gt 0 ]; then  
+    storage_path=`echo $storage_path | cut -f2 -d'=' | tr -d ' '`
+  fi
+
+  LOG "Storage path found from conf file: $storage_path"
+  if [ `expr length $storage_path"` -gt 0 ]; then
+    DB_BASE_PATH=$storage_path
+  fi
+fi
+
+DB_PATH="$DB_BASE_PATH/gsignond.$1"
+LOG "Cleaning : $DB_PATH ..."
+
+if [ -d "$DB_PATH" ]; then
+  rm -rf "$DB_PATH" 2>> $LOG_FILE
+fi
+
+LOG "Done"
+LOG "======================"
+
+exit 0
+
