@@ -1,6 +1,6 @@
 [Unit]
 Description=Single SignOn Daemon
-Requires=dbus.service
+Requires=dbus.socket
 
 [Service]
 ExecStart=/usr/bin/gsignond

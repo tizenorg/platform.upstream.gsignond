@@ -69,8 +69,8 @@ rm -rf %{buildroot}
 %make_install
 install -m 755 -d %{buildroot}%{_unitdir_user}
 install -m 644 data/gsignond.service %{buildroot}%{_unitdir_user}/
-install -m 755 -d %{buildroot}%{_unitdir_user}/weston.target.wants
-ln -sf ../gsignond.service %{buildroot}%{_unitdir_user}/weston.target.wants/gsignond.service
+install -m 755 -d %{buildroot}%{_unitdir_user}/default.target.wants
+ln -sf ../gsignond.service %{buildroot}%{_unitdir_user}/default.target.wants/gsignond.service
 install -m 755 -d %{buildroot}%{_sysconfdir}/gumd/userdel.d/
 install -m 755 gsignond-cleandb %{buildroot}%{_sysconfdir}/gumd/userdel.d/
 
@@ -94,7 +94,7 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif
 %{_unitdir_user}/gsignond.service
-%{_unitdir_user}/weston.target.wants/gsignond.service
+%{_unitdir_user}/default.target.wants/gsignond.service
 %config(noreplace) %{_sysconfdir}/gsignond.conf
 %{_sysconfdir}/gumd/userdel.d/
 
