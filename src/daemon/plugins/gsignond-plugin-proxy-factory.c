@@ -368,7 +368,13 @@ gsignond_plugin_proxy_factory_get_plugin(GSignondPluginProxyFactory* factory,
         return proxy;
     }
 
-    proxy = gsignond_plugin_proxy_new(g_hash_table_lookup(factory->methods_to_loader_paths, plugin_type), plugin_type,
+    const gchar *loader_path =
+        g_hash_table_lookup(factory->methods_to_loader_paths, plugin_type);
+    if (loader_path == NULL) {
+        DBG("Loader path not found for %s", plugin_type);
+        return NULL;
+    }
+    proxy = gsignond_plugin_proxy_new(loader_path, plugin_type,
                                       gsignond_config_get_integer (factory->config, GSIGNOND_CONFIG_PLUGIN_TIMEOUT));
     if (proxy == NULL) {
         return NULL;
