@@ -23,6 +23,8 @@
  * 02110-1301 USA
  */
 
+#include <string.h>
+
 #include "config.h"
 
 #include "gsignond/gsignond-log.h"
