@@ -390,6 +390,8 @@ const gchar**
 gsignond_plugin_proxy_factory_get_plugin_types(
    GSignondPluginProxyFactory* factory)
 {
+    g_return_val_if_fail(factory, NULL);
+
 	if (factory->methods == NULL) {
 		_enumerate_plugins (factory);
 	}
@@ -400,6 +402,7 @@ const gchar**
 gsignond_plugin_proxy_factory_get_plugin_mechanisms(
    GSignondPluginProxyFactory* factory, const gchar* plugin_type)
 {
+    g_return_val_if_fail(factory && plugin_type, NULL);
     g_return_val_if_fail(factory->methods_to_mechanisms, NULL);
 
     if (factory->methods == NULL) {

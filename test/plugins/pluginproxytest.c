@@ -434,7 +434,7 @@ START_TEST (test_pluginproxyfactory_methods_and_mechanisms)
     fail_if(factory == NULL);
     const gchar *pass_method = NULL;
     const gchar** pmethods = NULL;
-    
+
     const gchar** methods = gsignond_plugin_proxy_factory_get_plugin_types(
             factory);
     fail_if(methods == NULL);
@@ -446,10 +446,12 @@ START_TEST (test_pluginproxyfactory_methods_and_mechanisms)
         }
         pmethods++;
     }
+    fail_if(pass_method == NULL);
     const gchar** mechanisms =
             gsignond_plugin_proxy_factory_get_plugin_mechanisms(factory,
                     pass_method);
     fail_if(mechanisms == NULL);
+    fail_if(mechanisms[0] == NULL);
     fail_if(strcmp(mechanisms[0], "password") != 0);
     fail_if(mechanisms[1] != NULL);
     
