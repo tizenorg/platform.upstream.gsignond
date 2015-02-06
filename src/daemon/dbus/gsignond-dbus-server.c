@@ -375,7 +375,9 @@ _on_bus_acquired (GDBusConnection *connection,
                   const gchar     *name,
                   gpointer         user_data)
 {
+    GSignondDbusServer *server = GSIGNOND_DBUS_SERVER (user_data);
     INFO ("bus aquired on connection '%p'", connection);
+    gsignond_dbus_server_start_auth_service (server, connection);
 }
 
 static void
@@ -393,9 +395,7 @@ _on_name_acquired (GDBusConnection *connection,
                    const gchar     *name,
                    gpointer         user_data)
 {
-    GSignondDbusServer *server = GSIGNOND_DBUS_SERVER (user_data);
-    INFO ("Acquired the name %s on connection '%p'", name, connection);
-    gsignond_dbus_server_start_auth_service (server, connection);
+   INFO ("Acquired the name %s on connection '%p'", name, connection);
 }
 
 GSignondDbusServer * gsignond_dbus_server_new () {
