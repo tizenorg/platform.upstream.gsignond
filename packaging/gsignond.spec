@@ -62,7 +62,7 @@ autoreconf -ivf
 %configure --enable-dbus-type=%{dbus_type}
 %endif
 
-%__make %{?_smp_mflags}
+%__make
 
 %install
 rm -rf %{buildroot}
