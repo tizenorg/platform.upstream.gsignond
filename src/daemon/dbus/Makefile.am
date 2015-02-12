@@ -1,5 +1,5 @@
 NULL=
-INTERFACES_DIR = $(top_srcdir)/src/daemon/dbus/interfaces
+INTERFACES_DIR = $(top_builddir)/src/daemon/dbus/interfaces
 SERVICES_DIR   = $(top_builddir)/src/daemon/dbus/services
 DBUS_BUILT_SOURCES = \
     gsignond-dbus-auth-service-gen.c \
