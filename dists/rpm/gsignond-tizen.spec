@@ -6,16 +6,17 @@
 
 Name: gsignond
 Summary: GLib based Single Sign-On daemon
-Version: 1.0.3
-Release: 1
+Version: 1.0.4
+Release: 0
 Group: Security/Accounts
-License: LGPL-2.1+
+License: LGPL-2.1+ and GPL-2.0+
 Source: %{name}-%{version}.tar.gz
 URL: https://01.org/gsso
 Source1001: %{name}.manifest
+Source1002: gsignond-cleandb
 Provides: gsignon
 %if %{dbus_type} != "p2p"
-Requires: dbus-1
+BuildRequires: dbus-1
 %endif
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -29,10 +30,8 @@ BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(libecryptfs)
 BuildRequires: pkgconfig(libsmack)
 
-
 %description
-%{summary}.
-
+%{summary} package
 
 %package devel
 Summary:    Development files for %{name}
@@ -40,8 +39,7 @@ Group:      SDK/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
-%{summary}.
-
+%{summary} package
 
 %package doc
 Summary:    Documentation files for %{name}
@@ -49,42 +47,44 @@ Group:      SDK/Documentation
 Requires:   %{name} = %{version}-%{release}
 
 %description doc
-%{summary}.
-
+%{summary} package
 
 %prep
 %setup -q -n %{name}-%{version}
 cp %{SOURCE1001} .
-
+cp %{SOURCE1002} .
 
 %build
+autoreconf -ivf
 %if %{debug_build} == 1
 %configure --enable-dbus-type=%{dbus_type} --enable-debug
 %else
 %configure --enable-dbus-type=%{dbus_type}
 %endif
 
-make %{?_smp_mflags}
-
+%__make %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
 %make_install
-
+install -m 755 -d %{buildroot}%{_unitdir_user}
+install -m 644 data/gsignond.service %{buildroot}%{_unitdir_user}/
+install -m 755 -d %{buildroot}%{_unitdir_user}/default.target.wants
+ln -sf ../gsignond.service %{buildroot}%{_unitdir_user}/default.target.wants/gsignond.service
+install -m 755 -d %{buildroot}%{_sysconfdir}/gumd/userdel.d/
+install -m 755 gsignond-cleandb %{buildroot}%{_sysconfdir}/gumd/userdel.d/
 
 %post
 /sbin/ldconfig
 chmod u+s %{_bindir}/%{name}
 getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 
-
 %postun -p /sbin/ldconfig
-
 
 %files
 %defattr(-,root,root,-)
 %manifest %{name}.manifest
-%doc AUTHORS COPYING.LIB INSTALL NEWS README
+%doc AUTHORS COPYING.LIB
 %{_bindir}/%{name}
 %{_libdir}/lib%{name}-*.so.*
 %{_libdir}/%{name}/extensions/*.so*
@@ -93,8 +93,10 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 %if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/services/*SingleSignOn*.service
 %endif
+%{_unitdir_user}/gsignond.service
+%{_unitdir_user}/default.target.wants/gsignond.service
 %config(noreplace) %{_sysconfdir}/gsignond.conf
-
+%{_sysconfdir}/gumd/userdel.d/
 
 %files devel
 %defattr(-,root,root,-)
@@ -105,8 +107,6 @@ getent group gsignond > /dev/null || /usr/sbin/groupadd -r gsignond
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
 %endif
 
-
 %files doc
 %defattr(-,root,root,-)
 %{_datadir}/gtk-doc/html/gsignond/*
-
