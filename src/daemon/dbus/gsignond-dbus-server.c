@@ -350,8 +350,11 @@ GSignondDbusServer * gsignond_dbus_server_new_with_address (const gchar *address
 
     g_dbus_server_start (server->priv->bus_server);
 
-    if (file_path)
-        g_chmod (file_path, S_IRUSR | S_IWUSR);
+    if (file_path) {
+        if (g_chmod (file_path, S_IRUSR | S_IWUSR) < 0) {
+            WARN ("Failed to set socket permissions : %s", strerror(errno));
+        }
+    }
 
     return server;
 }
@@ -372,7 +375,9 @@ _on_bus_acquired (GDBusConnection *connection,
                   const gchar     *name,
                   gpointer         user_data)
 {
+    GSignondDbusServer *server = GSIGNOND_DBUS_SERVER (user_data);
     INFO ("bus aquired on connection '%p'", connection);
+    gsignond_dbus_server_start_auth_service (server, connection);
 }
 
 static void
@@ -390,9 +395,7 @@ _on_name_acquired (GDBusConnection *connection,
                    const gchar     *name,
                    gpointer         user_data)
 {
-    GSignondDbusServer *server = GSIGNOND_DBUS_SERVER (user_data);
-    INFO ("Acquired the name %s on connection '%p'", name, connection);
-    gsignond_dbus_server_start_auth_service (server, connection);
+   INFO ("Acquired the name %s on connection '%p'", name, connection);
 }
 
 GSignondDbusServer * gsignond_dbus_server_new () {
