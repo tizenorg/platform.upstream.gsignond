@@ -1,0 +1,18 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+ <interface name="com.google.code.AccountsSSO.gSingleSignOn.UI.Dialog">
+    <method name="queryDialog">
+      <arg type="a{sv}" direction="out"/>
+      <arg name="parameters" type="a{sv}" direction="in"/>
+    </method>
+    <method name="refreshDialog">
+      <arg name="parameters" type="a{sv}" direction="in"/>
+    </method>
+    <method name="cancelUiRequest">
+      <arg name="requestId" type="s" direction="in"/>
+    </method>
+    <signal name="refresh">
+      <arg name="requestId" type="s" direction="out"/>
+    </signal>
+  </interface>
+</node>

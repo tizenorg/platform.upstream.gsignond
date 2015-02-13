@@ -95,12 +95,10 @@ elif test "x$enable_dbus_type" = "xsystem" ; then
         DBUS_SERVICES_DIR="`pkg-config --variable system_bus_services_dir dbus-1`"
     fi
 fi
-if test "x$enable_dbus_type" != "xp2p" ; then
-    if test "x$enable_distcheck" = "xyes" ; then
-        DBUS_INTERFACES_DIR="${datadir}/dbus-1/interfaces"
-    else
-        DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
-    fi
+if test "x$enable_distcheck" = "xyes" ; then
+    DBUS_INTERFACES_DIR="${datadir}/dbus-1/interfaces"
+else
+    DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
 fi
 
 AC_ARG_ENABLE(keychain,

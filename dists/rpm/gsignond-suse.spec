@@ -104,9 +104,7 @@ groupadd -f -r gsignond
 %{_libdir}/lib%{name}-*.so
 %{_libdir}/lib%{name}-*.la
 %{_libdir}/pkgconfig/%{name}.pc
-%if %{dbus_type} != "p2p"
 %{_datadir}/dbus-1/interfaces/*SSO*.xml
-%endif
 
 
 %files doc

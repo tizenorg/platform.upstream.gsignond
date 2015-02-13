@@ -108,7 +108,10 @@ dbusinterfacesdir = $(DBUS_INTERFACES_DIR)
 dbusinterfaces_DATA = \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
     $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.AuthSession.xml \
-    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.Identity.xml 
+    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.Identity.xml \
+    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.UI.xml \
+    $(INTERFACES_DIR)/com.google.code.AccountsSSO.gSingleSignOn.UI.Dialog.xml \
+    $(NULL)
 
 EXTRA_DIST = interfaces
 
