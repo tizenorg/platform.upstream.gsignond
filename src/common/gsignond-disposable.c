@@ -28,9 +28,10 @@
 
 struct _GSignondDisposablePrivate
 {
-    guint timeout;       /* timeout in seconds */
+    guint timeout;         /* timeout in seconds */
     volatile gint  keep_obj_counter; /* keep object request counter */
-    guint timer_id;      /* timer source id */
+    guint timer_id;        /* timer source id */
+    gboolean delete_later; /* quick delete */
 };
 
 enum {
@@ -170,6 +171,7 @@ gsignond_disposable_init (GSignondDisposable *self)
 
     self->priv->timer_id = 0;
     self->priv->timeout = 0;
+    self->priv->delete_later = FALSE;
     g_atomic_int_set(&self->priv->keep_obj_counter, 0);
 
     DBG ("INIT");
@@ -210,7 +212,11 @@ _update_timer (GSignondDisposable *self)
                   self->priv->keep_obj_counter, 
                   self->priv->timeout);
     if (g_atomic_int_get(&self->priv->keep_obj_counter) == 0) {
-        if (self->priv->timeout) {
+        if (self->priv->delete_later) {
+            INFO ("Object '%s' (%p) about to dispose...",
+                  G_OBJECT_TYPE_NAME (self), self);
+            self->priv->timer_id = g_idle_add (_auto_dispose, self);
+        } else if (self->priv->timeout && !self->priv->timer_id) {
             DBG("Setting object timeout to %d", self->priv->timeout);
             self->priv->timer_id = g_timeout_add_seconds (self->priv->timeout,
                                                           _timer_dispose,
@@ -252,12 +258,18 @@ gsignond_disposable_set_timeout (GSignondDisposable *self,
 void
 gsignond_disposable_delete_later (GSignondDisposable *self)
 {
-    if (self->priv->timer_id)
-            g_source_remove (self->priv->timer_id);
+    g_return_if_fail (self && GSIGNOND_IS_DISPOSABLE (self));
 
-    INFO ("Object '%s' (%p) about to dispose...",
-          G_OBJECT_TYPE_NAME (self), self);
-    self->priv->timer_id = g_idle_add (_auto_dispose, self);
+    if (self->priv->delete_later) return;
+
+    if (self->priv->timer_id) {
+        g_source_remove (self->priv->timer_id);
+        self->priv->timer_id = 0;
+    }
+
+    self->priv->delete_later = TRUE;
+
+    _update_timer (self);
 }
 
 gboolean

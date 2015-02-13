@@ -35,13 +35,14 @@
 
 static void check_plugin(GSignondPlugin* plugin)
 {
-    gchar* type;
-    gchar** mechanisms;
+    gchar* type = NULL;
+    gchar** mechanisms = NULL;
 
     fail_if(plugin == NULL);
     
     g_object_get(plugin, "type", &type, "mechanisms", &mechanisms, NULL);
     
+    fail_if(type == NULL || mechanisms == NULL);
     fail_unless(g_strcmp0(type, "password") == 0);
     fail_unless(g_strcmp0(mechanisms[0], "password") == 0);
     fail_unless(mechanisms[1] == NULL);

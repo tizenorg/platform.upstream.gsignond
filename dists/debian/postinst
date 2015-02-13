@@ -24,6 +24,8 @@ case "$1" in
 	groupadd -f -r gsignond
 	chmod 4755 /usr/bin/gsignond
 	install -d -m 755 -o root -g root /var/db
+	# update-alternatives
+	update-alternatives --install /etc/gsignond.conf gsignond.conf /etc/gsignond/gsignond.conf 0
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

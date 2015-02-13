@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([gsignond], [1.0.3],[],[],[http://01.org/gsso])
+AC_INIT([gsignond], [1.0.4],[],[],[http://01.org/gsso])
 AC_CONFIG_SRCDIR([src/daemon/main.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -95,12 +95,11 @@ elif test "x$enable_dbus_type" = "xsystem" ; then
         DBUS_SERVICES_DIR="`pkg-config --variable system_bus_services_dir dbus-1`"
     fi
 fi
-if test "x$enable_dbus_type" != "xp2p" ; then
-    if test "x$enable_distcheck" = "xyes" ; then
-        DBUS_INTERFACES_DIR="${datadir}/dbus-1/interfaces"
-    else
-        DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
-    fi
+
+if test "x$enable_distcheck" = "xyes" ; then
+    DBUS_INTERFACES_DIR="${datadir}/dbus-1/interfaces"
+else
+    DBUS_INTERFACES_DIR="`pkg-config --variable interfaces_dir dbus-1`"
 fi
 
 AC_ARG_ENABLE(keychain,
