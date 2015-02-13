@@ -11,6 +11,7 @@ DBUS_BUILT_SOURCES = \
     gsignond-dbus-remote-plugin-gen.c \
     gsignond-dbus-remote-plugin-gen.h \
     $(NULL)
+BUILT_SOURCES = $(DBUS_BUILT_SOURCES)
 
 DBUS_BUILT_DOCS = \
     gsignond-dbus-auth-service-doc-gen-com.google.code.AccountsSSO.gSingleSignOn.AuthService.xml \
