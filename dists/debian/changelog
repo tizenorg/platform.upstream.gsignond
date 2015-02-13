@@ -1,8 +1,20 @@
+gsignond (1.0.4-1) unstable; urgency=low
+
+  * Update to 1.0.4
+
+ -- Imran Zamam <imran.zaman@intel.com>  Thu, 12 Feb 2015 16:22:00 +0200
+
 gsignond (1.0.3-1) unstable; urgency=low
 
   * Update to 1.0.3
 
- -- Imran Zamam <imran.zaman@.intel.com>  Mon, 30 Jun 2014 16:22:00 +0200
+ -- Imran Zamam <imran.zaman@intel.com>  Mon, 30 Jun 2014 16:22:00 +0200
+
+gsignond (1.0.2-5) unstable; urgency=low
+
+  * Update to 1.0.2
+
+ -- Jussi Laako <jussi.laako@linux.intel.com>  Wed, 25 Jun 2014 14:15:00 +0300
 
 gsignond (1.0.1-4) unstable; urgency=low
 

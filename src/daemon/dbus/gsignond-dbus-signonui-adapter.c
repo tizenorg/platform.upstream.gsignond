@@ -179,7 +179,7 @@ _setup_ui_connection (GSignondDbusSignonuiAdapter *adapter)
                 SIGNONUI_IFACE, "getBusAddress", g_variant_new ("()"), 
                 G_VARIANT_TYPE_TUPLE, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err);
     if (!reply) {
-        WARN ("Failed to get signon ui bus address : %s", err->message);
+        WARN ("Failed to get signon ui bus address : %s", err ? err->message : "unknown");
         goto fail;
     }
 
